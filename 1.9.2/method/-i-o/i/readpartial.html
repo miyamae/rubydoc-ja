@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method IO#readpartial</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-i-o.html">IOクラス</a>
+&gt; readpartial
+
+</p>
+
+
+
+
+<h1>instance method IO#readpartial</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>readpartial(maxlen, outbuf = &quot;&quot;) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+IO から長さ maxlen を上限として読み込み、文字列として返します。
+即座に得られるデータが存在しないときにはブロックしてデータの到着を待ちます。
+即座に得られるデータが 1byte でも存在すればブロックしません。
+</p>
+<p>
+バイナリ読み込みメソッドとして動作します。
+既に EOF に達していれば EOFError が発生します。
+ただし、maxlen に 0 が指定されている場合は、空文字列 &quot;&quot; を返します。
+</p>
+<p>
+readpartial はブロックを最小限に抑えることによって、
+パイプ、ソケット、端末などのストリームに対して適切に動作するよう設計されています。
+readpartial がブロックするのは次の全ての条件が満たされたときだけです。
+</p>
+<ul>
+<li>IO オブジェクト内のバッファが空</li>
+<li>ストリームにデータが到着していない</li>
+<li>ストリームが EOF になっていない</li>
+</ul>
+<p>
+これらの条件が満たされる場合、何らかのデータが到着するか EOF になるまで readpartial はブロックします。
+</p>
+<p>
+readpartial の結果は以下のようになります。
+</p>
+<ol>
+<li>バッファが空でなければ、そのバッファのデータを読み込んで返します。</li>
+<li>ストリームにデータがあれば、ストリームからデータを読み込んで返します。</li>
+<li>ストリームが EOF になっていれば、例外 <a href="../../../class/-e-o-f-error.html">EOFError</a> を発生させます。</li>
+</ol>
+<p>
+例えば、パイプに対しては次のように動作します。
+</p>
+<pre>
+r, w = IO.pipe           #               buffer          pipe content
+w &lt;&lt; &quot;abc&quot;               #               &quot;&quot;              &quot;abc&quot;.
+r.readpartial(4096)      #=&gt; &quot;abc&quot;       &quot;&quot;              &quot;&quot;
+r.readpartial(4096)      # バッファにもパイプにもデータがないのでブロックする
+
+r, w = IO.pipe           #               buffer          pipe content
+w &lt;&lt; &quot;abc&quot;               #               &quot;&quot;              &quot;abc&quot;
+w.close                  #               &quot;&quot;              &quot;abc&quot; EOF
+r.readpartial(4096)      #=&gt; &quot;abc&quot;       &quot;&quot;              EOF
+r.readpartial(4096)      # 例外 EOFError 発生
+
+r, w = IO.pipe           #               buffer          pipe content
+w &lt;&lt; &quot;abc\ndef\n&quot;        #               &quot;&quot;              &quot;abc\ndef\n&quot;
+r.gets                   #=&gt; &quot;abc\n&quot;     &quot;def\n&quot;         &quot;&quot;
+w &lt;&lt; &quot;ghi\n&quot;             #               &quot;def\n&quot;         &quot;ghi\n&quot;
+r.readpartial(4096)      #=&gt; &quot;def\n&quot;     &quot;&quot;              &quot;ghi\n&quot;
+r.readpartial(4096)      #=&gt; &quot;ghi\n&quot;     &quot;&quot;              &quot;&quot;
+</pre>
+<p>
+なお、readpartial は nonblock フラグに影響されません。
+つまり、nonblock フラグが設定されていて sysread であれば Errno::EAGAIN になる場合でもブロックします。
+</p>
+<p>
+また、readpartial の挙動は sysread によく似ています。
+とくに、バッファが空の場合には同じ挙動を示します。
+ただし、EAGAIN および EINTR エラーは内部で発生したとしても通知されず、データが到着するまでブロックし続けます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] maxlen:</dt>
+<dd>
+読み込む長さの上限を整数で指定します。
+</dd>
+<dt class='method-param'>[PARAM] outbuf:</dt>
+<dd>
+文字列で指定します。IO#readpartial は読み込んだデータを outbuf に破壊的に格納し、
+返り値は outbuf となります。outbuf は一旦 maxlen 長に拡張(あるいは縮小)されたあと、
+実際に読み込んだデータのサイズになります。IO が既に EOF に達していれば、空文字列になります。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が読み込み用にオープンされていなければ発生します。
+</dd>
+<dt>[EXCEPTION] EOFError:</dt>
+<dd>
+IO が既に EOF に達していれば発生します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

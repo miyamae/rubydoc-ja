@@ -1,0 +1,930 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class WIN32OLE</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/win32ole.html">win32oleライブラリ</a>
+&gt; WIN32OLEクラス
+</p>
+
+
+
+<h1>class WIN32OLE</h1>
+<p>
+
+クラスの継承リスト: WIN32OLE
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+OLEオートメーションサーバをRubyで操作するためのクラスです。
+</p>
+<p>
+Windowsの多くのアプリケーションやライブラリは、COMと呼ばれるAPI群を利用
+して他のプログラムから操作できます。WIN32OLEがサポートしているのは、
+COMのAPIのうち、特にインタープリタ用のインターフェイスであるOLEオートメー
+ション（IDispatchインターフェイス）とそれに付随するリフレクション用のイ
+ンターフェイスです。
+</p>
+<p>
+これらのインターフェイスをサポートしている代表的なWindowsアプリケーショ
+ンに、Office、IE、iTunes、Illustratorがあります。また、WMI、WshShellな
+どのライブラリを利用してWindowsの情報を操作することも可能です。これらの
+プログラムをOLEオートメーションサーバと呼びます。
+</p>
+<p>
+WIN32OLEオブジェクトは、OLEオートメーションサーバが提供するメソッドやプ
+ロパティ（Rubyの属性に対応）をスクリプトから呼び出す手段を提供します。
+呼び出しには、Rubyのオブジェクトと同様にオブジェクトに続けて「.」とメソッ
+ド名、必要であれば引数のリストを記述します。最後の引数にHashを指定した
+場合は、名前付き引数としてキーにパラメータ名、値に引数を指定できます。
+</p>
+<h2 >サンプルコード</h2>
+<pre>
+require 'win32ole'
+
+excel = WIN32OLE.new('Excel.Application')
+workbook = excel.Workbooks.Open('workbook.xls')
+workbook.PrintOut
+workbook.Close(:SaveChanges =&gt; false)
+excel.Quit
+</pre>
+<p>
+なお、OLEオートメーションの仕様ではメソッド名は大文字と小文字を区別しま
+せん。そのため、以下のようにOLEオートメーションサーバのメソッド名は小文
+字で記述しても構いません。
+</p>
+<pre>
+require 'win32ole'
+
+excel = WIN32OLE.new('Excel.Application')
+workbook = excel.workbooks.open('workbook.xls')
+workbook.printout
+workbook.close(:SaveChanges =&gt; false)
+excel.quit
+</pre>
+<h2 >マルチスレッドでの利用制限</h2>
+<p>
+注）以下の記述はWIN32OLEの将来のバージョンの仕様を規定するものではあり
+ません。
+</p>
+<p>
+WIN32OLEはシングルスレッドモードでCOMとインターフェイスします。このため、
+ruby 1.9以降のRubyのThreadとネイティブスレッドが1対1で対応する実行環境
+ではスレッドをまたがる呼び出しはエラーとなります。
+</p>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+Thread.start do
+  workbook = excel.Workbooks.Open('workbook.xls') #=&gt; HRESULT error code:0x800401f0
+  workbook.PrintOut
+  workbook.Close(:SaveChanges =&gt; false)
+end.join
+excel.Quit
+</pre>
+<p>
+発生するエラーはThreadの実行方法によって
+0x800401f0（CO_E_NOTINITIALIZED）または0x8001010e（RPC_E_WRONG_THREAD）
+です。
+</p>
+
+
+
+<h2>特異メソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/s/codepage.html"><code>
+  codepage -&gt; Fixnum
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+WIN32OLEがOLEオートメーションのインターフェイスに利用するコードページを
+取得します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/s/codepage=3d.html"><code>
+  codepage=(cp) -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+WIN32OLEがOLEオートメーションのインターフェイスに利用するコードページを
+設定します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/s/connect.html"><code>
+  connect(ole) -&gt; WIN32OLE
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+現在実行中のOLEオートメーションサーバに接続します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/s/const_load.html"><code>
+  const_load(ole, mod = WIN32OLE) -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+OLEオートメーションサーバが保持する定数を読み込み、指定されたモジュール
+に組み込みます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/s/create_guid.html"><code>
+  create_guid -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+GUID(グローバル一意識別子：Global Unique Identifier)を生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/s/locale.html"><code>
+  locale -&gt; Fixnum
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+WIN32OLEがオートメーション呼び出し時に設定するロケール識別子(LCID)を取
+得します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/s/locale=3d.html"><code>
+  locale=(lcid) -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+WIN32OLEがオートメーション呼び出し時に設定するロケール識別子(LCID)を設
+定します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/s/new.html"><code>
+  new(server, host=nil) -&gt; WIN32OLE
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+OLEオートメーションサーバを生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/s/ole_free.html"><code>
+  ole_free(aWIN32OLE) -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+引数で指定したオブジェクトを解放します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/s/ole_reference_count.html"><code>
+  ole_reference_count(aWIN32OLE) -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+引数で指定したオブジェクトの現在の参照カウント値を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/s/ole_show_help.html"><code>
+  ole_show_help(obj, helpcontext = nil) -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+WIN32OLEオブジェクトのヘルプファイルを表示します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>インスタンスメソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/=5b=5d.html"><code>
+  self[key...] -&gt; object
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+オブジェクトのデフォルトプロパティを参照します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/=5b=5d=3d.html"><code>
+  self[key...] = value
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+オブジェクトのデフォルトプロパティを設定します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/_getproperty.html"><code>
+  _getproperty(dispid, args, types) -&gt; object
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+DISPIDとパラメータの型を指定してオブジェクトのプロパティを参照します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/_invoke.html"><code>
+  _invoke(dispid, args, types) -&gt; object | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+DISPIDとパラメータの型を指定してオブジェクトのメソッドを呼び出します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/_setproperty.html"><code>
+  _setproperty(dispid, args, types) -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+DISPIDとパラメータの型を指定してオブジェクトのプロパティを設定します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/each.html"><code>
+  each {|i|...} -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+オブジェクトの列挙インターフェイスを呼び出してアイテム単位にブロックを
+実行します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/invoke.html"><code>
+  invoke(name, *args) -&gt; object | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+メソッド名を指定してオブジェクトのメソッドを呼び出します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/method_missing.html"><code>
+  method_missing(id, *args) -&gt; object | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-w-i-n32-o-l-e/i/invoke.html">WIN32OLE#invoke</a>メソッドを実行します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/ole_activex_initialize.html"><code>
+  ole_activex_initialize -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ActiveXコントロール用の初期化を行います。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/ole_free.html"><code>
+  ole_free -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+selfが参照するCOMオブジェクトを解放します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/ole_func_methods.html"><code>
+  ole_func_methods -&gt; [WIN32OLE_METHOD]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+オブジェクトのファンクション情報を<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>の配列として返し
+ます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/ole_get_methods.html"><code>
+  ole_get_methods -&gt; [WIN32OLE_METHOD]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+オブジェクトの参照可能プロパティ情報を<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>の配列として
+返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/ole_method.html"><code>
+  ole_method(method) -&gt; WIN32OLE_METHOD<br>ole_method_help(method) -&gt; WIN32OLE_METHOD
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+メソッド名を指定して対応する<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>オブジェクトを取得しま
+す。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/ole_methods.html"><code>
+  ole_methods -&gt; [WIN32OLE_METHOD]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+オブジェクトのメソッド情報を<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>の配列として返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/ole_obj_help.html"><code>
+  ole_obj_help -&gt; WIN32OLE_TYPE | nil<br>ole_type -&gt; WIN32OLE_TYPE | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../class/-w-i-n32-o-l-e_-t-y-p-e.html">WIN32OLE_TYPE</a>オブジェクトを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/ole_put_methods.html"><code>
+  ole_put_methods -&gt; [WIN32OLE_METHOD]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+オブジェクトの設定可能プロパティ情報を<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>の配列として
+返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/ole_query_interface.html"><code>
+  ole_query_interface(iid) -&gt; WIN32OLE
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+IID（インターフェイスID）を指定してオブジェクトの別のインターフェイスを
+持つオブジェクトを取得します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/ole_respond_to=3f.html"><code>
+  ole_respond_to?(name) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+指定したメソッドをオブジェクトがサポートしているか調べます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/ole_typelib.html"><code>
+  ole_typelib -&gt; WIN32OLE_TYPELIB
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+オブジェクトに対応する型情報ライブラリ（TypeLib）を
+<a href="../class/-w-i-n32-o-l-e_-t-y-p-e-l-i-b.html">WIN32OLE_TYPELIB</a>として返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/i/setproperty.html"><code>
+  setproperty(name, val) -&gt; ()<br>setproperty(name, args..., val) -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+オブジェクトのプロパティを設定します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>定数</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/c/-a-r-g-v.html"><code>
+  ARGV -&gt; [object]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+直前のメソッド呼び出しの引数を格納した配列です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/c/-c-p_-a-c-p.html"><code>
+  CP_ACP -&gt; Fixnum
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Windows既定のANSIコードページ（0）を示します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/c/-c-p_-m-a-c-c-p.html"><code>
+  CP_MACCP -&gt; Fixnum
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Macintoshコードページ（2）を示します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/c/-c-p_-o-e-m-c-p.html"><code>
+  CP_OEMCP -&gt; Fixnum
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+OEMコードページ（1）を示します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/c/-c-p_-s-y-m-b-o-l.html"><code>
+  CP_SYMBOL -&gt; Fixnum
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字コードの変換にシンボルを利用することを示します（42）。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/c/-c-p_-t-h-r-e-a-d_-a-c-p.html"><code>
+  CP_THREAD_ACP -&gt; Fixnum
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+現在実行中のスレッドの既定のコードページ（3）を示します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/c/-c-p_-u-t-f7.html"><code>
+  CP_UTF7 -&gt; Fixnum
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字コードの変換にUTF-7を利用することを示します（65000）。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/c/-c-p_-u-t-f8.html"><code>
+  CP_UTF8 -&gt; Fixnum
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字コードの変換にUTF-8を利用することを示します（65001）。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/c/-l-o-c-a-l-e_-s-y-s-t-e-m_-d-e-f-a-u-l-t.html"><code>
+  LOCALE_SYSTEM_DEFAULT -&gt; Fixnum
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+システム既定のロケールを示すLCID(0x0800)です。WIN32OLEがオートメーショ
+ンを利用する場合の既定値です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/c/-l-o-c-a-l-e_-u-s-e-r_-d-e-f-a-u-l-t.html"><code>
+  LOCALE_USER_DEFAULT -&gt; Fixnum
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ユーザ既定のロケールを示すLCID(0x0400)です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-w-i-n32-o-l-e/c/-v-e-r-s-i-o-n.html"><code>
+  VERSION -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Major.Minor.Patch形式のWIN32OLEのバージョン番号を示す文字列です。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+<h2>継承したメソッド</h2>
+<p><code>
+
+<a href="../method/-basic-object/i/=21.html">!</a>
+
+<a href="../method/-basic-object/i/=21=3d.html">!=</a>
+
+<a href="../method/-object/i/=3d=3d.html">==</a>
+
+<a href="../method/-object/i/=3d=3d=3d.html">===</a>
+
+<a href="../method/-object/i/=3d=7e.html">=~</a>
+
+<a href="../method/-object/i/__id__.html">__id__</a>
+
+<a href="../method/-object/i/__send__.html">__send__</a>
+
+<a href="../method/-object/i/_dump.html">_dump</a>
+
+<a href="../method/-object/i/class.html">class</a>
+
+<a href="../method/-object/i/clone.html">clone</a>
+
+<a href="../method/-object/i/dclone.html">dclone</a>
+
+<a href="../method/-object/i/display.html">display</a>
+
+<a href="../method/-object/i/enum_for.html">enum_for</a>
+
+<a href="../method/-object/i/eql=3f.html">eql?</a>
+
+<a href="../method/-object/i/equal=3f.html">equal?</a>
+
+<a href="../method/-object/i/extend.html">extend</a>
+
+<a href="../method/-object/i/freeze.html">freeze</a>
+
+<a href="../method/-object/i/frozen=3f.html">frozen?</a>
+
+<a href="../method/-object/i/hash.html">hash</a>
+
+<a href="../method/-object/i/initialize.html">initialize</a>
+
+<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
+
+<a href="../method/-object/i/inspect.html">inspect</a>
+
+<a href="../method/-object/i/instance_eval.html">instance_eval</a>
+
+<a href="../method/-object/i/instance_exec.html">instance_exec</a>
+
+<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
+
+<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
+
+<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
+
+<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
+
+<a href="../method/-object/i/instance_variables.html">instance_variables</a>
+
+<a href="../method/-object/i/is_a=3f.html">is_a?</a>
+
+<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
+
+<a href="../method/-object/i/marshal_load.html">marshal_load</a>
+
+<a href="../method/-object/i/method.html">method</a>
+
+<a href="../method/-object/i/methods.html">methods</a>
+
+<a href="../method/-object/i/must_be.html">must_be</a>
+
+<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
+
+<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
+
+<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
+
+<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
+
+<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
+
+<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
+
+<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
+
+<a href="../method/-object/i/must_equal.html">must_equal</a>
+
+<a href="../method/-object/i/must_include.html">must_include</a>
+
+<a href="../method/-object/i/must_match.html">must_match</a>
+
+<a href="../method/-object/i/must_raise.html">must_raise</a>
+
+<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
+
+<a href="../method/-object/i/must_send.html">must_send</a>
+
+<a href="../method/-object/i/must_throw.html">must_throw</a>
+
+<a href="../method/-object/i/nil=3f.html">nil?</a>
+
+<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
+
+<a href="../method/-object/i/pretty_print.html">pretty_print</a>
+
+<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
+
+<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
+
+<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
+
+<a href="../method/-object/i/private_methods.html">private_methods</a>
+
+<a href="../method/-object/i/protected_methods.html">protected_methods</a>
+
+<a href="../method/-object/i/public_methods.html">public_methods</a>
+
+<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
+
+<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
+
+<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
+
+<a href="../method/-object/i/singleton_class.html">singleton_class</a>
+
+<a href="../method/-object/i/singleton_method_added.html">singleton_method_added</a>
+
+<a href="../method/-object/i/singleton_method_removed.html">singleton_method_removed</a>
+
+<a href="../method/-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
+
+<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
+
+<a href="../method/-object/i/taint.html">taint</a>
+
+<a href="../method/-object/i/tainted=3f.html">tainted?</a>
+
+<a href="../method/-object/i/tap.html">tap</a>
+
+<a href="../method/-object/i/to_a.html">to_a</a>
+
+<a href="../method/-object/i/to_ary.html">to_ary</a>
+
+<a href="../method/-object/i/to_hash.html">to_hash</a>
+
+<a href="../method/-object/i/to_int.html">to_int</a>
+
+<a href="../method/-object/i/to_io.html">to_io</a>
+
+<a href="../method/-object/i/to_proc.html">to_proc</a>
+
+<a href="../method/-object/i/to_regexp.html">to_regexp</a>
+
+<a href="../method/-object/i/to_s.html">to_s</a>
+
+<a href="../method/-object/i/to_str.html">to_str</a>
+
+<a href="../method/-object/i/to_yaml.html">to_yaml</a>
+
+<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
+
+<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
+
+<a href="../method/-object/i/trust.html">trust</a>
+
+<a href="../method/-object/i/untaint.html">untaint</a>
+
+<a href="../method/-object/i/untrust.html">untrust</a>
+
+<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
+
+</code></p>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

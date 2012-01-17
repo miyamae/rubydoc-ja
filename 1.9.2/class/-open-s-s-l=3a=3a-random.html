@@ -1,0 +1,271 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>module OpenSSL::Random</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/openssl.html">opensslライブラリ</a>
+&gt; OpenSSL::Randomモジュール
+</p>
+
+
+
+<h1>module OpenSSL::Random</h1>
+<p>
+
+クラスの継承リスト: OpenSSL::Random
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+OpenSSL が利用する疑似乱数生成器関連のモジュールです。
+</p>
+<ul>
+<li><a class="external" href="http://www.ietf.org/rfc/rfc4086.txt">[RFC4086]</a></li>
+</ul>
+<h2 >暗号と乱数</h2>
+<p>
+OpenSSL では、鍵を生成するためなどに乱数を用いています。例えば RSA では
+巨大(512bitや1024bitなど)な素数の組を乱数で生成し、そこから公開鍵、秘密鍵の
+ペアを計算します。鍵は他人に知られてはならないため、
+その乱数は外部からの推論が不可能な良い性質を持っている必要があります。
+このようなメソッドには以下のものがあります。
+</p>
+<ul>
+<li><a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-r-s-a/s/generate.html">OpenSSL::PKey::RSA.generate</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/s/generate.html">OpenSSL::PKey::DSA.generate</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/s/generate.html">OpenSSL::PKey::DH.generate</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-cipher/i/random_key.html">OpenSSL::Cipher#random_key</a></li>
+</ul>
+<p>
+そのような乱数は適切な実装を持つ疑似乱数生成器に適切なシードを渡す
+ことによって実現できます。
+</p>
+<p>
+OpenSSL にはそのような疑似乱数生成器が実装されています。
+そして、この疑似乱数生成器は OpenSSL の様々なモジュールから利用されています。
+上に挙げた鍵生成メソッドの他に、
+</p>
+<ul>
+<li><a href="../method/-open-s-s-l=3a=3a-b-n/s/rand.html">OpenSSL::BN.rand</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-b-n/s/rand_range.html">OpenSSL::BN.rand_range</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-b-n/s/generate_prime.html">OpenSSL::BN.generate_prime</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-cipher/i/random_iv.html">OpenSSL::Cipher#random_iv</a></li>
+</ul>
+<p>
+などでも利用されます。
+</p>
+<p>
+疑似乱数生成器は適切なシードを与えられなければ正しく動作しません。
+OpenSSL にはそのための API
+</p>
+<ul>
+<li><a href="../method/-open-s-s-l=3a=3a-random/m/random_add.html">OpenSSL::Random.#random_add</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-random/m/seed.html">OpenSSL::Random.#seed</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-random/m/load_random_file.html">OpenSSL::Random.#load_random_file</a></li>
+</ul>
+<p>
+が存在します。これらの API を模式的に説明すると、以下のようになります。
+</p>
+<ul>
+<li>シードの各ビットは統計的な乱雑さ、予測不可能性を持ち、ビット列の
+乱雑さはエントロピーという量(単位は bit, 8bit = 1byte)
+で量ることができる。</li>
+<li>特にシードのすべてのビットが完全にランダムである場合には、
+エントロピーの大きさとシードのビット数は一致する。逆に
+シードのすべてのビットがある意味で既知ならば、
+エントロピーは 0 である。</li>
+<li>疑似乱数生成器にエントロピーを追加することによって
+乱数生成器から得られる乱数がより予測不可能になる。</li>
+</ul>
+<p>
+エントロピー源には良いものと悪いものがあります。例えば現在時刻(Unix time)は
+エントロピー源としては悪いです。なぜなら予測不可能なのは
+せいぜい秒の部分のみであり、上位のビットは予測可能だからです。
+そこに含まれるエントロピー量を適切に評価できるならばシードとして利用できますが、
+通常はもっと良いエントロピー源があるはずです。
+Linux であれば /dev/random が適当なエントロピー源となるでしょう。
+</p>
+<p>
+OpenSSL では EGD(Entropy Gathering Daemon)からエントロピーを取得すること
+もできます。適切なエントロピー源を提供していない OS ではこのような
+方法でエントロピー源を用意する必要があるかもしれません。
+</p>
+<p>
+実際のところ、OpenSSL バージョンによっては OS が提供するエントロピー源から
+必要な量のエントロピーを得るよう実装してあるため、これらの API を使って
+エントロピーを追加する必要はない場合が多いでしょう。ただし、 OS によっては
+OpenSSL が利用可能なエントロピー源を見つけられない場合があり、
+その場合はこれらのメソッドで明示的にエントロピーを追加する必要があるでしょう。
+</p>
+
+
+
+<h2>モジュール関数</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-random/m/egd.html"><code>
+  egd(filename) -&gt; true
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+EGD(Entropy Gathering Daemon) からエントロピーを得、
+乱数生成器に追加します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-random/m/egd_bytes.html"><code>
+  egd_bytes(filename, length) -&gt; true
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+EGD(Entropy Gathering Daemon) から length バイト分のエントロピーを得ます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-random/m/load_random_file.html"><code>
+  load_random_file(filename) -&gt; true
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ファイルを読み込み、その内容をエントロピー源として
+乱数生成器に渡します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-random/m/pseudo_bytes.html"><code>
+  pseudo_bytes(len) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+暗号論的な予測不可能性を持たない(が高速な)
+乱数生成器によって、 len バイトの
+ランダムなバイト列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-random/m/random_add.html"><code>
+  random_add(str, entropy) -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+乱数生成器にエントロピーを追加します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-random/m/random_bytes.html"><code>
+  random_bytes(len) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+暗号論的な予測不可能性を持つ乱数生成器によって、 len バイトの
+ランダムなバイト列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-random/m/seed.html"><code>
+  seed(str) -&gt; str
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+乱数生成器にエントロピーを
+「エントロピー予測値 = str のバイト数」として
+追加します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-random/m/status=3f.html"><code>
+  status? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+乱数生成器内のエントロピーが十分である場合に true を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-random/m/write_random_file.html"><code>
+  write_random_file(filename) -&gt; true
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+乱数生成器で生成された 1024 バイトのランダムなバイト列を
+ファイルに書き込みます。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

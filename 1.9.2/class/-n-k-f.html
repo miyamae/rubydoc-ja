@@ -1,0 +1,454 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>module NKF</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/nkf.html">nkfライブラリ</a>
+&gt; NKFモジュール
+</p>
+
+
+
+<h1>module NKF</h1>
+<p>
+
+クラスの継承リスト: NKF
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+nkf(Network Kanji code conversion Filter, <a class="external" href="http://sourceforge.jp/projects/nkf/">http://sourceforge.jp/projects/nkf/</a>) を
+Ruby から使うためのモジュールです。
+</p>
+<p>
+Ruby 1.8.2 以降では nkf の 2.0 以降が取り込まれています。
+</p>
+<h2 >使い方</h2>
+<p>
+以下は、漢字コード変換コマンドの例です。
+</p>
+<pre>
+#!/usr/local/bin/ruby
+
+require 'nkf'
+
+opt = ''
+opt = ARGV.shift if ARGV[0][0] == ?-
+
+while line = ARGF.gets
+  print NKF.nkf(opt, line)
+end
+</pre>
+<p>
+以下は、漢字コード判別コマンドの例です。
+</p>
+<pre>
+#!/usr/local/bin/ruby
+
+require 'nkf'
+
+CODES = {
+  NKF::JIS      =&gt; &quot;JIS&quot;,
+  NKF::EUC      =&gt; &quot;EUC&quot;,
+  NKF::SJIS     =&gt; &quot;SJIS&quot;,
+  NKF::UTF8     =&gt; &quot;UTF8&quot;,
+  NKF::BINARY   =&gt; &quot;BINARY&quot;,
+  NKF::ASCII    =&gt; &quot;ASCII&quot;,
+  NKF::UNKNOWN  =&gt; &quot;UNKNOWN&quot;,
+}
+
+while file = ARGV.shift
+  str = open(file) {|io| io.gets(nil) }
+
+  printf &quot;%-10s &quot;, file
+  if str.nil?
+    puts &quot;EMPTY&quot;
+  else
+    puts CODES.fetch(NKF.guess(str))
+  end
+end
+</pre>
+<h2 >オプション文字列</h2>
+<h3 >Ruby 1.8.2 以降</h3>
+<pre>
+-b 入力がバッファリングされる(デフォルト)
+-u 入力がバッファリングされない
+-j -s -e -w -w16 出力するエンコーディングを指定する
+  -j ISO-2022-JP (7bit JIS) を出力する(デフォルト)
+  -s Shift_JIS を出力する
+  -e EUC-JP を出力する
+  -w UTF-8 を出力する(BOMなし)
+  -w16 UTF-16 LE を出力する
+-J -S -E -W -W16 入力文字列のエンコーデイングの推定値を指定する。
+  -J 入力に JIS を仮定する
+  -S 入力に Shift_JIS と X0201片仮名(いわゆる半角片仮名)
+     を仮定する。-xを指定しない場合はX0201片仮名(いわゆる半角片仮名)はX0208の
+     片仮名(いわゆる全角片仮名)に変換される
+  -E 入力に EUC-JP を仮定する
+  -W 入力に UTF-8 を仮定する
+  -W16 入力に UTF-16LE を仮定する
+-t 変換しない
+-i_ JIS 漢字を指示するシーケンスを指定する。 (デフォルトはB(EUC-$-B))
+-o_ 1 バイト英数文字セットを指示するシーケンスを指定する。 (デフォルトはB(EUC-(-B))
+-r ROT13/47暗号化/復号化をする
+-h1 --hiragana 片仮名を平仮名に変換する
+-h2 --katakana 平仮名を片仮名に変換する
+-h3 --katakana-hiragana 片仮名を平仮名に、平仮名を片仮名に変換する
+-T テキストモードで出力する(MS-DOSでのみ有効)
+-l 0x80-0xfe のコードを ISO-8859-1 (Latin-1) として扱う
+-f[m-[n]] 1行がm文字になるようにnのマージンを取り整形する。デフォルトはmが60、nが10
+-F 整形時に改行を保持する
+-Z[0-3] X0208 アルファベットを ASCII に変換する
+  -Z -Z0 X0208 アルファベットを ASCII に変換する
+  -Z1 X0208空白(いわゆる全角空白)を ASCII の空白に変換する
+  -Z2 X0208空白(いわゆる全角空白)を ASCII の空白2つに変換する
+  -Z3 X0208の＞、＜、”、＆、を '&amp;gt;', '&amp;lt;', '&amp;quot;', '&amp;amp;' に変換する
+-X X0201片仮名(いわゆる半角片仮名)をX0208の片仮名(いわゆる全角片仮名)に変換する
+-x X0201片仮名(いわゆる半角片仮名)をX0208の片仮名(いわゆる全角片仮名)に変換せずに
+   出力する。ISO-2022-JP で出力するときは ESC-(-I を、EUC-JPで出力するときは SSO を使う。
+-B[0-2] 入力に ESC が消えたような壊れた JIS を仮定する。
+  -B1 ESC-(, ESC-$ のあとのコードを問わない
+  -B2 改行のあとに強制的に ASCII に戻す
+-I ISO-2022-JP 以外の漢字コードを〓に変換する
+-L[uwm] -d -c 改行を変換する。デフォルトでは変換しない。
+  -Lu -d 改行として LF を出力する
+  -Lw -c 改行として CRLF を出力する
+  -Lm 改行として CR を出力する
+-m[BQN0] MIMEを解読する。
+  -m (デフォルト) ISO-2022-JP (B encode) と ISO-8859-1 (Q encode) を解読する(デフォルト)
+  -mB MIME base64 stream を解読する。ヘッダなどはメソッドに渡す前に取り除く必要がある。
+  -mQ MIME quoted stream を解読する。
+  -mN MIME のチェックを緩くする。base64の中に改行があっても良い。
+  -m0 MIME の解読を一切しない。エンコーディングの変換のみをするならばこれを指定しておくべき
+     である。
+-M MIME に変換する。エンコードの変換を行ってから MIME変換する。
+  -MB base64 に変換する
+  -MQ quoted stream に変換する
+--fj --unix --mac --msdos  --windows これらのシステムに適した変換をします。
+--jis --euc --sjis --mime --base64 対応する変換をします。
+--jis-input --euc-input --sjis-input --mime-input --base64-input 入力を仮定します。
+--ic=input_codeset --oc=output-codeset 入力、出力それぞれのエンコーディングを指定します。
+                                       以下のエンコーディングが利用可能です。
+                                       ここでの名前の指定には大文字小文字は無視されます。
+  ISO-2022-JP
+  EUC-JP
+  eucJP-ascii
+  eucJP-ms
+  CP51932
+  Shift_JIS
+  CP932
+  UTF-8 UTF-8Nと同じ
+  UTF-8N
+  UTF-8-BOM
+  UTF-16 UTF-16BE-BOMと同じ
+  UTF-16BE
+  UTF-16BE-BOM
+  UTF-16LE
+  UTF-16LE-BOM
+  UTF-32 UTF-32BEと同じ
+  UTF-32BE
+  UTF-32BE-BOM
+  UTF-32LE
+  UTF-32LE-BOM
+  UTF-8-MAC これは入力側にしか指定できません
+--fb-{skip, html, xml, perl, java, subchar} 変換できなかった文字をどう取り扱うかを
+  指定します。デフォルトは --fb-skip です。
+--prefix &lt;escape character&gt;&lt;target character&gt;..
+  Shift_JIS への変換時に、&lt;target character&gt;に指定した文字が2バイト目に
+  現われた場合に&lt;escape character&gt;を付加します。&lt;target character&gt;は複数指定できます。
+  例えば、--prefix=\$@ とすると、Shift_JIS の 2 文字目に $ か @ が来たら、
+  その前に \ が挿入されます
+--no-cp932ext CP932で拡張された文字を取り扱わないようにします。
+--cap-input --url-input :、%でエスケープされた文字を元の文字に変換します
+--numchar-input &quot;&amp;#..;&quot; 形式の Unicode文字参照を変換します
+--no-best-fit-chars
+   Unicode からの変換の際に、round trip safeでない文字の変換を行いません。
+   これを -x を併用することで、 Unicode がらみのエンコーディング間での変換
+   (UTF-8 から UTF-16LE など)を正しく変換することができます。
+   すなわち、これらのオプションを指定しないとそのような変換を正しく行うことはできません。
+
+-- 以降のオプションを無視します。
+</pre>
+<h2 >BUGS</h2>
+<p>
+Ruby 1.8.2 に添付されている NKF は
+Unicode 入力時の自動判定の精度が落ちています。
+Ruby 1.8.3 以降にバージョンアップするか、
+できるだけ明示的に文字コードを指定するようにしましょう。
+</p>
+<h2 >参考</h2>
+<ul>
+<li>&quot;標準添付ライブラリ紹介【第 3 回】 Kconv/NKF/Iconv&quot; <a class="external" href="http://jp.rubyist.net/magazine/?0009-BundledLibraries#l15">http://jp.rubyist.net/magazine/?0009-BundledLibraries#l15</a></li>
+</ul>
+
+
+
+<h2>モジュール関数</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-n-k-f/m/guess.html"><code>
+  guess(str) -&gt; Encoding
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列 str の漢字コードを推測して返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-n-k-f/m/nkf.html"><code>
+  nkf(opt, str) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列 str の文字コードを変換し、変換結果の文字列を返します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>定数</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-n-k-f/c/-a-s-c-i-i.html"><code>
+  ASCII -&gt; Encoding
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASCII コードを表します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-n-k-f/c/-a-u-t-o.html"><code>
+  AUTO -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+コードを自動判別することを表します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-n-k-f/c/-b-i-n-a-r-y.html"><code>
+  BINARY -&gt; Encoding
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+バイナリ列を表します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-n-k-f/c/-e-u-c.html"><code>
+  EUC -&gt; Encoding
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+EUC コードを表します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-n-k-f/c/-j-i-s.html"><code>
+  JIS -&gt; Encoding
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+JIS コードを表します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-n-k-f/c/-n-k-f_-r-e-l-e-a-s-e_-d-a-t-e.html"><code>
+  NKF_RELEASE_DATE -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+nkf のリリース日を表す文字列です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-n-k-f/c/-n-k-f_-v-e-r-s-i-o-n.html"><code>
+  NKF_VERSION -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+nkf 自体のバージョンを表す文字列です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-n-k-f/c/-n-o-c-o-n-v.html"><code>
+  NOCONV -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+コードを変換しないことを表します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-n-k-f/c/-s-j-i-s.html"><code>
+  SJIS -&gt; Encoding
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+SJIS コードを表します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-n-k-f/c/-u-n-k-n-o-w-n.html"><code>
+  UNKNOWN -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+コード判定に失敗したことを表します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-n-k-f/c/-u-t-f16.html"><code>
+  UTF16 -&gt; Encoding
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+UTF-16 (BigEndian) コードを表します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-n-k-f/c/-u-t-f32.html"><code>
+  UTF32 -&gt; Encoding
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+UTF-32 (BigEndian) コードを表します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-n-k-f/c/-u-t-f8.html"><code>
+  UTF8 -&gt; Encoding
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+UTF-8 コードを表します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-n-k-f/c/-v-e-r-s-i-o-n.html"><code>
+  VERSION -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+&quot;#{NKF::NKF_VERSION} (#{NKF_RELEASE_DATE})&quot; と
+あらわされる文字列です。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method WIN32OLE_EVENT#on_event</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/win32ole.html">win32oleライブラリ</a>
+&gt; <a href="../../../class/-w-i-n32-o-l-e_-e-v-e-n-t.html">WIN32OLE_EVENTクラス</a>
+&gt; on_event
+
+</p>
+
+
+
+
+<h1>instance method WIN32OLE_EVENT#on_event</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>on_event(event = nil) {|*args| ... } -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+イベント通知を受けるブロックを登録します。
+</p>
+<p>
+引数にはイベントのメソッド名を指定します。引数を省略した場合は、すべて
+のイベントを対象とするブロックの登録となります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] event:</dt>
+<dd>
+イベント名を文字列かシンボルで指定します。イベント名は大文
+字小文字を区別します。省略時にはすべてのイベントが対象となります。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+サーバがイベント通知時に指定した引数です。
+eventパラメータを省略した場合、第1引数にはイベントのメソッ
+ド名が文字列で与えられます。引数の変更が必要な場合は、
+<a href="../../../method/-w-i-n32-o-l-e_-e-v-e-n-t/i/on_event_with_outargs.html">WIN32OLE_EVENT#on_event_with_outargs</a>を利用してください。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+<a href="../../../method/-w-i-n32-o-l-e_-e-v-e-n-t/i/unadvise.html">WIN32OLE_EVENT#unadvise</a>によってイベン
+トソースと切断済みです。
+</dd>
+</dl>
+<pre>
+ie = WIN32OLE.new('InternetExplorer.Application')
+ev = WIN32OLE_EVENT.new(ie, 'DWebBrowserEvents2')
+ev.on_event(&quot;NavigateComplete2&quot;) do |browser, url|
+  puts url
+end
+</pre>
+<p>
+同じオブジェクトに対してeventパラメータを指定したブロックと指定しないブ
+ロックが混在している場合、通知されたイベントに対応するブロックがあれば
+そちらだけが呼び出されます。
+</p>
+<pre>
+ie = WIN32OLE.new('InternetExplorer.Application')
+ev = WIN32OLE_EVENT.new(ie, 'DWebBrowserEvents2')
+ev.on_event(&quot;NavigateComplete2&quot;) do |browser, url|
+  puts url
+end
+ev.on_event do |*args|   # &lt;- NavigateComplete2イベント時は実行されない
+  puts args[0]
+end
+...
+</pre>
+<p>
+当メソッドはイベント名の大文字小文字を区別するほか、イベント名の存在確
+認を行いません。このため、誤ったイベント名を記述してもエラーとはならず、
+単にイベントを受け取れなくなります。
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

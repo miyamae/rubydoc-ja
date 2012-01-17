@@ -1,0 +1,581 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class Proc</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Procクラス
+</p>
+
+
+
+<h1>class Proc</h1>
+<p>
+
+クラスの継承リスト: Proc
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+ブロックをコンテキスト(ローカル変数のスコープやスタックフ
+レーム)とともにオブジェクト化した手続きオブジェクトです。
+</p>
+<p>
+Proc は ローカル変数のスコープを導入しないことを除いて
+名前のない関数のように使えます。ダイナミックローカル変数は
+Proc ローカルの変数として使えます。
+</p>
+<p>
+Proc がローカル変数のスコープを保持していることは以下の例で
+変数 var を参照できていることからわかります。
+</p>
+<pre>
+var = 1
+$foo = Proc.new { var }
+var = 2
+
+def foo
+  $foo.call
+end
+
+p foo       # =&gt; 2
+</pre>
+<h2 id='should_use_next'>手続きを中断して値を返す</h2>
+<p>
+手続きオブジェクトを中断して、呼出し元(呼び出しブロックでは yield、それ以外では <a href="../method/-proc/i/call.html">Proc#call</a>)
+へジャンプし値を返すには next を使います。break や return ではありません。
+</p>
+<p>
+例:
+</p>
+<pre>
+ def foo
+   f = Proc.new{
+     next 1
+     2
+   }
+ end
+
+p foo().call       #=&gt; 1
+</pre>
+<h2 id='block'>Proc オブジェクトをブロック付きメソッド呼び出しに使う</h2>
+<p>
+ブロック付きメソッドに対して Proc オブジェクトを `&amp;' を指定して渡すと
+呼び出しブロックのように動作します。
+しかし、厳密には以下の違いがあります
+これらは、Proc オブジェクトが呼び出しブロックとして振舞う際の制限です。
+</p>
+<pre>
+# 問題なし
+(1..5).each { break }
+
+# LocalJumpError が発生します。
+pr = Proc.new { break }
+(1..5).each(&amp;pr)
+</pre>
+<h2 id='lambda_proc'>lambda と proc と Proc.new とイテレータの違い</h2>
+<p>
+<a href="../method/-kernel/m/lambda.html">Kernel.#lambda</a> と <a href="../method/-proc/s/new.html">Proc.new</a> はどちらも <a href="../class/-proc.html">Proc</a> クラスのインスタンス(手続きオブジェクト)を生成しますが、
+生成された手続きオブジェクトはいくつかの場面で挙動が異なります。 lambda の生成する手続きオブジェクトのほうが
+よりメソッドに近い働きをするように設計されています。
+</p>
+<p>
+<a href="../method/-kernel/m/proc.html">Kernel.#proc</a> は Proc.new と同じになります。
+引数に &amp; を付けることで手続きオブジェクト化したブロックは、Proc.new で生成されたそれと
+同じにように振る舞います。
+</p>
+<h3 >引数の扱い</h3>
+<p>
+lambda のほうがより厳密です。引数の数が違っていると（メソッドのように）エラーになります。
+Proc.new は引数を多重代入に近い扱い方をします。
+</p>
+<p>
+例:
+</p>
+<pre>
+b1 = Proc.new{|a,b,c|
+  p a,b,c
+}
+b1.call(2, 4)
+#=&gt; 2
+    4
+    nil
+
+b2 = lambda{|a,b,c|
+  p a,b,c
+}
+b2.call(2, 4)
+#=&gt; wrong number of arguments (2 for 3) (ArgumentError)
+</pre>
+<p>
+<a href="../doc/spec=2fcall.html#block_arg">メソッド呼び出し(super・ブロック付き・yield)/ブロックパラメータの挙動</a> も参照してください。
+</p>
+<h3 >ジャンプ構文の挙動の違い</h3>
+<p>
+return と break は、lambda と Proc.new では挙動が異なります。
+例えば return を行った場合、lambda では手続きオブジェクト自身を抜けますが、
+Proc.new では手続きオブジェクトを囲むメソッドを抜けます。
+</p>
+<p>
+例:
+</p>
+<pre>
+def foo
+  f = Proc.new { return :foo }
+  f.call
+  return
+end
+
+def bar
+  f = lambda { return :bar }
+  f.call
+  return
+end
+
+def h
+  yield
+end
+
+def hoge
+  h{ return :hoge }
+  nil
+end
+
+p foo()  #=&gt; :foo
+p bar()  #=&gt; nil
+p hoge() #=&gt; :hoge
+</pre>
+<p>
+以下の表は、手続きオブジェクトの実行を上の例と同じように、手続きオブジェクトが定義されたのと
+同じメソッド内で行った場合の結果です。
+</p>
+<pre>
+               return                          next                        break
+Proc.new   メソッドを抜ける            手続きオブジェクトを抜ける   例外が発生する
+proc       メソッドを抜ける            手続きオブジェクトを抜ける   例外が発生する
+lambda     手続きオブジェクトを抜ける  手続きオブジェクトを抜ける   手続きオブジェクトを抜ける
+イテレータ メソッドを抜ける            手続きオブジェクトを抜ける   メソッドを抜ける
+</pre>
+<h2 id='orphan'>orphan な手続きオブジェクトの挙動</h2>
+<p>
+Proc を生成したメソッドから脱出した後、手続きオブジェクトからの
+return, break
+は例外 <a href="../class/-local-jump-error.html">LocalJumpError</a> を発生させます。
+ただし、上でも説明した通り lambda で生成した手続きオブジェクトはメソッドと同じように振る舞う
+ことを意図されているため、例外 <a href="../class/-local-jump-error.html">LocalJumpError</a> は発生しません。
+</p>
+<p>
+例:
+</p>
+<pre>
+def foo
+  Proc.new { return }
+end
+
+foo.call
+# =&gt; in `call': return from proc-closure (LocalJumpError)
+</pre>
+<p>
+以下の表は、手続きオブジェクトの実行を上の例と同じように、手続きオブジェクトが定義されたメソッドを
+脱出してから行った場合の結果です。
+</p>
+<pre>
+               return                          next                        break
+Proc.new   例外が発生する              手続きオブジェクトを抜ける   例外が発生する
+proc       例外が発生する              手続きオブジェクトを抜ける   例外が発生する
+lambda     手続きオブジェクトを抜ける  手続きオブジェクトを抜ける   手続きオブジェクトを抜ける
+</pre>
+
+
+
+<h2>特異メソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-proc/s/new.html"><code>
+  new -&gt; Proc<br>new { ... } -&gt; Proc
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ブロックをコンテキストとともにオブジェクト化して返します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>インスタンスメソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-proc/i/=3d=3d=3d.html"><code>
+  self === obj -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@see <a href="../method/-proc/i/call.html">Proc#call</a>
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-proc/i/=5b=5d.html"><code>
+  self[*arg] -&gt; ()<br>call(*arg) -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+手続きオブジェクトを実行してその結果を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-proc/i/arity.html"><code>
+  arity -&gt; Fixnum
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Proc オブジェクトが受け付ける引数の数を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-proc/i/binding.html"><code>
+  binding -&gt; Binding
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Proc オブジェクトが保持するコンテキストを
+<a href="../class/-binding.html">Binding</a> オブジェクトで返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-proc/i/curry.html"><code>
+  curry -&gt; Proc<br>curry(arity) -&gt; Proc
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Procをカリー化します
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-proc/i/lambda=3f.html"><code>
+  lambda? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"></td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-proc/i/parameters.html"><code>
+  parameters -&gt; [object]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Proc オブジェクトの引数の情報を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-proc/i/source_location.html"><code>
+  source_location -&gt; [String, Fixnum] | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+returns the ruby source filename and line number containing this proc
+or nil if this proc was not defined in ruby (i.e. native)
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-proc/i/to_proc.html"><code>
+  to_proc -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-proc/i/to_s.html"><code>
+  to_s -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self の文字列表現を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-proc/i/yield.html"><code>
+  yield(*arg) -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-proc/i/call.html">Proc#call</a> と同じですが、引数の数のチェックを行いません。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+<h2>継承したメソッド</h2>
+<p><code>
+
+<a href="../method/-basic-object/i/=21.html">!</a>
+
+<a href="../method/-basic-object/i/=21=3d.html">!=</a>
+
+<a href="../method/-object/i/=3d=3d.html">==</a>
+
+<a href="../method/-object/i/=3d=7e.html">=~</a>
+
+<a href="../method/-object/i/__id__.html">__id__</a>
+
+<a href="../method/-object/i/__send__.html">__send__</a>
+
+<a href="../method/-object/i/_dump.html">_dump</a>
+
+<a href="../method/-object/i/class.html">class</a>
+
+<a href="../method/-object/i/clone.html">clone</a>
+
+<a href="../method/-object/i/dclone.html">dclone</a>
+
+<a href="../method/-object/i/display.html">display</a>
+
+<a href="../method/-object/i/enum_for.html">enum_for</a>
+
+<a href="../method/-object/i/eql=3f.html">eql?</a>
+
+<a href="../method/-object/i/equal=3f.html">equal?</a>
+
+<a href="../method/-object/i/extend.html">extend</a>
+
+<a href="../method/-object/i/freeze.html">freeze</a>
+
+<a href="../method/-object/i/frozen=3f.html">frozen?</a>
+
+<a href="../method/-object/i/hash.html">hash</a>
+
+<a href="../method/-object/i/initialize.html">initialize</a>
+
+<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
+
+<a href="../method/-object/i/inspect.html">inspect</a>
+
+<a href="../method/-object/i/instance_eval.html">instance_eval</a>
+
+<a href="../method/-object/i/instance_exec.html">instance_exec</a>
+
+<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
+
+<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
+
+<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
+
+<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
+
+<a href="../method/-object/i/instance_variables.html">instance_variables</a>
+
+<a href="../method/-object/i/is_a=3f.html">is_a?</a>
+
+<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
+
+<a href="../method/-object/i/marshal_load.html">marshal_load</a>
+
+<a href="../method/-object/i/method.html">method</a>
+
+<a href="../method/-object/i/method_missing.html">method_missing</a>
+
+<a href="../method/-object/i/methods.html">methods</a>
+
+<a href="../method/-object/i/must_be.html">must_be</a>
+
+<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
+
+<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
+
+<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
+
+<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
+
+<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
+
+<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
+
+<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
+
+<a href="../method/-object/i/must_equal.html">must_equal</a>
+
+<a href="../method/-object/i/must_include.html">must_include</a>
+
+<a href="../method/-object/i/must_match.html">must_match</a>
+
+<a href="../method/-object/i/must_raise.html">must_raise</a>
+
+<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
+
+<a href="../method/-object/i/must_send.html">must_send</a>
+
+<a href="../method/-object/i/must_throw.html">must_throw</a>
+
+<a href="../method/-object/i/nil=3f.html">nil?</a>
+
+<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
+
+<a href="../method/-object/i/pretty_print.html">pretty_print</a>
+
+<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
+
+<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
+
+<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
+
+<a href="../method/-object/i/private_methods.html">private_methods</a>
+
+<a href="../method/-object/i/protected_methods.html">protected_methods</a>
+
+<a href="../method/-object/i/public_methods.html">public_methods</a>
+
+<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
+
+<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
+
+<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
+
+<a href="../method/-object/i/singleton_class.html">singleton_class</a>
+
+<a href="../method/-object/i/singleton_method_added.html">singleton_method_added</a>
+
+<a href="../method/-object/i/singleton_method_removed.html">singleton_method_removed</a>
+
+<a href="../method/-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
+
+<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
+
+<a href="../method/-object/i/taint.html">taint</a>
+
+<a href="../method/-object/i/tainted=3f.html">tainted?</a>
+
+<a href="../method/-object/i/tap.html">tap</a>
+
+<a href="../method/-object/i/to_a.html">to_a</a>
+
+<a href="../method/-object/i/to_ary.html">to_ary</a>
+
+<a href="../method/-object/i/to_hash.html">to_hash</a>
+
+<a href="../method/-object/i/to_int.html">to_int</a>
+
+<a href="../method/-object/i/to_io.html">to_io</a>
+
+<a href="../method/-object/i/to_regexp.html">to_regexp</a>
+
+<a href="../method/-object/i/to_str.html">to_str</a>
+
+<a href="../method/-object/i/to_yaml.html">to_yaml</a>
+
+<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
+
+<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
+
+<a href="../method/-object/i/trust.html">trust</a>
+
+<a href="../method/-object/i/untaint.html">untaint</a>
+
+<a href="../method/-object/i/untrust.html">untrust</a>
+
+<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
+
+</code></p>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,597 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class OpenSSL::Cipher</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/openssl.html">opensslライブラリ</a>
+&gt; OpenSSL::Cipherクラス
+</p>
+
+
+
+<h1>class OpenSSL::Cipher</h1>
+<p>
+
+クラスの継承リスト: OpenSSL::Cipher
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+共通鍵暗号のために抽象化されたインターフェースを提供するクラスです。
+</p>
+<p>
+基本的にこのクラスを直接使ってデータを暗号化することは
+避けてください。通常はより高水準なインターフェースが利用可能な
+はずです。必要なのは暗号アルゴリズムを指定するため
+<a href="../method/-open-s-s-l=3a=3a-cipher/s/new.html">OpenSSL::Cipher.new</a> で暗号オブジェクトを生成することだけでしょう。
+</p>
+<p>
+もし、このクラスを直接利用して暗号化する場合は、暗号の鍵や
+IV(Initialization Vector)の取り扱いについて正しく理解してからに
+してください。
+</p>
+<p>
+以下の手順で利用します。
+</p>
+<ul>
+<li><a href="../method/-open-s-s-l=3a=3a-cipher/s/new.html">OpenSSL::Cipher.new</a> や <a href="../method/-open-s-s-l=3a=3a-cipher=3a=3a-a-e-s256/s/new.html">OpenSSL::Cipher::AES256.new</a>
+などで暗号オブジェクトを生成する</li>
+<li><a href="../method/-open-s-s-l=3a=3a-cipher/i/encrypt.html">OpenSSL::Cipher#encrypt</a>, <a href="../method/-open-s-s-l=3a=3a-cipher/i/decrypt.html">OpenSSL::Cipher#decrypt</a> で
+暗号、復号のいずれをするかを設定する</li>
+<li><a href="../method/-open-s-s-l=3a=3a-cipher/i/key=3d.html">OpenSSL::Cipher#key=</a>, <a href="../method/-open-s-s-l=3a=3a-cipher/i/iv=3d.html">OpenSSL::Cipher#iv=</a>,
+<a href="../method/-open-s-s-l=3a=3a-cipher/i/random_key.html">OpenSSL::Cipher#random_key</a>, <a href="../method/-open-s-s-l=3a=3a-cipher/i/random_iv.html">OpenSSL::Cipher#random_iv</a> などで
+鍵と IV(initialization vector) を設定する</li>
+<li><a href="../method/-open-s-s-l=3a=3a-cipher/i/update.html">OpenSSL::Cipher#update</a>, <a href="../method/-open-s-s-l=3a=3a-cipher/i/final.html">OpenSSL::Cipher#final</a> で
+暗号化/復号化をする</li>
+</ul>
+<p>
+ruby 1.8.3 から Cast5 と Idea が CAST5 と IDEA に改名されました。
+</p>
+<h2 >ブロック暗号モード</h2>
+<p>
+AES のようなブロック暗号では暗号方式を選択する際に
+モードを指定する必要があります。このライブラリでは
+以下のような文字列でモードを指定できます。
+</p>
+<ul>
+<li>&quot;CBC&quot;</li>
+<li>&quot;CFB&quot;</li>
+<li>&quot;ECB&quot;</li>
+<li>&quot;OFB&quot;</li>
+</ul>
+<p>
+これらの文字列の意味は
+<a href="../library/openssl.html#references">openssl/参考文献</a> などで調べてください。
+AES を用いる場合、通常は CBC を用いれば良いでしょう。
+選択肢によっては安全性に問題があるので気をつけてください。
+</p>
+<h2 >使用例</h2>
+<pre>
+require 'openssl'
+
+# 暗号化するデータ
+data = &quot;*secret data*&quot;
+# パスワード
+pass = &quot;**secret password**&quot;
+# salt
+salt = OpenSSL::Random.random_bytes(8)
+
+# 暗号化器を作成する
+enc = OpenSSL::Cipher.new(&quot;AES-256-CBC&quot;)
+enc.encrypt
+# 鍵とIV(Initialize Vector)を PKCS#5 に従ってパスワードと salt から生成する
+key_iv = OpenSSL::PKCS5.pbkdf2_hmac_sha1(pass, salt, 2000, enc.key_len + enc.iv_len)
+key = key_iv[0, enc.key_len]
+iv = key_iv[enc.key_len, enc.iv_len]
+# 鍵とIVを設定する
+enc.key = key
+enc.iv = iv
+
+# 暗号化する
+encrypted_data = &quot;&quot;
+encrypted_data &lt;&lt; enc.update(data)
+encrypted_data &lt;&lt; enc.final
+
+p encrypted_data
+
+# 復号化器を作成する
+dec = OpenSSL::Cipher.new(&quot;AES-256-CBC&quot;)
+dec.decrypt
+
+# 鍵とIVを設定する
+dec.key = key
+dec.iv = iv
+
+# 復号化する
+decrypted_data = &quot;&quot;
+decrypted_data &lt;&lt; dec.update(encrypted_data)
+decrypted_data &lt;&lt; dec.final
+
+p decrypted_data
+</pre>
+
+
+
+<h2>特異メソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-cipher/s/ciphers.html"><code>
+  ciphers -&gt; [String]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+利用可能な暗号方式名を文字列の配列で返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-cipher/s/new.html"><code>
+  new(name) -&gt; OpenSSL::Cipher
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+共通鍵暗号のアルゴリズム名を渡し、対応する暗号オブジェクトを生成します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>インスタンスメソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-cipher/i/block_size.html"><code>
+  block_size -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+暗号化のブロックのサイズをバイト数で返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-cipher/i/decrypt.html"><code>
+  decrypt(pass, iv = nil) -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+復号化の準備をします。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-cipher/i/encrypt.html"><code>
+  encrypt -&gt; self<br>encrypt(pass, iv = nil) -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+暗号化の準備をします。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-cipher/i/final.html"><code>
+  final -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+暗号オブジェクト内部に残されたデータを暗号化/復号化し、文字列で
+返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-cipher/i/iv=3d.html"><code>
+  iv=(iv)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+IV(Initialization Vector) を設定します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-cipher/i/iv_len.html"><code>
+  iv_len -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+必要な IV(Initialization Vector) の長さをバイト数で返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-cipher/i/key=3d.html"><code>
+  key=(key)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+暗号鍵を設定します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-cipher/i/key_len.html"><code>
+  key_len -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+暗号鍵の長さをバイト数で返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-cipher/i/key_len=3d.html"><code>
+  key_len=(length)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+暗号鍵の長さを変更します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-cipher/i/name.html"><code>
+  name -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+暗号化アルゴリズムの名前を文字列で返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-cipher/i/padding=3d.html"><code>
+  padding=(padding)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+パディングを設定します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-cipher/i/pkcs5_keyivgen.html"><code>
+  pkcs5_keyivgen(pass, salt=nil, num=2048, digest=&quot;md5&quot;) -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+pass と salt から鍵と IV を生成し、暗号オブジェクトに設定します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-cipher/i/random_iv.html"><code>
+  random_iv -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+IV を乱数で生成し、暗号オブジェクトに設定します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-cipher/i/random_key.html"><code>
+  random_key -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+鍵を乱数で生成し、暗号オブジェクトに設定します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-cipher/i/reset.html"><code>
+  reset -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+内部状態をリセットします。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-cipher/i/update.html"><code>
+  update(data) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+渡された文字列を暗号化もしくは復号化して文字列として返します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+<h2>継承したメソッド</h2>
+<p><code>
+
+<a href="../method/-basic-object/i/=21.html">!</a>
+
+<a href="../method/-basic-object/i/=21=3d.html">!=</a>
+
+<a href="../method/-object/i/=3d=3d.html">==</a>
+
+<a href="../method/-object/i/=3d=3d=3d.html">===</a>
+
+<a href="../method/-object/i/=3d=7e.html">=~</a>
+
+<a href="../method/-object/i/__id__.html">__id__</a>
+
+<a href="../method/-object/i/__send__.html">__send__</a>
+
+<a href="../method/-object/i/_dump.html">_dump</a>
+
+<a href="../method/-object/i/class.html">class</a>
+
+<a href="../method/-object/i/clone.html">clone</a>
+
+<a href="../method/-object/i/dclone.html">dclone</a>
+
+<a href="../method/-object/i/display.html">display</a>
+
+<a href="../method/-object/i/enum_for.html">enum_for</a>
+
+<a href="../method/-object/i/eql=3f.html">eql?</a>
+
+<a href="../method/-object/i/equal=3f.html">equal?</a>
+
+<a href="../method/-object/i/extend.html">extend</a>
+
+<a href="../method/-object/i/freeze.html">freeze</a>
+
+<a href="../method/-object/i/frozen=3f.html">frozen?</a>
+
+<a href="../method/-object/i/hash.html">hash</a>
+
+<a href="../method/-object/i/initialize.html">initialize</a>
+
+<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
+
+<a href="../method/-object/i/inspect.html">inspect</a>
+
+<a href="../method/-object/i/instance_eval.html">instance_eval</a>
+
+<a href="../method/-object/i/instance_exec.html">instance_exec</a>
+
+<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
+
+<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
+
+<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
+
+<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
+
+<a href="../method/-object/i/instance_variables.html">instance_variables</a>
+
+<a href="../method/-object/i/is_a=3f.html">is_a?</a>
+
+<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
+
+<a href="../method/-object/i/marshal_load.html">marshal_load</a>
+
+<a href="../method/-object/i/method.html">method</a>
+
+<a href="../method/-object/i/method_missing.html">method_missing</a>
+
+<a href="../method/-object/i/methods.html">methods</a>
+
+<a href="../method/-object/i/must_be.html">must_be</a>
+
+<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
+
+<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
+
+<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
+
+<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
+
+<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
+
+<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
+
+<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
+
+<a href="../method/-object/i/must_equal.html">must_equal</a>
+
+<a href="../method/-object/i/must_include.html">must_include</a>
+
+<a href="../method/-object/i/must_match.html">must_match</a>
+
+<a href="../method/-object/i/must_raise.html">must_raise</a>
+
+<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
+
+<a href="../method/-object/i/must_send.html">must_send</a>
+
+<a href="../method/-object/i/must_throw.html">must_throw</a>
+
+<a href="../method/-object/i/nil=3f.html">nil?</a>
+
+<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
+
+<a href="../method/-object/i/pretty_print.html">pretty_print</a>
+
+<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
+
+<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
+
+<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
+
+<a href="../method/-object/i/private_methods.html">private_methods</a>
+
+<a href="../method/-object/i/protected_methods.html">protected_methods</a>
+
+<a href="../method/-object/i/public_methods.html">public_methods</a>
+
+<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
+
+<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
+
+<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
+
+<a href="../method/-object/i/singleton_class.html">singleton_class</a>
+
+<a href="../method/-object/i/singleton_method_added.html">singleton_method_added</a>
+
+<a href="../method/-object/i/singleton_method_removed.html">singleton_method_removed</a>
+
+<a href="../method/-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
+
+<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
+
+<a href="../method/-object/i/taint.html">taint</a>
+
+<a href="../method/-object/i/tainted=3f.html">tainted?</a>
+
+<a href="../method/-object/i/tap.html">tap</a>
+
+<a href="../method/-object/i/to_a.html">to_a</a>
+
+<a href="../method/-object/i/to_ary.html">to_ary</a>
+
+<a href="../method/-object/i/to_hash.html">to_hash</a>
+
+<a href="../method/-object/i/to_int.html">to_int</a>
+
+<a href="../method/-object/i/to_io.html">to_io</a>
+
+<a href="../method/-object/i/to_proc.html">to_proc</a>
+
+<a href="../method/-object/i/to_regexp.html">to_regexp</a>
+
+<a href="../method/-object/i/to_s.html">to_s</a>
+
+<a href="../method/-object/i/to_str.html">to_str</a>
+
+<a href="../method/-object/i/to_yaml.html">to_yaml</a>
+
+<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
+
+<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
+
+<a href="../method/-object/i/trust.html">trust</a>
+
+<a href="../method/-object/i/untaint.html">untaint</a>
+
+<a href="../method/-object/i/untrust.html">untrust</a>
+
+<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
+
+</code></p>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

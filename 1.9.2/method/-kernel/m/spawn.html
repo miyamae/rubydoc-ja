@@ -1,0 +1,361 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>module function Kernel.#spawn</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-kernel.html">Kernelモジュール</a>
+&gt; spawn
+
+</p>
+
+
+
+
+<h1>module function Kernel.#spawn</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>spawn(command) -&gt; Integer</code></dt>
+<dt class="method-heading"><code>spawn(env, command) -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+引数を外部コマンドとして実行しますが、生成した
+子プロセスの終了を待ち合わせません。生成した子プロセスのプロセスIDを返します。
+</p>
+<h3 >引数の解釈</h3>
+<p>
+この形式では command が shell のメタ文字
+</p>
+<pre>
+  * ? {} [] &lt;&gt; () ~ &amp; | \ $ ; ' ` &quot; \n
+</pre>
+<p>
+を含む場合、shell 経由で実行されます。
+そうでなければインタプリタから直接実行されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] command:</dt>
+<dd>
+コマンドを文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+If a hash is given as env, the environment is updated by env before exec(2)
+in the child process. If a pair in env has nil as the value, the variable is deleted.
+name =&gt; val : set the environment variable
+name =&gt; nil : unset the environment variable
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+起動に失敗し、ruby インタプリタに制御が戻った場合に発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+コマンドが実行できなかった場合に発生します。
+</dd>
+</dl>
+<p>
+If a hash is given as env, the environment is updated by env before exec(2) in the child process. If a pair in env has nil as the value, the variable is deleted.
+</p>
+<pre>
+# set FOO as BAR and unset BAZ.
+pid = spawn({&quot;FOO&quot;=&gt;&quot;BAR&quot;, &quot;BAZ&quot;=&gt;nil}, command)
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/system.html">Kernel.#system</a>,<a href="../../../method/-kernel/m/exec.html">Kernel.#exec</a>
+</p>
+</dd>
+<dt class="method-heading"><code>spawn(program, *arg) -&gt; Integer</code></dt>
+<dt class="method-heading"><code>spawn(env, program, *arg) -&gt; Integer</code></dt>
+<dt class="method-heading"><code>spawn(env, program, *arg, option) -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+引数を外部コマンドとして実行しますが、生成した
+子プロセスの終了を待ち合わせません。生成した子プロセスのプロセスIDを返します。
+</p>
+<h3 >引数の解釈</h3>
+<p>
+この形式で呼び出した場合、空白や shell のメタキャラクタも
+そのまま program の引数に渡されます。
+先頭の引数が2要素の配列であった場合、第1要素の文字列が実際に
+起動するプログラムのパスであり、第2要素が「みせかけ」のプロ
+グラム名になります。
+また、第1要素はフルパスで指定しなくても環境変数 PATH から探します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] program:</dt>
+<dd>
+文字列か2要素の配列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+渡される引数です。0 個以上の文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+If a hash is given as env, the environment is updated by env before exec(2)
+in the child process. If a pair in env has nil as the value, the variable is deleted.
+name =&gt; val : set the environment variable
+name =&gt; nil : unset the environment variable
+</dd>
+<dt class='method-param'>[PARAM] option:</dt>
+<dd>
+If a hash is given as options, it specifies process group, resource limit, current directory, umask and redirects for the child process. Also, it can be specified to clear environment variables.
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+第一引数が配列かつ要素数が 2 でない場合に発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+コマンドが実行できなかった場合に発生します。
+</dd>
+</dl>
+<pre>
+options: hash
+  clearing environment variables:
+    :unsetenv_others =&gt; true   : clear environment variables except specified by env
+    :unsetenv_others =&gt; false  : don't clear (default)
+  process group:
+    :pgroup =&gt; true or 0 : make a new process group
+    :pgroup =&gt; pgid      : join to specified process group
+  resource limit: resourcename is core, cpu, data, etc.  See Process.setrlimit.
+    :rlimit_resourcename =&gt; limit
+    :rlimit_resourcename =&gt; [cur_limit, max_limit]
+  current directory:
+    :chdir =&gt; str
+  umask:
+    :umask =&gt; int
+  redirection:
+    key:
+      FD              : single file descriptor in child process
+      [FD, FD, ...]   : multiple file descriptor in child process
+    value:
+      FD                        : redirect to the file descriptor in parent process
+      string                    : redirect to file with open(string, &quot;r&quot; or &quot;w&quot;)
+      [string]                  : redirect to file with open(string, File::RDONLY)
+      [string, open_mode]       : redirect to file with open(string, open_mode, 0644)
+      [string, open_mode, perm] : redirect to file with open(string, open_mode, perm)
+      [:child, FD]              : redirect to the redirected file descriptor
+      :close                    : close the file descriptor in child process
+    FD is one of follows
+      :in     : the file descriptor 0
+      :out    : the file descriptor 1
+      :err    : the file descriptor 2
+      integer : the file descriptor of specified the integer
+      io      : the file descriptor specified as io.fileno
+  file descriptor inheritance: close non-redirected non-standard fds (3, 4, 5, ...) or not
+    :close_others =&gt; false : inherit fds (default for system and exec)
+    :close_others =&gt; true  : don't inherit (default for spawn and IO.popen)
+</pre>
+<p>
+If a hash is given as env, the environment is updated by env before exec(2) in the child process. If a pair in env has nil as the value, the variable is deleted.
+</p>
+<pre>
+# set FOO as BAR and unset BAZ.
+pid = spawn({&quot;FOO&quot;=&gt;&quot;BAR&quot;, &quot;BAZ&quot;=&gt;nil}, command)
+</pre>
+<h2 >option で有効なキーと値</h2>
+<p>
+If a hash is given as options, it specifies process group, resource limit, current directory, umask and redirects for the child process. Also, it can be specified to clear environment variables.
+</p>
+<dl>
+<dt>:unsetenv_others</dt>
+<dd>
+<p>
+The :unsetenv_others key in options specifies to clear environment variables, other than specified by env.
+</p>
+<pre>
+  pid = spawn(command, :unsetenv_others=&gt;true) # no environment variable
+  pid = spawn({&quot;FOO&quot;=&gt;&quot;BAR&quot;}, command, :unsetenv_others=&gt;true) # FOO only
+</pre>
+</dd>
+<dt>:pgroup</dt>
+<dd>
+<p>
+The :pgroup key in options specifies a process group. The corresponding value should be true, zero or positive integer. true and zero means the process should be a process leader of a new process group. Other values specifies a process group to be belongs.
+</p>
+<pre>
+  pid = spawn(command, :pgroup=&gt;true) # process leader
+  pid = spawn(command, :pgroup=&gt;10) # belongs to the process group 10
+</pre>
+</dd>
+<dt>:rlimit_XXX</dt>
+<dd>
+<p>
+The :rlimit_foo key specifies a resource limit. foo should be one of resource types such as core. The corresponding value should be an integer or an array which have one or two integers: same as cur_limit and max_limit arguments for Process.setrlimit.
+</p>
+<pre>
+  pid = spawn(command, :rlimit_core=&gt;0) # never dump core.
+  cur, max = Process.getrlimit(:CORE)
+  pid = spawn(command, :rlimit_core=&gt;[0,max]) # disable core temporary.
+  pid = spawn(command, :rlimit_core=&gt;max) # enable core dump
+</pre>
+</dd>
+<dt>:chdir</dt>
+<dd>
+<p>
+The :chdir key in options specifies the current directory.
+</p>
+<pre>
+  pid = spawn(command, :chdir=&gt;&quot;/var/tmp&quot;)
+</pre>
+</dd>
+<dt>:umask</dt>
+<dd>
+<p>
+The :umask key in options specifies the umask.
+</p>
+<pre>
+  pid = spawn(command, :umask=&gt;077)
+</pre>
+</dd>
+<dt>:in, :out, :err</dt>
+<dd>
+<p>
+The :in, :out, :err, a fixnum, an IO and an array key specifies a redirection. The redirection maps a file descriptor in the child process.
+</p>
+<p>
+For example, stderr can be merged into stdout as follows:
+</p>
+<pre>
+  pid = spawn(command, :err=&gt;:out)
+  pid = spawn(command, 2=&gt;1)
+  pid = spawn(command, STDERR=&gt;:out)
+  pid = spawn(command, STDERR=&gt;STDOUT)
+</pre>
+<p>
+The hash keys specifies a file descriptor in the child process started by spawn. :err, 2 and STDERR specifies the standard error stream (stderr).
+</p>
+<p>
+The hash values specifies a file descriptor in the parent process which invokes spawn. :out, 1 and STDOUT specifies the standard output stream (stdout).
+</p>
+<p>
+In the above example, the standard output in the child process is not specified. So it is inherited from the parent process.
+</p>
+<p>
+The standard input stream (stdin) can be specified by :in, 0 and STDIN.
+</p>
+<p>
+A filename can be specified as a hash value.
+</p>
+<pre>
+  pid = spawn(command, :in=&gt;&quot;/dev/null&quot;) # read mode
+  pid = spawn(command, :out=&gt;&quot;/dev/null&quot;) # write mode
+  pid = spawn(command, :err=&gt;&quot;log&quot;) # write mode
+  pid = spawn(command, 3=&gt;&quot;/dev/null&quot;) # read mode
+</pre>
+<p>
+For stdout and stderr, it is opened in write mode. Otherwise read mode is used.
+</p>
+<p>
+For specifying flags and permission of file creation explicitly, an array is used instead.
+</p>
+<pre>
+  pid = spawn(command, :in=&gt;[&quot;file&quot;]) # read mode is assumed
+  pid = spawn(command, :in=&gt;[&quot;file&quot;, &quot;r&quot;])
+  pid = spawn(command, :out=&gt;[&quot;log&quot;, &quot;w&quot;]) # 0644 assumed
+  pid = spawn(command, :out=&gt;[&quot;log&quot;, &quot;w&quot;, 0600])
+  pid = spawn(command, :out=&gt;[&quot;log&quot;, File::WRONLY|File::EXCL|File::CREAT, 0600])
+</pre>
+<p>
+The array specifies a filename, flags and permission. The flags can be a string or an integer. If the flags is omitted or nil, File::RDONLY is assumed. The permission should be an integer. If the permission is omitted or nil, 0644 is assumed.
+</p>
+<p>
+If an array of IOs and integers are specified as a hash key, all the elements are redirected.
+</p>
+<pre>
+  # stdout and stderr is redirected to log file.
+  # The file &quot;log&quot; is opened just once.
+  pid = spawn(command, [:out, :err]=&gt;[&quot;log&quot;, &quot;w&quot;])
+</pre>
+<p>
+Another way to merge multiple file descriptors is [:child, fd]. [:child, fd] means the file descriptor in the child process. This is different from fd. For example, :err=&gt;:out means redirecting child stderr to parent stdout. But :err=&gt;[:child, :out] means redirecting child stderr to child stdout. They differs if stdout is redirected in the child process as follows.
+</p>
+<pre>
+  # stdout and stderr is redirected to log file.
+  # The file &quot;log&quot; is opened just once.
+  pid = spawn(command, :out=&gt;[&quot;log&quot;, &quot;w&quot;], :err=&gt;[:child, :out])
+</pre>
+<p>
+[:child, :out] can be used to merge stderr into stdout in IO.popen. In this case, IO.popen redirects stdout to a pipe in the child process and [:child, :out] refers the redirected stdout.
+</p>
+<pre>
+  io = IO.popen([&quot;sh&quot;, &quot;-c&quot;, &quot;echo out; echo err &gt;&amp;2&quot;, :err=&gt;[:child, :out]])
+  p io.read #=&gt; &quot;out\nerr\n&quot;
+</pre>
+<p>
+spawn closes all non-standard unspecified descriptors by default. The &quot;standard&quot; descriptors are 0, 1 and 2. This behavior is specified by :close_others option. :close_others doesn‘t affect the standard descriptors which are closed only if :close is specified explicitly.
+</p>
+<pre>
+  pid = spawn(command, :close_others=&gt;true)  # close 3,4,5,... (default)
+  pid = spawn(command, :close_others=&gt;false) # don't close 3,4,5,...
+</pre>
+<p>
+The option :close_others is true by default for spawn and IO.popen.
+</p>
+<p>
+So IO.pipe and spawn can be used as IO.popen.
+</p>
+<pre>
+  # similar to r = IO.popen(command)
+  r, w = IO.pipe
+  pid = spawn(command, :out=&gt;w)   # r, w is closed in the child process.
+  w.close
+</pre>
+<p>
+The symbol :close is specified as a hash value to close a fd individually.
+</p>
+<pre>
+  f = open(foo)
+  system(command, f=&gt;:close)        # don't inherit f.
+</pre>
+<p>
+If a file descriptor need to be inherited, io=&gt;io can be used.
+</p>
+<pre>
+  # valgrind has --log-fd option for log destination.
+  # log_w=&gt;log_w indicates log_w.fileno inherits to child process.
+  log_r, log_w = IO.pipe
+  pid = spawn(&quot;valgrind&quot;, &quot;--log-fd=#{log_w.fileno}&quot;, &quot;echo&quot;, &quot;a&quot;, log_w=&gt;log_w)
+  log_w.close
+  p log_r.read
+</pre>
+<p>
+It is also possible to exchange file descriptors.
+</p>
+<pre>
+  pid = spawn(command, :out=&gt;:err, :err=&gt;:out)
+</pre>
+<p>
+The hash keys specify file descriptors in the child process. The hash values specifies file descriptors in the parent process. So the above specifies exchanging stdout and stderr. Internally, spawn uses an extra file descriptor to resolve such cyclic file descriptor mapping.
+</p>
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/system.html">Kernel.#system</a>,<a href="../../../method/-kernel/m/exec.html">Kernel.#exec</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,1131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class Matrix</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/matrix.html">matrixライブラリ</a>
+&gt; Matrixクラス
+</p>
+
+
+
+<h1>class Matrix</h1>
+<p>
+
+クラスの継承リスト: Matrix
+
+      &lt; <a href="../class/-enumerable.html">Enumerable</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+数<a href="../class/-numeric.html">Numeric</a>を要素とする行列を扱うクラスです。
+</p>
+<p>
+行列
+</p>
+<p>
+m * n 個の数a(i,j)を
+</p>
+<pre>
+[ a(0,0) a(0,1) a(0,2)  a(0,3) ... a(0,n-1)   ]
+[ a(1,0) a(1,1) a(1,2)  a(1,3) ... a(1,n-1)   ]
+[ a(2,0) a(2,1) a(2,2)  a(2,3) ... a(2,n-1)   ]
+[                                             ]
+[ a(m-1,0)                         a(m-1,n-1) ]
+</pre>
+<p>
+のように、縦横の表にあらわしたものを(m,n)型の行列という。
+m=nの行列をm次の正方行列(square matrix)という。
+</p>
+<p>
+上からi番目の横の数の並びを第i行(the i-th row)、
+左からj番目の縦の数の並びを第j列(the j-th column)という。
+</p>
+<p>
+(m,n)型行列は、
+大きさnの行(横)ベクトルをm個縦に並べたものとみなすこともできるし、
+大きさmの列(縦)ベクトルをn個横に並べたものとみなすこともできる。
+</p>
+<p>
+第i行、第j列にある数a(i,j)を(i,j)要素(the (i,j)-th element)という。
+</p>
+<p>
+i=jの要素a(i,j)を対角要素(diagonal element)、
+それ以外の要素を非対角要素(nondiagonal element)という。
+</p>
+<h2 >Complex クラスとの併用</h2>
+<p>
+require 'complex'することによって、
+Matrixオブジェクトの要素は<a href="../class/-complex.html">Complex</a>クラスに拡張される。
+多くのメソッドは、この拡張されたMatrixクラスでも、期待通りに動作する。
+</p>
+<p>
+次の例は、各要素を共役複素数に置換するメソッド Matrix#conjugate である。
+</p>
+<pre>
+require 'matrix'
+require 'complex'
+
+class Matrix
+  def conjugate
+    collect{|e| e.conjugate }
+  end
+end
+</pre>
+
+
+
+<h2>特異メソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/s/-i.html"><code>
+  identity(n) -&gt; Matrix<br>unit(n) -&gt; Matrix<br>I(n) -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+n次の単位行列を生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/s/=5b=5d.html"><code>
+  self[rows] -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+rowsを要素とする行列を生成します。
+配列を行列の行成分として行列を生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/s/build.html"><code>
+  build(row_size, column_size) {|row, col| ... } -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Creates a matrix of size +row_size+ x +column_size+.
+It fills the values by calling the given block,
+passing the current row and column.
+Returns an enumerator if no block is given.
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/s/column_vector.html"><code>
+  column_vector(column) -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+要素がcolumnの(n,1)型の行列(列ベクトル)を生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/s/columns.html"><code>
+  columns(columns) -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+引数 columns を列ベクトルの集合とする行列を生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/s/diagonal.html"><code>
+  diagonal(values) -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+対角要素がvalues(オブジェクトの並び)で、非対角要素が全て0であるような
+正方行列を生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/s/row_vector.html"><code>
+  row_vector(row) -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+要素がrowの(1,n)型の行列(行ベクトル)を生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/s/rows.html"><code>
+  rows(rows, copy = true) -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+引数 rows を要素とする行列を生成します。
+引数 copy が偽(false)ならば、rows の複製を行いません。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/s/scalar.html"><code>
+  scalar(n, value) -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+対角要素が全てvalue(数)で、非対角要素が全て0であるようなn次の正方行列を生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/s/zero.html"><code>
+  zero(n) -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+n次の零行列を生成します。
+零行列とは、要素が全て0の行列です。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>インスタンスメソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/=2a.html"><code>
+  self * m -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+行列mを右から乗じた行列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/=2a=2a.html"><code>
+  self ** n -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self の n乗をした行列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/=2b.html"><code>
+  self + m -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+行列mを加算した行列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/=2d.html"><code>
+  self - m -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+行列mを減算した行列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/=2f.html"><code>
+  self / m -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+行列mの逆行列を右から乗じた行列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/=3d=3d.html"><code>
+  self == other -&gt; bool<br>eql?(other) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自分自身と other を比較し、同値であれば真(true)を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/=5b=5d.html"><code>
+  self[i, j] -&gt; ()<br>element(i, j) -&gt; ()<br>component(i, j) -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+(i,j)要素を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/clone.html"><code>
+  clone -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自分自身のコピーを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/coerce.html"><code>
+  coerce(other) -&gt; Array
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+他の数値オブジェクトとの変換を行います。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/collect.html"><code>
+  collect {|x| ... } -&gt; Matrix<br>map {|x| ... } -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+行列の各要素に対してブロックの適用を繰り返した結果を、要素として持つ行列を生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/column.html"><code>
+  column(j) -&gt; Vector<br>column(j) {|x| ... } -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+第j番目の列ベクトルを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/column_size.html"><code>
+  column_size -&gt; Fixnum
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+列の大きさを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/column_vectors.html"><code>
+  column_vectors -&gt; Array
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自分自身を列ベクトルの配列として返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/conj.html"><code>
+  conjugate -&gt; Matrix<br>conj -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Returns the conjugate of the matrix.
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/det.html"><code>
+  determinant -&gt; Rational | Float<br>det -&gt; Rational | Float
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+行列式 (determinant) を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/det_e.html"><code>
+  determinant_e -&gt; Rational | Float<br>det_e -&gt; Rational | Float
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+行列式 (determinant) を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/each.html"><code>
+  each {|e| ... } -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Yields all elements of the matrix, starting with those of the first row,
+or returns an Enumerator is no block given
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/each_with_index.html"><code>
+  each_with_index {|e, row, col| ... } -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Yields all elements of the matrix, starting with those of the first row,
+along with the row index and column index,
+or returns an Enumerator is no block given
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/elements_to_f.html"><code>
+  elements_to_f -&gt; Array
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+各要素を浮動小数点数 <a href="../class/-float.html">Float</a> に変換した行列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/elements_to_i.html"><code>
+  elements_to_i -&gt; Array
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+各要素を整数 <a href="../class/-integer.html">Integer</a> に変換した行列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/elements_to_r.html"><code>
+  elements_to_r -&gt; Array
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+各要素を有理数 <a href="../class/-rational.html">Rational</a> に変換した行列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/empty=3f.html"><code>
+  empty? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Returns +true+ if this is an empty matrix, i.e. if the number of rows
+or the number of columns is 0.
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/hash.html"><code>
+  hash -&gt; Fixnum
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+行列のHash値を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/imag.html"><code>
+  imaginary -&gt; Matrix<br>imag -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Returns the imaginary part of the matrix.
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/inspect.html"><code>
+  inspect -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自分自身を見やすい形式に文字列化し、その文字列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/inv.html"><code>
+  inverse -&gt; Matrix<br>inv -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+逆行列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/inverse_from.html"><code>
+  inverse_from(src) -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+行列1次方程式の解(の行列)を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/minor.html"><code>
+  minor(from_row, row_size, from_col, col_size) -&gt; Matrix<br>minor(from_row..to_row, from_col..to_col) -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+selfの部分行列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/rank.html"><code>
+  rank -&gt; Fixnum
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+階数 (rank) を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/rank_e.html"><code>
+  rank_e -&gt; Fixnum
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+階数 (rank) を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/real.html"><code>
+  real -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Returns the real part of the matrix.
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/real=3f.html"><code>
+  real? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Returns +true+ if all entries of the matrix are real.
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/rect.html"><code>
+  rectangular -&gt; [Matrix, Matrix]<br>rect -&gt; [Matrix, Matrix]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Returns an array containing matrices corresponding to the real and imaginary
+parts of the matrix
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/regular=3f.html"><code>
+  regular? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+正則(regular)なら真(true)を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/row.html"><code>
+  row(i) -&gt; Vector<br>row(i) {|x| ... } -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+第i番目の行ベクトルを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/row_size.html"><code>
+  row_size -&gt; Fixnum
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+行の大きさを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/row_vectors.html"><code>
+  row_vectors -&gt; Array
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自分自身を行ベクトルの配列として返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/singular=3f.html"><code>
+  singular? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+特異(singular)なら真(true)を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/square=3f.html"><code>
+  square? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+正方行列であるなら、真を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/t.html"><code>
+  transpose -&gt; Matrix<br>t -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+転置行列 (transpose matrix) を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/to_a.html"><code>
+  to_a -&gt; Array
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自分自身を<a href="../class/-array.html">Array</a>に変換したものを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/to_s.html"><code>
+  to_s -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+行列を文字列化し、その文字列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/tr.html"><code>
+  trace -&gt; Fixnum | Float | Rational<br>tr -&gt; Fixnum | Float | Rational
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+トレース (trace) を返します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+<h2>継承したメソッド</h2>
+<p><code>
+
+<a href="../method/-basic-object/i/=21.html">!</a>
+
+<a href="../method/-basic-object/i/=21=3d.html">!=</a>
+
+<a href="../method/-enumerable/i/all=3f.html">all?</a>
+
+<a href="../method/-enumerable/i/any=3f.html">any?</a>
+
+<a href="../method/-enumerable/i/chunk.html">chunk</a>
+
+<a href="../method/-enumerable/i/collect_concat.html">collect_concat</a>
+
+<a href="../method/-enumerable/i/count.html">count</a>
+
+<a href="../method/-enumerable/i/cycle.html">cycle</a>
+
+<a href="../method/-enumerable/i/detect.html">detect</a>
+
+<a href="../method/-enumerable/i/drop.html">drop</a>
+
+<a href="../method/-enumerable/i/drop_while.html">drop_while</a>
+
+<a href="../method/-enumerable/i/each_cons.html">each_cons</a>
+
+<a href="../method/-enumerable/i/each_entry.html">each_entry</a>
+
+<a href="../method/-enumerable/i/each_slice.html">each_slice</a>
+
+<a href="../method/-enumerable/i/each_with_object.html">each_with_object</a>
+
+<a href="../method/-enumerable/i/entries.html">entries</a>
+
+<a href="../method/-enumerable/i/find_all.html">find_all</a>
+
+<a href="../method/-enumerable/i/find_index.html">find_index</a>
+
+<a href="../method/-enumerable/i/first.html">first</a>
+
+<a href="../method/-enumerable/i/grep.html">grep</a>
+
+<a href="../method/-enumerable/i/group_by.html">group_by</a>
+
+<a href="../method/-enumerable/i/include=3f.html">include?</a>
+
+<a href="../method/-enumerable/i/inject.html">inject</a>
+
+<a href="../method/-enumerable/i/max.html">max</a>
+
+<a href="../method/-enumerable/i/max_by.html">max_by</a>
+
+<a href="../method/-enumerable/i/min.html">min</a>
+
+<a href="../method/-enumerable/i/min_by.html">min_by</a>
+
+<a href="../method/-enumerable/i/minmax.html">minmax</a>
+
+<a href="../method/-enumerable/i/minmax_by.html">minmax_by</a>
+
+<a href="../method/-enumerable/i/none=3f.html">none?</a>
+
+<a href="../method/-enumerable/i/one=3f.html">one?</a>
+
+<a href="../method/-enumerable/i/partition.html">partition</a>
+
+<a href="../method/-enumerable/i/reject.html">reject</a>
+
+<a href="../method/-enumerable/i/reverse_each.html">reverse_each</a>
+
+<a href="../method/-enumerable/i/slice_before.html">slice_before</a>
+
+<a href="../method/-enumerable/i/sort.html">sort</a>
+
+<a href="../method/-enumerable/i/sort_by.html">sort_by</a>
+
+<a href="../method/-enumerable/i/take.html">take</a>
+
+<a href="../method/-enumerable/i/take_while.html">take_while</a>
+
+<a href="../method/-enumerable/i/to_set.html">to_set</a>
+
+<a href="../method/-enumerable/i/zip.html">zip</a>
+
+<a href="../method/-object/i/=3d=3d=3d.html">===</a>
+
+<a href="../method/-object/i/=3d=7e.html">=~</a>
+
+<a href="../method/-object/i/__id__.html">__id__</a>
+
+<a href="../method/-object/i/__send__.html">__send__</a>
+
+<a href="../method/-object/i/_dump.html">_dump</a>
+
+<a href="../method/-object/i/class.html">class</a>
+
+<a href="../method/-object/i/clone.html">clone</a>
+
+<a href="../method/-object/i/dclone.html">dclone</a>
+
+<a href="../method/-object/i/display.html">display</a>
+
+<a href="../method/-object/i/enum_for.html">enum_for</a>
+
+<a href="../method/-object/i/equal=3f.html">equal?</a>
+
+<a href="../method/-object/i/extend.html">extend</a>
+
+<a href="../method/-object/i/freeze.html">freeze</a>
+
+<a href="../method/-object/i/frozen=3f.html">frozen?</a>
+
+<a href="../method/-object/i/initialize.html">initialize</a>
+
+<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
+
+<a href="../method/-object/i/instance_eval.html">instance_eval</a>
+
+<a href="../method/-object/i/instance_exec.html">instance_exec</a>
+
+<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
+
+<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
+
+<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
+
+<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
+
+<a href="../method/-object/i/instance_variables.html">instance_variables</a>
+
+<a href="../method/-object/i/is_a=3f.html">is_a?</a>
+
+<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
+
+<a href="../method/-object/i/marshal_load.html">marshal_load</a>
+
+<a href="../method/-object/i/method.html">method</a>
+
+<a href="../method/-object/i/method_missing.html">method_missing</a>
+
+<a href="../method/-object/i/methods.html">methods</a>
+
+<a href="../method/-object/i/must_be.html">must_be</a>
+
+<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
+
+<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
+
+<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
+
+<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
+
+<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
+
+<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
+
+<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
+
+<a href="../method/-object/i/must_equal.html">must_equal</a>
+
+<a href="../method/-object/i/must_include.html">must_include</a>
+
+<a href="../method/-object/i/must_match.html">must_match</a>
+
+<a href="../method/-object/i/must_raise.html">must_raise</a>
+
+<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
+
+<a href="../method/-object/i/must_send.html">must_send</a>
+
+<a href="../method/-object/i/must_throw.html">must_throw</a>
+
+<a href="../method/-object/i/nil=3f.html">nil?</a>
+
+<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
+
+<a href="../method/-object/i/pretty_print.html">pretty_print</a>
+
+<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
+
+<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
+
+<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
+
+<a href="../method/-object/i/private_methods.html">private_methods</a>
+
+<a href="../method/-object/i/protected_methods.html">protected_methods</a>
+
+<a href="../method/-object/i/public_methods.html">public_methods</a>
+
+<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
+
+<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
+
+<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
+
+<a href="../method/-object/i/singleton_class.html">singleton_class</a>
+
+<a href="../method/-object/i/singleton_method_added.html">singleton_method_added</a>
+
+<a href="../method/-object/i/singleton_method_removed.html">singleton_method_removed</a>
+
+<a href="../method/-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
+
+<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
+
+<a href="../method/-object/i/taint.html">taint</a>
+
+<a href="../method/-object/i/tainted=3f.html">tainted?</a>
+
+<a href="../method/-object/i/tap.html">tap</a>
+
+<a href="../method/-object/i/to_ary.html">to_ary</a>
+
+<a href="../method/-object/i/to_hash.html">to_hash</a>
+
+<a href="../method/-object/i/to_int.html">to_int</a>
+
+<a href="../method/-object/i/to_io.html">to_io</a>
+
+<a href="../method/-object/i/to_proc.html">to_proc</a>
+
+<a href="../method/-object/i/to_regexp.html">to_regexp</a>
+
+<a href="../method/-object/i/to_str.html">to_str</a>
+
+<a href="../method/-object/i/to_yaml.html">to_yaml</a>
+
+<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
+
+<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
+
+<a href="../method/-object/i/trust.html">trust</a>
+
+<a href="../method/-object/i/untaint.html">untaint</a>
+
+<a href="../method/-object/i/untrust.html">untrust</a>
+
+<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
+
+<a href="../method/-object/s/new.html">.new</a>
+
+</code></p>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

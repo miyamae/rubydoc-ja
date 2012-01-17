@@ -1,0 +1,241 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library socket</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; socketライブラリ
+</p>
+
+
+
+<h1>library socket</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+socket はプロセス外部との通信 (プロセス間通信、ホスト間通信) を実現します。
+</p>
+<h2 >クラス</h2>
+<ul>
+<li><a href="../class/-basic-socket.html">BasicSocket</a>: ソケットを表す抽象クラス</li>
+<li><a href="../class/-i-p-socket.html">IPSocket</a>: インターネットドメインソケットの抽象クラス</li>
+<li><a href="../class/-t-c-p-socket.html">TCPSocket</a>: インターネットドメインのストリーム型ソケットのクラス</li>
+<li><a href="../class/-t-c-p-server.html">TCPServer</a>: TCP/IPストリーム型接続のサーバ側のソケットのクラス</li>
+<li><a href="../class/-s-o-c-k-s-socket.html">SOCKSSocket</a>: TCPSocket を SOCKS 対応したクラス</li>
+<li><a href="../class/-u-d-p-socket.html">UDPSocket</a>: インターネットドメインのデータグラム型ソケットのクラス</li>
+<li><a href="../class/-u-n-i-x-socket.html">UNIXSocket</a>: Unixドメインのストリーム型ソケットのクラス</li>
+<li><a href="../class/-u-n-i-x-server.html">UNIXServer</a>: Unixストリーム型接続のサーバ側のソケットのクラス</li>
+<li><a href="../class/-socket.html">Socket</a>: 低レベルソケットインターフェース</li>
+</ul>
+<h2 >モジュール</h2>
+<ul>
+<li><a href="../class/-socket=3a=3a-constants.html">Socket::Constants</a></li>
+</ul>
+<h2 >ソケットアドレス</h2>
+<p>
+ソケットというのは通信路の末端です。
+たとえば 1対1 の通信では、まず通信路の両端にひとつずつソケットをつくり、
+それらのソケットを接続することによって通信路が確立し、相互に通信できるようになります。
+この接続時に、一方のソケットにもう一方のソケットの場所を教えてやる必要がありますが、
+この場所を指定するものがソケットアドレスです。
+</p>
+<p>
+ソケットアドレスはソケットの種類によって中身が異なります。
+たとえば TCP では IP アドレスとポート番号ですし、
+Unix ドメインソケットではソケットファイルを指すパス名です。
+</p>
+<p>
+<a href="../class/-i-p-socket.html">IPSocket</a> および <a href="../class/-u-n-i-x-socket.html">UNIXSocket</a> 以下のクラス階層では、
+わざわざソケットアドレスという形式にまとめなくてもよいよう、
+ソケットアドレスの中身を直接扱えるメソッドが用意されています。
+</p>
+<p>
+また、<a href="../class/-i-p-socket.html">IPSocket</a> 以下での IP アドレスとポート番号の指定は、
+数値で表現するだけでなく、ホスト名やサービス名が使えます。
+これについては以下の「ホスト指定形式」と「サービス指定形式」を参照してください。
+</p>
+<p>
+また、C のレベルの「ソケットアドレス構造体を pack した文字列」も使用できます。
+これは主に低レベルソケットインターフェース (<a href="../class/-socket.html">Socket</a>) で用いられます。
+</p>
+<h3 id='host_format'>ホスト指定形式</h3>
+<p>
+AF_INET なソケットにおいてホストを指定するには以下のいずれか
+の形式を指定します。
+</p>
+<ul>
+<li>ホスト名 (例: &quot;localhost&quot;)</li>
+<li>octet decimalによるIPアドレス(文字列) (例: &quot;127.0.0.1&quot;)</li>
+<li>空文字列 (&quot;&quot;), 文字列 &quot;&lt;any&gt;&quot; - INADDR_ANYに相当</li>
+<li>文字列 &quot;&lt;broadcast&gt;&quot; - INADDR_BROADCASTに相当</li>
+<li>IPアドレスを表す 32bit の整数 (例: 0x7f000001)</li>
+</ul>
+<h3 id='service_format'>サービス指定形式</h3>
+<p>
+サービスを指定するには以下のいずれかの形式を指定します。
+</p>
+<ul>
+<li>ポート番号(整数または文字列) (例: 21, &quot;21&quot;)</li>
+<li>サービス名 (例: &quot;ftp&quot;)</li>
+</ul>
+<h3 id='pack_string'>ソケットアドレス構造体を pack した文字列</h3>
+<p>
+ソケットアドレス構造体とは、C 言語の構造体 struct sockaddr_in (IPv4)
+や struct sockaddr_un (Unix ドメイン)を指します。
+<a href="../class/-socket.html">Socket</a> クラスなどソケットの低レベルインタフェースで利用されます。
+</p>
+<p>
+<a href="../method/-socket/s/pack_sockaddr_in.html">Socket.pack_sockaddr_in</a>,
+<a href="../method/-socket/s/unpack_sockaddr_in.html">Socket.unpack_sockaddr_in</a> といったメソッドにより、
+例えば、以下のようにしてこの文字列を得ることが出来ます
+</p>
+<pre>
+require 'socket'
+p Socket.pack_sockaddr_in(&quot;echo&quot;, &quot;127.0.0.1&quot;)
+=&gt; &quot;\002\000\000\a\177\000\000\001\000\000\000\000\000\000\000\000&quot;
+</pre>
+<h2 >ホスト名と IP アドレスの変換</h2>
+<p>
+ホスト名から IP アドレスへの変換 (正引き) を行うメソッドは以下のものが用意されています。
+</p>
+<ul>
+<li><a href="../method/-i-p-socket/s/getaddress.html">IPSocket.getaddress</a>(&quot;www.ruby-lang.org&quot;) =&gt; &quot;210.163.138.100&quot;</li>
+<li><a href="../method/-t-c-p-socket/s/gethostbyname.html">TCPSocket.gethostbyname</a>(&quot;www.ruby-lang.org&quot;) =&gt; [&quot;beryllium.ruby-lang.org&quot;, [], 2, &quot;210.163.138.100&quot;]</li>
+<li><a href="../method/-socket/s/gethostbyname.html">Socket.gethostbyname</a>(&quot;www.ruby-lang.org&quot;) =&gt; [&quot;beryllium.ruby-lang.org&quot;, [], 2, &quot;\322\243\212d&quot;]</li>
+<li><a href="../method/-socket/s/getaddrinfo.html">Socket.getaddrinfo</a>(&quot;www.ruby-lang.org&quot;, &quot;http&quot;) =&gt; [[&quot;AF_INET&quot;, 80, &quot;beryllium.ruby-lang.org&quot;, &quot;210.163.138.100&quot;, 2, 1, 6]]</li>
+</ul>
+<p>
+逆に IP アドレスからホスト名への変換 (逆引き) を行うメソッドは以下のものが用意されています。
+</p>
+<ul>
+<li><a href="../method/-socket/s/getnameinfo.html">Socket.getnameinfo</a>([nil, nil, nil, &quot;210.163.138.100&quot;]) =&gt; [&quot;beryllium.ruby-lang.org&quot;, 0]</li>
+</ul>
+<p>
+また、<a href="../library/resolv.html">resolv</a> ライブラリも使用できます。
+</p>
+
+
+<h2>クラスとモジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-basic-socket.html">class BasicSocket</a></td>
+<td class="description"><p>
+ソケットを表す抽象クラスです。具体的なソケット操作はサブクラスで
+定義されます。
+例えばインターネットドメインストリームソケットの場合は
+<a href="../class/-t-c-p-socket.html">TCPSocket</a> を用います。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-i-p-socket.html">class IPSocket</a></td>
+<td class="description"><p>
+インターネットドメインソケットの抽象クラス。
+通常の <a href="../class/-i-o.html">IO</a> クラスのサブクラスと同様の入出力ができます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-s-o-c-k-s-socket.html">class SOCKSSocket</a></td>
+<td class="description"><p>
+<a href="../class/-t-c-p-socket.html">TCPSocket</a> を [[unknown:SOCKS|URL:http://www.sw.nec.co.jp/middle/socks/]] 対応したクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-socket.html">class Socket</a></td>
+<td class="description"><p>
+ソケットそのものに対するシステムコールレベルのアクセスを提供
+するクラス。Perl のソケットに対するアクセスと同レベルの機能を
+提供しています。このクラスではソケットアドレスは <a href="../method/-array/i/pack.html">Array#pack</a>
+された文字列で指定します
+(<a href="../library/socket.html#pack_string">socket/ソケットアドレス構造体を pack した文字列</a>を参照)。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-socket=3a=3a-constants.html">module Socket::Constants</a></td>
+<td class="description"><p>
+ソケット操作の指定のための定数を定義したモジュール。このモジュー
+ルをインクルードすれば、定数 (AF_INETなど) を直接参照できます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-t-c-p-server.html">class TCPServer</a></td>
+<td class="description"><p>
+TCP/IP ストリーム型接続のサーバ側のソケットのクラス。このクラ
+スによって簡単にソケットを利用したサーバのプログラミングがで
+きます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-t-c-p-socket.html">class TCPSocket</a></td>
+<td class="description"><p>
+インターネットドメインのストリーム型ソケットのクラス。通常の
+<a href="../class/-i-o.html">IO</a> クラスのサブクラスと同
+様の入出力ができます。このクラスによってソケットを用いたクラ
+イアントを簡単に記述できるようになります。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-u-d-p-socket.html">class UDPSocket</a></td>
+<td class="description"><p>
+UDP/IPデータグラム型ソケットのクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-u-n-i-x-server.html">class UNIXServer</a></td>
+<td class="description"><p>
+UNIXストリーム型接続のサーバ側のソケットのクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-u-n-i-x-socket.html">class UNIXSocket</a></td>
+<td class="description"><p>
+UNIX ドメインのストリーム型ソケットのクラス。通常の
+<a href="../class/-i-o.html">IO</a> クラスのサブクラスと同様の
+入出力ができます。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>singleton method OpenURI.open_uri</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/open=2duri.html">open-uriライブラリ</a>
+&gt; <a href="../../../class/-open-u-r-i.html">OpenURIモジュール</a>
+&gt; open_uri
+
+</p>
+
+
+
+
+<h1>singleton method OpenURI.open_uri</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>open_uri(name, mode = 'r', perm = nil, options = {}) -&gt; StringIO</code></dt>
+<dt class="method-heading"><code>open_uri(name, mode = 'r', perm = nil, options = {}) {|sio| ... } -&gt; nil</code></dt>
+<dd class="method-description">
+<p>
+URI である文字列 name のリソースを取得して <a href="../../../class/-string-i-o.html">StringIO</a> オブジェクト
+として返します。
+</p>
+<p>
+ブロックを与えた場合は <a href="../../../class/-string-i-o.html">StringIO</a> オブジェクトを引数としてブロックを
+評価します。ブロックの終了時に StringIO は close されます。nil を返します。
+</p>
+<pre>
+require 'open-uri'
+sio = OpenURI.open_uri('http://www.example.com')
+p sio.last_modified
+puts sio.read
+
+OpenURI.open_uri('http://www.example.com'){|sio| sio.read }
+</pre>
+<p>
+options には <a href="../../../class/-hash.html">Hash</a> を与えます。理解するハッシュの
+キーは以下の4つのシンボル、
+</p>
+<ul>
+<li>:proxy</li>
+<li>:progress_proc</li>
+<li>:content_length_proc</li>
+<li>:http_basic_authentication</li>
+</ul>
+<p>
+です。HTTP でのみ意味があります。
+「:content_length_proc」と「:progress_proc」はプログレスバーに
+利用されることを想定しています。
+</p>
+<pre>
+require 'open-uri'
+sio = OpenURI.open_uri('http://www.example.com',
+                       { :proxy =&gt; 'http://proxy.example.com:8000/',
+                         :http_basic_authentication =&gt; [usrname, password] })
+</pre>
+<dl>
+<dt>:proxy</dt>
+<dd>
+<p>
+値には以下のいずれかを与えます。
+</p>
+<pre>
+   文字列:           &quot;http://proxy.foo.com:8000/&quot; のようなプロクシの URI。
+   URI オブジェクト: URI.parse(&quot;http://proxy.foo.com:8000/&quot;) のようなプロクシの URI オブジェクト。
+   true:             Proxy を環境変数などから見つけようとする。
+   false:            Proxy を用いない。
+   nil:              Proxy を用いない。
+</pre>
+</dd>
+<dt>:http_basic_authentication</dt>
+<dd>
+<p>
+HTTP の Basic 認証のためのユーザ名とパスワードを、文字列の配列 [&quot;user&quot;, &quot;password&quot;] として与えます。
+</p>
+</dd>
+<dt>:content_length_proc</dt>
+<dd>
+<p>
+値にはブロックを与えます。ブロックは対象となる URI の
+Content-Length ヘッダの値を引数として、実際の転送が始まる前に評価されます。Redirect された場合は、
+実際に転送されるリソースの HTTP ヘッダを利用します。Content-Length ヘッダがない場合は、nil を
+引数としてブロックを評価します。ブロックの返り値は特に利用されません。
+
+</p>
+</dd>
+<dt>:progress_proc</dt>
+<dd>
+<p>
+値にはブロックを与えます。ブロックは対象となる URI からデータの
+断片が転送されるたびに、その断片のサイズを引数として評価されます。ブロックの返り値は特に
+利用されません。
+</p>
+</dd>
+</dl>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+オープンしたいリソースを文字列で与えます。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+モードを文字列で与えます。<a href="../../../method/-kernel/m/open.html">Kernel.#open</a> と同じです。
+</dd>
+<dt class='method-param'>[PARAM] perm:</dt>
+<dd>
+無視されます。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+ハッシュを与えます。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+返り値である StringIO オブジェクトは <a href="../../../class/-open-u-r-i=3a=3a-meta.html">OpenURI::Meta</a> モジュールで extend されています。
+</dd>
+<dt>[EXCEPTION] OpenURI::HTTPError:</dt>
+<dd>
+対象となる URI のスキームが http であり、
+かつリソースの取得に失敗した時に発生します。
+</dd>
+<dt>[EXCEPTION] Net::FTPError:</dt>
+<dd>
+対象となる URI のスキームが ftp であり、かつリソースの取得に失敗した時に
+<a href="../../../class/-net=3a=3a-f-t-p-error.html">Net::FTPError</a> のサブクラスが発生します。詳しくは <a href="../../../library/net=2fftp.html">net/ftp</a>
+を参照して下さい。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+与えられた mode が読み込みモードでなかった場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

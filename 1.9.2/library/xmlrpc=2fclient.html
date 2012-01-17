@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library xmlrpc/client</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; xmlrpc/clientライブラリ
+</p>
+
+
+
+<h1>library xmlrpc/client</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+XML-RPC クライアントのためのライブラリです。
+</p>
+<pre>
+require &quot;xmlrpc/client&quot;
+
+# Make an object to represent the XML-RPC server.
+server = XMLRPC::Client.new( &quot;xmlrpc-c.sourceforge.net&quot;, &quot;/api/sample.php&quot;)
+
+# Call the remote server and get our result
+result = server.call(&quot;sample.sumAndDifference&quot;, 5, 3)
+
+sum = result[&quot;sum&quot;]
+difference = result[&quot;difference&quot;]
+
+puts &quot;Sum: #{sum}, Difference: #{difference}&quot;
+</pre>
+<h3 >Client with XML-RPC fault-structure handling</h3>
+<p>
+There are two possible ways, of handling a fault-structure:
+</p>
+<h4 >by catching a XMLRPC::FaultException exception</h4>
+<pre>
+require &quot;xmlrpc/client&quot;
+
+# Make an object to represent the XML-RPC server.
+server = XMLRPC::Client.new( &quot;xmlrpc-c.sourceforge.net&quot;, &quot;/api/sample.php&quot;)
+
+begin
+  # Call the remote server and get our result
+  result = server.call(&quot;sample.sumAndDifference&quot;, 5, 3)
+
+  sum = result[&quot;sum&quot;]
+  difference = result[&quot;difference&quot;]
+
+  puts &quot;Sum: #{sum}, Difference: #{difference}&quot;
+
+rescue XMLRPC::FaultException =&gt; e
+  puts &quot;Error: &quot;
+  puts e.faultCode
+  puts e.faultString
+end
+</pre>
+<h4 >by calling &quot;call2&quot; which returns a boolean</h4>
+<pre>
+require &quot;xmlrpc/client&quot;
+
+# Make an object to represent the XML-RPC server.
+server = XMLRPC::Client.new( &quot;xmlrpc-c.sourceforge.net&quot;, &quot;/api/sample.php&quot;)
+
+# Call the remote server and get our result
+ok, result = server.call2(&quot;sample.sumAndDifference&quot;, 5, 3)
+
+if ok
+  sum = result[&quot;sum&quot;]
+  difference = result[&quot;difference&quot;]
+
+  puts &quot;Sum: #{sum}, Difference: #{difference}&quot;
+else
+  puts &quot;Error: &quot;
+  puts result.faultCode
+  puts result.faultString
+end
+</pre>
+<h3 >Client using Proxy</h3>
+<p>
+You can create a +Proxy+ object onto which you can call methods. This way it
+looks nicer. Both forms, _call_ and _call2_ are supported through _proxy_ and
+&lt;i&gt;proxy2&lt;/i&gt;.  You can additionally give arguments to the Proxy, which will be
+given to each XML-RPC call using that Proxy.
+</p>
+<pre>
+require &quot;xmlrpc/client&quot;
+
+# Make an object to represent the XML-RPC server.
+server = XMLRPC::Client.new( &quot;xmlrpc-c.sourceforge.net&quot;, &quot;/api/sample.php&quot;)
+
+# Create a Proxy object
+sample = server.proxy(&quot;sample&quot;)
+
+# Call the remote server and get our result
+result = sample.sumAndDifference(5,3)
+
+sum = result[&quot;sum&quot;]
+difference = result[&quot;difference&quot;]
+
+puts &quot;Sum: #{sum}, Difference: #{difference}&quot;
+</pre>
+
+
+<h2>クラスとモジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-x-m-l-r-p-c=3a=3a-client.html">class XMLRPC::Client</a></td>
+<td class="description"><p>
+Class XMLRPC::Client provides remote procedure calls to a XML-RPC server.
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-x-m-l-r-p-c=3a=3a-client=3a=3a-proxy.html">class XMLRPC::Client::Proxy</a></td>
+<td class="description"><p>
+Class XMLRPC::Client::Proxy makes XML-RPC calls look nicer!
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>同時にrequireされるライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/xmlrpc=2fdatetime.html">xmlrpc/datetime</a></td>
+<td class="description"></td>
+</tr>
+
+</table>
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

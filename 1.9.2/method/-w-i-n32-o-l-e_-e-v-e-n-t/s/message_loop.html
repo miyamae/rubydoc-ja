@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>singleton method WIN32OLE_EVENT.message_loop</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/win32ole.html">win32oleライブラリ</a>
+&gt; <a href="../../../class/-w-i-n32-o-l-e_-e-v-e-n-t.html">WIN32OLE_EVENTクラス</a>
+&gt; message_loop
+
+</p>
+
+
+
+
+<h1>singleton method WIN32OLE_EVENT.message_loop</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>message_loop -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+Windowsのメッセージポンプを実行します。
+</p>
+<p>
+message_loopメソッドは、Windowsメッセージがキューイングされている限りメッ
+セージの読み出しとディスパッチを実行します。
+</p>
+<p>
+COMのスレッド間/プロセス間通信はスレッド内で呼び出しをシリアライズする
+ためにWindowsメッセージを利用します。このため、ほとんどのイベント処理は
+Windowsメッセージを読み取ってディスパッチすることで通知されます。
+</p>
+<pre>
+ie = WIN32OLE.new('InternetExplorer.Application.1')
+event = WIN32OLE_EVENT.new(ie, 'DWebBrowserEvents2')
+b = false
+event.on_event('DocumentComplete') do |disp, uri|
+  disp.document.getElementsByTagName('a').each do |e|
+    puts &quot;#{e.innerHTML}=#{e.href}&quot;   #=&gt; ダウンロード=http://www.ruby-lang.org/ja/downloads/ など
+  end
+  disp.quit
+  b = true
+end
+ie.Navigate2 'http://www.ruby-lang.org/ja/'
+loop do
+  break if b
+  WIN32OLE_EVENT.message_loop
+end
+</pre>
+<p>
+なお、メソッド名はloopですが、呼び出し時および既にキューイングされたメッ
+セージの処理中にキューされたメッセージの処理が終わると呼び出し元に制御
+が戻ります。このため、イベント通知までに長い時間がかかる場合はすべての
+イベントを受信するまでループを実行する必要があります。このとき他のスレッ
+ドに制御を与える必要があれば、<a href="../../../method/-kernel/m/sleep.html">Kernel.#sleep</a>などを呼び出してくださ
+い。message_loopメソッドの呼び出し中はRubyのスレッドの切り替えは行われ
+ません。
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method Enumerable#sort_by</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-enumerable.html">Enumerableモジュール</a>
+&gt; sort_by
+
+</p>
+
+
+
+
+<h1>instance method Enumerable#sort_by</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>sort_by -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>sort_by {|item| ... } -&gt; [object]</code></dt>
+<dd class="method-description">
+<p>
+ブロックの評価結果を &lt;=&gt; メソッドで比較することで、self を昇
+順にソートします。ソートされた配列を新たに生成して返します。
+つまり、以下とほぼ同じ動作をします。
+</p>
+<pre>
+class Array
+  def sort_by
+    self.map {|i| [yield(i), i] }.
+       sort {|a, b| a[0] &lt;=&gt; b[0] }.
+       map {|i| i[1]}
+  end
+end
+</pre>
+<p>
+<a href="../../../method/-enumerable/i/sort.html">Enumerable#sort</a> と比較して sort_by が優れている点として、
+比較条件が複雑な場合の速度が挙げられます。
+sort_by を使わない以下の例では比較を行う度に downcase が実行されます。
+従って downcase の実行速度が遅ければ sort の速度が致命的に低下します。
+</p>
+<pre>
+p [&quot;BAR&quot;, &quot;FOO&quot;, &quot;bar&quot;, &quot;foo&quot;].sort {|a, b| a.downcase &lt;=&gt; b.downcase }
+</pre>
+<p>
+一方、次のように sort_by を使うと downcase の実行回数は要素数と同じです。
+つまり、その部分の実行時間は O(n) のオーダーです。
+</p>
+<pre>
+p [&quot;BAR&quot;, &quot;FOO&quot;, &quot;bar&quot;, &quot;foo&quot;].sort_by {|v| v.downcase }
+</pre>
+<p>
+以下の、実行回数の検証結果を参照してみてください。
+</p>
+<pre>
+class Integer
+  def count
+    $n += 1
+    self
+  end
+end
+
+ary = []
+1.upto(1000) {|v| ary &lt;&lt; rand(v) }
+
+$n = 0
+ary.sort {|a,b| a.count &lt;=&gt; b.count }
+p $n          # =&gt; 18200
+
+$n = 0
+ary.sort_by {|v| v.count }
+p $n          # =&gt; 1000
+</pre>
+<p>
+Enumerable#sort_by は安定ではありません (unstable sort)。
+ただし、sort_by を以下のように使うと安定なソートを実装できます。
+</p>
+<pre>
+i = 0
+ary.sort_by {|v| [v, i += 1] }
+</pre>
+<p>
+※ 比較結果が同じ要素は元の順序通りに並ぶソートを
+「安定なソート (stable sort)」と言います。
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-enumerable/i/sort.html">Enumerable#sort</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

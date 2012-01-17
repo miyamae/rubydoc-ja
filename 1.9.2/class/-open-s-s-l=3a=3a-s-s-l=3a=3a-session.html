@@ -1,0 +1,462 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class OpenSSL::SSL::Session</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/openssl.html">opensslライブラリ</a>
+&gt; OpenSSL::SSL::Sessionクラス
+</p>
+
+
+
+<h1>class OpenSSL::SSL::Session</h1>
+<p>
+
+クラスの継承リスト: OpenSSL::SSL::Session
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+SSL/TLS セッションを表すクラスです。
+</p>
+<p>
+セッションとは、SSL/TLS のハンドシェイクで確立される
+仮想的なオブジェクトであり、安全な通信路を
+実現するために必要な、クライアント側とサーバ側で共有される
+情報の集合体です。SSL/TLS ハンドシェイクで必要な計算(特に署名の検証)
+はかなり高コストであり、以前にそのような計算を済ませたという事実を
+利用してハンドシェイクの高速化を図ることができます。
+これがセッションの再利用です。
+</p>
+<p>
+より具体的には、以下のような手順で再利用が行われます。
+</p>
+<ul>
+<li>まずは普通にクライアントとサーバでハンドシェイクを行う</li>
+<li>クライアントとサーバの両側でハンドシェイクによって共有された
+情報をキャッシュしておく</li>
+<li>再びクライアントから SSL/TLS のハンドシェイク開始を要求する
+このときにクライアントはキャッシュしておいた
+セッションのセッション ID を渡す</li>
+<li>サーバ側は渡されたセッション ID に対応するセッションキャッシュ
+を自身が保持しているキャッシュ領域から探しだす</li>
+<li>以降のハンドシェイクは双方でキャッシュされた情報を利用して鍵合意
+などを行い、コネクションを確立する</li>
+</ul>
+<p>
+セッションキャッシュが利用されるかどうかは
+ハンドシェークで決まった SSL/TLS 暗号スイートに
+依存します。
+</p>
+<h2 >クライアント側のセッションキャッシュ</h2>
+<p>
+クライアント側では OpenSSL はキャッシュの保持、管理のための
+機能を提供していません。コネクション確立後に
+<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-socket/i/session.html">OpenSSL::SSL::SSLSocket#session</a> でセッションを取り出し、
+次の <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-socket/i/connect.html">OpenSSL::SSL::SSLSocket#connect</a> によるハンドシェイク
+前に <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-socket/i/session=3d.html">OpenSSL::SSL::SSLSocket#session=</a> で再利用するセッションを
+設定してやることでセッションを再利用します。
+</p>
+<h2 >サーバ側のセッションキャッシュ</h2>
+<p>
+サーバ側では <a href="../class/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context.html">OpenSSL::SSL::SSLContext</a> により
+セッションキャッシュの保持および管理が行われます。
+</p>
+<p>
+<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context/i/session_cache_mode=3d.html">OpenSSL::SSL::SSLContext#session_cache_mode=</a> で
+キャッシュの挙動を設定します。
+デフォルトで <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context/c/-s-e-s-s-i-o-n_-c-a-c-h-e_-s-e-r-v-e-r.html">OpenSSL::SSL::SSLContext::SESSION_CACHE_SERVER</a>
+フラグが立っているため、サーバ側のセッションキャッシュ機構は
+デフォルトで有効になっています。
+</p>
+<p>
+セッションキャッシュ機構が有効化されている場合、
+SSL/TLS ハンドシェイク終了時に <a href="../class/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context.html">OpenSSL::SSL::SSLContext</a> 内の
+キャッシュ保持領域にキャッシュが保持されます。
+クライアント側からセッション再利用要求に対しては
+キャッシュ保持領域の探索および外部キャッシュへの問合せ
+を行い、再利用するセッションを特定します。
+キャッシュ保持領域の探索はライブラリが自動的にしますが、
+外部キャッシュの探索はアプリケーションプログラマに
+よって実装する必要があります
+(<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context/i/session_get_cb=3d.html">OpenSSL::SSL::SSLContext#session_get_cb=</a> で設定した
+コールバックで対応するセッションを返します)。
+</p>
+<p>
+これらの挙動は
+<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context/c/-s-e-s-s-i-o-n_-c-a-c-h-e_-n-o_-i-n-t-e-r-n-a-l_-s-t-o-r-e.html">OpenSSL::SSL::SSLContext::SESSION_CACHE_NO_INTERNAL_STORE</a> や
+<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context/c/-s-e-s-s-i-o-n_-c-a-c-h-e_-n-o_-i-n-t-e-r-n-a-l_-l-o-o-k-u-p.html">OpenSSL::SSL::SSLContext::SESSION_CACHE_NO_INTERNAL_LOOKUP</a> を
+<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context/i/session_cache_mode=3d.html">OpenSSL::SSL::SSLContext#session_cache_mode=</a>に渡すことで
+変更できます。
+</p>
+
+
+
+<h2>特異メソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/s/new.html"><code>
+  new(obj) -&gt; OpenSSL::SSL::Session
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+新しいセッションオブジェクトを生成します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>インスタンスメソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/=3d=3d.html"><code>
+  self == ohter -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+otherと自身が同一のセッションであれば真を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/id.html"><code>
+  id -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+セッション ID を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/time.html"><code>
+  time -&gt; Time
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+セッションが確立された時刻を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/time=3d.html"><code>
+  time=(t)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+セッション確立時刻を <a href="../class/-time.html">Time</a> オブジェクトで更新します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/timeout.html"><code>
+  timeout -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+セッションタイムアウトの時間(秒数)を整数で返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/timeout=3d.html"><code>
+  timeout=(t)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+セッションタイムアウトの時間(秒数)を整数で設定します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/to_der.html"><code>
+  to_der -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身を DER 形式に変換します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/to_pem.html"><code>
+  to_pem -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身を PEM 形式に変換します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/to_text.html"><code>
+  to_text -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身を可読な形式に変換します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+<h2>継承したメソッド</h2>
+<p><code>
+
+<a href="../method/-basic-object/i/=21.html">!</a>
+
+<a href="../method/-basic-object/i/=21=3d.html">!=</a>
+
+<a href="../method/-object/i/=3d=3d=3d.html">===</a>
+
+<a href="../method/-object/i/=3d=7e.html">=~</a>
+
+<a href="../method/-object/i/__id__.html">__id__</a>
+
+<a href="../method/-object/i/__send__.html">__send__</a>
+
+<a href="../method/-object/i/_dump.html">_dump</a>
+
+<a href="../method/-object/i/class.html">class</a>
+
+<a href="../method/-object/i/clone.html">clone</a>
+
+<a href="../method/-object/i/dclone.html">dclone</a>
+
+<a href="../method/-object/i/display.html">display</a>
+
+<a href="../method/-object/i/enum_for.html">enum_for</a>
+
+<a href="../method/-object/i/eql=3f.html">eql?</a>
+
+<a href="../method/-object/i/equal=3f.html">equal?</a>
+
+<a href="../method/-object/i/extend.html">extend</a>
+
+<a href="../method/-object/i/freeze.html">freeze</a>
+
+<a href="../method/-object/i/frozen=3f.html">frozen?</a>
+
+<a href="../method/-object/i/hash.html">hash</a>
+
+<a href="../method/-object/i/initialize.html">initialize</a>
+
+<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
+
+<a href="../method/-object/i/inspect.html">inspect</a>
+
+<a href="../method/-object/i/instance_eval.html">instance_eval</a>
+
+<a href="../method/-object/i/instance_exec.html">instance_exec</a>
+
+<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
+
+<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
+
+<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
+
+<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
+
+<a href="../method/-object/i/instance_variables.html">instance_variables</a>
+
+<a href="../method/-object/i/is_a=3f.html">is_a?</a>
+
+<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
+
+<a href="../method/-object/i/marshal_load.html">marshal_load</a>
+
+<a href="../method/-object/i/method.html">method</a>
+
+<a href="../method/-object/i/method_missing.html">method_missing</a>
+
+<a href="../method/-object/i/methods.html">methods</a>
+
+<a href="../method/-object/i/must_be.html">must_be</a>
+
+<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
+
+<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
+
+<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
+
+<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
+
+<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
+
+<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
+
+<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
+
+<a href="../method/-object/i/must_equal.html">must_equal</a>
+
+<a href="../method/-object/i/must_include.html">must_include</a>
+
+<a href="../method/-object/i/must_match.html">must_match</a>
+
+<a href="../method/-object/i/must_raise.html">must_raise</a>
+
+<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
+
+<a href="../method/-object/i/must_send.html">must_send</a>
+
+<a href="../method/-object/i/must_throw.html">must_throw</a>
+
+<a href="../method/-object/i/nil=3f.html">nil?</a>
+
+<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
+
+<a href="../method/-object/i/pretty_print.html">pretty_print</a>
+
+<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
+
+<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
+
+<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
+
+<a href="../method/-object/i/private_methods.html">private_methods</a>
+
+<a href="../method/-object/i/protected_methods.html">protected_methods</a>
+
+<a href="../method/-object/i/public_methods.html">public_methods</a>
+
+<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
+
+<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
+
+<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
+
+<a href="../method/-object/i/singleton_class.html">singleton_class</a>
+
+<a href="../method/-object/i/singleton_method_added.html">singleton_method_added</a>
+
+<a href="../method/-object/i/singleton_method_removed.html">singleton_method_removed</a>
+
+<a href="../method/-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
+
+<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
+
+<a href="../method/-object/i/taint.html">taint</a>
+
+<a href="../method/-object/i/tainted=3f.html">tainted?</a>
+
+<a href="../method/-object/i/tap.html">tap</a>
+
+<a href="../method/-object/i/to_a.html">to_a</a>
+
+<a href="../method/-object/i/to_ary.html">to_ary</a>
+
+<a href="../method/-object/i/to_hash.html">to_hash</a>
+
+<a href="../method/-object/i/to_int.html">to_int</a>
+
+<a href="../method/-object/i/to_io.html">to_io</a>
+
+<a href="../method/-object/i/to_proc.html">to_proc</a>
+
+<a href="../method/-object/i/to_regexp.html">to_regexp</a>
+
+<a href="../method/-object/i/to_s.html">to_s</a>
+
+<a href="../method/-object/i/to_str.html">to_str</a>
+
+<a href="../method/-object/i/to_yaml.html">to_yaml</a>
+
+<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
+
+<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
+
+<a href="../method/-object/i/trust.html">trust</a>
+
+<a href="../method/-object/i/untaint.html">untaint</a>
+
+<a href="../method/-object/i/untrust.html">untrust</a>
+
+<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
+
+</code></p>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

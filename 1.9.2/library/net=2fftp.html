@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library net/ftp</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; net/ftpライブラリ
+</p>
+
+
+
+<h1>library net/ftp</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+FTP プロトコルを扱うライブラリです。
+</p>
+<p>
+基本的には  unix の ftp コマンドのような
+command-line interface の FTP クライアントを使ったことのある
+人にとってわかりやすいインターフェースになっています。
+より「Ruby 的」であるインターフェースも用意しています。
+</p>
+<p>
+FTP については <a class="external" href="http://www.ietf.org/rfc/rfc959.txt">[RFC959]</a>、<a class="external" href="http://www.ietf.org/rfc/rfc3659.txt">[RFC3659]</a> を参考にしてください。
+</p>
+<h2 >バイナリモードとテキストモード</h2>
+<p>
+FTP のデータ転送にはテキストモードとバイナリモード
+があります。テキストモードで転送する場合には
+改行を適宜CRLFに変換します。バイナリモードの場合は
+一切の変換をしません。
+</p>
+<p>
+通常はバイナリモード以外を使う必要はないでしょう。
+</p>
+<p>
+<a href="../method/-net=3a=3a-f-t-p/i/get.html">Net::FTP#get</a>、<a href="../method/-net=3a=3a-f-t-p/i/put.html">Net::FTP#put</a> は
+<a href="../method/-net=3a=3a-f-t-p/i/binary.html">Net::FTP#binary</a> の値に従ってテキストモードと
+バイナリモードの一方を選びます。また、
+<a href="../method/-net=3a=3a-f-t-p/i/getbinaryfile.html">Net::FTP#getbinaryfile</a>、<a href="../method/-net=3a=3a-f-t-p/i/putbinaryfile.html">Net::FTP#putbinaryfile</a>
+は <a href="../method/-net=3a=3a-f-t-p/i/binary.html">Net::FTP#binary</a> の値によらずバイナリモードで、
+<a href="../method/-net=3a=3a-f-t-p/i/gettextfile.html">Net::FTP#gettextfile</a>、<a href="../method/-net=3a=3a-f-t-p/i/puttextfile.html">Net::FTP#puttextfile</a> は
+<a href="../method/-net=3a=3a-f-t-p/i/binary.html">Net::FTP#binary</a> の値によらずテキストモードで
+データ転送が行われます。
+</p>
+<h2 >パッシブモードとアクティブモード</h2>
+<p>
+FTP はファイル転送やディレクトリ情報取得のための
+データ転送用の TCP コネクションを、
+サーバとの制御コマンドをやりとり
+するためのコネクションとは別に作成します。
+</p>
+<p>
+このデータ転送用コネクションを作成する際に、
+アクティブモードでは
+サーバ側からクライアント側へコネクションを作り、
+パッシブモードでは
+クライアント側からサーバ側へコネクションを作ます。
+</p>
+<p>
+そのため、アクティブモードではサーバ-クライアント間に
+ファイアーウォールや NAT がある場合にはうまく接続できない
+場合があります。この時にはパッシブモードを利用してください。
+</p>
+<h2 >例</h2>
+<p>
+例1:
+</p>
+<pre>
+require 'net/ftp'
+ftp = Net::FTP.new('ftp.example.org')
+ftp.login
+ftp.passive = true
+ftp.chdir('pub/ruby')
+files = ftp.list('ruby*')
+ftp.getbinaryfile('ruby-1.9.1-p243.tar.bz2', 'ruby.bz2', 1024)
+ftp.close
+</pre>
+<p>
+例2:
+</p>
+<pre>
+require 'net/ftp'
+Net::FTP.open('ftp.example.org') do |ftp|
+  ftp.login
+  ftp.passive = true
+  ftp.chdir('pub/ruby')
+  files = ftp.list('*.bz2')
+  ftp.getbinaryfile('ruby-1.9.1-p243.tar.bz2', 'ruby.bz2', 1024)
+end
+</pre>
+
+
+<h2>クラスとモジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-net=3a=3a-f-t-p.html">class Net::FTP</a></td>
+<td class="description"><p>
+FTP を実装したクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-net=3a=3a-f-t-p=3a=3a-null-socket.html">class Net::FTP::NullSocket</a></td>
+<td class="description"><p>
+全てのメソッド呼び出しに対して <a href="../class/-net=3a=3a-f-t-p-connection-error.html">Net::FTPConnectionError</a> を発生させます。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-net=3a=3a-f-t-p-error.html">class Net::FTPError</a></td>
+<td class="description"><p>
+net/ftp ライブラリ関連のエラー全般を表す例外クラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-net=3a=3a-f-t-p-perm-error.html">class Net::FTPPermError</a></td>
+<td class="description"><p>
+FTP の応答コード 5yz
+(Permanent Negative Completion reply)
+を表す例外クラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-net=3a=3a-f-t-p-proto-error.html">class Net::FTPProtoError</a></td>
+<td class="description"><p>
+サーバの応答が FTP のプロトコルに沿っていない場合に
+発生する例外のクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-net=3a=3a-f-t-p-reply-error.html">class Net::FTPReplyError</a></td>
+<td class="description"><p>
+FTPの応答が 1yz や 3yz であり、それが
+想定外であることを表わす例外クラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-net=3a=3a-f-t-p-temp-error.html">class Net::FTPTempError</a></td>
+<td class="description"><p>
+FTP の応答コード 4yz
+(Transient Negative Completion reply)
+を表す例外クラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

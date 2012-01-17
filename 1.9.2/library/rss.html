@@ -1,0 +1,1494 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library rss</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; rssライブラリ
+</p>
+
+
+
+<h1>library rss</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+RSS を扱うためのライブラリです。
+</p>
+<h2 >参考</h2>
+<ul>
+<li><a class="external" href="http://www.cozmixng.org/~rwiki/?cmd=view;name=RSS+Parser">http://www.cozmixng.org/~rwiki/?cmd=view;name=RSS+Parser</a></li>
+<li>RSS 0.91 <a class="external" href="http://backend.userland.com/rss091">http://backend.userland.com/rss091</a></li>
+<li>RSS 1.0  <a class="external" href="http://purl.org/rss/1.0/spec">http://purl.org/rss/1.0/spec</a></li>
+<li>RSS 2.0  <a class="external" href="http://www.rssboard.org/rss-specification">http://www.rssboard.org/rss-specification</a></li>
+</ul>
+<h2 >注意</h2>
+<p>
+RSS ParserはRSS 0.9x/1.0/2.0をサポートしていますが，RSS 0.90
+はサポートしてません．ごめんなさい．
+</p>
+<p>
+RSS のモジュールはそれぞれ、
+</p>
+<ul>
+<li>Dublin Core モジュール <a class="external" href="http://web.resource.org/rss/1.0/modules/dc/">http://web.resource.org/rss/1.0/modules/dc/</a></li>
+<li>Syndication モジュール <a class="external" href="http://web.resource.org/rss/1.0/modules/syndication/">http://web.resource.org/rss/1.0/modules/syndication/</a></li>
+<li>Content モジュール <a class="external" href="http://web.resource.org/rss/1.0/modules/content/">http://web.resource.org/rss/1.0/modules/content/</a></li>
+<li>Trackback モジュール <a class="external" href="http://madskills.com/public/xml/rss/module/trackback/">http://madskills.com/public/xml/rss/module/trackback/</a></li>
+<li>Image モジュール <a class="external" href="http://web.resource.org/rss/1.0/modules/image/">http://web.resource.org/rss/1.0/modules/image/</a></li>
+</ul>
+<p>
+をサポートしています。
+ただし，Content モジュールは content:encoded しかサポートしていません．
+</p>
+<h2 >パース</h2>
+<p>
+RSS をパースしたい場合は RSS::Parser クラスを使います。
+RSS::Parser.parse は String の RSSを パースします(使用するXMLパー
+サによっては File や IO オブジェクトなどでもパース可能です)。
+</p>
+<ul>
+<li>RSS 1.0をパースした場合は <a href="../class/-r-s-s=3a=3a-r-d-f.html">RSS::RDF</a> オブジェクト</li>
+<li>RSS 0.9x/2.0をパースした場合は <a href="../class/-r-s-s=3a=3a-rss.html">RSS::Rss</a> オブジェクト</li>
+</ul>
+<p>
+をそれぞれ返します。パースした
+String が well formed な XML で無い場合は，
+例外 <a href="../class/-r-s-s=3a=3a-not-well-formed-error.html">RSS::NotWellFormedError</a> が発生します。well formed な
+XML だが，RSS 0.9x/1.0/2.0 のいずれでもない場合は，nil が返りま
+す．
+</p>
+<p>
+例えば、RSS 1.0 をバリデーション付きでパースするには以下のよ
+うにします。ここで、変数 rss_source には RSS 1.0 形式の文
+字列が格納されているものとします。
+</p>
+<pre>
+require 'rss'
+rss = RSS::Parser.parse(rss_source, true)
+</pre>
+<p>
+RSS::Parser.parse の第二引数は省略すると true が指定されたもの
+とみなされるので、これは以下のようにも書けます。
+</p>
+<pre>
+require 'rss'
+rss = RSS::Parser.parse(rss_source)
+</pre>
+<p>
+最初はバリデーション付きでパースして，valid ではない RSS だった
+場合はバリデーション無しでパースするには以下のように書きます。
+</p>
+<pre>
+require 'rss'
+rss = nil
+begin
+  rss = RSS::Parser.parse(rss_source)
+rescue RSS::InvalidRSSError
+  rss = RSS::Parser.parse(rss_source, false)
+end
+</pre>
+<p>
+これは rss_source が RSS 0.9x/1.0/2.0 のどれか分からない時
+にも有効です。RSS 1.0としてバリデー
+ション付きでパースし、バリデーションに失敗すると RSS 0.9x/(壊
+れた)1.0/2.0 のいずれかとしてパースします。
+</p>
+<h3 >知らない要素の扱い</h3>
+<p>
+パーサはデフォルトでは知らない要素(仕様書に規定されていない
+要素)を無視します。もし、知らない要素に遭遇した時に例外を発
+生させたければ，RSS::Parser.parse の第三引数に false を指定して
+ください。こうすると、パース中に知らない要素に遭遇した時に
+<a href="../class/-r-s-s=3a=3a-unknown-tag-error.html">RSS::UnknownTagError</a> 例外が発生します。
+</p>
+<p>
+以下のようにすると，より厳密にRSS 1.0をパースできます。
+</p>
+<pre>
+RSS::Parser.parse(rss_source, true, false)
+</pre>
+<h2 >パースされたRSS</h2>
+<p>
+RSS はパースされると <a href="../class/-string.html">String</a> オブジェクトから <a href="../class/-r-s-s=3a=3a-r-d-f.html">RSS::RDF</a>,
+<a href="../class/-r-s-s=3a=3a-r-d-f=3a=3a-channel.html">RSS::RDF::Channel</a>, <a href="../class/-r-s-s=3a=3a-rss.html">RSS::Rss</a> 等のオブジェクトになります。各オ
+ブジェクトで子要素オブジェクトにアクセスするために，要素名と
+同じ名前のアクセサがあります。
+</p>
+<h3 >リーダ(reader)</h3>
+<p>
+rdf:RDF 要素の子要素である channel 要素を参照するには，以下のよう
+にします。
+</p>
+<pre>
+rss = RSS::Parser.parse(rss_source)
+rss.channel # =&gt; /rdf:RDF/channel要素; RSS::RDF::Channel
+</pre>
+<p>
+もし、要素が子要素も属性も持たない場合は String が返ってきます。
+その要素が省略可能ならばnilが返って来るかもしれません。これ
+は要素が子要素または属性を持つ場合も同様です。
+</p>
+<pre>
+rss = RSS::Parser.parse(rss_source)
+rss.channel.description # =&gt; /rdf:RDF/channel/text(); String
+</pre>
+<p>
+属性にアクセスする時も同様です。channel要素のrdf:about属性に
+アクセスするには以下のようにします。属性の値はStringかnilで
+す。
+</p>
+<pre>
+rss = RSS::Parser.parse(rss_source)
+rss.channel.about # =&gt; /rdf:RDF/channel/@about属性; String または nil
+</pre>
+<p>
+同名の複数の子要素があるかもしれないときも同様です。ただし、
+リーダに引数を指定しないと最初の子要素が返ってきます。例えば、
+rdf:RDF要素の最初のitem要素にアクセスするには以下のようにし
+ます。
+</p>
+<pre>
+rss = RSS::Parser.parse(rss_source)
+rss.item # =&gt; /rdf:RDF/item[1]要素; RSS::RDF::Item
+</pre>
+<p>
+3番目のitem要素にアクセスするには以下のようにします。省略さ
+れなかったリーダの引数はArray#[]の引数と同じように扱われます。
+</p>
+<pre>
+rss = RSS::Parser.parse(rss_source)
+rss.item(2) # =&gt; /rdf:RDF/item[3]要素; RSS::RDF::Item
+</pre>
+<p>
+子要素すべてを取得したいときは要素名の複数形がリーダとなりま
+す。すべてのitem要素を取得するには以下のようにします。
+</p>
+<pre>
+rss = RSS::Parser.parse(rss_source)
+rss.items # =&gt; /rdf:RDF/item要素の配列; [RSS::RDF::Item, ...]
+</pre>
+<h3 >ライタ(writer)</h3>
+<p>
+rdf:RDF要素の子要素であるchannel要素を設定するには以下のよう
+にします。RSS::RDF::Channel.newの第一引数にはrdf:about属性の
+値を指定することもできます。
+</p>
+<pre>
+rss = RSS::Parser.parse(rss_source)
+rss.channel = RSS::RDF::Channel.new(rdf_about_value)
+</pre>
+<p>
+属性値を設定する場合も同様です。
+</p>
+<pre>
+rss = RSS::Parser.parse(rss_source)
+rss.channel.about = &quot;http://cozmixng.www.cozmixng.org/&quot;
+</pre>
+<p>
+同名の複数の子要素が存在する場合は少し異なります．要素名の複
+数形でのメソッドで要素の配列を取得して，その配列に対して
+Array#&lt;&lt;やArray#[]=などを用いて要素を設定します．
+</p>
+<pre>
+rss = RSS::Parser.parse(rss_source)
+item = RSS::RDF::Item.new(rdf_about_value)
+rss.items &lt;&lt; item
+rss.items.last == item # =&gt; true
+</pre>
+<p>
+注意: item=/set_itemなどはRubyっぽくないので使わないでくださ
+い．
+</p>
+<h2 >出力</h2>
+<p>
+RSS Parserといっているので誤解されがちですが，RSSを出力する
+こともできます．
+</p>
+<h3 >基本</h3>
+<p>
+to_sするとRSS形式の文字列を返します．
+</p>
+<p>
+RSSを出力する流れは以下のようになります．
+</p>
+<ul>
+<li>RSSオブジェクト（RSS::RDFとかRSS::Rssクラス
+のオブジェクト）を作成する</li>
+</ul>
+<ul>
+<li>出力エンコーディングを指定する(省略可)</li>
+</ul>
+<ul>
+<li>RSSオブジェクトのto_sメソッドを呼ぶ</li>
+</ul>
+<h3 >xml-stylesheet</h3>
+<p>
+xml-stylesheetも出力することができます．
+</p>
+<p>
+RSSのルート要素（RSS::RDFまたはRSS::Rss）オブジェ
+クトはxml_stylesheetsという名前の配列を持っています．この配
+列にRSS::XMLStyleSheetオブジェクトを挿入することでRSS
+にxml-stylesheetを関連づけることができます．
+</p>
+<pre>
+rss.xml_stylesheets &lt;&lt; RSS::XMLStyleSheet.new(...)
+</pre>
+<p>
+RSS::XMLStyleSheet.newには以下のようなHashまたは
+連想配列を渡します．作成されるRSS::XMLStyleSheetオブジェ
+クトは与えられた引数によって初期化されます．
+</p>
+<p>
+Hash:
+</p>
+<pre>
+{
+  :href =&gt; &quot;...&quot;,
+  :type =&gt; &quot;...&quot;,
+  :title =&gt; &quot;...&quot;,
+  :media =&gt; &quot;...&quot;,
+  :charset =&gt; &quot;...&quot;,
+  :alternate =&gt; &quot;...&quot;,
+}
+</pre>
+<p>
+連想配列:
+</p>
+<pre>
+[
+  [:href, &quot;...&quot;],
+  [:type, &quot;...&quot;],
+  [:title, &quot;...&quot;],
+  [:media, &quot;...&quot;],
+  [:charset, &quot;...&quot;],
+  [:alternate, &quot;...&quot;],
+]
+</pre>
+<p>
+全てのキーは省略可能です．
+</p>
+<p>
+例えば，xml-stylesheetとしてsample.xslを指定する場合は以下の
+ようにします．
+</p>
+<pre>
+rss.xml_stylesheets &lt;&lt; RSS::XMLStyleSheet.new({:href =&gt; &quot;sample.xsl&quot;})
+</pre>
+<p>
+本当は{:type =&gt; &quot;text/xsl&quot;}も指定しないといけないとこ
+ろですが，拡張子が.xslまたは，.cssの場合は適当に推測してくれ
+るので省略可能です．
+</p>
+<h3 >RSSオブジェクトを作る</h3>
+<p>
+既存のRSSをパースせずに，一から新しくRSSを作成するにはRSS
+Makerが便利です．
+</p>
+<p>
+以下のように使います．
+</p>
+<pre>
+require &quot;rss&quot;
+
+rss = RSS::Maker.make(&quot;バージョン&quot;) do |maker|
+  maker.XXX = YYY
+  ...
+end
+</pre>
+<p>
+例えば，
+</p>
+<ul>
+<li>http://example.com/にある</li>
+<li>Example Siteという説明文を持つ</li>
+<li>Exampleというサイトを</li>
+<li>http://example.com/index.rdfという名前のRSS 1.0</li>
+</ul>
+<p>
+を生成するには以下のようにします．
+</p>
+<pre>
+require &quot;rss&quot;
+
+rss = RSS::Maker.make(&quot;1.0&quot;) do |maker|
+  maker.channel.about = &quot;http://example.com/index.rdf&quot;
+  maker.channel.title = &quot;Example&quot;
+  maker.channel.description = &quot;Example Site&quot;
+  maker.channel.link = &quot;http://example.com/&quot;
+end
+</pre>
+<p>
+もし，
+</p>
+<ul>
+<li>http://example.com/article.htmlにある</li>
+<li>Sample Articleというタイトルの</li>
+</ul>
+<p>
+エントリを含めたければ以下のようにします．
+</p>
+<pre>
+require &quot;rss&quot;
+
+rss = RSS::Maker.make(&quot;1.0&quot;) do |maker|
+  maker.channel.about = &quot;http://example.com/index.rdf&quot;
+  maker.channel.title = &quot;Example&quot;
+  maker.channel.description = &quot;Example Site&quot;
+  maker.channel.link = &quot;http://example.com/&quot;
+
+  item = maker.items.new_item
+  item.link = &quot;http://example.com/article.html&quot;
+  item.title = &quot;Sample Article&quot;
+end
+</pre>
+<p>
+もし，先のエントリが
+</p>
+<ul>
+<li>2004/11/1 10:10</li>
+</ul>
+<p>
+のものならこうします．
+</p>
+<pre>
+require &quot;rss&quot;
+
+rss = RSS::Maker.make(&quot;1.0&quot;) do |maker|
+  maker.channel.about = &quot;http://example.com/index.rdf&quot;
+  maker.channel.title = &quot;Example&quot;
+  maker.channel.description = &quot;Example Site&quot;
+  maker.channel.link = &quot;http://example.com/&quot;
+
+  item = maker.items.new_item
+  item.link = &quot;http://example.com/article.html&quot;
+  item.title = &quot;Sample Article&quot;
+  item.date = Time.parse(&quot;2004/11/1 10:10&quot;)
+end
+</pre>
+<p>
+サンプル中の
+</p>
+<pre>
+item.date = ...
+</pre>
+<p>
+は
+</p>
+<pre>
+item.dc_date = ...
+</pre>
+<p>
+でも構いません．#dc_date=は#date=の単なる別名で
+す．
+</p>
+<p>
+さらに，
+</p>
+<ul>
+<li>http://example.com/article2.htmlにある</li>
+<li>Sample Article2という</li>
+<li>2004/11/2 10:10に作成された</li>
+</ul>
+<p>
+エントリを持つなら以下のようにします．
+</p>
+<pre>
+require &quot;rss&quot;
+
+rss = RSS::Maker.make(&quot;1.0&quot;) do |maker|
+  maker.channel.about = &quot;http://example.com/index.rdf&quot;
+  maker.channel.title = &quot;Example&quot;
+  maker.channel.description = &quot;Example Site&quot;
+  maker.channel.link = &quot;http://example.com/&quot;
+
+  item = maker.items.new_item
+  item.link = &quot;http://example.com/article.html&quot;
+  item.title = &quot;Sample Article&quot;
+  item.date = Time.parse(&quot;2004/11/1 10:10&quot;)
+
+  item = maker.items.new_item
+  item.link = &quot;http://example.com/article2.html&quot;
+  item.title = &quot;Sample Article2&quot;
+  item.date = Time.parse(&quot;2004/11/2 10:10&quot;)
+end
+</pre>
+<p>
+もし，更新日が新しい順に並び替えたければ
+</p>
+<pre>
+maker.items.do_sort = true
+</pre>
+<p>
+を追加し，以下のようにします．
+</p>
+<pre>
+require &quot;rss&quot;
+
+rss = RSS::Maker.make(&quot;1.0&quot;) do |maker|
+  maker.channel.about = &quot;http://example.com/index.rdf&quot;
+  maker.channel.title = &quot;Example&quot;
+  maker.channel.description = &quot;Example Site&quot;
+  maker.channel.link = &quot;http://example.com/&quot;
+
+  maker.items.do_sort = true
+
+  item = maker.items.new_item
+  item.link = &quot;http://example.com/article.html&quot;
+  item.title = &quot;Sample Article&quot;
+  item.date = Time.parse(&quot;2004/11/1 10:10&quot;)
+
+  item = maker.items.new_item
+  item.link = &quot;http://example.com/article2.html&quot;
+  item.title = &quot;Sample Article2&quot;
+  item.date = Time.parse(&quot;2004/11/2 10:10&quot;)
+end
+</pre>
+<p>
+もし，サイトに
+</p>
+<ul>
+<li>Example Siteという名前の</li>
+<li>http://example.com/logo.pngというロゴ</li>
+</ul>
+<p>
+がある場合は以下のようにします．
+</p>
+<pre>
+require &quot;rss&quot;
+
+rss = RSS::Maker.make(&quot;1.0&quot;) do |maker|
+  maker.channel.about = &quot;http://example.com/index.rdf&quot;
+  maker.channel.title = &quot;Example&quot;
+  maker.channel.description = &quot;Example Site&quot;
+  maker.channel.link = &quot;http://example.com/&quot;
+
+  maker.items.do_sort = true
+
+  item = maker.items.new_item
+  item.link = &quot;http://example.com/article.html&quot;
+  item.title = &quot;Sample Article&quot;
+  item.date = Time.parse(&quot;2004/11/1 10:10&quot;)
+
+  item = maker.items.new_item
+  item.link = &quot;http://example.com/article2.html&quot;
+  item.title = &quot;Sample Article2&quot;
+  item.date = Time.parse(&quot;2004/11/2 10:10&quot;)
+
+  maker.image.title = &quot;Example Site&quot;
+  maker.image.url = &quot;http://example.com/logo.png&quot;
+end
+</pre>
+<p>
+もし，
+</p>
+<ul>
+<li>http://example.com/search.cgiに</li>
+<li>keywordというパラメタ名で検索できる</li>
+<li>Search Example Siteという名前で</li>
+<li>Search Example Site's all textという説明付きの</li>
+</ul>
+<p>
+検索用CGIがあったら以下のようにします．
+</p>
+<pre>
+require &quot;rss&quot;
+
+rss = RSS::Maker.make(&quot;1.0&quot;) do |maker|
+  maker.channel.about = &quot;http://example.com/index.rdf&quot;
+  maker.channel.title = &quot;Example&quot;
+  maker.channel.description = &quot;Example Site&quot;
+  maker.channel.link = &quot;http://example.com/&quot;
+
+  maker.items.do_sort = true
+
+  item = maker.items.new_item
+  item.link = &quot;http://example.com/article.html&quot;
+  item.title = &quot;Sample Article&quot;
+  item.date = Time.parse(&quot;2004/11/1 10:10&quot;)
+
+  item = maker.items.new_item
+  item.link = &quot;http://example.com/article2.html&quot;
+  item.title = &quot;Sample Article2&quot;
+  item.date = Time.parse(&quot;2004/11/2 10:10&quot;)
+
+  maker.image.title = &quot;Example Site&quot;
+  maker.image.url = &quot;http://example.com/logo.png&quot;
+
+  maker.textinput.title = &quot;Search Example Site&quot;
+  maker.textinput.description = &quot;Search Example Site's all text&quot;
+  maker.textinput.name = &quot;keyword&quot;
+  maker.textinput.link = &quot;http://example.com/search.cgi&quot;
+end
+</pre>
+<p>
+もし，
+</p>
+<ul>
+<li>http://example.com/index.xslにある</li>
+</ul>
+<p>
+xml-stylesheetを追加したい場合は以下のようにします．
+</p>
+<pre>
+require &quot;rss&quot;
+
+rss = RSS::Maker.make(&quot;1.0&quot;) do |maker|
+  xss = maker.xml_stylesheets.new_xml_stylesheet
+  xss.href = &quot;http://example.com/index.xsl&quot;
+
+  maker.channel.about = &quot;http://example.com/index.rdf&quot;
+  maker.channel.title = &quot;Example&quot;
+  maker.channel.description = &quot;Example Site&quot;
+  maker.channel.link = &quot;http://example.com/&quot;
+
+  maker.items.do_sort = true
+
+  item = maker.items.new_item
+  item.link = &quot;http://example.com/article.html&quot;
+  item.title = &quot;Sample Article&quot;
+  item.date = Time.parse(&quot;2004/11/1 10:10&quot;)
+
+  item = maker.items.new_item
+  item.link = &quot;http://example.com/article2.html&quot;
+  item.title = &quot;Sample Article2&quot;
+  item.date = Time.parse(&quot;2004/11/2 10:10&quot;)
+
+  maker.image.title = &quot;Example Site&quot;
+  maker.image.url = &quot;http://example.com/logo.png&quot;
+
+  maker.textinput.title = &quot;Search Example Site&quot;
+  maker.textinput.description = &quot;Search Example Site's all text&quot;
+  maker.textinput.name = &quot;keyword&quot;
+  maker.textinput.link = &quot;http://example.com/search.cgi&quot;
+end
+</pre>
+<p>
+もし，RSS 2.0を生成したい場合は以下のように，
+RSS::Maker.makeの第一引数を変更します．
+</p>
+<pre>
+require &quot;rss&quot;
+
+rss = RSS::Maker.make(&quot;2.0&quot;) do |maker|
+  xss = maker.xml_stylesheets.new_xml_stylesheet
+  xss.href = &quot;http://example.com/index.xsl&quot;
+
+  maker.channel.about = &quot;http://example.com/index.rdf&quot;
+  maker.channel.title = &quot;Example&quot;
+  maker.channel.description = &quot;Example Site&quot;
+  maker.channel.link = &quot;http://example.com/&quot;
+
+  maker.items.do_sort = true
+
+  item = maker.items.new_item
+  item.link = &quot;http://example.com/article.html&quot;
+  item.title = &quot;Sample Article&quot;
+  item.date = Time.parse(&quot;2004/11/1 10:10&quot;)
+
+  item = maker.items.new_item
+  item.link = &quot;http://example.com/article2.html&quot;
+  item.title = &quot;Sample Article2&quot;
+  item.date = Time.parse(&quot;2004/11/2 10:10&quot;)
+
+  maker.image.title = &quot;Example Site&quot;
+  maker.image.url = &quot;http://example.com/logo.png&quot;
+
+  maker.textinput.title = &quot;Search Example Site&quot;
+  maker.textinput.description = &quot;Search Example Site's all text&quot;
+  maker.textinput.name = &quot;keyword&quot;
+  maker.textinput.link = &quot;http://example.com/search.cgi&quot;
+end
+</pre>
+<p>
+もし，RSS 0.91を生成したい場合は，RSS 2.0の場合と同様に
+RSS::Maker.make の第一引数を&quot;0.91&quot;に変更します．
+</p>
+<h2 >サンプル</h2>
+<p>
+RSS Parser のサンプルスクリプトをいくつか紹介します．これらの
+スクリプトは sample/ 以下に入っています．
+</p>
+<h3 >サンプル1 - 項目一覧</h3>
+<p>
+それでは、複数のRSSをパースしてitem要素を表示するスクリプト
+を書いてみましょう。
+</p>
+<p>
+まず、RSS 0.9x/1.0/2.0をパースできるように以下のようにrequireします。
+</p>
+<pre>
+require 'rss'
+</pre>
+<p>
+パースするRSSはファイルに保存されていて引数で与えられるものとします。
+</p>
+<pre>
+ARGV.each do |fname|
+  rss_source = nil
+  File.open(fname) do |f|
+    rss_source = f.read
+  end
+
+  rss = nil
+  begin
+    rss = RSS::Parser.parse(rss_source, false)
+  rescue RSS::Error
+  end
+
+  if rss.nil?
+    puts &quot;#{fname}はRSS 0.9x/1.0/2.0のいずれでもありません。&quot;
+  else
+    print_items(rss)
+  end
+end
+</pre>
+<p>
+あとはprint_itemsというメソッドを定義するだけです。
+</p>
+<p>
+RSS::RDFとRSS::Rssには便利のためにitemsというメソッドとimage
+というメソッドが定義されています。
+</p>
+<p>
+itemsはRSS::RDFの場合は全ての/rdf:RDF/item要素を配列で返しま
+す。RSS::Rssの場合は全ての/rss/channel/item要素を配列で返し
+ます。
+</p>
+<p>
+imageはRSS::RDFの場合は/rdf:RDF/image要素を返します。
+RSS::Rssの場合は/rss/channel/image要素を返します。
+</p>
+<pre>
+def print_items(rss)
+  rss.items.each do |item|
+    puts &quot;#{item.title} : #{item.description}&quot;
+  end
+end
+</pre>
+<p>
+出力する文字コードを変更するにはRSS::RDF#output_encoding=ま
+たはRSS::Rss#output_encoding=が使えます。もし、変換できない
+エンコーディングを指定された場合は
+RSS::UnknownConversionMethodError例外が発生します。
+</p>
+<p>
+先程のprint_itemsをEUC-JPで出力するように書き換えてみましょう。
+</p>
+<pre>
+def print_items(rss)
+  begin
+    rss.output_encoding = &quot;EUC-JP&quot;
+  rescue RSS::UnknownConversionMethodError
+  end
+  rss.items.each do |item|
+    puts &quot;#{item.title} : #{item.description}&quot;
+  end
+end
+</pre>
+<h3 >サンプル2 - 更新順表示</h3>
+<p>
+次はDublin Coreモジュールのdate属性を使って更新順にitemを表
+示してみましょう。
+</p>
+<p>
+最初に現れたDublin Coreモジュールの要素にアクセスするには
+「dc_要素名」というアクセサが用意されています。全ての要素の
+配列にアクセスするには「dc_要素の複数形」((-dc:rightsは
+dc_rightsesという風になっていて気に入っていません．だれか良
+い案を下さい．-))とします．
+</p>
+<p>
+複数形でアクセスした場合は「要素の内容を表す文字列」ではなく，
+「要素を表すオブジェクト」の配列が返ります．「要素を表すオブ
+ジェクト」から「要素の内容を表す文字列」を取得するには
+contentメソッドやその別名であるvalueメソッドを利
+用します．「要素の内容を表す文字列」を設定するには
+content=メソッドやその別名であるvalue=メソッドを
+利用します．
+</p>
+<pre>
+rss.channel.dc_title  # =&gt; 「要素の内容を表す文字列」
+                      # （&quot;My site&quot;など）
+
+rss.channel.dc_titles # =&gt; 「要素を表すオブジェクト」の配列
+                      # （[DublinCoreTitleオブジェクト, ...]）
+
+rss.channel.dc_titles.collect {|title| title.value}
+                      # =&gt; 「要素の内容を表す文字列」の配列
+                      # （[&quot;My site&quot;, ...]など）
+
+rss.channel.dc_titles.first.value == rss.channel.dc_title
+                      # =&gt; true
+# 厳密にはこう
+first_title = rss.channel.dc_titles.first
+first_title = first_title.value if first_title
+first_title == rss.channel.dc_title
+                      # =&gt; true
+</pre>
+<p>
+ちなみにSyndicationモジュールの要素にアクセスするには「sy_要
+素名」というアクセサが，Contentモジュールの要素にアクセスす
+るには「content_要素名」というアクセサが用意されています。
+</p>
+<p>
+サンプル1と同じようにパースするRSSはファイルに保存されていて
+引数で与えられるものとします。
+</p>
+<pre>
+items = []
+ARGV.each do |fname|
+  rss_source = nil
+  File.open(fname) do |f|
+    rss_source = f.read
+  end
+
+  rss = nil
+  begin
+    rss = RSS::Parser.parse(rss_source, true)
+  rescue RSS::Error
+  end
+
+  if rss.nil?
+    puts &quot;#{fname}はRSS 1.0ではありません。&quot;
+  else
+    begin
+      rss.output_encoding = &quot;euc-jp&quot;
+    rescue RSS::UnknownConversionMethodError
+    end
+    rss.items.each do |item|
+      items &lt;&lt; item if item.dc_date
+    end
+  end
+end
+print_items(items)
+</pre>
+<p>
+あとはprint_itemsというメソッドを定義するだけです。
+</p>
+<p>
+Item#dc_dateはTimeオブジェクトかnilを返します。引数の
+itemsにはdc_dateがnilではないものしか含まれていないは
+ずなので以下のようにソートできます。
+</p>
+<pre>
+def print_items(items)
+  items.sort do |x, y|
+    y.dc_date &lt;=&gt; x.dc_date
+  end.each do |item|
+    puts &quot;#{item.dc_date.localtime.iso8601} : #{item.title} : #{item.description}&quot;
+  end
+end
+</pre>
+<h3 >サンプル3 - 複数のRSSをブレンド</h3>
+<p>
+TODO: sample/blend.rbを元にしたサンプルを書く．
+</p>
+
+
+<h2>クラスとモジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-dublin-core-model.html">module DublinCoreModel</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-base-track-back-model.html">module RSS::BaseTrackBackModel</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-content-model.html">module RSS::ContentModel</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-dublin-core-model.html">module RSS::DublinCoreModel</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-element.html">class RSS::Element</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-image-favicon-model.html">module RSS::ImageFaviconModel</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-image-favicon-model=3a=3a-image-favicon.html">class RSS::ImageFaviconModel::ImageFavicon</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-image-item-model.html">module RSS::ImageItemModel</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-image-item-model=3a=3a-image-item.html">class RSS::ImageItemModel::ImageItem</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-image-model-utils.html">module RSS::ImageModelUtils</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker.html">module RSS::Maker</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-base.html">class RSS::Maker::Base</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-channel-base.html">class RSS::Maker::ChannelBase</a></td>
+<td class="description"><p>
+channel要素の値を設定します．
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-channel-base=3a=3a-categories-base.html">class RSS::Maker::ChannelBase::CategoriesBase</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-channel-base=3a=3a-categories-base=3a=3a-category-base.html">class RSS::Maker::ChannelBase::CategoriesBase::CategoryBase</a></td>
+<td class="description"><p>
+categoryは
+maker.channel.categories.new_categoryで作成されたオ
+ブジェクトとします．
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-channel-base=3a=3a-skip-days-base.html">class RSS::Maker::ChannelBase::SkipDaysBase</a></td>
+<td class="description"><p>
+RSS 0.91/2.0を生成するときだけ利用されます．
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-channel-base=3a=3a-skip-days-base=3a=3a-day-base.html">class RSS::Maker::ChannelBase::SkipDaysBase::DayBase</a></td>
+<td class="description"><p>
+dayは
+maker.channel.skipDays.new_dayで作成されたオ
+ブジェクトとします．
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-channel-base=3a=3a-skip-hours-base.html">class RSS::Maker::ChannelBase::SkipHoursBase</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-channel-base=3a=3a-skip-hours-base=3a=3a-hour-base.html">class RSS::Maker::ChannelBase::SkipHoursBase::HourBase</a></td>
+<td class="description"><p>
+hourは
+maker.channel.skipHours.new_hourで作成されたオ
+ブジェクトとします．
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-image-base.html">class RSS::Maker::ImageBase</a></td>
+<td class="description"><p>
+RSS 1.0の場合はurl，title，
+maker.channel.link，maker.channelが適切に設定さ
+れている必要があります．
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-items-base.html">class RSS::Maker::ItemsBase</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-items-base=3a=3a-item-base.html">class RSS::Maker::ItemsBase::ItemBase</a></td>
+<td class="description"><p>
+itemはmaker.items.new_itemで作成されたオブジェク
+トとします．
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-items-base=3a=3a-item-base=3a=3a-categories-base.html">class RSS::Maker::ItemsBase::ItemBase::CategoriesBase</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-items-base=3a=3a-item-base=3a=3a-enclosure-base.html">class RSS::Maker::ItemsBase::ItemBase::EnclosureBase</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-items-base=3a=3a-item-base=3a=3a-guid-base.html">class RSS::Maker::ItemsBase::ItemBase::GuidBase</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-items-base=3a=3a-item-base=3a=3a-source-base.html">class RSS::Maker::ItemsBase::ItemBase::SourceBase</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s09=3a=3a-channel.html">class RSS::Maker::RSS09::Channel</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s09=3a=3a-channel=3a=3a-categories.html">class RSS::Maker::RSS09::Channel::Categories</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s09=3a=3a-channel=3a=3a-categories=3a=3a-category.html">class RSS::Maker::RSS09::Channel::Categories::Category</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s09=3a=3a-channel=3a=3a-skip-days.html">class RSS::Maker::RSS09::Channel::SkipDays</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s09=3a=3a-channel=3a=3a-skip-days=3a=3a-day.html">class RSS::Maker::RSS09::Channel::SkipDays::Day</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s09=3a=3a-channel=3a=3a-skip-hours.html">class RSS::Maker::RSS09::Channel::SkipHours</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s09=3a=3a-channel=3a=3a-skip-hours=3a=3a-hour.html">class RSS::Maker::RSS09::Channel::SkipHours::Hour</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s09=3a=3a-image.html">class RSS::Maker::RSS09::Image</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s09=3a=3a-items.html">class RSS::Maker::RSS09::Items</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s09=3a=3a-items=3a=3a-item.html">class RSS::Maker::RSS09::Items::Item</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s09=3a=3a-items=3a=3a-item=3a=3a-categories.html">class RSS::Maker::RSS09::Items::Item::Categories</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s09=3a=3a-items=3a=3a-item=3a=3a-enclosure.html">class RSS::Maker::RSS09::Items::Item::Enclosure</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s09=3a=3a-items=3a=3a-item=3a=3a-guid.html">class RSS::Maker::RSS09::Items::Item::Guid</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s09=3a=3a-items=3a=3a-item=3a=3a-source.html">class RSS::Maker::RSS09::Items::Item::Source</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s09=3a=3a-textinput.html">class RSS::Maker::RSS09::Textinput</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s10.html">class RSS::Maker::RSS10</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s10=3a=3a-channel.html">class RSS::Maker::RSS10::Channel</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s10=3a=3a-channel=3a=3a-categories.html">class RSS::Maker::RSS10::Channel::Categories</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s10=3a=3a-channel=3a=3a-categories=3a=3a-category.html">class RSS::Maker::RSS10::Channel::Categories::Category</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s10=3a=3a-image.html">class RSS::Maker::RSS10::Image</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s10=3a=3a-items.html">class RSS::Maker::RSS10::Items</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s10=3a=3a-items=3a=3a-item.html">class RSS::Maker::RSS10::Items::Item</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s10=3a=3a-textinput.html">class RSS::Maker::RSS10::Textinput</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s20.html">class RSS::Maker::RSS20</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s20=3a=3a-channel.html">class RSS::Maker::RSS20::Channel</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s20=3a=3a-channel=3a=3a-categories.html">class RSS::Maker::RSS20::Channel::Categories</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s20=3a=3a-channel=3a=3a-categories=3a=3a-category.html">class RSS::Maker::RSS20::Channel::Categories::Category</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s20=3a=3a-channel=3a=3a-skip-days.html">class RSS::Maker::RSS20::Channel::SkipDays</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s20=3a=3a-channel=3a=3a-skip-days=3a=3a-day.html">class RSS::Maker::RSS20::Channel::SkipDays::Day</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s20=3a=3a-channel=3a=3a-skip-hours.html">class RSS::Maker::RSS20::Channel::SkipHours</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s20=3a=3a-channel=3a=3a-skip-hours=3a=3a-hour.html">class RSS::Maker::RSS20::Channel::SkipHours::Hour</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s20=3a=3a-image.html">class RSS::Maker::RSS20::Image</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s20=3a=3a-items.html">class RSS::Maker::RSS20::Items</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s20=3a=3a-items=3a=3a-item.html">class RSS::Maker::RSS20::Items::Item</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s20=3a=3a-items=3a=3a-item=3a=3a-categories.html">class RSS::Maker::RSS20::Items::Item::Categories</a></td>
+<td class="description"><p>
+RSS 2.0を生成するときだけ利用されます．
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s20=3a=3a-items=3a=3a-item=3a=3a-enclosure.html">class RSS::Maker::RSS20::Items::Item::Enclosure</a></td>
+<td class="description"><p>
+RSS 2.0を生成するときだけ利用されます．
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s20=3a=3a-items=3a=3a-item=3a=3a-guid.html">class RSS::Maker::RSS20::Items::Item::Guid</a></td>
+<td class="description"><p>
+RSS 2.0を生成するときだけ利用されます．
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s20=3a=3a-items=3a=3a-item=3a=3a-source.html">class RSS::Maker::RSS20::Items::Item::Source</a></td>
+<td class="description"><p>
+RSS 2.0を生成するときだけ利用されます．
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s20=3a=3a-textinput.html">class RSS::Maker::RSS20::Textinput</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-r-s-s-base.html">class RSS::Maker::RSSBase</a></td>
+<td class="description"><p>
+RSSのルート要素を生成するオブジェクトです．
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-textinput-base.html">class RSS::Maker::TextinputBase</a></td>
+<td class="description"><p>
+RSS 1.0の場合はtitle，description，name，
+link，maker.channelを適切に設定する必要がありま
+す．
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-maker=3a=3a-x-m-l-style-sheets=3a=3a-x-m-l-style-sheet.html">class RSS::Maker::XMLStyleSheets::XMLStyleSheet</a></td>
+<td class="description"><p>
+xml_stylesheetは
+maker.xml_stylesheet.new_xml_stylesheetで作成されたオ
+ブジェクトとします．
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-parser.html">class RSS::Parser</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-r-d-f.html">class RSS::RDF</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-r-d-f=3a=3a-channel.html">class RSS::RDF::Channel</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-r-d-f=3a=3a-channel=3a=3a-image.html">class RSS::RDF::Channel::Image</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-r-d-f=3a=3a-channel=3a=3a-image-favicon.html">class RSS::RDF::Channel::ImageFavicon</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-r-d-f=3a=3a-channel=3a=3a-items.html">class RSS::RDF::Channel::Items</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-r-d-f=3a=3a-channel=3a=3a-textinput.html">class RSS::RDF::Channel::Textinput</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-r-d-f=3a=3a-image.html">class RSS::RDF::Image</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-r-d-f=3a=3a-item.html">class RSS::RDF::Item</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-r-d-f=3a=3a-textinput.html">class RSS::RDF::Textinput</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-root-element-mixin.html">module RSS::RootElementMixin</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-rss.html">class RSS::Rss</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-rss=3a=3a-channel.html">class RSS::Rss::Channel</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-rss=3a=3a-channel=3a=3a-cloud.html">class RSS::Rss::Channel::Cloud</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-rss=3a=3a-channel=3a=3a-image.html">class RSS::Rss::Channel::Image</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-rss=3a=3a-channel=3a=3a-item.html">class RSS::Rss::Channel::Item</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-rss=3a=3a-channel=3a=3a-item=3a=3a-category.html">class RSS::Rss::Channel::Item::Category</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-rss=3a=3a-channel=3a=3a-item=3a=3a-enclosure.html">class RSS::Rss::Channel::Item::Enclosure</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-rss=3a=3a-channel=3a=3a-item=3a=3a-guid.html">class RSS::Rss::Channel::Item::Guid</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-rss=3a=3a-channel=3a=3a-item=3a=3a-source.html">class RSS::Rss::Channel::Item::Source</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-rss=3a=3a-channel=3a=3a-text-input.html">class RSS::Rss::Channel::TextInput</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-rss=3a=3a-skip-days.html">class RSS::Rss::SkipDays</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-rss=3a=3a-skip-hours.html">class RSS::Rss::SkipHours</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-syndication-model.html">module RSS::SyndicationModel</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-taxonomy-topic-model.html">module RSS::TaxonomyTopicModel</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-taxonomy-topic-model=3a=3a-taxonomy-topic.html">class RSS::TaxonomyTopicModel::TaxonomyTopic</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-taxonomy-topics-model.html">module RSS::TaxonomyTopicsModel</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-taxonomy-topics-model=3a=3a-taxonomy-topics.html">class RSS::TaxonomyTopicsModel::TaxonomyTopics</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-track-back-model10.html">module RSS::TrackBackModel10</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-track-back-model10=3a=3a-track-back-about.html">class RSS::TrackBackModel10::TrackBackAbout</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-track-back-model10=3a=3a-track-back-ping.html">class RSS::TrackBackModel10::TrackBackPing</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-track-back-model20.html">module RSS::TrackBackModel20</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-track-back-model20=3a=3a-track-back-about.html">class RSS::TrackBackModel20::TrackBackAbout</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-track-back-model20=3a=3a-track-back-ping.html">class RSS::TrackBackModel20::TrackBackPing</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-x-m-l-style-sheet.html">class RSS::XMLStyleSheet</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-x-m-l-style-sheet-mixin.html">module RSS::XMLStyleSheetMixin</a></td>
+<td class="description"></td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-conversion-error.html">class RSS::ConversionError</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-error.html">class RSS::Error</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-invalid-r-s-s-error.html">class RSS::InvalidRSSError</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-missing-attribute-error.html">class RSS::MissingAttributeError</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-missing-tag-error.html">class RSS::MissingTagError</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-n-s-error.html">class RSS::NSError</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-not-available-value-error.html">class RSS::NotAvailableValueError</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-not-expected-tag-error.html">class RSS::NotExpectedTagError</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-not-set-error.html">class RSS::NotSetError</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-not-valid-x-m-l-parser.html">class RSS::NotValidXMLParser</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-not-well-formed-error.html">class RSS::NotWellFormedError</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-overlapped-prefix-error.html">class RSS::OverlappedPrefixError</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-too-much-tag-error.html">class RSS::TooMuchTagError</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-unknown-conversion-method-error.html">class RSS::UnknownConversionMethodError</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-unknown-tag-error.html">class RSS::UnknownTagError</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-r-s-s=3a=3a-x-m-l-parser-not-found.html">class RSS::XMLParserNotFound</a></td>
+<td class="description"></td>
+</tr>
+
+</table>
+
+
+
+<h2>追加・再定義されるメソッド</h2>
+<p><code>
+
+<a href="../method/-r-s-s=3a=3a-rss=3a=3a-channel/i/generator.html">RSS::Rss::Channel#generator</a>
+
+<a href="../method/-r-s-s=3a=3a-rss=3a=3a-channel/i/ttl.html">RSS::Rss::Channel#ttl</a>
+
+<a href="../method/-r-s-s=3a=3a-rss=3a=3a-channel=3a=3a-item/i/author.html">RSS::Rss::Channel::Item#author</a>
+
+<a href="../method/-r-s-s=3a=3a-rss=3a=3a-channel=3a=3a-item/i/comments.html">RSS::Rss::Channel::Item#comments</a>
+
+<a href="../method/-r-s-s=3a=3a-rss=3a=3a-channel=3a=3a-item/i/guid.html">RSS::Rss::Channel::Item#guid</a>
+
+<a href="../method/-r-s-s=3a=3a-rss=3a=3a-channel=3a=3a-item/i/pub-date.html">RSS::Rss::Channel::Item#pubDate</a>
+
+</code></p>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

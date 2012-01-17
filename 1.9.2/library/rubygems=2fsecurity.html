@@ -1,0 +1,554 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library rubygems/security</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; rubygems/securityライブラリ
+</p>
+
+
+
+<h1>library rubygems/security</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+このライブラリは暗号署名を RubyGems パッケージに使用するために使用します。
+</p>
+<h3 >署名付きの Gem パッケージ</h3>
+<h4 >目次</h4>
+<ul>
+<li>概要</li>
+<li>解説</li>
+<li>コマンドラインオプション</li>
+<li>OpenSSL リファレンス</li>
+<li>Bugs / TODO</li>
+<li>作者について</li>
+</ul>
+<h4 >概要</h4>
+<p>
+このライブラリは暗号署名を RubyGems パッケージに使用するために使用します。
+以下のセクションでは、署名付きの Gem パッケージを作成する方法を
+ステップバイステップで解説しています。
+</p>
+<h4 >解説</h4>
+<p>
+あなたが自分の Gem に署名するためには、秘密鍵と自己署名した証明書が必要です。
+以下のコマンドを実行するとそれらを作成することができます。
+</p>
+<pre>
+# gemmaster@example.com のための秘密鍵と証明書を作成します
+$ gem cert --build gemmaster@example.com
+</pre>
+<p>
+あなたのコンピュータの性能にもよりますが、これには 5 秒から 10 分程度かかります。
+(公開鍵を作成するアルゴリズムは世界で一番速いものを使っているわけではない)
+それが完了すると、カレントディレクトリに &quot;gem-private_key.pem&quot;, &quot;gem-public_cert.pem&quot;
+の二つのファイルができます。
+</p>
+<p>
+まずは、なるべくあなただけがアクセスできる場所に &quot;gem-private_key.pem&quot; を移動させて
+ください。 FD, CD-ROM など同じくらい安全なものでかまいません。
+そして秘密鍵を秘密のままにしておいてください。もし、それが第三者に漏洩した場合は、
+誰かがあなたのフリをしてパッケージに署名することができます。(NOTE: 後述しますが
+PKI には盗まれた鍵によるリスクを軽減する方法があります。)
+</p>
+<p>
+さて、Gem に署名しましょう。この例では Imlib2-Ruby を使用しますが、
+あなたは好きな Gem を使用してもいいですよ。あなたの gemspec ファイルを開いて
+以下の内容を追加してください。
+</p>
+<pre>
+# signing key and certificate chain
+s.signing_key = '/mnt/floppy/gem-private_key.pem'
+s.cert_chain  = ['gem-public_cert.pem']
+</pre>
+<p>
+(&quot;/mnt/floppy&quot; はあなた自身の秘密鍵の置いてあるパスに読み替えてくださいね。)
+</p>
+<p>
+それから、いつも通りあなたの Gem をビルドします。
+おめでとう！たった今、あなたの最初の署名付き Gem がビルドできました。
+出来上がった Gem ファイルの中を覗いてみると、追加されたファイルがあることがわかります。
+</p>
+<pre>
+$ tar tf tar tf Imlib2-Ruby-0.5.0.gem
+data.tar.gz
+data.tar.gz.sig
+metadata.gz
+metadata.gz.sig
+</pre>
+<p>
+さあ、署名を検証してみましょう。以下のように &quot;-P HighSecurity&quot; オプションを
+付けて Gem をインストールしてみてください。
+</p>
+<pre>
+# install the gem with using the security policy &quot;HighSecurity&quot;
+$ sudo gem install Imlib2-Ruby-0.5.0.gem -P HighSecurity
+</pre>
+<p>
+この -P オプションはセキュリティポリシーを設定します。
+このような話をしているうちに…。えーと、なんだ。これは？
+</p>
+<pre>
+Attempting local installation of 'Imlib2-Ruby-0.5.0.gem'
+ERROR:  Error installing gem Imlib2-Ruby-0.5.0.gem[.gem]: Couldn't
+verify data signature: Untrusted Signing Chain Root: cert =
+'/CN=gemmaster/DC=example/DC=com', error = 'path
+&quot;/root/.rubygems/trust/cert-15dbb43a6edf6a70a85d4e784e2e45312cff7030.pem&quot;
+does not exist'
+</pre>
+<p>
+このエラーの原因はセキュリティポリシーにあります。RubyGems にはいくつかの
+異なるセキュリティポリシーがあります。少し休憩してから、セキュリティポリシー
+の説明をしましょう。以下に、現在使用可能なセキュリティポリシーの一覧を示します。
+</p>
+<dl>
+<dt>NoSecurity</dt>
+<dd>
+<p>
+なんのセキュリティもありません。署名付きのパッケージも署名無しのパッケージの
+ように扱います。
+</p>
+</dd>
+<dt>LowSecurity</dt>
+<dd>
+<p>
+ほとんどなんのセキュリティもありません。RubyGems は署名付きのパッケージを
+検証しますが、証明書が失効していなければ検証は成功します。悪意のあるユーザは
+このようなセキュリティを簡単に回避することができます。
+</p>
+</dd>
+<dt>MediumSecurity</dt>
+<dd>
+<p>
+LowSecurity, NoSecurity よりも良いですが、まだ不確実です。
+パッケージの内容は、署名付きの証明書に対して検証されます。
+証明書の正当性が検証されます。証明書は残りの証明書チェーンに対して検証されます。
+(あなたが証明書チェーンについて知らない場合は、すぐに説明するので少し待ってください)
+LowSecurity ポリシーからの最大の改善点は MediumSecurity ポリシーは信頼出来ない
+ソースが署名したパッケージをインストールしないことです。
+不幸なことに MediumSecurity ポリシーは完全にセキュアというわけではありません。
+悪意のあるユーザは、署名を外したり、署名なしの Gem を配布すると、 Gem を展開する
+ことができます。
+</p>
+</dd>
+<dt>HighSecurity</dt>
+<dd>
+<p>
+この厄介事は私たちをこんな状態にしました。 HighSecurity ポリシーは
+署名なしの Gem をインストールしないということを除いて MediumSecurity と同じです。
+悪意のあるユーザは、なんの手段もも持っていない。悪意のあるユーザは、署名を
+無効にすることなしにパッケージ内容を変更することができません。また、署名を変更したり
+削除したり、証明書チェーンを削除することができません。RubyGems はそのような
+パッケージのインストールを単に拒否します。あー、奴がすっごい強運を持っていたら
+CPAN ユーザに何か問題を引き起こすかもね(笑)
+</p>
+</dd>
+</dl>
+<p>
+というわけで、RubyGems が我々の輝かしい新しい署名付きの Gem のインストールを拒否した
+理由は、それが信頼されていないソースに由来するものだったからなのです。えーと、
+私のコードは絶対確実(笑)なので、自分自身を信頼されたソースに追加します。
+</p>
+<p>
+以下のようにしてください。
+</p>
+<pre>
+# add trusted certificate
+gem cert --add gem-public_cert.pem
+</pre>
+<p>
+私の公開証明書を信頼されたソースとして追加しました。今では私の秘密鍵で署名した
+パッケージを煩わしい事をせずにインストールすることが出来ます。さあ、上述の
+インストールコマンドをもう一度実行してください。
+</p>
+<pre>
+# install the gem with using the HighSecurity policy
+# (今度はなんの問題もありません)
+$ sudo gem install Imlib2-Ruby-0.5.0.gem -P HighSecurity
+</pre>
+<p>
+今回は、RubyGems はあなたの署名付きパッケージを受け入れ、インストールを開始するはずです。
+RubyGems が魔法をかけている間に、他のセキュリティに関するコマンドを見ておきましょう。
+</p>
+<pre>
+Usage: gem cert [options]
+
+Options:
+   -a, --add CERT                   信頼する証明書を追加します。
+   -l, --list                       信頼している証明書のリストを表示します。
+   -r, --remove STRING              STRING を含む証明書を削除します。
+   -b, --build EMAIL_ADDR           EMAIL_ADDR に対する秘密鍵や自己署名証明書を
+                                    作成します。
+   -C, --certificate CERT           --sign で使用する証明書を指定します。
+   -K, --private-key KEY            --sign で使用する秘密鍵を指定します。
+   -s, --sign NEWCERT               自分の鍵を用いて証明書に署名します。
+</pre>
+<p>
+(ところで、&quot;gem cert --help&quot; を実行するといつでも好きな時に上記のリストの英語版を
+見ることが出来ますよ)
+</p>
+<p>
+ふむ。私たちは、&quot;--build&quot; オプションは既に見ました。 &quot;--add&quot;, &quot;--list&quot;, &quot;--remove&quot; の
+各オプションは極めて直観的ですね。あなたの信頼された証明書のリストに証明書を追加したり、
+一覧を出力したり、証明書を削除したりできます。しかし &quot;--sign&quot; オプションとは何でしょうか？
+</p>
+<p>
+その質問に答えるために、先ほど言及した &quot;証明書チェーン&quot; という概念を見ていきましょう。
+自己署名証明書には二つの問題があります。一つは、自己署名証明書が全体のセキュリティを
+提供していないことです。もちろん証明書は、まつもとゆきひろと名乗りますが、個人的に
+証明書を受け取らない限り、それが本当に matz によって生成されたことをどうやって確認
+するのでしょうか？
+</p>
+<p>
+二つ目の問題は拡張性です。もちろん 50 人の Gem 開発者がいる場合に、50 の証明書を
+扱うのは問題ありません。Gem 開発者が 500 人や 1000 人になったらどうなりますか？
+信頼された証明書を追加し続けるのは苦痛です。それに、実際はRubyGems ユーザが新しい
+証明書を闇雲に信頼することによってこの信頼性システムは安全でなくなってしまいます。
+</p>
+<p>
+証明書チェーンがどこから来るのか示します。証明書チェーンは、ある発行証明書と
+子の証明書の間で適宜長い信頼性の鎖を成立させます。だから私たちは、証明書を
+開発者ごとに信頼するかわりに、論理的な信頼の階層を構築する PKI の概念である
+証明書チェーンを使用します。信頼の階層の例を図示します。
+</p>
+<pre>
+                    --------------------------
+                    | rubygems@rubyforge.org |
+                    --------------------------
+                                |
+              -----------------------------------
+              |                                 |
+  ----------------------------    -----------------------------
+  | seattle.rb@zenspider.com |    | dcrubyists@richkilmer.com |
+  ----------------------------    -----------------------------
+       |                |                 |             |
+---------------   ----------------   -----------   --------------
+| alf@seattle |   | bob@portland |   | pabs@dc |   | tomcope@dc |
+---------------   ----------------   -----------   --------------
+</pre>
+<p>
+さて、4 つの信頼された証明書(alf@seattle, bob@portland, pabs@dc, tomcope@dc)
+がありますが、実際にはユーザは、一つの証明書(&quot;rubygems@rubyforge.org&quot;)を信頼
+するだけでいいのです。以下にそれがどのように働くか説明します。
+</p>
+<p>
+私は &quot;alf@seattle&quot; が署名した &quot;Alf2000-Ruby-0.1.0.gem&quot; をインストールします。
+私は &quot;alf@seattle&quot; なんて聞いたこともありませんが、彼の証明書は &quot;seattle.rb@zenspider.com&quot;
+の証明書から有効であると証明されています。&quot;seattle.rb@zenspider.com&quot; は
+&quot;rubygems@rubyforge.org&quot; から有効であると証明されています。
+素晴らしい！要するに、 &quot;rubygems@rubyforge.org&quot; へつながるチェーンを成立させることが
+できるので &quot;alf@seattle&quot; によって署名されたパッケージを信頼するのにものすごく便利だということです。
+</p>
+<p>
+&quot;--sign&quot; オプションはこれらを全て行います。
+開発者が &quot;--build&quot; オプションで証明書を作成します。
+地方で行われる Ruby 会議や Ruby 勉強会にその証明書を持っていって(例の信頼の階層のように)、
+上流の証明書を持っている人に署名してもらいます。あるいは、次回の RubyConf でトップレベルの
+証明書を持っている人に署名してもらいます。どちらの場合でも署名をする人は
+同じコマンドを実行します。
+</p>
+<pre>
+# sign a certificate with the specified key and certificate
+# (note that this modifies client_cert.pem!)
+$ gem cert -K /mnt/floppy/issuer-priv_key.pem -C issuer-pub_cert.pem --sign client_cert.pem
+</pre>
+<p>
+発行された証明書の持ち主 (このケースの場合 &quot;alf@seattle&quot;) は自分のパッケージに署名するために
+この証明書を使用することができます。ところで、みんなに彼の新しい素敵な署名済みの証明書を
+知らせるには、&quot;alf@seattle&quot; は彼の gemspec を以下のように変更する必要があります。
+</p>
+<pre>
+# signing key (still kept in an undisclosed location!)
+s.signing_key = '/mnt/floppy/alf-private_key.pem'
+
+# certificate chain (includes the issuer certificate now too)
+s.cert_chain  = ['/home/alf/doc/seattlerb-public_cert.pem',
+                 '/home/alf/doc/alf_at_seattle-public_cert.pem']
+</pre>
+<p>
+言うまでもなく、この RubyGems の信頼基盤はまだ存在していません。
+また、「現実世界」でも発行者たちはリクエストがあれば、証明書を発行しています。
+この階層システムには証明書を取り消す仕組みが欠けています。
+これらの問題は、将来修正されるでしょう。
+</p>
+<p>
+ここまでに、新しい署名付きの Gem をインストール済みだと思います(あなたが
+Rails とその依存している Gem をインストールしている最中でなければ)。
+ここでは、学んだことと興味深いことをおさらいしておきましょう。
+</p>
+<ul>
+<li>署名と証明書を用いて Gem をビルドすること</li>
+<li>署名をサポートするように既に存在する Gem を修正すること</li>
+<li>セキュリティポリシーを調整すること</li>
+<li>信頼済みの証明書のリストを編集すること</li>
+<li>証明書に署名すること</li>
+</ul>
+<h4 >コマンドラインオプション</h4>
+<p>
+以下に、署名付き Gem に関係するコマンドラインオプションをまとめておきます。
+</p>
+<pre>
+gem install
+  -P, --trust-policy POLICY        Gem の信頼するポリシーを指定します。
+
+gem cert
+  -a, --add CERT                   信頼する証明書を追加します。
+  -l, --list                       信頼している証明書のリストを表示します。
+  -r, --remove STRING              STRING を含む証明書を削除します。
+  -b, --build EMAIL_ADDR           EMAIL_ADDR に対する秘密鍵や自己署名証明書を
+                                   作成します。
+  -C, --certificate CERT           --sign で使用する証明書を指定します。
+  -K, --private-key KEY            --sign で使用する秘密鍵を指定します。
+  -s, --sign NEWCERT               自分の鍵を用いて証明書に署名します。
+</pre>
+<p>
+それぞれのオプションに関するより詳しい解説は、前節を参照してください。
+</p>
+<h4 >OpenSSL リファレンス</h4>
+<p>
+gem cert --build, gem cert --sign を使用して作成できる *.pem ファイルは
+基本的な OpenSSL PEM ファイルのみです。以下にいくつかの便利なコマンドを
+紹介しておきます。
+</p>
+<pre>
+X509 フォーマットの PEM ファイルを DER フォーマットに変換する
+(ノート:Windows の *.cer ファイルは X509 証明書の DER フォーマットです) :
+$ openssl x509 -in input.pem -outform der -out output.der
+
+人間に読みやすいフォーマットで証明書を出力する :
+$ openssl x509 -in input.pem -noout -text
+</pre>
+<p>
+秘密鍵に対しても同じことができます。
+</p>
+<pre>
+PEM フォーマットの RSA 鍵を DER フォーマットに変換します :
+$ openssl rsa -in input_key.pem -outform der -out output_key.der
+
+鍵を人間に読みやすいフォーマットで出力します :
+$ openssl rsa -in input_key.pem -noout -text
+</pre>
+
+
+<h2>クラスとモジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-gem=3a=3a-security.html">module Gem::Security</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-gem=3a=3a-security=3a=3a-policy.html">class Gem::Security::Policy</a></td>
+<td class="description"><p>
+署名付きの Gem パッケージを検証するための設定をカプセル化しているクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-gem=3a=3a-security=3a=3a-signer.html">class Gem::Security::Signer</a></td>
+<td class="description"><p>
+OpenSSL の署名者を扱うためのクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-gem=3a=3a-security=3a=3a-exception.html">class Gem::Security::Exception</a></td>
+<td class="description"><p>
+セキュリティ関連のエラーを表します。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>同時にrequireされるライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/rubygems.html">rubygems</a></td>
+<td class="description"><p>
+RubyGems を扱うためのクラスやモジュールが定義されているライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fbuilder.html">rubygems/builder</a></td>
+<td class="description"><p>
+<a href="../class/-gem=3a=3a-specification.html">Gem::Specification</a> のインスタンスから Gem パッケージを作成するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fdefaults.html">rubygems/defaults</a></td>
+<td class="description"><p>
+RubyGems ライブラリで使用するデフォルト値を返すメソッドを定義したライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fdefaults=2foperating_system.html">rubygems/defaults/operating_system</a></td>
+<td class="description"><p>
+(uninitialized)
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fdependency.html">rubygems/dependency</a></td>
+<td class="description"><p>
+Gem の依存関係を管理するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fdigest=2fsha2.html">rubygems/digest/sha2</a></td>
+<td class="description"><p>
+<a href="../class/-digest=3a=3a-s-h-a256.html">Digest::SHA256</a> をラップするためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fexceptions.html">rubygems/exceptions</a></td>
+<td class="description"><p>
+RubyGems で使用する例外クラスを定義したライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fgem_openssl.html">rubygems/gem_openssl</a></td>
+<td class="description"><p>
+OpenSSL がインストールされていないシステムがあるかもしれないので、
+OpenSSL が使えるかどうかを確認するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fgem_path_searcher.html">rubygems/gem_path_searcher</a></td>
+<td class="description"><p>
+Gem パッケージに含まれているファイルのうちロード可能なものを検索するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fplatform.html">rubygems/platform</a></td>
+<td class="description"><p>
+選択した Gem のインストールを実行できるプラットフォームのリストを扱うライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fremote_fetcher.html">rubygems/remote_fetcher</a></td>
+<td class="description"><p>
+リモートソースから Gem パッケージや Gem パッケージの情報を取得するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2frequirement.html">rubygems/requirement</a></td>
+<td class="description"><p>
+Gem パッケージのバージョンに関する必須条件を扱うためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fsource_index.html">rubygems/source_index</a></td>
+<td class="description"><p>
+個々のソースから取得した全ての有効な Gem パッケージをインデックス化するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fsource_info_cache.html">rubygems/source_info_cache</a></td>
+<td class="description"><p>
+個々の Gem パッケージのインデックス情報のコピーを保存するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fsource_info_cache_entry.html">rubygems/source_info_cache_entry</a></td>
+<td class="description"><p>
+<a href="../class/-gem=3a=3a-source-info-cache.html">Gem::SourceInfoCache</a> が持つエントリを表すためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fspec_fetcher.html">rubygems/spec_fetcher</a></td>
+<td class="description"><p>
+リモートリポジトリから Gem のメタデータを取得して更新するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fspecification.html">rubygems/specification</a></td>
+<td class="description"><p>
+Gem パッケージのメタデータを扱うためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fuser_interaction.html">rubygems/user_interaction</a></td>
+<td class="description"><p>
+ユーザとのやりとりを行うライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fversion.html">rubygems/version</a></td>
+<td class="description"><p>
+Gem パッケージのバージョンを扱うためのライブラリです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

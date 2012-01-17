@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method Encoding::Converter#insert_output</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-encoding=3a=3a-converter.html">Encoding::Converterクラス</a>
+&gt; insert_output
+
+</p>
+
+
+
+
+<h1>instance method Encoding::Converter#insert_output</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>insert_output(string) -&gt; nil</code></dt>
+<dd class="method-description">
+<p>
+変換器内のバッファに文字列を挿入します。
+バッファに保持された文字列は、次の変換時の変換結果と一緒に返されます。
+</p>
+<p>
+変換先がステートフルなエンコーディングであった場合、
+挿入された文字列は状態に基づいて変換され、状態を更新します。
+</p>
+<p>
+このメソッドは変換に際してエラーが発生した際にのみ利用されるべきです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+挿入する文字列
+</dd>
+</dl>
+<pre>
+ec = Encoding::Converter.new(&quot;utf-8&quot;, &quot;iso-8859-1&quot;)
+src = &quot;HIRAGANA LETTER A is \u{3042}.&quot;
+dst = &quot;&quot;
+p ec.primitive_convert(src, dst)    #=&gt; :undefined_conversion
+puts &quot;[#{dst.dump}, #{src.dump}]&quot;   #=&gt; [&quot;HIRAGANA LETTER A is &quot;, &quot;.&quot;]
+ec.insert_output(&quot;&lt;err&gt;&quot;)
+p ec.primitive_convert(src, dst)    #=&gt; :finished
+puts &quot;[#{dst.dump}, #{src.dump}]&quot;   #=&gt; [&quot;HIRAGANA LETTER A is &lt;err&gt;.&quot;, &quot;&quot;]
+
+ec = Encoding::Converter.new(&quot;utf-8&quot;, &quot;iso-2022-jp&quot;)
+src = &quot;\u{306F 3041 3068 2661 3002}&quot; # U+2661 is not representable in iso-2022-jp
+dst = &quot;&quot;
+p ec.primitive_convert(src, dst)    #=&gt; :undefined_conversion
+puts &quot;[#{dst.dump}, #{src.dump}]&quot;   #=&gt; [&quot;\e$B$O$!$H&quot;.force_encoding(&quot;ISO-2022-JP&quot;), &quot;\xE3\     x80\x82&quot;]
+ec.insert_output &quot;?&quot;                # state change required to output &quot;?&quot;.
+p ec.primitive_convert(src, dst)    #=&gt; :finished
+puts &quot;[#{dst.dump}, #{src.dump}]&quot;   #=&gt; [&quot;\e$B$O$!$H\e(B?\e$B!#\e(B&quot;.force_encoding(&quot;ISO-20     22-JP&quot;), &quot;&quot;]
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>
