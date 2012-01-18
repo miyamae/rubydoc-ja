@@ -44,10 +44,26 @@ function initPage() {
     });
 }
 
+function itemIndex(param) {
+    return $('<li>xxx</li>');
+}
+
+function loadIndex() {
+    $.getJSON('index.json', function(json) {
+        var ul = $('#navi ul');
+        $.each(json, function() {
+            console.log(this);
+            ul.append(itemIndex(this));
+        });
+    });
+}
+
 $(function() {
 
     $('#navi li:odd').addClass('odd');
     $('#navi li:even').addClass('even');
+
+    loadIndex();
 
     $(window).hashchange(function() {
         loadPage();
