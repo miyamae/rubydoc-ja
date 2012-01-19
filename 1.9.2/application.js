@@ -1,6 +1,7 @@
+INDEX = [];
 
 function log(s) {
-    console.log(s);
+    if (console) console.log(s);
 }
 
 function topUri() {
@@ -44,22 +45,36 @@ function initPage() {
 }
 
 function itemIndex(param) {
-    return $('<li>xxx</li>');
+    var item = $('<li><a><span class="name"></span><span class="sub"></span><span class="desc"></span></a></li>');
+    item.find('a').attr('href', param.path);
+    item.find('a').attr('title', param.desc);
+    item.find('.name').text(param.name);
+    item.find('.sub').text(param.sub);
+    item.find('.desc').text(param.desc);
+    return item;
 }
 
 function loadIndex() {
     $.getJSON('index.json', function(json) {
+        INDEX = json;
         var ul = $('#navi ul');
         $.each(json, function() {
             ul.append(itemIndex(this));
         });
+        zebraList();
     });
 }
 
-$(function() {
-
+function zebraList() {
     $('#navi li:odd').addClass('odd');
     $('#navi li:even').addClass('even');
+}
+
+function suggest() {
+    log($('#search-box').val());
+}
+
+$(function() {
 
     loadIndex();
 
@@ -71,5 +86,9 @@ $(function() {
         location.hash = '#!/doc/index.html';
     }
     loadPage();
+
+    $('#search-box').change(function() {
+        suggest();
+    });
 
 });
