@@ -28,13 +28,14 @@ function loadPage() {
         var path = location.hash.replace('#!', '');
         $('#body').text('読み込み中');
         $('#body').load(absolutePath(path), null, function() {
-            initPage();
+            initPage($('#body'));
         });
     }
 }
 
-function initPage() {
-    $('a').each(function() {
+function initPage(elem) {
+    var as = elem ? elem.find('a') : $('a');
+    as.each(function() {
         var src_url = $(this).attr('href');
         if (!isAbsoluteUri(src_url) && !src_url.match(/^#/)) {
             $(this).attr('href', '#!/' + absolutePath(src_url));
@@ -43,23 +44,22 @@ function initPage() {
 }
 
 function itemIndex(param) {
-    var item = $('<li><a><span class="name"></span><span class="sub"></span><span class="desc"></span></a></li>');
+    var item = $('<li><a><span class="name"></span><span class="desc"></span></a></li>');
     item.find('li').attr('id', 'idx' + param.id);
     item.find('a').attr('href', param.path);
     item.find('a').attr('title', param.desc);
     item.find('.name').text(param.name);
-    item.find('.sub').text(param.sub);
     item.find('.desc').text(param.desc);
     return item;
 }
 
+_index = [];
+
 function loadIndex() {
-    $.getJSON('index2.json', function(json) {
-        var ul = $('#navi ul');
-        $.each(json, function() {
-            ul.append(itemIndex(this));
-        });
-        zebraList();
+    $.getJSON('index.json', function(json) {
+        _index = json;
+        $('#search-box').removeAttr('disabled');
+        $('#search-box').focus();
     });
 }
 
@@ -71,20 +71,30 @@ function zebraList() {
 function suggest() {
     var key = $('#search-box').val();
     var n = 0;
-    $('#navi li').each(function() {
-        if ($(this).find('.name').text().indexOf(key) == 0) {
-            n += 1;
-            $(this).show();
-            if (n > 10) {
-                return false;
+    var ul = $('#navi ul');
+    ul.empty();
+    if (key) {
+        $.each(_index, function() {
+            if (this.name.toLowerCase().indexOf(key.toLowerCase()) != -1) {
+                n += 1;
+                ul.append(itemIndex(this));
+                if (n > 30) {
+                    ul.append('<li class="more">続きがあります</li>');
+                    return false;
+                }
             }
-        } else {
-            $(this).hide();
-        }
-    });
+            return true;
+        });
+        $('#navi li .name').highlight(key);
+        zebraList();
+        initPage($('#navi'));
+    }
 }
 
 $(function() {
+
+    $('#search-box').attr('disabled', 'disabled');
+    $('#search-box').val('');
 
     loadIndex();
 
@@ -98,8 +108,10 @@ $(function() {
     loadPage();
 
     $('#search-box').keyup(function(e) {
-        //log($('#search-box').val());
         suggest();
+    });
+    $('#search-box').focus(function(e) {
+        $(this).select();
     });
 
 });

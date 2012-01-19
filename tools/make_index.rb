@@ -15,7 +15,6 @@ recs = []
 items = []
 Find.find(html_dir) do |file|
 
-  #puts file
   if FileTest.file?(file) && File.extname(file) == '.html'
     html = File.read(file)
     item = {:id => id, :path=>file.gsub(/^\.\.\/1\.9\.2/, '')}
@@ -31,19 +30,15 @@ Find.find(html_dir) do |file|
         end
       end
     end
-    if html =~ %r{<title>(.*? method|module function|constant) (.*?)[\.#:].*?</title>}
-      item[:sub] = CGI.unescapeHTML($2)
+    if html =~ %r{<title>(.*? method|module function|constant) (.*?)</title>}
+      item[:key] = CGI.unescapeHTML($2)
     end
     if html =~ %r{<dd class="method-description">.*?<p>(.*?)</p>}m
       item[:desc] = CGI.unescapeHTML($1.gsub(/<.*?>|"/, '').gsub(/\n/, ' ')).strip
     end
     items << item
-    rec = %!{"id":"#{item[:id]}","path":"#{item[:path]}"\n,"name":"#{item[:name]}","sub":"#{item[:sub]}","arg":"#{item[:arg]}","ret":"#{item[:rete]}",\n"desc":"#{item[:desc]}"}!
-    recs << rec
-    #puts rec
   end
 
 end
 
-#puts %![\n#{recs.join(",\n")}\n]!
-puts items.to_json
+puts items.sort{|a,b|a[:name]<=>b[:name]}.to_json
