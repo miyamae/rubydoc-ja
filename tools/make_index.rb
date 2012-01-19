@@ -1,14 +1,18 @@
 #!/usr/bin/ruby
 # -*- coding: utf-8 -*-
 
+# gem install json
+
+require 'rubygems'
 require 'find'
 require 'cgi'
-require 'yaml'
+require 'json'
 
 html_dir = '../1.9.2/method'
 
 id = 1
 recs = []
+items = []
 Find.find(html_dir) do |file|
 
   #puts file
@@ -33,6 +37,7 @@ Find.find(html_dir) do |file|
     if html =~ %r{<dd class="method-description">.*?<p>(.*?)</p>}m
       item[:desc] = CGI.unescapeHTML($1.gsub(/<.*?>|"/, '').gsub(/\n/, ' ')).strip
     end
+    items << item
     rec = %!{"id":"#{item[:id]}","path":"#{item[:path]}"\n,"name":"#{item[:name]}","sub":"#{item[:sub]}","arg":"#{item[:arg]}","ret":"#{item[:rete]}",\n"desc":"#{item[:desc]}"}!
     recs << rec
     #puts rec
@@ -40,4 +45,5 @@ Find.find(html_dir) do |file|
 
 end
 
-puts %![\n#{recs.join(",\n")}\n]!
+#puts %![\n#{recs.join(",\n")}\n]!
+puts items.to_json

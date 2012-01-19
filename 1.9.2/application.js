@@ -69,9 +69,15 @@ function zebraList() {
 }
 
 function suggest() {
+    var key = $('#search-box').val();
+    var n = 0;
     $('#navi li').each(function() {
-        if ($(this).find('.name').text().indexOf($('#search-box').val()) == 0) {
+        if ($(this).find('.name').text().indexOf(key) == 0) {
+            n += 1;
             $(this).show();
+            if (n > 10) {
+                return false;
+            }
         } else {
             $(this).hide();
         }
