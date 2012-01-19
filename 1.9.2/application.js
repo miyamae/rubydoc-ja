@@ -1,35 +1,34 @@
 
+function log(s) {
+    console.log(s);
+}
+
+function topUri() {
+    return location.href.replace(/#.*?$/, '').replace(/[^\/]*$/, '');
+}
+
 function baseUri() {
-    return location.href.replace(/#.*?$/, '').replace(/[^/]*$/, '');
+    var base_path = location.hash.replace('#!', '').replace(/[^\/]*$/, '');
+    return topUri() + base_path.replace(/^\//, '');
 }
 
 function absolutePath(path) {
     var e = document.createElement('span');
-    var url = path.match(/^\//) ? baseUri().replace(/\/$/, '') + path : path;
+    var url = baseUri() + path.replace(/^\//, '');
     e.innerHTML = '<a href="' + url + '" />';
-    return e.firstChild.href.replace(/^https?:\/\/.*?\//, '/');
+    var abs_path = path.match(/^\//) ? e.firstChild.href.replace(baseUri(), '') : e.firstChild.href.replace(topUri(), '');
+    return abs_path;
 }
 
 function isAbsoluteUri(uri) {
     return uri.match(/^.*?:\/\//);
 }
 
-function ajaxLoadPage(path, data, success) {
-    $.ajax({
-        type: 'get',
-        url: path,
-        data: data,
-        cache: true,
-        success: success
-    });
-}
-
 function loadPage() {
     if (location.hash.match(/^#!/)) {
         var path = location.hash.replace('#!', '');
         $('#body').text('読み込み中');
-        ajaxLoadPage(absolutePath(path), null, function(html) {
-            $('#body').html(html);
+        $('#body').load(absolutePath(path), null, function() {
             initPage();
         });
     }
@@ -39,7 +38,7 @@ function initPage() {
     $('a').each(function() {
         var src_url = $(this).attr('href');
         if (!isAbsoluteUri(src_url) && !src_url.match(/^#/)) {
-            $(this).attr('href', '#!' + absolutePath(src_url));
+            $(this).attr('href', '#!/' + absolutePath(src_url));
         }
     });
 }
@@ -52,7 +51,6 @@ function loadIndex() {
     $.getJSON('index.json', function(json) {
         var ul = $('#navi ul');
         $.each(json, function() {
-            console.log(this);
             ul.append(itemIndex(this));
         });
     });
