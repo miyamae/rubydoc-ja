@@ -1,0 +1,43 @@
+#!/usr/bin/ruby
+# -*- coding: utf-8 -*-
+
+require 'find'
+require 'cgi'
+require 'yaml'
+
+html_dir = '../1.9.2/method'
+
+id = 1
+recs = []
+Find.find(html_dir) do |file|
+
+  #puts file
+  if FileTest.file?(file) && File.extname(file) == '.html'
+    html = File.read(file)
+    item = {:id => id, :path=>file.gsub(/^\.\.\/1\.9\.2/, '')}
+    id += 1
+    if html =~ %r{<dt class="method-heading"><code>(.*?)</code>}
+      item[:name] = CGI.unescapeHTML($1)
+      if item[:name] =~ %r{^(.*?)([( ].*)$}
+        item[:name] = $1
+        item[:arg] = $2.strip
+        if item[:arg] =~ %r{^(.*)->(.*)$}
+          item[:arg] = $1.strip
+          item[:ret] = $2.strip
+        end
+      end
+    end
+    if html =~ %r{<title>(.*? method|module function|constant) (.*?)[\.#:].*?</title>}
+      item[:sub] = CGI.unescapeHTML($2)
+    end
+    if html =~ %r{<dd class="method-description">.*?<p>(.*?)</p>}m
+      item[:desc] = CGI.unescapeHTML($1.gsub(/<.*?>|"/, '').gsub(/\n/, ' ')).strip
+    end
+    rec = %!{"id":"#{item[:id]}","path":"#{item[:path]}"\n,"name":"#{item[:name]}","sub":"#{item[:sub]}","arg":"#{item[:arg]}","ret":"#{item[:rete]}",\n"desc":"#{item[:desc]}"}!
+    recs << rec
+    #puts rec
+  end
+
+end
+
+puts %![\n#{recs.join(",\n")}\n]!

@@ -1,5 +1,3 @@
-INDEX = [];
-
 function log(s) {
     if (console) console.log(s);
 }
@@ -46,6 +44,7 @@ function initPage() {
 
 function itemIndex(param) {
     var item = $('<li><a><span class="name"></span><span class="sub"></span><span class="desc"></span></a></li>');
+    item.find('li').attr('id', 'idx' + param.id);
     item.find('a').attr('href', param.path);
     item.find('a').attr('title', param.desc);
     item.find('.name').text(param.name);
@@ -55,8 +54,7 @@ function itemIndex(param) {
 }
 
 function loadIndex() {
-    $.getJSON('index.json', function(json) {
-        INDEX = json;
+    $.getJSON('index2.json', function(json) {
         var ul = $('#navi ul');
         $.each(json, function() {
             ul.append(itemIndex(this));
@@ -71,7 +69,13 @@ function zebraList() {
 }
 
 function suggest() {
-    log($('#search-box').val());
+    $('#navi li').each(function() {
+        if ($(this).find('.name').text().indexOf($('#search-box').val()) == 0) {
+            $(this).show();
+        } else {
+            $(this).hide();
+        }
+    });
 }
 
 $(function() {
@@ -87,7 +91,8 @@ $(function() {
     }
     loadPage();
 
-    $('#search-box').change(function() {
+    $('#search-box').keyup(function(e) {
+        //log($('#search-box').val());
         suggest();
     });
 
