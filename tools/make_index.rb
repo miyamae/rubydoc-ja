@@ -30,6 +30,7 @@ Find.find(html_dir) do |file|
         end
       end
     end
+#    if html =~ %r{<title>(.*? method|module function|constant) (.*?)[#\.:]*</title>}
     if html =~ %r{<title>(.*? method|module function|constant) (.*?)</title>}
       item[:key] = CGI.unescapeHTML($2)
     end

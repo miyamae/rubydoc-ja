@@ -48,8 +48,13 @@ function itemIndex(param) {
     item.find('li').attr('id', 'idx' + param.id);
     item.find('a').attr('href', param.path);
     item.find('a').attr('title', param.desc);
-    item.find('.name').text(param.name);
+    item.find('.name').text(param.key);
     item.find('.desc').text(param.desc);
+    if (param.arg) {
+        var arg = $('<span class="arg"/>').append(param.arg);
+        if (param.ret) arg.append(' -> ' + param.ret);
+        item.find('.name').after(arg);
+    }
     return item;
 }
 
@@ -70,22 +75,36 @@ function zebraList() {
 }
 
 function suggest() {
-    var key = $('#search-box').val();
+    var key = $('#search-box').val().toLowerCase();
     var n = 0;
     var ul = $('#navi ul'); 
     ul.empty();
     if (key) {
+        var results = [[], [], []];
         $.each(_index, function() {
-            if (this.name.toLowerCase().indexOf(key.toLowerCase()) != -1) {
+            if (this.key && this.key.toLowerCase().indexOf(key) == 0) {
+                results[0].push(this);
                 n += 1;
-                ul.append(itemIndex(this));
-                if (n > 30) {
-                    ul.append('<li class="more">続きがあります</li>');
-                    return false;
-                }
+                if (n > 30) return false;
             }
             return true;
         });
+        $.each(_index, function() {
+            if (this.key && this.key.toLowerCase().indexOf(key) > 0) {
+                results[1].push(this);
+                n += 1;
+                if (n > 30) return false;
+            }
+            return true;
+        });
+        $.each(results, function() {
+            $.each(this, function() {
+                ul.append(itemIndex(this));
+            });
+        });
+        if (n > 30) {
+            ul.append('<li class="more">続きがあります</li>');
+        }
         $('#navi li .name').highlight(key);
         zebraList();
         initPage($('#navi'));
