@@ -26,7 +26,7 @@ function isAbsoluteUri(uri) {
 function loadPage() {
     if (location.hash.match(/^#!/)) {
         var path = location.hash.replace('#!', '');
-        $('#body').text('読み込み中');
+        $('#body').html('<div class="loading"></div');
         $('#body').load(absolutePath(path), null, function() {
             initPage($('#body'));
         });
@@ -60,6 +60,7 @@ function loadIndex() {
         _index = json;
         $('#search-box').removeAttr('disabled');
         $('#search-box').focus();
+        $('#navi ul').empty();
     });
 }
 
@@ -71,7 +72,7 @@ function zebraList() {
 function suggest() {
     var key = $('#search-box').val();
     var n = 0;
-    var ul = $('#navi ul');
+    var ul = $('#navi ul'); 
     ul.empty();
     if (key) {
         $.each(_index, function() {
