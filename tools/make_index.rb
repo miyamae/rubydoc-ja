@@ -8,7 +8,10 @@ require 'find'
 require 'cgi'
 require 'json'
 
-html_dir = '../1.9.2/method'
+html_dir = '../1.9.2'
+#html_dir = '../1.9.2/method'
+#html_dir = '../1.9.2/library'
+#html_dir = '../1.9.2/class'
 
 id = 1
 recs = []
@@ -19,26 +22,39 @@ Find.find(html_dir) do |file|
     html = File.read(file)
     item = {:id=>id, :path=>file.gsub(/^\.\.\/1\.9\.2/, ''), :key=>''}
     id += 1
+
+    # method
     if html =~ %r{<dt class="method-heading"><code>(.*?)</code>}
       item[:name] = CGI.unescapeHTML($1)
-#      if item[:name] =~ %r{^(.*?)([^\( ].*)$}
-#        item[:name] = $1
-#        item[:arg] = $2.strip
-#        if item[:arg] =~ %r{^(.*)->(.*)$}
-#          item[:arg] = $1.strip
-#          item[:ret] = $2.strip
-#        end
-#      end
     end
-#    if html =~ %r{<title>(.*? method|module function|constant) (.*?)[#\.:]*</title>}
     if html =~ %r{<title>(.*? method|module function|constant) (.*?)</title>}
       item[:key] = CGI.unescapeHTML($2)
     end
     if html =~ %r{<dd class="method-description">.*?<p>(.*?)</p>}m
       item[:desc] = CGI.unescapeHTML($1.gsub(/<.*?>|"/, '').gsub(/\n/, ' '))
-      if item[:desc].size > 50
-        item[:desc] = item[:desc].strip[0, 50] + '...'
-      end
+    end
+
+    # class
+    if html =~ %r{<title>(class|module) (.*?)</title>}
+      item[:key] = CGI.unescapeHTML($2)
+    end
+    if html =~ %r{<p>.*?クラスの継承リスト:.*?(&lt;.*?)</a>}m
+      item[:name] = CGI.unescapeHTML($1.gsub(/<.*?>|"/, ''))
+    end
+    if html =~ %r{<h2>要約</h2>.*?<p>(.*?)</p>}m
+      item[:desc] = CGI.unescapeHTML($1.gsub(/<.*?>|"/, '').gsub(/\n/, ' '))
+    end
+
+    # library
+    if html =~ %r{<title>(library) (.*?)</title>}
+      item[:key] = CGI.unescapeHTML($2) + 'ライブラリ'
+    end
+    if html =~ %r{<h2>要約</h2>.*?<p>(.*?)</p>}m
+      item[:desc] = CGI.unescapeHTML($1.gsub(/<.*?>|"/, '').gsub(/\n/, ' '))
+    end
+
+    if item[:desc] && item[:desc].size > 50
+      item[:desc] = item[:desc].strip[0, 50] + '...'
     end
     items << item
   end
