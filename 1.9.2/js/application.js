@@ -84,30 +84,33 @@ function zebraList() {
 
 function suggest() {
     var key = $('#search-box').val().toLowerCase();
-    var n = 0;
     var ul = $('#navi ul'); 
     ul.empty();
     if (key) {
         var results = [[], [], []];
         $.each(_index, function() {
-            if (this.key && this.key.toLowerCase().indexOf(key) == 0) {
-                results[0].push(this);
-                n += 1;
-                if (n > 30) return false;
+            if (this.key) {
+                var matched = this.key.toLowerCase().indexOf(key);
+                if (matched != -1) {
+                    this.key.match(/[:\.\#]+(.*)$/);
+                    var name = RegExp.$1;
+                    if (matched == 0) {
+                        results[0].push(this);
+                    } else if (name.indexOf(key) == 0) {
+                        results[1].push(this);
+                    } else if (matched > 0) {
+                        results[2].push(this);
+                    }
+                }
             }
             return true;
         });
-        $.each(_index, function() {
-            if (this.key && this.key.toLowerCase().indexOf(key) > 0) {
-                results[1].push(this);
-                n += 1;
-                if (n > 30) return false;
-            }
-            return true;
-        });
+        var n = 0;
         $.each(results, function() {
             $.each(this, function() {
                 ul.append(itemIndex(this));
+                n += 1;
+                return n > 30 ? false : true;
             });
         });
         if (n > 30) {

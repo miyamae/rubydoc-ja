@@ -15,6 +15,10 @@ html_dir = '../1.9.2'
 #html_dir = '../1.9.2/class'
 #html_dir = '../1.9.2/doc'
 
+# TODO: keyが取れていないものがある。
+# メソッドに別名がある場合に対応。Array#collect! | map! など。
+# -> subを配列にして前方一致検索
+
 id = 1
 recs = []
 items = YAML.load_file('default_index.yml')
