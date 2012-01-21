@@ -61,7 +61,11 @@ function itemIndex(param) {
     item.find('a').attr('href', param.path);
     item.find('a').attr('title', '【' + param.key + '】' +  param.desc);
     item.find('.key').text(param.key);
-    item.find('.sub').text(param.sub);
+    if (typeof(param.sub) == 'object') {
+        item.find('.sub').text(param.sub.join(','));
+    } else {
+        item.find('.sub').text(param.sub);
+    }
     item.find('.desc').text(param.desc);
     return item;
 }

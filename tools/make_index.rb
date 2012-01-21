@@ -15,34 +15,31 @@ html_dir = '../1.9.2'
 #html_dir = '../1.9.2/class'
 #html_dir = '../1.9.2/doc'
 
-# TODO: keyが取れていないものがある。
-# メソッドに別名がある場合に対応。Array#collect! | map! など。
-# -> subを配列にして前方一致検索
-
 id = 1
 recs = []
 items = YAML.load_file('default_index.yml')
 
 Find.find(html_dir) do |file|
 
-  if FileTest.file?(file) && File.extname(file) == '.html'
+  if file !~ /(\/function|doc\/)|index\.html/ && FileTest.file?(file) && File.extname(file) == '.html'
     html = File.read(file)
-    item = {:path=>file.gsub(/^\.\.\/1\.9\.2/, ''), :key=>''}
+    item = {:path=>file.gsub(/^\.\.\/1\.9\.2/, ''), :key=>'*unknown'}
     id += 1
 
     # method
     if html =~ %r{<title>(.*? method|module function|constant|variable) (.*?)</title>}
       item[:key] = CGI.unescapeHTML($2)
     end
-    if html =~ %r{<dt class="method-heading"><code>(.*?)</code>}
-      item[:sub] = CGI.unescapeHTML($1)
+    item[:sub] = []
+    html.gsub(%r{<dt class="method-heading"><code>(.*?)</code>}) do |matched|
+      item[:sub] << CGI.unescapeHTML($1)
     end
     if html =~ %r{<dd class="method-description">.*?<p>(.*?)</p>}m
       item[:desc] = CGI.unescapeHTML($1.gsub(/<.*?>|"/, '').gsub(/\n/, ' '))
     end
 
     # class
-    if html =~ %r{<title>(class|module) (.*?)</title>}
+    if html =~ %r{<title>(class|module|object) (.*?)</title>}
       item[:key] = CGI.unescapeHTML($2)
     end
     if html =~ %r{<p>.*?クラスの継承リスト:.*?(&lt;.*?)</a>}m
