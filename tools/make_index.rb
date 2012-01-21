@@ -17,29 +17,32 @@ Find.find(html_dir) do |file|
 
   if FileTest.file?(file) && File.extname(file) == '.html'
     html = File.read(file)
-    item = {:id => id, :path=>file.gsub(/^\.\.\/1\.9\.2/, '')}
+    item = {:id=>id, :path=>file.gsub(/^\.\.\/1\.9\.2/, ''), :key=>''}
     id += 1
     if html =~ %r{<dt class="method-heading"><code>(.*?)</code>}
       item[:name] = CGI.unescapeHTML($1)
-      if item[:name] =~ %r{^(.*?)([( ].*)$}
-        item[:name] = $1
-        item[:arg] = $2.strip
-        if item[:arg] =~ %r{^(.*)->(.*)$}
-          item[:arg] = $1.strip
-          item[:ret] = $2.strip
-        end
-      end
+#      if item[:name] =~ %r{^(.*?)([^\( ].*)$}
+#        item[:name] = $1
+#        item[:arg] = $2.strip
+#        if item[:arg] =~ %r{^(.*)->(.*)$}
+#          item[:arg] = $1.strip
+#          item[:ret] = $2.strip
+#        end
+#      end
     end
 #    if html =~ %r{<title>(.*? method|module function|constant) (.*?)[#\.:]*</title>}
     if html =~ %r{<title>(.*? method|module function|constant) (.*?)</title>}
       item[:key] = CGI.unescapeHTML($2)
     end
     if html =~ %r{<dd class="method-description">.*?<p>(.*?)</p>}m
-      item[:desc] = CGI.unescapeHTML($1.gsub(/<.*?>|"/, '').gsub(/\n/, ' ')).strip
+      item[:desc] = CGI.unescapeHTML($1.gsub(/<.*?>|"/, '').gsub(/\n/, ' '))
+      if item[:desc].size > 50
+        item[:desc] = item[:desc].strip[0, 50] + '...'
+      end
     end
     items << item
   end
 
 end
 
-puts items.sort{|a,b|a[:name]<=>b[:name]}.to_json
+puts items.sort{|a,b|a[:key]<=>b[:key]}.to_json

@@ -44,24 +44,27 @@ function initPage(elem) {
 }
 
 function itemIndex(param) {
-    var item = $('<li><a><span class="name"></span><span class="desc"></span></a></li>');
+    var item = $('<li><a><span class="key"></span><span class="name"></span><span class="desc"></span></a></li>');
     item.find('li').attr('id', 'idx' + param.id);
     item.find('a').attr('href', param.path);
     item.find('a').attr('title', param.desc);
-    item.find('.name').text(param.key);
+    item.find('.key').text(param.key);
+    item.find('.name').text(param.name);
     item.find('.desc').text(param.desc);
+/*
     if (param.arg) {
         var arg = $('<span class="arg"/>').append(param.arg);
         if (param.ret) arg.append(' -> ' + param.ret);
         item.find('.name').after(arg);
     }
+*/
     return item;
 }
 
 _index = [];
 
 function loadIndex() {
-    $.getJSON('index.json', function(json) {
+    $.getJSON('json/index.json', function(json) {
         _index = json;
         $('#search-box').removeAttr('disabled');
         $('#search-box').focus();
@@ -105,7 +108,7 @@ function suggest() {
         if (n > 30) {
             ul.append('<li class="more">続きがあります</li>');
         }
-        $('#navi li .name').highlight(key);
+        $('#navi li .key').highlight(key);
         zebraList();
         initPage($('#navi'));
     }
