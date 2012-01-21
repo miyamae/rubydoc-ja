@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>module function Kernel.#caller</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-kernel.html">Kernelモジュール</a>
+&gt; caller
+
+</p>
+
+
+
+
+<h1>module function Kernel.#caller</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>caller(level_num = 1) -&gt; [String] | nil</code></dt>
+<dd class="method-description">
+<p>
+level_num 段上の呼び出し元の情報を <a href="../../../method/-kernel/v/=40.html">$@</a>
+の形式のバックトレース(文字列の配列)として返します。
+</p>
+<p>
+トップレベルでは空の配列を返します。caller の戻り値を <a href="../../../method/-kernel/v/=40.html">$@</a> に代入することで
+例外の発生位置を設定できます。
+</p>
+<p>
+指定した level_num 段上が存在しない場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] level_num:</dt>
+<dd>
+long の範囲を超えない正の整数でスタックレベルを指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/set_trace_func.html">Kernel.#set_trace_func</a>,<a href="../../../method/-kernel/m/raise.html">Kernel.#raise</a>
+</p>
+<pre>
+def foo
+  p caller(0)
+  p caller(1)
+  p caller(2)
+  p caller(3)
+  p caller(4)
+end
+
+def bar
+  foo
+end
+
+bar
+
+#=&gt; [&quot;-:2:in `foo'&quot;, &quot;-:10:in `bar'&quot;, &quot;-:13:in `&lt;main&gt;'&quot;]
+#   [&quot;-:10:in `bar'&quot;, &quot;-:13:in `&lt;main&gt;'&quot;]
+#   [&quot;-:13:in `&lt;main&gt;'&quot;]
+#   []
+#   nil
+</pre>
+<p>
+以下の関数は、caller の要素から [ファイル名, 行番号, メソッド名]
+を取り出して返します。
+</p>
+<pre>
+def parse_caller(at)
+  if /^(.+?):(\d+)(?::in `(.*)')?/ =~ at
+    file = $1
+    line = $2.to_i
+    method = $3
+    [file, line, method]
+  end
+end
+
+def foo
+  p parse_caller(caller.first)
+end
+
+def bar
+  foo
+  p parse_caller(caller.first)
+end
+
+bar
+p parse_caller(caller.first)
+
+#=&gt; [&quot;-&quot;, 15, &quot;bar&quot;]
+#   [&quot;-&quot;, 19, nil]
+#   nil
+</pre>
+<p>
+以下は、<a href="../../../method/-kernel/v/-d-e-b-u-g.html">$DEBUG</a> が真の場合に役に立つ debug 関数
+のサンプルです。
+</p>
+<pre>
+$DEBUG = true
+
+def debug(*args)
+  p [caller.first, *args] if $DEBUG
+end
+
+debug &quot;debug information&quot;
+
+#=&gt; [&quot;-:7&quot;, &quot;debug information&quot;]
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method String#[]</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-string.html">Stringクラス</a>
+&gt; []
+
+</p>
+
+
+
+
+<h1>instance method String#[]</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>self[nth] -&gt; Integer</code></dt>
+<dt class="method-heading"><code>slice(nth) -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+nth 番目の文字を返します。
+nth が負の場合は文字列の末尾から数えます。
+つまり、 self.size + nth 番目の文字を返します。
+</p>
+<p>
+nth が範囲外を指す場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] nth:</dt>
+<dd>
+文字の位置を表す整数
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+文字コードを表す整数
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p 'bar'[2]       # =&gt; &quot;r&quot;
+p 'bar'[2] == ?r # =&gt; true
+p 'bar'[-1]      # =&gt; &quot;r&quot;
+p 'bar'[3]       # =&gt; nil
+p 'bar'[-4]      # =&gt; nil
+</pre>
+<p>
+このメソッドの仕様は 1.8.x 以前から大きく変更されていますので注意が必要
+です．
+</p>
+</dd>
+<dt class="method-heading"><code>self[nth, len] -&gt; String | nil</code></dt>
+<dt class="method-heading"><code>slice(nth, len) -&gt; String | nil</code></dt>
+<dd class="method-description">
+<p>
+nth 文字目から長さ len 文字の部分文字列を新しく作って返します。
+nth が負の場合は文字列の末尾から数えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] nth:</dt>
+<dd>
+取得したい文字列の開始インデックスを整数で指定します。
+</dd>
+<dt class='method-param'>[PARAM] len:</dt>
+<dd>
+取得したい文字列の長さを正の整数で指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+nth が範囲外を指す場合は nil を返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+str0 = &quot;bar&quot;
+str0[2, 1]         #=&gt; &quot;r&quot;
+str0[2, 0]         #=&gt; &quot;&quot;
+str0[2, 100]       #=&gt; &quot;r&quot;  (右側を超えても平気)
+str0[2, 1] == ?r   #=&gt; false  (左辺は長さ1の文字列、右辺は整数の文字コード)
+str0[-1, 1]        #=&gt; &quot;r&quot;
+str0[-1, 2]        #=&gt; &quot;r&quot; (あくまでも「右に向かって len バイト」)
+
+str0[3, 1]         #=&gt; &quot;&quot;
+str0[4, 1]         #=&gt; nil
+str0[-4, 1]        #=&gt; nil
+str1 = str0[0, 2]    # (str0 の「一部」を str1 とする)
+str1               #=&gt; &quot;ba&quot;
+str1[0] = &quot;XYZ&quot;
+str1               #=&gt; &quot;XYZa&quot; (str1 の内容が破壊的に変更された)
+str0               #=&gt; &quot;bar&quot; (str0 は無傷、 str1 は str0 と内容を共有していない)
+</pre>
+</dd>
+<dt class="method-heading"><code>self[substr] -&gt; String | nil</code></dt>
+<dt class="method-heading"><code>slice(substr) -&gt; String | nil</code></dt>
+<dd class="method-description">
+<p>
+self が substr を含む場合、一致した文字列を新しく作って返します。
+substr を含まなければ nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] substr:</dt>
+<dd>
+取得したい文字列のパターン。文字列
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+substr = &quot;bar&quot;
+result = &quot;foobar&quot;[substr]
+p result   # =&gt; &quot;bar&quot;
+p substr.equal?(result)   # =&gt; false
+</pre>
+</dd>
+<dt class="method-heading"><code>self[regexp, nth = 0] -&gt; String</code></dt>
+<dt class="method-heading"><code>slice(regexp, nth = 0) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+正規表現 regexp の nth 番目の括弧にマッチする最初の部分文字列を返します。
+nth を省略したときや 0 の場合は正規表現がマッチした部分文字列全体を返します。
+正規表現が self にマッチしなかった場合や nth に対応する括弧がないときは nil を返します。
+</p>
+<p>
+このメソッドを実行すると、
+マッチ結果に関する情報が組み込み変数 <a href="../../../method/-kernel/v/=7e.html">$~</a> に設定されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] regexp:</dt>
+<dd>
+取得したい文字列のパターンを示す正規表現
+</dd>
+<dt class='method-param'>[PARAM] nth:</dt>
+<dd>
+取得したい正規表現レジスタのインデックス。整数
+</dd>
+</dl>
+<pre>
+p &quot;foobar&quot;[/bar/]  # =&gt; &quot;bar&quot;
+p $~.begin(0)      # =&gt; 3
+
+p &quot;def getcnt(line)&quot;[ /def\s+(\w+)/, 1 ]   # =&gt; &quot;getcnt&quot;
+</pre>
+</dd>
+<dt class="method-heading"><code>self[range] -&gt; String</code></dt>
+<dt class="method-heading"><code>slice(range) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+rangeで指定したインデックスの範囲に含まれる部分文字列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] range:</dt>
+<dd>
+取得したい文字列の範囲を示す Range オブジェクト
+</dd>
+</dl>
+<h2 >rangeオブジェクトが終端を含む場合</h2>
+<p>
+インデックスと文字列の対応については以下の対照図も参照してください。
+</p>
+<pre>
+  0   1   2   3   4   5   (インデックス)
+ -6  -5  -4  -3  -2  -1   (負のインデックス)
+| a | b | c | d | e | f |
+|&lt;---------&gt;|                'abcdef'[0..2]  # =&gt; 'abc'
+                |&lt;-----&gt;|    'abcdef'[4..5]  # =&gt; 'ef'
+        |&lt;---------&gt;|        'abcdef'[2..4]  # =&gt; 'cde'
+</pre>
+<p>
+range.last が文字列の長さ以上のときは
+(文字列の長さ - 1) を指定したものとみなされます。
+</p>
+<p>
+range.first が 0 より小さいか文字列の長さより大きいときは nil を
+返します。ただし range.first および range.last のどちらか
+または両方が負の数のときは一度だけ文字列の長さを足して
+再試行します。
+</p>
+<p>
+例:
+</p>
+<pre>
+'abcd'[ 2 ..  1] # =&gt; &quot;&quot;
+'abcd'[ 2 ..  2] # =&gt; &quot;c&quot;
+'abcd'[ 2 ..  3] # =&gt; &quot;cd&quot;
+'abcd'[ 2 ..  4] # =&gt; &quot;cd&quot;
+
+'abcd'[ 2 .. -1] # =&gt; &quot;cd&quot;   # str[f..-1] は「f 文字目から
+'abcd'[ 3 .. -1] # =&gt; &quot;d&quot;    # 文字列の最後まで」を表す慣用句
+
+'abcd'[ 1 ..  2] # =&gt; &quot;bc&quot;
+'abcd'[ 2 ..  2] # =&gt; &quot;c&quot;
+'abcd'[ 3 ..  2] # =&gt; &quot;&quot;
+'abcd'[ 4 ..  2] # =&gt; &quot;&quot;
+'abcd'[ 5 ..  2] # =&gt; nil
+
+'abcd'[-3 ..  2] # =&gt; &quot;bc&quot;
+'abcd'[-4 ..  2] # =&gt; &quot;abc&quot;
+'abcd'[-5 ..  2] # =&gt; nil
+</pre>
+<h2 >rangeオブジェクトが終端を含まない場合</h2>
+<p>
+文字列と「隙間」の関係については以下の模式図を参照してください。
+</p>
+<pre>
+ 0   1   2   3   4   5   6  (隙間番号)
+-6  -5  -4  -3  -2  -1      (負の隙間番号)
+ | a | b | c | d | e | f |
+ |&lt;---------&gt;|                'abcdef'[0...3]  # =&gt; 'abc'
+                 |&lt;-----&gt;|    'abcdef'[4...6]  # =&gt; 'ef'
+         |&lt;---------&gt;|        'abcdef'[2...5]  # =&gt; 'cde'
+</pre>
+<p>
+range.last が文字列の長さよりも大きいときは文字列の長さを
+指定したものとみなされます。
+</p>
+<p>
+range.first が 0 より小さいか文字列の長さより大きいときは nil を返します。
+ただし range.first と range.last のどちらかまたは両方が負の数
+であるときは一度だけ文字列の長さを足して再試行します。
+</p>
+<p>
+例:
+</p>
+<pre>
+'abcd'[ 2 ... 3] # =&gt; &quot;c&quot;
+'abcd'[ 2 ... 4] # =&gt; &quot;cd&quot;
+'abcd'[ 2 ... 5] # =&gt; &quot;cd&quot;
+
+'abcd'[ 1 ... 2] # =&gt; &quot;b&quot;
+'abcd'[ 2 ... 2] # =&gt; &quot;&quot;
+'abcd'[ 3 ... 2] # =&gt; &quot;&quot;
+'abcd'[ 4 ... 2] # =&gt; &quot;&quot;
+'abcd'[ 5 ... 2] # =&gt; nil
+
+'abcd'[-3 ... 2] # =&gt; &quot;b&quot;
+'abcd'[-4 ... 2] # =&gt; &quot;ab&quot;
+'abcd'[-5 ... 2] # =&gt; nil
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

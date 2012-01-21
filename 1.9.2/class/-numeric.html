@@ -1,0 +1,894 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class Numeric</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Numericクラス
+</p>
+
+
+
+<h1>class Numeric</h1>
+<p>
+
+クラスの継承リスト: Numeric
+
+      &lt; <a href="../class/-comparable.html">Comparable</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+数値を表す抽象クラスです。<a href="../class/-fixnum.html">Fixnum</a> や <a href="../class/-float.html">Float</a> などの数値クラスは Numeric のサブクラスとして
+実装されています。
+</p>
+<p>
+演算や比較を行うメソッド(+, -, *, /, &lt;=&gt;)は Numeric のサブクラスで定義されま
+す。Numeric で定義されているメソッドは、サブクラスで提供されているメソッド
+(+, -, *, /, %) を利用して定義されるものがほとんどです。
+つまり Numeric で定義されているメソッドは、Numeric のサブクラスとして新たに数値クラスを定義した時に、
+演算メソッド(+, -, *, /, %, &lt;=&gt;, coerce)だけを定義すれば、数値クラスのそのほかのメソッドが
+適切に定義されることを意図して提供されています。
+</p>
+<p>
++@, -@ は単項演算子 +, - を表しメソッド定義などではこの記法を利用します。
+</p>
+<p>
+効率のため Numeric のメソッドと同じメソッドがサブクラスで再定義されている場合があります。
+</p>
+<p>
+<a href="../method/-numeric/i/coerce.html">Numeric#coerce</a> メソッドを使うことによって異なる数値クラス間で演算を行うこともできます。
+</p>
+<h2 >数値関連のメソッドを実際に定義しているクラス一覧</h2>
+<p>
+ほとんどの数値関連のメソッドはサブクラスで再定義されています。これは、
+効率のためであったり上位抽象クラスで実装を定義することができなかったり
+するためです。実際にどのメソッドがどのクラスに定義されているかは以下の
+表を参照してください。
+</p>
+<pre>
+=&gt; ruby 1.8.6 (2007-06-18 patchlevel 5000) [i686-linux]
+                          Numeric    Integer     Fixnum     Bignum     Float
+          ---------------------------------------------------------------------
+                     % |     -          -          o          o          o
+                     &amp; |     -          -          o          o          -
+                     * |     -          -          o          o          o
+                    ** |     -          -          o          o          o
+                     + |     -          -          o          o          o
+                    +@ |     o          -          -          -          -
+                     - |     -          -          o          o          o
+                    -@ |     o          -          o          o          o
+                     / |     -          -          o          o          o
+                     &lt; |     -          -          o          -          o
+                          Numeric    Integer     Fixnum     Bignum     Float
+          ---------------------------------------------------------------------
+                    &lt;&lt; |     -          -          o          o          -
+                    &lt;= |     -          -          o          -          o
+                   &lt;=&gt; |     o          -          o          o          o
+                    == |     -          -          o          o          o
+                     &gt; |     -          -          o          -          o
+                    &gt;= |     -          -          o          -          o
+                    &gt;&gt; |     -          -          o          o          -
+                    [] |     -          -          o          o          -
+                     ^ |     -          -          o          o          -
+                   abs |     o          -          o          o          o
+                          Numeric    Integer     Fixnum     Bignum     Float
+          ---------------------------------------------------------------------
+                  ceil |     o          o          -          -          o
+                   chr |     -          o          -          -          -
+                coerce |     o          -          -          o          o
+                   div |     o          -          o          o          -
+                divmod |     o          -          o          o          o
+                downto |     -          o          -          -          -
+                  eql? |     o          -          -          o          o
+                  fdiv |     o          -          o          o          -
+               finite? |     -          -          -          -          o
+                 floor |     o          o          -          -          o
+                          Numeric    Integer     Fixnum     Bignum     Float
+          ---------------------------------------------------------------------
+                  hash |     -          -          -          o          o
+               id2name |     -          -          o          -          -
+             infinite? |     -          -          -          -          o
+              integer? |     o          o          -          -          -
+                modulo |     o          -          o          o          o
+                  nan? |     -          -          -          -          o
+                  next |     -          o          -          -          -
+              nonzero? |     o          -          -          -          -
+                   quo |     o          -          o          o          -
+             remainder |     o          -          -          o          -
+                          Numeric    Integer     Fixnum     Bignum     Float
+          ---------------------------------------------------------------------
+                 round |     o          o          -          -          o
+singleton_method_added |     o          -          -          -          -
+                  size |     -          -          o          o          -
+                  step |     o          -          -          -          -
+                  succ |     -          o          -          -          -
+                 times |     -          o          -          -          -
+                  to_f |     -          -          o          o          o
+                  to_i |     -          o          -          -          o
+                to_int |     o          o          -          -          o
+                  to_s |     -          -          o          o          o
+                          Numeric    Integer     Fixnum     Bignum     Float
+          ---------------------------------------------------------------------
+                to_sym |     -          -          o          -          -
+              truncate |     o          o          -          -          o
+                  upto |     -          o          -          -          -
+                 zero? |     o          -          o          -          o
+                     | |     -          -          o          o          -
+                     ~ |     -          -          o          o          -
+</pre>
+<h2 >丸めメソッドの動作一覧</h2>
+<p>
+<a href="../method/-numeric/i/ceil.html">Numeric#ceil</a>, <a href="../method/-numeric/i/floor.html">Numeric#floor</a>, <a href="../method/-numeric/i/round.html">Numeric#round</a>, <a href="../method/-numeric/i/truncate.html">Numeric#truncate</a>
+のふるまいの違いの表です。左の実数に対して各メソッドを呼ぶと表のような数を
+返します。
+</p>
+<pre>
+      |       ceil      floor      round   truncate
+----------------------------------------------------
+  1.9 |          2          1          2          1
+  1.1 |          2          1          1          1
+ -1.1 |         -1         -2         -1         -1
+ -1.9 |         -1         -2         -2         -1
+</pre>
+<h2 >丸めメソッドの拡張例</h2>
+<p>
+切上げはceil, floor を使用して以下のように定義できます。
+</p>
+<pre>
+if n &gt; 0 then
+  n.ceil
+else
+  n.floor
+end
+</pre>
+<p>
+また、任意桁の切上げ、切捨て、四捨五入を行うメソッドは以下のように
+定義できます。
+</p>
+<pre>
+class Numeric
+  def roundup(d=0)
+    x = 10**d
+    if self &gt; 0
+      (self * x).ceil.quo(x)
+    else
+      (self * x).floor.quo(x)
+    end
+  end
+
+  def rounddown(d=0)
+    x = 10**d
+    if self &lt; 0
+      (self * x).ceil.quo(x)
+    else
+      (self * x).floor.quo(x)
+    end
+  end
+
+  def roundoff(d=0)
+    x = 10**d
+    if self &lt; 0
+      (self * x - 0.5).ceil.quo(x)
+    else
+      (self * x + 0.5).floor.quo(x)
+    end
+  end
+end
+</pre>
+
+
+
+<h2>インスタンスメソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/=2b=40.html"><code>
+  + -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+単項演算子の + です。
+self を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/=2d=40.html"><code>
+  - -&gt; Numeric
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+単項演算子の - です。
+self の符号を反転させたものを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/=3c=3d=3e.html"><code>
+  self &lt;=&gt; other -&gt; -1 | 0 | 1 | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身が other より大きい場合に 1 を、等しい場合に 0 を、小さい場合には -1 をそれぞれ返します。
+自身と other が比較できない場合には nil を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/abs.html"><code>
+  abs -&gt; Numeric
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身が 0 以上ならば self を、そうでない場合は -self を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/abs2.html"><code>
+  abs2 -&gt; Numeric
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身の絶対値の 2 乗を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/angle.html"><code>
+  arg -&gt; 0 | Math::PI<br>angle -&gt; 0 | Math::PI<br>phase -&gt; 0 | Math::PI
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身の偏角(正の数なら 0、負の数なら <a href="../method/-math/c/-p-i.html">Math::PI</a>)を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/ceil.html"><code>
+  ceil -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身と等しいかより大きな整数のうち最小のものを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/clone.html"><code>
+  clone<br>dup
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+このメソッドを呼び出すことはできません。呼び出すと例外が発生します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/coerce.html"><code>
+  coerce(other) -&gt; [Numeric]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身と other が同じクラスになるよう、自身か other を変換し [other, self] という配列にして返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/conj.html"><code>
+  conj -&gt; Numeric<br>conjugate -&gt; Numeric
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身の共役複素数(実数の場合は常に自身)を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/denominator.html"><code>
+  denominator -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身を <a href="../class/-rational.html">Rational</a> に変換した時の分母を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/div.html"><code>
+  div(other) -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self を other で割った整数の商 q を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/divmod.html"><code>
+  divmod(other) -&gt; [Numeric]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self を other で割った商 q と余り r を、
+[q, r] という 2 要素の配列にして返します。
+商 q は常に整数ですが、余り r は整数であるとは限りません。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/eql=3f.html"><code>
+  eql?(other) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身と other のクラスが等しくかつ == メソッドで比較して等しい場合に true を返します。
+そうでない場合に false を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/fdiv.html"><code>
+  quo(other) -&gt; Float<br>fdiv(other) -&gt; Float
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self を other で割った実数の商を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/floor.html"><code>
+  floor -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身と等しいかより小さな整数のうち最大のものを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/i.html"><code>
+  i -&gt; Complex
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Complex(0, self) を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/imag.html"><code>
+  imag -&gt; 0<br>imaginary -&gt; 0
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+常に 0 を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/integer=3f.html"><code>
+  integer? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self が整数の時、真を返します。そうでない場合に false を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/modulo.html"><code>
+  modulo(other) -&gt; Numeric
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self を other で割った余り r を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/nonzero=3f.html"><code>
+  nonzero? -&gt; self | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身がゼロの時 nil を返し、非ゼロの時 self を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/numerator.html"><code>
+  numerator -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身を <a href="../class/-rational.html">Rational</a> に変換した時の分子を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/polar.html"><code>
+  polar -&gt; [Numeric, Numeric]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身の絶対値と偏角を配列にして返します。正の数なら [self, 0]、負の数な
+ら [-self, <a href="../method/-math/c/-p-i.html">Math::PI</a>] を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/real.html"><code>
+  real -&gt; Numeric
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/real=3f.html"><code>
+  real? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身が <a href="../class/-complex.html">Complex</a> かそのサブクラスのインスタンスでない場合に
+true を返します。そうでない場合に false を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/rect.html"><code>
+  rect -&gt; [Numeric, Numeric]<br>rectangular -&gt; [Numeric, Numeric]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+[self, 0] を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/remainder.html"><code>
+  remainder(other) -&gt; Numeric
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self を other で割った余り r を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/round.html"><code>
+  round -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身ともっとも近い整数を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/step.html"><code>
+  step(limit, step = 1) {|n| ... } -&gt; self<br>step(limit, step = 1) -&gt; Enumerator
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self からはじめ step を足しながら limit を越える
+前までブロックを繰り返します。step は負の数も指定できます。また、limit や step には <a href="../class/-float.html">Float</a> なども
+指定できます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/to_c.html"><code>
+  to_c -&gt; Complex
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身を複素数 (<a href="../class/-complex.html">Complex</a>) に変換します。Complex(self, 0) を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/to_int.html"><code>
+  to_int -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self.to_i と同じです。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/truncate.html"><code>
+  truncate -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身と 0 との間にある整数で、自身にもっとも近い整数を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/zero=3f.html"><code>
+  zero? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身がゼロの時、真を返します。そうでない場合は false を返します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+<h2>継承したメソッド</h2>
+<p><code>
+
+<a href="../method/-basic-object/i/=21.html">!</a>
+
+<a href="../method/-basic-object/i/=21=3d.html">!=</a>
+
+<a href="../method/-object/i/=3d=3d.html">==</a>
+
+<a href="../method/-object/i/=3d=3d=3d.html">===</a>
+
+<a href="../method/-object/i/=3d=7e.html">=~</a>
+
+<a href="../method/-object/i/__id__.html">__id__</a>
+
+<a href="../method/-object/i/__send__.html">__send__</a>
+
+<a href="../method/-object/i/_dump.html">_dump</a>
+
+<a href="../method/-object/i/class.html">class</a>
+
+<a href="../method/-object/i/dclone.html">dclone</a>
+
+<a href="../method/-object/i/display.html">display</a>
+
+<a href="../method/-object/i/enum_for.html">enum_for</a>
+
+<a href="../method/-object/i/equal=3f.html">equal?</a>
+
+<a href="../method/-object/i/extend.html">extend</a>
+
+<a href="../method/-object/i/freeze.html">freeze</a>
+
+<a href="../method/-object/i/frozen=3f.html">frozen?</a>
+
+<a href="../method/-object/i/hash.html">hash</a>
+
+<a href="../method/-object/i/initialize.html">initialize</a>
+
+<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
+
+<a href="../method/-object/i/inspect.html">inspect</a>
+
+<a href="../method/-object/i/instance_eval.html">instance_eval</a>
+
+<a href="../method/-object/i/instance_exec.html">instance_exec</a>
+
+<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
+
+<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
+
+<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
+
+<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
+
+<a href="../method/-object/i/instance_variables.html">instance_variables</a>
+
+<a href="../method/-object/i/is_a=3f.html">is_a?</a>
+
+<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
+
+<a href="../method/-object/i/marshal_load.html">marshal_load</a>
+
+<a href="../method/-object/i/method.html">method</a>
+
+<a href="../method/-object/i/method_missing.html">method_missing</a>
+
+<a href="../method/-object/i/methods.html">methods</a>
+
+<a href="../method/-object/i/must_be.html">must_be</a>
+
+<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
+
+<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
+
+<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
+
+<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
+
+<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
+
+<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
+
+<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
+
+<a href="../method/-object/i/must_equal.html">must_equal</a>
+
+<a href="../method/-object/i/must_include.html">must_include</a>
+
+<a href="../method/-object/i/must_match.html">must_match</a>
+
+<a href="../method/-object/i/must_raise.html">must_raise</a>
+
+<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
+
+<a href="../method/-object/i/must_send.html">must_send</a>
+
+<a href="../method/-object/i/must_throw.html">must_throw</a>
+
+<a href="../method/-object/i/nil=3f.html">nil?</a>
+
+<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
+
+<a href="../method/-object/i/pretty_print.html">pretty_print</a>
+
+<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
+
+<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
+
+<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
+
+<a href="../method/-object/i/private_methods.html">private_methods</a>
+
+<a href="../method/-object/i/protected_methods.html">protected_methods</a>
+
+<a href="../method/-object/i/public_methods.html">public_methods</a>
+
+<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
+
+<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
+
+<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
+
+<a href="../method/-object/i/singleton_class.html">singleton_class</a>
+
+<a href="../method/-object/i/singleton_method_added.html">singleton_method_added</a>
+
+<a href="../method/-object/i/singleton_method_removed.html">singleton_method_removed</a>
+
+<a href="../method/-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
+
+<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
+
+<a href="../method/-object/i/taint.html">taint</a>
+
+<a href="../method/-object/i/tainted=3f.html">tainted?</a>
+
+<a href="../method/-object/i/tap.html">tap</a>
+
+<a href="../method/-object/i/to_a.html">to_a</a>
+
+<a href="../method/-object/i/to_ary.html">to_ary</a>
+
+<a href="../method/-object/i/to_hash.html">to_hash</a>
+
+<a href="../method/-object/i/to_io.html">to_io</a>
+
+<a href="../method/-object/i/to_proc.html">to_proc</a>
+
+<a href="../method/-object/i/to_regexp.html">to_regexp</a>
+
+<a href="../method/-object/i/to_s.html">to_s</a>
+
+<a href="../method/-object/i/to_str.html">to_str</a>
+
+<a href="../method/-object/i/to_yaml.html">to_yaml</a>
+
+<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
+
+<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
+
+<a href="../method/-object/i/trust.html">trust</a>
+
+<a href="../method/-object/i/untaint.html">untaint</a>
+
+<a href="../method/-object/i/untrust.html">untrust</a>
+
+<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
+
+<a href="../method/-object/s/new.html">.new</a>
+
+</code></p>
+
+
+
+<h2>追加されるメソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th>説明</th>
+  <th>ライブラリ</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-numeric/i/im.html"><code>
+  im -&gt; Complex
+  </code></a>
+</td>
+<td class="description"><p>
+実数に対し、純虚数化した <a href="../class/-complex.html">Complex</a> クラスのオブジェクトを返します。
+</p>
+</td>
+<td class="library"><a href="../library/complex.html">complex</a></td>
+</tr>
+
+</table>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

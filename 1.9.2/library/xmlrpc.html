@@ -1,0 +1,211 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library xmlrpc</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; xmlrpcライブラリ
+</p>
+
+
+
+<h1>library xmlrpc</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+XML-RPC を扱うためのライブラリです。
+</p>
+<p>
+このページは xmlrpc ライブラリのまとめのページであり、require 'xmlrpc' を実行しても
+エラーになることに注意して下さい。
+</p>
+<h2 >Author and Copyright</h2>
+<p>
+Copyright (C) 2001-2004 by Michael Neumann
+</p>
+<p>
+Released under the same term of license as Ruby.
+</p>
+<h2 >Overview</h2>
+<p>
+XMLRPC is a lightweight protocol that enables remote procedure calls over
+HTTP.  It is defined at http://www.xmlrpc.com.
+</p>
+<p>
+XMLRPC allows you to create simple distributed computing solutions that span
+computer languages.  Its distinctive feature is its simplicity compared to
+other approaches like SOAP and CORBA.
+</p>
+<p>
+The Ruby standard library package 'xmlrpc' enables you to create a server that
+implements remote procedures and a client that calls them.  Very little code
+is required to achieve either of these.
+</p>
+<h2 >Example</h2>
+<p>
+Try the following code.  It calls a standard demonstration remote procedure.
+</p>
+<pre>
+require 'xmlrpc/client'
+require 'pp'
+
+server = XMLRPC::Client.new2(&quot;http://xmlrpc-c.sourceforge.net/api/sample.php&quot;)
+result = server.call(&quot;sample.sumAndDifference&quot;, 5, 3)
+pp result
+</pre>
+<h2 >Documentation</h2>
+<p>
+See http://www.ntecs.de/projects/xmlrpc4r.  There is plenty of detail there to
+use the client and implement a server.
+</p>
+<h2 >Features of XMLRPC for Ruby</h2>
+<p>
+* Extensions
+</p>
+<ul>
+<li>Introspection</li>
+<li>multiCall</li>
+<li>optionally nil values and integers larger than 32 Bit</li>
+</ul>
+<p>
+* Server
+</p>
+<ul>
+<li>Standalone XML-RPC server</li>
+<li>CGI-based (works with FastCGI)</li>
+<li>Apache mod_ruby server</li>
+<li>WEBrick servlet</li>
+</ul>
+<p>
+* Client
+</p>
+<ul>
+<li>synchronous/asynchronous calls</li>
+<li>Basic HTTP-401 Authentification</li>
+<li>HTTPS protocol (SSL)</li>
+</ul>
+<p>
+* Parsers
+</p>
+<ul>
+<li>NQXML (NQXMLStreamParser, NQXMLTreeParser)</li>
+<li>Expat (XMLStreamParser, XMLTreeParser)</li>
+<li>REXML (REXMLStreamParser)</li>
+<li>xml-scan (XMLScanStreamParser)</li>
+<li>Fastest parser is Expat's XMLStreamParser!</li>
+</ul>
+<p>
+* General
+</p>
+<ul>
+<li>possible to choose between XMLParser module (Expat wrapper) and REXML/NQXML (pure Ruby) parsers</li>
+<li>Marshalling Ruby objects to Hashs and reconstruct them later from a Hash</li>
+<li>SandStorm component architecture Client interface</li>
+</ul>
+<h2 >Choosing a different XML Parser or XML Writer</h2>
+<p>
+The examples above all use the default parser (which is now since 1.8
+REXMLStreamParser) and a default XML writer.  If you want to use a different
+XML parser, then you have to call the &lt;i&gt;set_parser&lt;/i&gt; method of
+XMLRPC::Client instances or instances of subclasses of
+XMLRPC::BasicServer or by editing xmlrpc/config.rb.
+</p>
+<p>
+Client Example:
+</p>
+<pre>
+# ...
+server = XMLRPC::Client.new( &quot;xmlrpc-c.sourceforge.net&quot;, &quot;/api/sample.php&quot;)
+server.set_parser(XMLRPC::XMLParser::XMLParser.new)
+# ...
+</pre>
+<p>
+Server Example:
+</p>
+<pre>
+# ...
+s = XMLRPC::CGIServer.new
+s.set_parser(XMLRPC::XMLParser::XMLStreamParser.new)
+# ...
+</pre>
+<p>
+or:
+</p>
+<pre>
+# ...
+server = XMLRPC::Server.new(8080)
+server.set_parser(XMLRPC::XMLParser::NQXMLParser.new)
+# ...
+</pre>
+<p>
+Note that XMLStreamParser is incredible faster (and uses less memory) than any
+other parser and scales well for large documents. For example for a 0.5 MB XML
+document with many tags, XMLStreamParser is ~350 (!) times faster than
+NQXMLTreeParser and still ~18 times as fast as XMLTreeParser.
+</p>
+<p>
+You can change the XML-writer by calling method &lt;i&gt;set_writer&lt;/i&gt;.
+</p>
+<h2 >参考</h2>
+<ul>
+<li><a class="external" href="http://www.linux.or.jp/JF/JFdocs/XML-RPC-HOWTO/index.html">http://www.linux.or.jp/JF/JFdocs/XML-RPC-HOWTO/index.html</a></li>
+<li><a class="external" href="http://www.linux.or.jp/JF/JFdocs/XML-RPC-HOWTO/xmlrpc-howto-ruby.html">http://www.linux.or.jp/JF/JFdocs/XML-RPC-HOWTO/xmlrpc-howto-ruby.html</a></li>
+<li>[XML-RPC] <a class="external" href="http://www.xmlrpc.com/spec">http://www.xmlrpc.com/spec</a></li>
+<li><a class="external" href="http://jp.rubyist.net/magazine/?0007-BundledLibraries">http://jp.rubyist.net/magazine/?0007-BundledLibraries</a></li>
+</ul>
+
+
+
+<h2>サブライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/xmlrpc=2fclient.html">xmlrpc/client</a></td>
+<td class="description"><p>
+XML-RPC クライアントのためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/xmlrpc=2fconfig.html">xmlrpc/config</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/xmlrpc=2fdatetime.html">xmlrpc/datetime</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/xmlrpc=2fserver.html">xmlrpc/server</a></td>
+<td class="description"><p>
+XML-RPC サーバのためのライブラリです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

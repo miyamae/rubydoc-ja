@@ -1,0 +1,225 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library logger</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; loggerライブラリ
+</p>
+
+
+
+<h1>library logger</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+ログを記録するためのライブラリです。
+</p>
+<h2 >使い方</h2>
+<p>
+5段階のログレベルに分けてログを記録します。
+</p>
+<dl>
+<dt>FATAL</dt>
+<dd>
+<p>
+プログラムをクラッシュさせるような制御不可能なエラー
+</p>
+</dd>
+<dt>ERROR</dt>
+<dd>
+<p>
+エラー
+</p>
+</dd>
+<dt>WARN</dt>
+<dd>
+<p>
+警告
+</p>
+</dd>
+<dt>INFO</dt>
+<dd>
+<p>
+一般的な情報
+</p>
+</dd>
+<dt>DEBUG</dt>
+<dd>
+<p>
+低レベルの情報
+</p>
+</dd>
+</dl>
+<p>
+全てのメッセージは必ずログレベルを持ちます。また Logger オブジェクトも同じように
+ログレベルを持ちます。メッセージのログレベルが Logger オブジェクトのログレベルよりも
+低い場合メッセージは記録されません。
+</p>
+<p>
+普段は INFO しか記録していないが、デバッグ情報が必要になった時には、
+Logger オブジェクトのログレベルを DEBUG に下げるなどという使い方をします。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'logger'
+log = Logger.new(STDOUT)
+log.level = Logger::WARN
+
+log.debug(&quot;Created logger&quot;)
+log.info(&quot;Program started&quot;)
+log.warn(&quot;Nothing to do!&quot;)
+</pre>
+<p>
+上の例ではログには WARN のみが記録されます。下が出力例です。
+</p>
+<pre>
+W, [2005-02-10T20:03:56.489954 #12469]  WARN -- : Nothing to do!
+</pre>
+<p>
+例外オブジェクトも記録するメッセージとして使えます。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'logger'
+log = Logger.new(STDOUT)
+log.level = Logger::ERROR
+
+begin
+  File.each_line(path) do |line|
+    unless line =~ /^(\w+) = (.*)$/
+      log.error(&quot;Line in wrong format: #{line}&quot;)
+    end
+  end
+rescue =&gt; err
+  log.fatal(&quot;Caught exception; exiting&quot;)
+  log.fatal(err)
+end
+</pre>
+<p>
+<a href="../method/-logger/i/formatter=3d.html">Logger#formatter=</a> を用いてフォーマットを変更することができます。
+</p>
+<pre>
+logger.formatter = proc { |severity, datetime, progname, msg|
+  &quot;#{datetime}: #{msg}\n&quot;
+}
+# =&gt; &quot;Thu Sep 22 08:51:08 GMT+9:00 2005: hello world&quot;
+</pre>
+<h2 >参考</h2>
+<dl>
+<dt>Rubyist Magazine</dt>
+<dd>
+<p>
+<a class="external" href="http://jp.rubyist.net/magazine/">http://jp.rubyist.net/magazine/</a>
+</p>
+</dd>
+<dt>標準添付ライブラリ紹介【第 2 回】</dt>
+<dd>
+<p>
+<a class="external" href="http://jp.rubyist.net/magazine/?0008-BundledLibraries">http://jp.rubyist.net/magazine/?0008-BundledLibraries</a>
+</p>
+</dd>
+</dl>
+
+
+<h2>クラスとモジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-logger.html">class Logger</a></td>
+<td class="description"><p>
+ログを記録するためのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-logger=3a=3a-application.html">class Logger::Application</a></td>
+<td class="description"><p>
+ユーザ定義のアプリケーションにログ機能を簡単に追加することができます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-logger=3a=3a-formatter.html">class Logger::Formatter</a></td>
+<td class="description"><p>
+ロガーのフォーマット文字列を扱うクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-logger=3a=3a-log-device.html">class Logger::LogDevice</a></td>
+<td class="description"><p>
+<a href="../class/-logger.html">Logger</a> の内部で使用するログの出力先を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-logger=3a=3a-log-device=3a=3a-log-device-mutex.html">class Logger::LogDevice::LogDeviceMutex</a></td>
+<td class="description"><p>
+ログの出力先ファイルを同期するためのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-logger=3a=3a-severity.html">module Logger::Severity</a></td>
+<td class="description"><p>
+<a href="../library/logger.html">logger</a> で使用するログレベルを定義したモジュール。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-logger=3a=3a-error.html">class Logger::Error</a></td>
+<td class="description"><p>
+このライブラリで使用する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-logger=3a=3a-shifting-error.html">class Logger::ShiftingError</a></td>
+<td class="description"><p>
+ログファイルの切り替えに失敗した場合に発生する例外です。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

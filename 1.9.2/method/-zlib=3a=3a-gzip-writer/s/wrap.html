@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>singleton method Zlib::GzipWriter.wrap</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/zlib.html">zlibライブラリ</a>
+&gt; <a href="../../../class/-zlib=3a=3a-gzip-writer.html">Zlib::GzipWriterクラス</a>
+&gt; wrap
+
+</p>
+
+
+
+
+<h1>singleton method Zlib::GzipWriter.wrap</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>wrap(io, level = Zlib::DEFAULT_COMPRESSION, strategy = Zlib::DEFAULT_STRATEGY) -&gt; Zlib::GzipWriter</code></dt>
+<dt class="method-heading"><code>wrap(io, level = Zlib::DEFAULT_COMPRESSION, strategy = Zlib::DEFAULT_STRATEGY) {|gz| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+io と関連付けられた GzipWriter オブジェクトを作成します。
+ブロックが与えられた場合、
+それを引数としてブロックを実行します。
+ブロックの実行が終了すると、GzipWriter オブジェクトは自動的に
+クローズされます。関連付けられている IO オブジェクトまで
+クローズしたくない時は、ブロック中で <a href="../../../method/-zlib=3a=3a-gzip-file/i/finish.html">Zlib::GzipFile#finish</a>
+メソッドを呼び出して下さい。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] io:</dt>
+<dd>
+IOオブジェクト、もしくは少なくとも、
+<a href="../../../method/-i-o/i/write.html">IO#write</a> と 同じ動作をする write メソッドが定義されている必要があります。
+</dd>
+<dt class='method-param'>[PARAM] level:</dt>
+<dd>
+0-9の範囲の整数を指定します。詳細はzlib.hを参照してください。
+</dd>
+<dt class='method-param'>[PARAM] strategy:</dt>
+<dd>
+<a href="../../../method/-zlib/c/-f-i-l-t-e-r-e-d.html">Zlib::FILTERED</a>, <a href="../../../method/-zlib/c/-h-u-f-f-m-a-n_-o-n-l-y.html">Zlib::HUFFMAN_ONLY</a>, <a href="../../../method/-zlib/c/-d-e-f-a-u-l-t_-s-t-r-a-t-e-g-y.html">Zlib::DEFAULT_STRATEGY</a>など指定します。
+詳細はzlib.h を参照してください。
+</dd>
+</dl>
+<pre>
+require 'zlib'
+
+def case1
+  filename='hoge1.txt'
+  f = File.open(filename, &quot;w&quot;)
+  Zlib::GzipWriter.wrap(f, Zlib::NO_COMPRESSION){|gz|
+    gz.puts &quot;hogehoge&quot; * 100
+  }
+  p f.closed? #=&gt; true
+  p FileTest.size(filename) #=&gt; 824
+end
+
+def case2
+  filename='hoge1.gz'
+  f = File.open(filename, &quot;w&quot;)
+  Zlib::GzipWriter.wrap(f, Zlib::BEST_COMPRESSION){|gz|
+    gz.puts &quot;hogehoge&quot; * 100
+    gz.finish
+  }
+  p f.closed? #=&gt; false
+  f.close
+  p FileTest.size(filename) #=&gt; 32
+end
+
+case1
+case2
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

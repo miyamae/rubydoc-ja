@@ -1,0 +1,865 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class Thread</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Threadクラス
+</p>
+
+
+
+<h1>class Thread</h1>
+<p>
+
+クラスの継承リスト: Thread
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+スレッドを表すクラスです。スレッドとはメモリ空間を共有して同時に実行される制御の流れです。
+Thread を使うことで並行プログラミングが可能になります。
+</p>
+<h2 >実装</h2>
+<p>
+ネイティブスレッドを用いて実装されていますが、
+現在の実装では Ruby VM は Giant VM lock (GVL) を有しており、同時に実行される
+ネイティブスレッドは常にひとつです。
+ただし、IO 関連のブロックする可能性があるシステムコールを行う場合には
+GVL を解放します。その場合にはスレッドは同時に実行され得ます。
+また拡張ライブラリから GVL を操作できるので、複数のスレッドを
+同時に実行するような拡張ライブラリは作成可能です。
+</p>
+<h2 >スケジューリング</h2>
+<p>
+Ruby のスレッドスケジューリングはネイティブスレッドのそれを利用しています。
+よって詳細はプラットフォームに依存します。
+</p>
+<h2 >メインスレッド</h2>
+<p>
+プログラムの開始と同時に生成されるスレッドを「メインスレッド」と呼
+びます。なんらかの理由でメインスレッドが終了する時には、他の全てのスレッ
+ドもプログラム全体も終了します。ユーザからの割込みによって発生した例外
+はメインスレッドに送られます。
+</p>
+<h2 >スレッドの終了</h2>
+<p>
+スレッドの起動時に指定したブロックの実行が終了するとスレッドの実行も終
+了します。ブロックの終了は正常な終了も例外などによる異常終了も含みます。
+</p>
+<h2 id='exception'>例外発生時のスレッドの振る舞い</h2>
+<p>
+あるスレッドで例外が発生し、そのスレッド内で rescue で捕捉されなかっ
+た場合、通常はそのスレッドだけがなにも警告なしに終了されます。ただ
+しその例外で終了するスレッドを <a href="../method/-thread/i/join.html">Thread#join</a> で待っている他の
+スレッドがある場合、その待っているスレッドに対して、同じ例外が再度
+発生します。
+</p>
+<pre>
+begin
+  t = Thread.new do
+    Thread.pass    # メインスレッドが確実にjoinするように
+    raise &quot;unhandled exception&quot;
+  end
+  t.join
+rescue
+  p $!  # =&gt; &quot;unhandled exception&quot;
+end
+</pre>
+<p>
+また、以下の 3 つの方法により、いずれかのスレッドが例外によって終
+了した時に、インタプリタ全体を中断させるように指定することができま
+す。
+</p>
+<ul>
+<li>組み込み変数 <a href="../method/-kernel/v/-d-e-b-u-g.html">$DEBUG</a> を真に設定する(デバッグモード)
+ruby インタプリタを -d オプション 付きで起動した場合も同様。
+(オプションの詳細に関しては<a href="../doc/spec=2frubycmd.html">Rubyの起動</a> を参照)</li>
+<li><a href="../method/-thread/s/abort_on_exception.html">Thread.abort_on_exception</a> でフラグを設定する。</li>
+<li><a href="../method/-thread/i/abort_on_exception.html">Thread#abort_on_exception</a> で指定
+したスレッドのフラグを設定する。</li>
+</ul>
+<p>
+上記3つのいずれかが設定されていた場合、インタプリタ全体が中断されます。
+</p>
+<h2 >スレッド終了時の ensure 節の実行</h2>
+<p>
+スレッド終了時には ensure 節が実行されます。
+これはスレッドが正常に終了する時はもちろんですが、他のスレッドから <a href="../method/-thread/i/kill.html">Thread#kill</a>
+などによって終了させられた時も同様に実行されます。
+</p>
+<p>
+メインスレッドの終了時の詳細に関しては <a href="../doc/spec=2fterminate.html">終了処理</a> を参照して下さい。
+</p>
+<h2 >スレッドの状態</h2>
+<p>
+個々のスレッドは、以下の実行状態を持ちます。これらの状態は
+<a href="../method/-object/i/inspect.html">Object#inspect</a> や
+<a href="../method/-thread/i/status.html">Thread#status</a> によって見ることができます。
+</p>
+<pre>
+p Thread.new {sleep 1} # =&gt; #&lt;Thread:0xa039de0 sleep&gt;
+</pre>
+<dl>
+<dt>run (実行or実行可能状態)</dt>
+<dd>
+<p>
+生成されたばかりのスレッドや <a href="../method/-thread/i/run.html">Thread#run</a> や
+<a href="../method/-thread/i/wakeup.html">Thread#wakeup</a> で起こされたスレッドはこの状態です。
+<a href="../method/-thread/i/join.html">Thread#join</a> でスレッドの終了を待っているスレッドもスレッドの
+終了によりこの状態になります。
+
+この状態のスレッドは「生きて」います。
+</p>
+</dd>
+<dt>sleep (停止状態)</dt>
+<dd>
+<p>
+<a href="../method/-thread/s/stop.html">Thread.stop</a> や <a href="../method/-thread/i/join.html">Thread#join</a> により停止されたスレッ
+ドはこの状態になります。
+
+この状態のスレッドは「生きて」います。
+</p>
+</dd>
+<dt>aborting (終了処理中)</dt>
+<dd>
+<p>
+<a href="../method/-thread/i/kill.html">Thread#kill</a> 等で終了されるスレッドは一時的にこの状態になりま
+す。この状態から停止状態(sleep)になることもあります。
+
+この状態のスレッドはまだ「生きて」います。
+</p>
+</dd>
+<dt>dead (終了状態)</dt>
+<dd>
+<p>
+<a href="../method/-thread/i/kill.html">Thread#kill</a> 等で終了したスレッドはこの状態になります。この状
+態のスレッドはどこからも参照されていなければ GC によりメモリ上から
+なくなります。
+
+この状態のスレッドは「死んで」います。
+</p>
+</dd>
+</dl>
+<h2 >デッドロックの検出</h2>
+
+
+
+<h2>特異メソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/s/abort_on_exception.html"><code>
+  abort_on_exception -&gt; bool<br>abort_on_exception=(newstate)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+真の時は、いずれかのスレッドが例外によって終了した時に、インタプリタ
+全体を中断させます。false の場合、あるスレッドで起こった例外は、<a href="../method/-thread/i/join.html">Thread#join</a>
+などで検出されない限りそのスレッドだけをなにも警告を出さずに終了させます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/s/critical.html"><code>
+  critical -&gt; nil<br>critical=(newstate)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+サポートされていません。警告を出力し、何もせずに nil を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/s/current.html"><code>
+  current -&gt; Thread
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+現在実行中のスレッド(カレントスレッド)を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/s/exclusive.html"><code>
+  exclusive { ... } -&gt; object
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+VM グローバルの Mutex をロックし、ブロックを実行します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/s/exit.html"><code>
+  exit -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+カレントスレッドに対して <a href="../method/-thread/i/exit.html">Thread#exit</a> を呼びます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/s/fork.html"><code>
+  start(*arg) {|*arg| ... } -&gt; Thread<br>fork(*arg) {|*arg| ... } -&gt; Thread
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+スレッドを生成して、ブロックの評価を開始します。
+生成したスレッドを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/s/kill.html"><code>
+  kill(thread) -&gt; Thread
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+指定したスレッド thread に対して <a href="../method/-thread/i/exit.html">Thread#exit</a> を呼びます。終了したスレッドを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/s/list.html"><code>
+  list -&gt; [Thread]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+全ての生きているスレッドを含む配列を生成して返します。aborting 状態であるスレッド
+も要素に含まれます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/s/main.html"><code>
+  main -&gt; Thread
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+メインスレッドを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/s/new.html"><code>
+  new(*arg) {|*arg| ... } -&gt; Thread
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+スレッドを生成して、ブロックの評価を開始します。
+生成したスレッドを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/s/pass.html"><code>
+  pass -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+他のスレッドに実行権を譲ります。実行中のスレッドの状態を変えずに、
+他の実行可能状態のスレッドに制御を移します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/s/stop.html"><code>
+  stop -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+他のスレッドから <a href="../method/-thread/i/run.html">Thread#run</a> メソッドで再起動されるまで、カレ
+ントスレッドの実行を停止します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>インスタンスメソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/=5b=5d.html"><code>
+  self[name] -&gt; object | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+name に対応したスレッドに固有のデータを取り出します。
+name に対応するスレッド固有データがなければ nil を返し
+ます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/=5b=5d=3d.html"><code>
+  self[name] = val
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+val を name に対応するスレッド固有のデータとして格納します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/abort_on_exception.html"><code>
+  abort_on_exception -&gt; bool<br>abort_on_exception=(newstate)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+真の場合、そのスレッドが例外によって終了した時に、インタプリタ
+全体を中断させます。false の場合、あるスレッドで起こった例
+外は、<a href="../method/-thread/i/join.html">Thread#join</a> などで検出されない限りそのスレッ
+ドだけをなにも警告を出さずに終了させます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/add_trace_func.html"><code>
+  add_trace_func
+  </code></a>
+</td>
+
+<td class="description" colspan="2"></td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/alive=3f.html"><code>
+  alive? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+スレッドが「生きている」時、true を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/backtrace.html"><code>
+  backtrace -&gt; [String] | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"></td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/exit.html"><code>
+  exit -&gt; self<br>kill -&gt; self<br>terminate -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+スレッドの実行を終了させます。終了時に ensure 節が実行されます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/group.html"><code>
+  group -&gt; ThreadGroup | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+スレッドが属している <a href="../class/-thread-group.html">ThreadGroup</a> オブジェクトを返します。
+死んでいるスレッドは nil を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/join.html"><code>
+  join -&gt; self<br>join(limit) -&gt; self | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+スレッド self の実行が終了するまで、カレントスレッドを停止し
+ます。self が例外により終了していれば、その例外がカレントス
+レッドに対して発生します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/key=3f.html"><code>
+  key?(name) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+name に対応したスレッドに固有のデータが定義されていれば
+true を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/keys.html"><code>
+  keys -&gt; [Symbol]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+スレッド固有データに関連づけられたキーの配列を返します。キーは
+<a href="../class/-symbol.html">Symbol</a> で返されます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/priority.html"><code>
+  priority -&gt; Integer<br>priority=(val)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+スレッドの優先度を返します。この値の大きいほど優先度が高くなります。
+メインスレッドのデフォルト値は 0 です。新しく生成されたスレッドは親スレッドの
+priority を引き継ぎます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/raise.html"><code>
+  raise(error_type, message, traceback) -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身が表すスレッドで強制的に例外を発生させます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/run.html"><code>
+  run -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+停止状態(stop)のスレッドを再開させます。
+<a href="../method/-thread/i/wakeup.html">Thread#wakeup</a> と異なりすぐにスレッドの切り替え
+を行います。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/safe_level.html"><code>
+  safe_level -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self のセーフレベルを返します。カレントスレッドの
+safe_level は、<a href="../method/-kernel/v/-s-a-f-e.html">$SAFE</a> と同じです。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/set_trace_func.html"><code>
+  set_trace_func
+  </code></a>
+</td>
+
+<td class="description" colspan="2"></td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/status.html"><code>
+  status -&gt; String | false | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+生きているスレッドの状態を文字列 &quot;run&quot;、&quot;sleep&quot;, &quot;aborting&quot; のいず
+れかで返します。正常終了したスレッドに対して false、例外によ
+り終了したスレッドに対して nil を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/stop=3f.html"><code>
+  stop? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+スレッドが終了(dead)あるいは停止(stop)している時、true を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/value.html"><code>
+  value -&gt; object
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+スレッド self が終了するまで待ち(<a href="../method/-thread/i/join.html">Thread#join</a> と同じ)、
+そのスレッドのブロックが返した値を返します。スレッド実行中に例外が
+発生した場合には、その例外を再発生させます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/i/wakeup.html"><code>
+  wakeup -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+停止状態(stop)のスレッドを実行可能状態(run)にします。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>定数</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-thread/c/-m-u-t-e-x_-f-o-r_-t-h-r-e-a-d_-e-x-c-l-u-s-i-v-e.html"><code>
+  MUTEX_FOR_THREAD_EXCLUSIVE
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-thread/s/exclusive.html">Thread.exclusive</a>用の<a href="../class/-mutex.html">Mutex</a>です。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+<h2>継承したメソッド</h2>
+<p><code>
+
+<a href="../method/-basic-object/i/=21.html">!</a>
+
+<a href="../method/-basic-object/i/=21=3d.html">!=</a>
+
+<a href="../method/-object/i/=3d=3d.html">==</a>
+
+<a href="../method/-object/i/=3d=3d=3d.html">===</a>
+
+<a href="../method/-object/i/=3d=7e.html">=~</a>
+
+<a href="../method/-object/i/__id__.html">__id__</a>
+
+<a href="../method/-object/i/__send__.html">__send__</a>
+
+<a href="../method/-object/i/_dump.html">_dump</a>
+
+<a href="../method/-object/i/class.html">class</a>
+
+<a href="../method/-object/i/clone.html">clone</a>
+
+<a href="../method/-object/i/dclone.html">dclone</a>
+
+<a href="../method/-object/i/display.html">display</a>
+
+<a href="../method/-object/i/enum_for.html">enum_for</a>
+
+<a href="../method/-object/i/eql=3f.html">eql?</a>
+
+<a href="../method/-object/i/equal=3f.html">equal?</a>
+
+<a href="../method/-object/i/extend.html">extend</a>
+
+<a href="../method/-object/i/freeze.html">freeze</a>
+
+<a href="../method/-object/i/frozen=3f.html">frozen?</a>
+
+<a href="../method/-object/i/hash.html">hash</a>
+
+<a href="../method/-object/i/initialize.html">initialize</a>
+
+<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
+
+<a href="../method/-object/i/inspect.html">inspect</a>
+
+<a href="../method/-object/i/instance_eval.html">instance_eval</a>
+
+<a href="../method/-object/i/instance_exec.html">instance_exec</a>
+
+<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
+
+<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
+
+<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
+
+<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
+
+<a href="../method/-object/i/instance_variables.html">instance_variables</a>
+
+<a href="../method/-object/i/is_a=3f.html">is_a?</a>
+
+<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
+
+<a href="../method/-object/i/marshal_load.html">marshal_load</a>
+
+<a href="../method/-object/i/method.html">method</a>
+
+<a href="../method/-object/i/method_missing.html">method_missing</a>
+
+<a href="../method/-object/i/methods.html">methods</a>
+
+<a href="../method/-object/i/must_be.html">must_be</a>
+
+<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
+
+<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
+
+<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
+
+<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
+
+<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
+
+<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
+
+<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
+
+<a href="../method/-object/i/must_equal.html">must_equal</a>
+
+<a href="../method/-object/i/must_include.html">must_include</a>
+
+<a href="../method/-object/i/must_match.html">must_match</a>
+
+<a href="../method/-object/i/must_raise.html">must_raise</a>
+
+<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
+
+<a href="../method/-object/i/must_send.html">must_send</a>
+
+<a href="../method/-object/i/must_throw.html">must_throw</a>
+
+<a href="../method/-object/i/nil=3f.html">nil?</a>
+
+<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
+
+<a href="../method/-object/i/pretty_print.html">pretty_print</a>
+
+<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
+
+<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
+
+<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
+
+<a href="../method/-object/i/private_methods.html">private_methods</a>
+
+<a href="../method/-object/i/protected_methods.html">protected_methods</a>
+
+<a href="../method/-object/i/public_methods.html">public_methods</a>
+
+<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
+
+<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
+
+<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
+
+<a href="../method/-object/i/singleton_class.html">singleton_class</a>
+
+<a href="../method/-object/i/singleton_method_added.html">singleton_method_added</a>
+
+<a href="../method/-object/i/singleton_method_removed.html">singleton_method_removed</a>
+
+<a href="../method/-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
+
+<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
+
+<a href="../method/-object/i/taint.html">taint</a>
+
+<a href="../method/-object/i/tainted=3f.html">tainted?</a>
+
+<a href="../method/-object/i/tap.html">tap</a>
+
+<a href="../method/-object/i/to_a.html">to_a</a>
+
+<a href="../method/-object/i/to_ary.html">to_ary</a>
+
+<a href="../method/-object/i/to_hash.html">to_hash</a>
+
+<a href="../method/-object/i/to_int.html">to_int</a>
+
+<a href="../method/-object/i/to_io.html">to_io</a>
+
+<a href="../method/-object/i/to_proc.html">to_proc</a>
+
+<a href="../method/-object/i/to_regexp.html">to_regexp</a>
+
+<a href="../method/-object/i/to_s.html">to_s</a>
+
+<a href="../method/-object/i/to_str.html">to_str</a>
+
+<a href="../method/-object/i/to_yaml.html">to_yaml</a>
+
+<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
+
+<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
+
+<a href="../method/-object/i/trust.html">trust</a>
+
+<a href="../method/-object/i/untaint.html">untaint</a>
+
+<a href="../method/-object/i/untrust.html">untrust</a>
+
+<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
+
+</code></p>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

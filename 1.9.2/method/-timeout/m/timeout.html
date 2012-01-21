@@ -1,0 +1,215 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>module function Timeout.#timeout</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/timeout.html">timeoutライブラリ</a>
+&gt; <a href="../../../class/-timeout.html">Timeoutモジュール</a>
+&gt; timeout
+
+</p>
+
+
+
+
+<h1>module function Timeout.#timeout</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>timeout(sec, exception_class = nil) {|i| ... }</code></dt>
+<dd class="method-description">
+<p>
+ブロックを sec 秒の期限付きで実行します。
+ブロックの実行時間が制限を過ぎたときは例外
+<a href="../../../class/-timeout=3a=3a-error.html">Timeout::Error</a> が発生します。
+</p>
+<p>
+exception_class を指定した場合には <a href="../../../class/-timeout=3a=3a-error.html">Timeout::Error</a> の代わりに
+その例外が発生します。
+ブロックパラメータ i は sec がはいります。
+</p>
+<p>
+また sec が nil のときは制限時間なしで
+ブロックを実行します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] sec:</dt>
+<dd>
+タイムアウトする時間を秒数で指定します.
+</dd>
+<dt class='method-param'>[PARAM] exception_class:</dt>
+<dd>
+タイムアウトした時、発生させる例外を指定します.
+</dd>
+</dl>
+<p>
+例 長い計算のタイムアウト
+</p>
+<pre>
+require 'timeout'
+
+def calc_pi(min)
+  loop do
+    x = rand
+    y = rand
+    x**2 + y**2 &lt; 1.0 ?  min[0] += 1 : min[1] += 1
+  end
+end
+
+t = 5
+min = [ 0, 0]
+begin
+  timeout(t){
+    calc_pi(min)
+  }
+rescue Timeout::Error
+  puts &quot;timeout&quot;
+end
+
+printf &quot;%d: pi = %f\n&quot;, min[0] + min[1], min[0]*4.0/(min[0]+min[1])
+#例
+#=&gt; 417519: pi = 3.141443
+</pre>
+<p>
+例 独自の例外を発生させるタイムアウト
+</p>
+<pre>
+#!/usr/bin/env ruby
+
+require 'timeout'
+
+class MYError &lt; Exception;end
+begin
+  timeout(5, MYError) {
+    sleep(30)
+  }
+rescue MYError =&gt; err
+  puts &quot;MYError&quot;
+  puts err
+end
+</pre>
+<h2 >注意</h2>
+<p>
+timeout による割り込みは Thread によって実現されています。
+C 言語レベルで実装され、
+Ruby のスレッドが割り込めない処理に対して timeout は無力です。
+そのようなものは実用レベルでは少ないのですが、
+Socket などは DNSの名前解決に時間がかかった場合割り込めません
+(<a href="../../../library/resolv=2dreplace.html">resolv-replace</a> を使用する必要があります)。
+その処理を Ruby で実装しなおすか C 側で Ruby
+のスレッドを意識してあげる必要があります。
+</p>
+<p>
+以下の例では、gethostbyname(およそ0.6秒処理に時間がかかっている) が終了した直後((A)の箇所)で TimeoutError 例外があがっています。
+</p>
+<p>
+例 timeout が割り込めない
+</p>
+<pre>
+require 'timeout'
+require 'socket'
+
+t = 0.1
+start = Time.now
+begin
+  timeout(t) {
+    p TCPSocket.gethostbyname(&quot;www.ruby-lang.org&quot;)
+    # (A)
+  }
+ensure
+  p Time.now - start
+end
+# 実行例
+=&gt; [&quot;helium.ruby-lang.org&quot;, [], 2, &quot;210.251.121.214&quot;]
+   0.689331
+   /usr/local/lib/ruby/1.6/timeout.rb:37: execution expired (TimeoutError)
+         from -:6:in `timeout'
+         from -:6
+# gethostbyname が0.1秒かからない場合は例外が発生しないので
+# その場合は、t に小さい数値(0.000001のような)に変える。
+</pre>
+<p>
+timeout による割り込みは <a href="../../../method/-kernel/m/system.html">Kernel.#system</a> によって呼び出された外部プログラムを
+タイムアウトさせる事はできないので、<a href="../../../method/-i-o/s/popen.html">IO.popen</a>、<a href="../../../method/-kernel/m/open.html">Kernel.#open</a>を使用するなどの工夫が必要です。
+</p>
+<p>
+例 外部コマンドのタイムアウト
+</p>
+<pre>
+require 'timeout'
+
+# テスト用のシェルをつくる。
+File.open(&quot;loop.sh&quot;, &quot;w&quot;){|fp|
+  fp.print &lt;&lt;SHELL_EOT
+#!/bin/bash
+
+S=&quot;scale=10&quot;
+M=32767
+
+trap 'echo &quot;$S; $m1/($m1+$m2)*4&quot; | bc ; echo &quot;count = $((m1+m2))&quot; ; exit 0' INT
+m1=0
+m2=0
+
+while true
+do
+  x=&quot;($RANDOM/$M)&quot;
+  y=&quot;($RANDOM/$M)&quot;
+  c=$(echo &quot;$S;$x^2+$y^2 &lt; 1.0&quot; | bc)
+  echo $x $y $c
+  if [ $c -eq 1 ]
+  then
+    let m1++
+  else
+    let m2++
+  fi
+done
+SHELL_EOT
+}
+
+File.chmod(0755, &quot;loop.sh&quot;)
+t = 10 # 10 秒でタイムアウト
+begin
+  pid = nil
+  com = nil
+  timeout(t) {
+    # system だととまらない
+    # system(&quot;./loop.sh&quot;)
+    com = IO.popen(&quot;./loop.sh&quot;)
+    pid = com.pid
+    while line = com.gets
+      print line
+    end
+  }
+rescue Timeout::Error =&gt; err
+  puts &quot;timeout: shell execution.&quot;
+  Process.kill('SIGINT', pid)
+  printf &quot;[result]\t%s&quot;, com.read
+  com.close unless com.nil?
+end
+
+#止まっているか確認する。
+#system(&quot;ps au&quot;)
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

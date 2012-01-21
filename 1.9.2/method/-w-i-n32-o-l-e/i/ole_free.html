@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method WIN32OLE#ole_free</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/win32ole.html">win32oleライブラリ</a>
+&gt; <a href="../../../class/-w-i-n32-o-l-e.html">WIN32OLEクラス</a>
+&gt; ole_free
+
+</p>
+
+
+
+
+<h1>instance method WIN32OLE#ole_free</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>ole_free -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+selfが参照するCOMオブジェクトを解放します。
+</p>
+<p>
+selfが参照するCOMオブジェクトのIUnknown::Releaseを呼び出すことで、COMオ
+ブジェクトを開放します。ole_freeを呼び出した後は、このオブジェクトに対
+する操作は行えません。
+</p>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+excel.ole_free  # オブジェクトの解放
+excel.Quit      #=&gt; RuntimeError (failed to get Dispatch Interface)
+</pre>
+<p>
+通常は利用されなくなったWIN32OLEオブジェクトはGCのタイミングで自動的に
+解放されるため、当メソッドを呼び出す必要はありません。Officeのような外
+部プロセスサーバ呼び出し時に、スクリプト終了後もサーバが解放されない場
+合に強制的にサーバを終了するために当メソッドを利用できます。ただし、現
+実には途中で生成される子オブジェクトからの逆参照などがあるため、
+WIN32OLEがIUnknown::Releaseを呼び出してもオブジェクトが解放されるとは限
+りません。
+</p>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+workbook = excel.Workbooks.Open('workbook.xls')
+workbook.Close(:SaveChanges =&gt; false)
+workbook.ole_free
+excel.ole_free
+# この時点でExcel.EXEは終了しない
+</pre>
+<p>
+上の例では、excel.Workbooks.Openの行で、excel.Workbooksオブジェクトが生
+成されています。しかし、後続の処理で該当オブジェクトが解放されていない
+ため、Workbooksオブジェクトによって参照されているexcelオブジェクトは解
+放されません。それに対して下の例では正しく解放されます。
+</p>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+books = excel.Workbooks
+workbook = books.Open('workbook.xls')
+books.ole_free
+workbook.Close(:SaveChanges =&gt; false)
+workbook.ole_free
+excel.ole_free
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method Encoding::Converter#convert</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-encoding=3a=3a-converter.html">Encoding::Converterクラス</a>
+&gt; convert
+
+</p>
+
+
+
+
+<h1>instance method Encoding::Converter#convert</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>convert(source_string) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+与えられた文字列を変換して、変換できた結果を返します。
+引数の末尾の文字がバイト列の途中で終わっている場合、そのバイト列は変換器内に取り置かれます。
+変換を終了させるには <a href="../../../method/-encoding=3a=3a-converter/i/finish.html">Encoding::Converter#finish</a> を呼びます。
+</p>
+<p>
+<a href="../../../class/-encoding=3a=3a-converter.html">Encoding::Converter</a> を用いると、文字列の一部または全部を渡して変換を行うことができます。よって、不正なバイトを意識せずにストリームから読み出した文字列を変換したいときには Encoding::Converter が適します。
+</p>
+<p>
+なお、Encoding::Converter#convert では、これらの例外を捕獲しても、例外を起こしたところから変換を再開することはできません。不正なバイトや変換先で未定義な文字をエスケープしたい場合やさらに細かい指定を行いたい場合は、<a href="../../../method/-encoding=3a=3a-converter/i/primitive_convert.html">Encoding::Converter#primitive_convert</a> を用います。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] source_string:</dt>
+<dd>
+変換する文字列の一部または全部です。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+変換結果である文字列の一部または全部です。
+</dd>
+<dt>[EXCEPTION] Encoding::InvalidByteSequenceError:</dt>
+<dd>
+変換元のエンコーディングにおいて不正なバイト列があった場合に発生します。
+</dd>
+<dt>[EXCEPTION] Encoding::UndefinedConversionError:</dt>
+<dd>
+変換先のエンコーディングで未定義な文字があった場合に発生します。
+</dd>
+</dl>
+<pre>
+ec = Encoding::Converter.new(&quot;utf-8&quot;, &quot;euc-jp&quot;)
+puts ec.convert(&quot;\u3042&quot;).dump     #=&gt; &quot;\xA4\xA2&quot;
+puts ec.finish.dump                #=&gt; &quot;&quot;
+
+ec = Encoding::Converter.new(&quot;euc-jp&quot;, &quot;utf-8&quot;)
+puts ec.convert(&quot;\xA4&quot;).dump       #=&gt; &quot;&quot;
+puts ec.convert(&quot;\xA2&quot;).dump       #=&gt; &quot;\xE3\x81\x82&quot;
+puts ec.finish.dump                #=&gt; &quot;&quot;
+
+ec = Encoding::Converter.new(&quot;utf-8&quot;, &quot;iso-2022-jp&quot;)
+puts ec.convert(&quot;\xE3&quot;).dump       #=&gt; &quot;&quot;.force_encoding(&quot;ISO-2022-JP&quot;)
+puts ec.convert(&quot;\x81&quot;).dump       #=&gt; &quot;&quot;.force_encoding(&quot;ISO-2022-JP&quot;)
+puts ec.convert(&quot;\x82&quot;).dump       #=&gt; &quot;\e$B$\&quot;&quot;.force_encoding(&quot;ISO-2022-JP&quot;)
+puts ec.finish.dump                #=&gt; &quot;\e(B&quot;.force_encoding(&quot;ISO-2022-JP&quot;)
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>
