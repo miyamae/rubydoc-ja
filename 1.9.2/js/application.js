@@ -2,12 +2,16 @@ function log(s) {
     if (console) console.log(s);
 }
 
+function currentPath() {
+    return location.hash.replace(/^#!/, '');
+}
+
 function topUri() {
     return location.href.replace(/#.*?$/, '').replace(/[^\/]*$/, '');
 }
 
 function baseUri() {
-    var base_path = location.hash.replace('#!', '').replace(/[^\/]*$/, '');
+    var base_path = currentPath().replace(/[^\/]*$/, '');
     return topUri() + base_path.replace(/^\//, '');
 }
 
@@ -15,7 +19,8 @@ function absolutePath(path) {
     var e = document.createElement('span');
     var url = baseUri() + path.replace(/^\//, '');
     e.innerHTML = '<a href="' + url + '" />';
-    var abs_path = path.match(/^\//) ? e.firstChild.href.replace(baseUri(), '') : e.firstChild.href.replace(topUri(), '');
+    var abs_path = path.match(/^\//) ?
+        e.firstChild.href.replace(baseUri(), '') : e.firstChild.href.replace(topUri(), '');
     return abs_path;
 }
 
@@ -25,10 +30,14 @@ function isAbsoluteUri(uri) {
 
 function loadPage() {
     if (location.hash.match(/^#!/)) {
-        var path = location.hash.replace('#!', '');
+        var path = currentPath();
         $('#body').html('<div class="loading"></div');
         $('#body').load(absolutePath(path), null, function() {
             initPage($('#body'));
+            if (path.match(/\?(.*)$/)) {
+                var top = $('#' + RegExp.$1).offset().top;
+                $('#content').scrollTop(top);
+            }
         });
     }
 }
@@ -37,8 +46,11 @@ function initPage(elem) {
     var as = elem ? elem.find('a') : $('a');
     as.each(function() {
         var src_url = $(this).attr('href');
-        if (!isAbsoluteUri(src_url) && !src_url.match(/^#/)) {
-            $(this).attr('href', '#!/' + absolutePath(src_url));
+        if (src_url.match(/^#(.*)$/)) {
+            var id = RegExp.$1;
+            $(this).attr('href', '#!' + currentPath().replace(/\?.*$/, '') + '?' + id);
+        } else if (!isAbsoluteUri(src_url)) {
+            $(this).attr('href', '#!/' + absolutePath(src_url.replace('#', '?')));
         }
     });
 }
