@@ -56,12 +56,12 @@ function initPage(elem) {
 }
 
 function itemIndex(param) {
-    var item = $('<li><a><span class="key"></span><span class="name"></span><span class="desc"></span></a></li>');
+    var item = $('<li><a><span class="key"></span><span class="sub"></span><span class="desc"></span></a></li>');
     item.find('li').attr('id', 'idx' + param.id);
     item.find('a').attr('href', param.path);
     item.find('a').attr('title', '【' + param.key + '】' +  param.desc);
     item.find('.key').text(param.key);
-    item.find('.name').text(param.name);
+    item.find('.sub').text(param.sub);
     item.find('.desc').text(param.desc);
     return item;
 }
