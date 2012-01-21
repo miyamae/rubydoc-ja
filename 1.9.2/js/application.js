@@ -55,14 +55,14 @@ function initPage(elem) {
     });
 }
 
-function itemIndex(param) {
+function itemIndex(param, n) {
     var item = $('<li><a><span class="key"></span><span class="sub"></span><span class="desc"></span></a></li>');
     item.find('li').attr('id', 'idx' + param.id);
     item.find('a').attr('href', param.path);
     item.find('a').attr('title', '【' + param.key + '】' +  param.desc);
     item.find('.key').text(param.key);
     if (typeof(param.sub) == 'object') {
-        item.find('.sub').text(param.sub.join(','));
+        item.find('.sub').text(n ? param.sub[n] : param.sub.join(','));
     } else {
         item.find('.sub').text(param.sub);
     }
@@ -93,26 +93,31 @@ function suggest() {
     if (key) {
         var results = [[], [], []];
         $.each(_index, function() {
-            if (this.key) {
-                var matched = this.key.toLowerCase().indexOf(key);
-                if (matched != -1) {
-                    this.key.match(/[:\.\#]+(.*)$/);
-                    var name = RegExp.$1;
-                    if (matched == 0) {
-                        results[0].push(this);
-                    } else if (name.indexOf(key) == 0) {
-                        results[1].push(this);
-                    } else if (matched > 0) {
-                        results[2].push(this);
+            var item = this;
+            var found = false;
+            var key_matched = item.key ? item.key.toLowerCase().indexOf(key) : -1;
+            if (key_matched == 0) {
+                results[0].push([item, null]);
+                found = true;
+            }
+            if (!found && item.sub && typeof(item.sub) == 'object') {
+                for (var i=0; i<item.sub.length; i++) {
+                    var sub_matched = item.sub[i].toLowerCase().indexOf(key);
+                    if (sub_matched != -1) {
+                        results[sub_matched == 0 ? 1 : 2].push([item, i]);
+                        found = true;
                     }
                 }
+            }
+            if (!found && key_matched > 0) {
+                results[2].push([item, null]);
             }
             return true;
         });
         var n = 0;
         $.each(results, function() {
             $.each(this, function() {
-                ul.append(itemIndex(this));
+                ul.append(itemIndex(this[0], this[1]));
                 n += 1;
                 return n > 30 ? false : true;
             });
@@ -120,7 +125,7 @@ function suggest() {
         if (n > 30) {
             ul.append('<li class="more">続きがあります</li>');
         }
-        $('#navi li .key').highlight(key);
+        $('#navi li .key, #navi li .sub').highlight(key);
         zebraList();
         initPage($('#navi'));
     }
