@@ -168,7 +168,6 @@ function handleKey(key) {
 function clickNaviItem(target) {
     $('#navi ul a').removeClass('current');
     $(target).addClass('current');
-    log(target);
 }
 
 $(function() {
