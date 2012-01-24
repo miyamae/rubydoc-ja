@@ -1,3 +1,8 @@
+/*
+ * Author: Tatsuya Miyamae @ BitArts, Inc.
+ * http://bitarts.jp
+ */
+
 function log(s) {
     if (console) console.log(s);
 }
@@ -35,10 +40,11 @@ function loadPage() {
         $('#body').load(absolutePath(path), null, function() {
             initPage($('#body'));
             if (path.match(/\?(.*)$/)) {
-                var top = $('#' + RegExp.$1).offset().top;
-                $('#content').scrollTop(top);
+                var offset = $('#' + RegExp.$1).offset();
+                if (offset) $('#content').scrollTop(offset.top);
             }
         });
+        $('#search-box').focus();
     }
 }
 
@@ -57,12 +63,11 @@ function initPage(elem) {
 
 function itemIndex(param, n) {
     var item = $('<li><a><span class="key"></span><span class="sub"></span><span class="desc"></span></a></li>');
-    item.find('li').attr('id', 'idx' + param.id);
     item.find('a').attr('href', param.path);
     item.find('a').attr('title', '【' + param.key + '】' +  param.desc);
     item.find('.key').text(param.key);
     if (typeof(param.sub) == 'object') {
-        item.find('.sub').text(n ? param.sub[n] : param.sub.join(','));
+        item.find('.sub').text(n ? param.sub[n] : param.sub[0]);
     } else {
         item.find('.sub').text(param.sub);
     }
@@ -71,7 +76,6 @@ function itemIndex(param, n) {
 }
 
 _index = [];
-
 function loadIndex() {
     $.getJSON('json/index.json', function(json) {
         _index = json;
@@ -86,75 +90,114 @@ function zebraList() {
     $('#index li:even').addClass('even');
 }
 
+_key = '';
 function suggest() {
     var key = $('#search-box').val().toLowerCase();
-    var ul = $('#index'); 
-    ul.empty();
-    if (key) {
-        $('#contents').hide();
-        var results = [[], [], []];
-        $.each(_index, function() {
-            var item = this;
-            var found = false;
-            var key_matched = item.key ? item.key.toLowerCase().indexOf(key) : -1;
-            if (key_matched == 0) {
-                results[0].push([item, null]);
-                found = true;
-            }
-            if (!found && item.sub && typeof(item.sub) == 'object') {
-                for (var i=0; i<item.sub.length; i++) {
-                    var sub_matched = item.sub[i].toLowerCase().indexOf(key);
-                    if (sub_matched != -1) {
-                        results[sub_matched == 0 ? 1 : 2].push([item, i]);
-                        found = true;
+    if (key != _key) {
+        _key = key;
+        var ul = $('#index'); 
+        ul.empty();
+        $('#navi a').removeClass('current');
+        $('#navi').scrollTop(0);
+        if (key) {
+            $('#contents').hide();
+            var results = [[], [], []];
+            $.each(_index, function() {
+                var item = this;
+                var found = false;
+                var key_matched = item.key ? item.key.toLowerCase().indexOf(key) : -1;
+                if (key_matched == 0) {
+                    results[0].push([item, null]);
+                    found = true;
+                }
+                if (!found && item.sub && typeof(item.sub) == 'object') {
+                    for (var i=0; i<item.sub.length; i++) {
+                        var sub_matched = item.sub[i].toLowerCase().indexOf(key);
+                        if (sub_matched != -1) {
+                            results[sub_matched == 0 ? 1 : 2].push([item, i]);
+                            found = true;
+                        }
                     }
                 }
-            }
-            if (!found && key_matched > 0) {
-                results[2].push([item, null]);
-            }
-            return true;
-        });
-        var n = 0;
-        $.each(results, function() {
-            $.each(this, function() {
-                ul.append(itemIndex(this[0], this[1]));
-                n += 1;
-                return n > 30 ? false : true;
+                if (!found && key_matched > 0) {
+                    results[2].push([item, null]);
+                }
+                return true;
             });
-        });
-        if (n > 30) {
-            ul.append('<li class="more">続きがあります</li>');
+            var n = 0;
+            $.each(results, function() {
+                $.each(this, function() {
+                    ul.append(itemIndex(this[0], this[1]));
+                    n += 1;
+                    return n > 30 ? false : true;
+                });
+            });
+            if (n > 30) {
+                ul.append('<li class="more">続きがあります</li>');
+            }
+            $('#index a:first').addClass('current');
+            $('#navi li .key, #navi li .sub').highlight(key);
+            zebraList();
+            initPage($('#navi'));
+            $('#navi ul a').click(function(e) {
+                clickNaviItem(this);
+            });
+        } else {
+            $('#navi ul a').removeClass('current');
+            $('#contents a:first').addClass('current');
+            $('#contents').show();
         }
-        $('#navi li .key, #navi li .sub').highlight(key);
-        zebraList();
-        initPage($('#navi'));
-    } else {
-        $('#contents').show();
     }
+}
+
+function handleKey(key) {
+    if (key == 38 || key == 40) { //[Up][Down]
+        var all = $('#navi ul a');
+        var current = $('#navi ul a.current');
+        var new_idx = all.index(current) + (key - 39);
+        if (new_idx >= 0 && new_idx < all.size()) {
+            var next = all.eq(new_idx);
+            current.removeClass('current');
+            next.addClass('current');
+        }
+    } else if (key == 13) { //[Enter]
+        var url = $('#navi ul a.current').attr('href');
+        location.href = url;
+    }
+}
+
+function clickNaviItem(target) {
+    $('#navi ul a').removeClass('current');
+    $(target).addClass('current');
 }
 
 $(function() {
 
     $('#search-box').attr('disabled', 'disabled');
     $('#search-box').val('');
+    $('#navi ul a:first').addClass('current');
 
     loadIndex();
 
     $(window).hashchange(function() {
         loadPage();
     });
-    
+
     if (!location.hash.match(/^#!/)) {
         location.hash = '#!/doc/index.html';
     }
     loadPage();
 
+    $('#search-box').keydown(function(e) {
+        handleKey(e.keyCode);
+    });
     $('#search-box').keyup(function(e) {
         suggest();
     });
     $('#search-box').focus(function(e) {
         $(this).select();
     });
-
+    $('#navi ul a').click(function(e) {
+        clickNaviItem(this);
+    });
 });
