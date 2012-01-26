@@ -162,7 +162,7 @@ function handleKey(key) {
         }
     } else if (key == 13) { //[Enter]
         var url = $('#navi ul a.current').attr('href');
-        location.href = url;
+        if (url) location.href = url;
     }
 }
 
