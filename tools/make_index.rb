@@ -10,10 +10,6 @@ require 'json'
 require 'yaml'
 
 html_dir = '../1.9.2'
-#html_dir = '../1.9.2/method'
-#html_dir = '../1.9.2/library'
-#html_dir = '../1.9.2/class'
-#html_dir = '../1.9.2/doc'
 
 id = 1
 recs = []
@@ -21,9 +17,9 @@ items = YAML.load_file('default_index.yml')
 
 Find.find(html_dir) do |file|
 
-  if file !~ /(\/function|doc\/)|index\.html/ && FileTest.file?(file) && File.extname(file) == '.html'
+  if file !~ /\/(function|doc)\// && FileTest.file?(file) && File.extname(file) == '.html'
     html = File.read(file)
-    item = {:path=>file.gsub(/^\.\.\/1\.9\.2/, ''), :key=>'*unknown'}
+    item = {:path=>file.gsub(/^\.\.\/1\.9\.2/, ''), :key=>''}
     id += 1
 
     # method
@@ -60,7 +56,12 @@ Find.find(html_dir) do |file|
     if item[:desc] && item[:desc].size > 50
       item[:desc] = item[:desc].strip[0, 50] + '...'
     end
-    items << item
+
+    if item[:key].empty?
+      $stderr.puts 'no key. ' + file
+    else
+      items << item
+    end
   end
 
 end
