@@ -4,8 +4,12 @@ require 'find'
 require 'nkf'
 require 'fileutils'
 
-src_dir = '../1.9.2.euc'
-dst_dir = '../1.9.2.utf8'
+if ARGV.size != 2
+  $stderr.puts 'Usage: convert_html.rb [src_dir] [dst_dir]'
+  exit
+end
+src_dir = ARGV[0]
+dst_dir = ARGV[1]
 
 if FileTest.exist?(dst_dir)
   puts dst_dir + ' already exist.'

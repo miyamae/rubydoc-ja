@@ -9,17 +9,27 @@ require 'cgi'
 require 'json'
 require 'yaml'
 
-html_dir = '../1.9.2'
+$SCRIPT_PATH = File.expand_path(File.dirname(__FILE__))
+
+if ARGV.empty?
+  $stderr.puts 'Usage: make_index.rb [html_dir]'
+  exit
+end
+html_dir = ARGV[0]
+if !FileTest.exist?(html_dir) || !FileTest.directory?(html_dir)
+  $stderr.puts 'Not found: ' + html_dir
+  exit
+end
 
 id = 1
 recs = []
-items = YAML.load_file('default_index.yml')
+items = YAML.load_file($SCRIPT_PATH + '/default_index.yml')
 
 Find.find(html_dir) do |file|
 
   if file !~ /\/(function|doc)\// && FileTest.file?(file) && File.extname(file) == '.html'
     html = File.read(file)
-    item = {:path=>file.gsub(/^\.\.\/1\.9\.2/, ''), :key=>''}
+    item = {:path=>file.gsub(/^.*1\.[0-9]\.[0-9]/, ''), :key=>''}
     id += 1
 
     # method
@@ -33,6 +43,7 @@ Find.find(html_dir) do |file|
     if html =~ %r{<dd class="method-description">.*?<p>(.*?)</p>}m
       item[:desc] = CGI.unescapeHTML($1.gsub(/<.*?>|"/, '').gsub(/\n/, ' '))
     end
+
 
     # class
     if html =~ %r{<title>(class|module|object) (.*?)</title>}
