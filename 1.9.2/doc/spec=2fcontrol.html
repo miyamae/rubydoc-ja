@@ -745,10 +745,8 @@ end
      #&lt;RuntimeError: error message&gt;
 </pre>
 <p>
-例外の一致判定は例外のクラスが rescue 節で指定したクラスと同じか
-またはサブクラスであるかどうか <a href="../method/-object/i/kind_of=3f.html">Object#kind_of?</a> を用いて判
-定されます。
-例外の一致判定は <a href="../method/-module/i/=3d=3d=3d.html">Module#===</a> を用いて行われます。
+例外の一致判定は，発生した例外が rescue 節で指定した
+クラスのインスタンスであるかどうかで行われます。
 </p>
 <p>
 error_type が省略された時は <a href="../class/-standard-error.html">StandardError</a> のサブクラスであ
@@ -882,17 +880,7 @@ BEGIN '{' 文.. '}'
 された場合には指定された順に実行されます。
 </p>
 <p>
-BEGINブロックはコンパイル時に登録されます。即ち一つの記述につき
-ただ一回だけ登録が行われます。
-</p>
-<pre>
-if false
-  BEGIN { p &quot;begin&quot; }
-end
-
-# =&gt; &quot;begin&quot;
-</pre>
-<p>
+BEGINブロックはコンパイル時に登録されます。
 BEGINブロックは独立したローカル変数のスコープを導入するため、ロー
 カル変数を外部と共有できません。ブロックの外と情報を伝達するには定数や
 グローバル変数などを介する必要があります。
@@ -903,13 +891,23 @@ p $foo  # =&gt; true
 p foo   # undefined local variable or method `foo' for main:Object (NameError)
 </pre>
 <p>
-BEGINはメソッド定義式中には書けません。parse error になります。
+BEGINはトップレベル以外では書けません。全て <a href="../class/-syntax-error.html">SyntaxError</a>になります。
 </p>
 <pre>
 def foo
   BEGIN { p &quot;begin&quot; }
 end
-# =&gt; -:2: BEGIN in method
+# =&gt; -e:2: syntax error, unexpected keyword_BEGIN
+
+class Foo
+  BEGIN { p &quot;begin&quot; }
+end
+# =&gt; -e:2: syntax error, unexpected keyword_BEGIN
+
+loop do
+  BEGIN { p &quot;begin&quot; }
+end
+# =&gt; -e:2: syntax error, unexpected keyword_BEGIN
 </pre>
 <h3 id='END'>END</h3>
 <p>

@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>module Psych::Nodes</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/psych=2fnodes.html">psych/nodesライブラリ</a>
+&gt; Psych::Nodesモジュール
+</p>
+
+
+
+<h1>module Psych::Nodes</h1>
+<p>
+
+
+クラスの継承リスト: Psych::Nodes
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+When using Psych.load to deserialize a YAML document, the document is
+translated to an intermediary AST.  That intermediary AST is then
+translated in to a Ruby object graph.
+</p>
+<p>
+In the opposite direction, when using Psych.dump, the Ruby object graph is
+translated to an intermediary AST which is then converted to a YAML
+document.
+</p>
+<p>
+Psych::Nodes contains all of the classes that make up the nodes of a YAML
+AST.  You can manually build an AST and use one of the visitors (see
+Psych::Visitors) to convert that AST to either a YAML document or to a
+Ruby object graph.
+</p>
+<p>
+Here is an example of building an AST that represents a list with one
+scalar:
+</p>
+<pre>
+# Create our nodes
+stream = Psych::Nodes::Stream.new
+doc    = Psych::Nodes::Document.new
+seq    = Psych::Nodes::Sequence.new
+scalar = Psych::Nodes::Scalar.new('foo')
+
+# Build up our tree
+stream.children &lt;&lt; doc
+doc.children    &lt;&lt; seq
+seq.children    &lt;&lt; scalar
+</pre>
+<p>
+The stream is the root of the tree.  We can then convert the tree to YAML:
+</p>
+<pre>
+stream.to_yaml =&gt; &quot;---\n- foo\n&quot;
+</pre>
+<p>
+Or convert it to Ruby:
+</p>
+<pre>
+stream.to_ruby =&gt; [[&quot;foo&quot;]]
+</pre>
+<h2 >YAML AST Requirements</h2>
+<p>
+A valid YAML AST *must* have one Psych::Nodes::Stream at the root.  A
+Psych::Nodes::Stream node must have 1 or more Psych::Nodes::Document nodes
+as children.
+</p>
+<p>
+Psych::Nodes::Document nodes must have one and *only* one child.  That child
+may be one of:
+</p>
+<ul>
+<li>Psych::Nodes::Sequence</li>
+<li>Psych::Nodes::Mapping</li>
+<li>Psych::Nodes::Scalar</li>
+</ul>
+<p>
+Psych::Nodes::Sequence and Psych::Nodes::Mapping nodes may have many
+children, but Psych::Nodes::Mapping nodes should have an even number of
+children.
+</p>
+<p>
+All of these are valid children for Psych::Nodes::Sequence and
+Psych::Nodes::Mapping nodes:
+</p>
+<ul>
+<li>Psych::Nodes::Sequence</li>
+<li>Psych::Nodes::Mapping</li>
+<li>Psych::Nodes::Scalar</li>
+<li>Psych::Nodes::Alias</li>
+</ul>
+<p>
+Psych::Nodes::Scalar and Psych::Nodes::Alias are both terminal nodes and
+should not have any children.
+</p>
+
+
+
+
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>
