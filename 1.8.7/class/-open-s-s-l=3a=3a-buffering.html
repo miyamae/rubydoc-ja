@@ -1,0 +1,429 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>module OpenSSL::Buffering</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/openssl.html">opensslライブラリ</a>
+&gt; OpenSSL::Bufferingモジュール
+</p>
+
+
+
+<h1>module OpenSSL::Buffering</h1>
+<p>
+
+
+クラスの継承リスト: OpenSSL::Buffering
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+<a href="../class/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-socket.html">OpenSSL::SSL::SSLSocket</a> にバッファリング付きIO機能を提供する
+モジュールです。
+</p>
+<p>
+<a href="../class/-i-o.html">IO</a> クラスと同様のメソッドを提供しています。
+</p>
+<p>
+内部的には sysread, syswrite, sysread_nonblock, syswrite_nonblock,
+sysclose といった <a href="../class/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-socket.html">OpenSSL::SSL::SSLSocket</a> が提供するメソッドを
+利用し、 <a href="../class/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-socket.html">OpenSSL::SSL::SSLSocket</a> がラップしているソケット
+をバッファ経由でデータを暗号化してやりとりを行います。
+</p>
+<h2 >IO との違い</h2>
+<p>
+このクラスは IO クラスと同様のメソッドを提供していますが、
+以下の点で異なります。これらは今後のバージョンで変更(改善)
+される可能性があります。
+</p>
+<ul>
+<li>gets や readlines など行読み込みメソッドの引数(行区切り文字列の指定)
+の意味が異なります。例えば &quot;&quot; で連続改行を区切りとみなすモードはなく
+nil を渡すとエラーとなります</li>
+<li>read_nonblock が書き込み不可能で例外を発生させたり、
+write_nonblock が読み込み不可能で例外を発生させたりします。
+これは暗号化通信でのデータの送信には双方向のメッセージの
+やりとりが必要な場合があるためです。</li>
+<li>1.9 では encoding 関連を設定しません</li>
+<li>1.9 で each_byte が String をブロックに渡します</li>
+</ul>
+
+
+
+<h2>インスタンスメソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/=3c=3c.html"><code>
+  self &lt;&lt; s -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列 s を書き込みます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/close.html"><code>
+  close -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+接続を閉じます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/each.html"><code>
+  each(eol=$/) {|line| ... } -&gt; ()<br>each_line(eol=$/) {|line| ... } -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+現在の読み込み位置から1行ずつ文字列として読み込み、
+それを引数としてブロックを呼び出します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/each_byte.html"><code>
+  each_byte {|ch| ... } -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+現在の読み込み位置から 1 バイトずつ読み込み、
+それを整数としてブロックの引数として呼び出します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/eof.html"><code>
+  eof? -&gt; bool<br>eof -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+相手からの通信が終端に達したら true を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/flush.html"><code>
+  flush -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+内部バッファに残っているデータをすべて出力し、
+バッファをフラッシュします。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/getc.html"><code>
+  getc -&gt; Integer | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+バッファから1文字読み込み、それ返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/gets.html"><code>
+  gets(eol=$/, limit=nil) -&gt; String | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+通信路から一行読み込んで、それを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/print.html"><code>
+  print(*args) -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+args を順に出力します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/printf.html"><code>
+  printf(format, *args) -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+format に従い引数 args を文字列に変換して
+出力します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/puts.html"><code>
+  puts(*objs) -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+各オブジェクトを出力し、それぞれの後に改行を出力します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/read.html"><code>
+  read(length=nil, buf=nil) -&gt; String | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列を通信路から読み込み、返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/read_nonblock.html"><code>
+  read_nonblock(maxlen, buf) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+通信路から maxlen  バイトを上限としてデータを読み込み、
+文字列として返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/readchar.html"><code>
+  readchar -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+バッファから1文字読み込み、それ返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/readline.html"><code>
+  readline(eol=$/) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+通信路から一行読み込んで、それを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/readlines.html"><code>
+  readlines(eol=$/) -&gt; [String]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+データを通信路から末端まで全て読み込んで、
+各行を要素として持つ配列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/readpartial.html"><code>
+  readpartial(maxlen, buf=nil) -&gt; String | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+通信路から長さ maxlen  バイトを上限としてデータを読み込み、
+文字列として返します。
+即座に得られるデータが存在しないときにはブロックしてデータの到着を待ちます。
+即座に得られるデータが 1byte でも存在すればブロックしません。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/sync.html"><code>
+  sync -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+出力が同期モードなら true を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/sync=3d.html"><code>
+  sync=(sync)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+出力の同期モードを設定します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/ungetc.html"><code>
+  ungetc(char) -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+指定した文字 char をバッファに読み戻します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/write.html"><code>
+  write(str) -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+str を出力します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/i/write_nonblock.html"><code>
+  write_nonblock(s) -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列 s をノンブロッキングモードで書き込みます。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>定数</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-buffering/c/-b-l-o-c-k_-s-i-z-e.html"><code>
+  BLOCK_SIZE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+内部のバッファのサイズを返します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

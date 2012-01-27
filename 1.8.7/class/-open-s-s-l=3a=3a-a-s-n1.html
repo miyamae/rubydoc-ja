@@ -1,0 +1,1017 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>module OpenSSL::ASN1</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/openssl.html">opensslライブラリ</a>
+&gt; OpenSSL::ASN1モジュール
+</p>
+
+
+
+<h1>module OpenSSL::ASN1</h1>
+<p>
+
+
+クラスの継承リスト: OpenSSL::ASN1
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+ASN.1(Abstract Syntax Notation One)
+</p>
+<pre>
+のデータを取り扱うためのモジュールです。
+</pre>
+<p>
+OpenSSLで証明書などを取り扱うのに必要になります。
+</p>
+<p>
+このモジュールには、ASN.1関連のモジュール関数や定数、
+ASN.1 のデータ型に対応するクラスが定義されています。
+</p>
+<p>
+このモジュールは ASN.1 を十分に取り扱うのに必要な機能は
+持っていません。SSL/TLSで必要な機能しか実装されていません。
+</p>
+<p>
+ASN.1 は ITU-T と ISO によって定義された、データの構造を定義するための
+言語を中心とした規格です。
+この言語で定義された抽象的な構造を実際のバイト列で表現する
+方法は ASN.1 の規格の一部として数種類定義されています。
+このリファレンスで言及されている DER 形式も
+このエンコード形式の一種です。
+</p>
+<h2 >概要</h2>
+<p>
+このモジュールにおいて、
+ASN.1 のデータ型は <a href="../class/-open-s-s-l=3a=3a-a-s-n1=3a=3a-a-s-n1-data.html">OpenSSL::ASN1::ASN1Data</a> および
+そのサブクラスにマップされています。
+</p>
+<p>
+ASN.1 の単純型(simple type)は <a href="../class/-open-s-s-l=3a=3a-a-s-n1=3a=3a-primitive.html">OpenSSL::ASN1::Primitive</a> の
+各サブクラスに、構造型(structured type)は <a href="../class/-open-s-s-l=3a=3a-a-s-n1=3a=3a-constructive.html">OpenSSL::ASN1::Constructive</a>
+の各サブクラスに対応しています。通常これらのタグクラスは UNIVERSAL です。
+その値は <a href="../method/-open-s-s-l=3a=3a-a-s-n1=3a=3a-a-s-n1-data/i/value.html">OpenSSL::ASN1::ASN1Data#value</a> で取り出せます。
+単純型は通常の Ruby のオブジェクト、構造型は配列
+UNIVERSAL以外のタグクラスを付けられた型は、
+<a href="../class/-open-s-s-l=3a=3a-a-s-n1=3a=3a-a-s-n1-data.html">OpenSSL::ASN1::ASN1Data</a> に対応します。UNIVERSAL以外のタグクラス
+でタグ付けられた型のデータは、<a href="../class/-open-s-s-l=3a=3a-a-s-n1=3a=3a-a-s-n1-data.html">OpenSSL::ASN1::ASN1Data</a>のオブジェクトで
+表現され、その値として文字列(IMPLICITなタグ付けの場合)もしくは
+配列(EXPLICITなタグ付けの場合)として表現されます。
+<a href="../class/-open-s-s-l=3a=3a-a-s-n1=3a=3a-primitive.html">OpenSSL::ASN1::Primitive</a> のタグ付けの情報を使うことで、
+IMPLICIT or EXPLICIT なタグ付けを実現することもできます。
+</p>
+<p>
+例:
+</p>
+<pre>
+# 単純型のデータ
+x = OpenSSL::ASN1::UTF8String.new(&quot;foobar&quot;)
+# 構造型のデータ
+y = OpenSSL::ASN1::Sequence.new([OpenSSL::ASN1::Boolean.new(true),
+                                OpenSSL::ASN1::Integer.new(-12)])
+# APPLICATION タグクラスのタグ2番でタグ付けられたデータ
+z = OpenSSL::ASN1::ASN1Data.new([OpenSSL::ASN1::Boolean.new(false)],
+                                2, :APPLICATION)
+# 上と同様のデータを OpenSSL::ASN1::Booelan.new の2番目以降の
+# 引数で表現する
+z2 = OpenSSL::ASN1::Boolean.new(false, 2, :EXPLICIT, :APPLICATION)
+# IMPLICIT なタグ付けをする
+u = OpenSSL::ASN1::Boolean.new(false, 3, :IMPLICIT, :APPLICATION)
+
+# to_der でエンコード
+x.to_der  # =&gt; &quot;\f\x06foobar&quot;
+y.to_der  # =&gt; &quot;0\x06\x01\x01\xFF\x02\x01\xF4&quot;
+z.to_der  # =&gt; &quot;b\x03\x01\x01\x00&quot;
+z2.to_der # =&gt; &quot;b\x03\x01\x01\x00&quot;  これは z.to_der と同じ
+u.to_der # =&gt; &quot;C\x01\x00&quot;
+# エンコードした文字列をデコード
+OpenSSL::ASN1.decode(x.to_der)
+# =&gt; #&lt;OpenSSL::ASN1::UTF8String:0x000000027cc700 @tag=12, @value=&quot;foobar&quot;, @tagging=nil, @tag_class=:UNIVERSAL&gt;
+OpenSSL::ASN1.decode(y.to_der)
+# =&gt; #&lt;OpenSSL::ASN1::Sequence:0x000000027c47d0 @tag=16, @value=[#&lt;OpenSSL::ASN1::Boolean:0x000000027c4898 @tag=1, @value=true, @tagging=nil, @tag_class=:UNIVERSAL&gt;, #&lt;OpenSSL::ASN1::Integer:0x000000027c47f8 @tag=2, @value=-12, @tagging=nil, @tag_class=:UNIVERSAL&gt;], @tagging=nil, @tag_class=:UNIVERSAL&gt;
+OpenSSL::ASN1.decode(z.to_der)
+# =&gt; #&lt;OpenSSL::ASN1::ASN1Data:0x000000027bc918 @tag=2, @value=[#&lt;OpenSSL::ASN1::Boolean:0x000000027bc968 @tag=1, @value=false, @tagging=nil, @tag_class=:UNIVERSAL&gt;], @tag_class=:APPLICATION&gt;
+OpenSSL::ASN1.decode(u.to_der)
+# =&gt; #&lt;OpenSSL::ASN1::ASN1Data:0x000000025bef30 @tag=3, @value=&quot;\x00&quot;, @tag_class=:APPLICATION&gt;
+# @valueが &quot;\x00&quot; という文字列になっている
+</pre>
+<p>
+このモジュールは ASN.1 記法による記述を解釈し、利用する機能はないため、
+IMPLICITなタグ付けをされたデータを適切に取り扱うことは面倒でしょう。
+</p>
+<p>
+DER形式の文字列をデコードしてRubyのオブジェクトに変換するには
+<a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/decode.html">OpenSSL::ASN1.#decode</a> もしくは <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/decode_all.html">OpenSSL::ASN1.#decode_all</a> を用います。
+逆に、<a href="../class/-open-s-s-l=3a=3a-a-s-n1=3a=3a-a-s-n1-data.html">OpenSSL::ASN1::ASN1Data</a> のオブジェクトを DER 形式の文字列に
+変換するには、<a href="../method/-open-s-s-l=3a=3a-a-s-n1=3a=3a-a-s-n1-data/i/to_der.html">OpenSSL::ASN1::ASN1Data#to_der</a>を用います。
+</p>
+<p>
+クラス階層
+</p>
+<pre>
+OpenSSL::ASN1::ASN1Data
+  +-&gt; OpenSSL::ASN1::Primitive
+  |     +-&gt; OpenSSL::ASN1::Boolean
+  |     +-&gt; OpenSSL::ASN1::Integer
+  |     +-&gt; OpenSSL::ASN1::Enumerated
+  |     +-&gt; OpenSSL::ASN1::BitString
+  |     +-&gt; OpenSSL::ASN1::OctetString
+  |     +-&gt; OpenSSL::ASN1::UTF8String
+  |     +-&gt; OpenSSL::ASN1::NumericString
+  |     +-&gt; OpenSSL::ASN1::PrintableString
+  |     +-&gt; OpenSSL::ASN1::T61String
+  |     +-&gt; OpenSSL::ASN1::VideotexString
+  |     +-&gt; OpenSSL::ASN1::IA5String
+  |     +-&gt; OpenSSL::ASN1::GraphicString
+  |     +-&gt; OpenSSL::ASN1::ISO64String
+  |     +-&gt; OpenSSL::ASN1::GeneralString
+  |     +-&gt; OpenSSL::ASN1::UniversalString
+  |     +-&gt; OpenSSL::ASN1::BMPString
+  |     +-&gt; OpenSSL::ASN1::Null
+  |     +-&gt; OpenSSL::ASN1::ObjectId
+  |     +-&gt; OpenSSL::ASN1::UTCTime
+  |     `-&gt; OpenSSL::ASN1::GeneralizedTime
+  `-&gt; OpenSSL::ASN1::Constructive
+        +-&gt; OpenSSL::ASN1::Set
+        `-&gt; OpenSSL::ASN1::Sequence
+</pre>
+<h2 >参照</h2>
+<p>
+* ITU-T Rec. X.680-699 <a class="external" href="http://www.itu.int/itu-t/recommendations/index.aspx?ser=X">http://www.itu.int/itu-t/recommendations/index.aspx?ser=X</a>
+</p>
+
+
+
+<h2>モジュール関数</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-b-m-p-string.html"><code>
+  BMPString(value) -&gt; OpenSSL::ASN1::BMPString -&gt; OpenSSL::ASN1::BMPString<br>BMPString(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::BMPString
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の BMPString 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-bit-string.html"><code>
+  BitString(value) -&gt; OpenSSL::ASN1::BitString -&gt; OpenSSL::ASN1::BitString<br>BitString(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::BitString
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の BitString 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-boolean.html"><code>
+  Boolean(value) -&gt; OpenSSL::ASN1::Boolean<br>Boolean(value , tag , tagging , tag_class) -&gt; OpenSSL::ASN1::Boolean
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の Boolean 型の値を表現する OpenSSL::ASN1::Boolean オブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-enumerated.html"><code>
+  Enumerated(value) -&gt; OpenSSL::ASN1::Enumerated<br>Enumerated(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::Enumerated
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の Enumerated 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-general-string.html"><code>
+  GeneralString(value) -&gt; OpenSSL::ASN1::GeneralString -&gt; OpenSSL::ASN1::GeneralString<br>GeneralString(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::GeneralString
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の GeneralString 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-generalized-time.html"><code>
+  GeneralizedTime(value) -&gt; OpenSSL::ASN1::GeneralizedTime -&gt; OpenSSL::ASN1::GeneralizedTime<br>GeneralizedTime(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::GeneralizedTime
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の GeneralizedTime 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-graphic-string.html"><code>
+  GraphicString(value) -&gt; OpenSSL::ASN1::GraphicString -&gt; OpenSSL::ASN1::GraphicString<br>GraphicString(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::GraphicString
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の GraphicString 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-i-a5-string.html"><code>
+  IA5String(value) -&gt; OpenSSL::ASN1::IA5String -&gt; OpenSSL::ASN1::IA5String<br>IA5String(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::IA5String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の IA5String 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-i-s-o64-string.html"><code>
+  ISO64String(value) -&gt; OpenSSL::ASN1::ISO64String -&gt; OpenSSL::ASN1::ISO64String<br>ISO64String(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::ISO64String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の ISO64String 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-integer.html"><code>
+  Integer(value) -&gt; OpenSSL::ASN1::Integer<br>Integer(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の Integer 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-null.html"><code>
+  Null(value) -&gt; OpenSSL::ASN1::Null -&gt; OpenSSL::ASN1::Null<br>Null(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::Null
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の Null 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-numeric-string.html"><code>
+  NumericString(value) -&gt; OpenSSL::ASN1::NumericString -&gt; OpenSSL::ASN1::NumericString<br>NumericString(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::NumericString
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の NumericString 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-object-id.html"><code>
+  ObjectId(value) -&gt; OpenSSL::ASN1::ObjectId -&gt; OpenSSL::ASN1::ObjectId<br>ObjectId(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::ObjectId
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の ObjectId 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-octet-string.html"><code>
+  OctetString(value) -&gt; OpenSSL::ASN1::OctetString -&gt; OpenSSL::ASN1::OctetString<br>OctetString(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::OctetString
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の OctetString 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-printable-string.html"><code>
+  PrintableString(value) -&gt; OpenSSL::ASN1::PrintableString -&gt; OpenSSL::ASN1::PrintableString<br>PrintableString(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::PrintableString
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の PrintableString 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-sequence.html"><code>
+  Sequence(value) -&gt; OpenSSL::ASN1::Sequence -&gt; OpenSSL::ASN1::Sequence<br>Sequence(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::Sequence
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の Sequence 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-set.html"><code>
+  Set(value) -&gt; OpenSSL::ASN1::Set -&gt; OpenSSL::ASN1::Set<br>Set(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::Set
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の Set 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-t61-string.html"><code>
+  T61String(value) -&gt; OpenSSL::ASN1::T61String -&gt; OpenSSL::ASN1::T61String<br>T61String(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::T61String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の T61String 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-u-t-c-time.html"><code>
+  UTCTime(value) -&gt; OpenSSL::ASN1::UTCTime -&gt; OpenSSL::ASN1::UTCTime<br>UTCTime(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::UTCTime
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の UTCTime 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-u-t-f8-string.html"><code>
+  UTF8String(value) -&gt; OpenSSL::ASN1::UTF8String -&gt; OpenSSL::ASN1::UTF8String<br>UTF8String(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::UTF8String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の UTF8String 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-universal-string.html"><code>
+  UniversalString(value) -&gt; OpenSSL::ASN1::UniversalString -&gt; OpenSSL::ASN1::UniversalString<br>UniversalString(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::UniversalString
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の UniversalString 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/-videotex-string.html"><code>
+  VideotexString(value) -&gt; OpenSSL::ASN1::VideotexString -&gt; OpenSSL::ASN1::VideotexString<br>VideotexString(value, tag, tagging, tag_class) -&gt; OpenSSL::ASN1::VideotexString
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 の VideotexString 型の値を表現する Ruby のオブジェクトを
+生成します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/decode.html"><code>
+  decode(der) -&gt; OpenSSL::ASN1::ASN1Data
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+DER 表現の文字列を解析し、そこにエンコードされている ASN.1 の値を
+<a href="../class/-open-s-s-l=3a=3a-a-s-n1=3a=3a-a-s-n1-data.html">OpenSSL::ASN1::ASN1Data</a> のサブクラスのインスタンスとして返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/decode_all.html"><code>
+  decode_all(der) -&gt; [OpenSSL::ASN1::ASN1Data]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+DER 表現の文字列を解析し、そこにエンコードされている ASN.1 の値を全て
+<a href="../class/-open-s-s-l=3a=3a-a-s-n1=3a=3a-a-s-n1-data.html">OpenSSL::ASN1::ASN1Data</a> のサブクラスのインスタンスの配列として
+返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/m/traverse.html"><code>
+  traverse(der) {|depth, off, hlen, len, constructed, tag_class, tag| ...} -&gt; Qnil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+DER形式の文字列を解析し、そこに含まれる ASN.1 の値
+のプロパティを引数として与えられたブロックを呼びだします。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>定数</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-b-i-t_-s-t-r-i-n-g.html"><code>
+  BIT_STRING -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+BIT_STRING のタグ番号 3 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-b-m-p-s-t-r-i-n-g.html"><code>
+  BMPSTRING -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+BMPSTRING のタグ番号 30 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-b-o-o-l-e-a-n.html"><code>
+  BOOLEAN -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+BOOLEAN のタグ番号 1 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-c-h-a-r-a-c-t-e-r_-s-t-r-i-n-g.html"><code>
+  CHARACTER_STRING -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+CHARACTER_STRING のタグ番号 29 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-e-m-b-e-d-d-e-d_-p-d-v.html"><code>
+  EMBEDDED_PDV -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+EMBEDDED_PDV のタグ番号 11 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-e-n-u-m-e-r-a-t-e-d.html"><code>
+  ENUMERATED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+ENUMERATED のタグ番号 10 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-e-o-c.html"><code>
+  EOC -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+EOC のタグ番号 0 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-e-x-t-e-r-n-a-l.html"><code>
+  EXTERNAL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+EXTERNAL のタグ番号 8 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-g-e-n-e-r-a-l-i-z-e-d-t-i-m-e.html"><code>
+  GENERALIZEDTIME -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+GENERALIZEDTIME のタグ番号 24 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-g-e-n-e-r-a-l-s-t-r-i-n-g.html"><code>
+  GENERALSTRING -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+GENERALSTRING のタグ番号 27 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-g-r-a-p-h-i-c-s-t-r-i-n-g.html"><code>
+  GRAPHICSTRING -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+GRAPHICSTRING のタグ番号 25 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-i-a5-s-t-r-i-n-g.html"><code>
+  IA5STRING -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+IA5STRING のタグ番号 22 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-i-n-t-e-g-e-r.html"><code>
+  INTEGER -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+INTEGER のタグ番号 2 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-i-s-o64-s-t-r-i-n-g.html"><code>
+  ISO64STRING -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+ISO64STRING のタグ番号 26 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-n-u-l-l.html"><code>
+  NULL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+NULL のタグ番号 5 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-n-u-m-e-r-i-c-s-t-r-i-n-g.html"><code>
+  NUMERICSTRING -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+NUMERICSTRING のタグ番号 18 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-o-b-j-e-c-t.html"><code>
+  OBJECT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+OBJECT のタグ番号 6 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-o-b-j-e-c-t_-d-e-s-c-r-i-p-t-o-r.html"><code>
+  OBJECT_DESCRIPTOR -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+OBJECT_DESCRIPTOR のタグ番号 7 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-o-c-t-e-t_-s-t-r-i-n-g.html"><code>
+  OCTET_STRING -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+OCTET_STRING のタグ番号 4 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-p-r-i-n-t-a-b-l-e-s-t-r-i-n-g.html"><code>
+  PRINTABLESTRING -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+PRINTABLESTRING のタグ番号 19 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-r-e-a-l.html"><code>
+  REAL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+REAL のタグ番号 9 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-r-e-l-a-t-i-v-e_-o-i-d.html"><code>
+  RELATIVE_OID -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+RELATIVE_OID のタグ番号 13 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-s-e-q-u-e-n-c-e.html"><code>
+  SEQUENCE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+SEQUENCE のタグ番号 16 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-s-e-t.html"><code>
+  SET -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+SET のタグ番号 17 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-t61-s-t-r-i-n-g.html"><code>
+  T61STRING -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+T61STRING のタグ番号 20 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-u-n-i-v-e-r-s-a-l-s-t-r-i-n-g.html"><code>
+  UNIVERSALSTRING -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+UNIVERSALSTRING のタグ番号 28 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-u-n-i-v-e-r-s-a-l_-t-a-g_-n-a-m-e.html"><code>
+  UNIVERSAL_TAG_NAME -&gt; [String]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+タグ番号が表す ASN.1 オブジェクト名を収録した配列です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-u-t-c-t-i-m-e.html"><code>
+  UTCTIME -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+UTCTIME のタグ番号 23 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-u-t-f8-s-t-r-i-n-g.html"><code>
+  UTF8STRING -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+UTF8STRING のタグ番号 12 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-a-s-n1/c/-v-i-d-e-o-t-e-x-s-t-r-i-n-g.html"><code>
+  VIDEOTEXSTRING -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASN.1 UNIVERSAL タグの、
+VIDEOTEXSTRING のタグ番号 21 を表す定数です。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

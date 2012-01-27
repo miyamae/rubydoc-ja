@@ -1,0 +1,317 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method OptionParser#on</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/optparse.html">optparseライブラリ</a>
+&gt; <a href="../../../class/-option-parser.html">OptionParserクラス</a>
+&gt; on
+
+</p>
+
+
+
+
+<h1>instance method OptionParser#on</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>on(short, desc = &quot;&quot;) {|v| ... } -&gt; self</code></dt>
+<dt class="method-heading"><code>on(long, desc = &quot;&quot;) {|v| ... } -&gt; self</code></dt>
+<dt class="method-heading"><code>on(short, long, desc = &quot;&quot;) {|v| ... } -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+オプションを取り扱うためのブロックを自身に登録します。
+ブロックはコマンドラインのパース時に、オプションが指定されていれば呼ばれます。
+</p>
+<p>
+ショートオプションとロングオプションを同時に登録することもできます。
+</p>
+<pre>
+opts.on(&quot;-r&quot;, &quot;--require LIBRARY&quot;){|lib| ...}
+</pre>
+<p>
+これは以下と同値です。
+</p>
+<pre>
+opts.on(&quot;-r LIBRARY&quot;){|lib| ...}
+opts.on(&quot;--require LIBRARY&quot;){|lib| ...}
+</pre>
+<p>
+複数の異なるオプションに同じブロックを一度に登録することもできます。
+</p>
+<pre>
+opt.on('-v', '-vv'){|boolean| ...}
+opt.on('--require X', '--need', '--dependon'){|x| ... }
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] short:</dt>
+<dd>
+ショートオプションを表す文字列を指定します。
+そのオプションが引数をとらない場合は、
+<pre>
+  on(&quot;-x&quot;){|boolean| ...}
+</pre>
+となります。コマンドラインにオプションが存在した場合 true を引数と
+してブロックを評価します。
+ショートオプションが引数をとる場合は、
+<pre>
+  on(&quot;-x MANDATORY&quot;){|val| ...}
+</pre>
+となります。&quot;MANDATORY&quot; の部分は任意の文字列で構いません。
+オプションの引数が必須でない場合は [ ] をつけて、
+<pre>
+  on(&quot;-x [OPTIONAL]&quot;){|val| ...}
+</pre>
+となります。
+</dd>
+<dt class='method-param'>[PARAM] long:</dt>
+<dd>
+ロングオプションを表す文字列を指定します。ショートオプションの時と同様に、
+<pre>
+  on(&quot;--long&quot;){|boolean| ...}
+  on(&quot;--long MANDATORY&quot;){|val| ...}
+  on(&quot;--long [OPTIONAL]&quot;){|val| ...}
+</pre>
+と指定できます。
+</dd>
+<dt class='method-param'>[PARAM] desc:</dt>
+<dd>
+オプションの説明を文字列で与えます。サマリに表示されます。
+</dd>
+</dl>
+</dd>
+<dt class="method-heading"><code>on(short, pat = /.*/, desc = &quot;&quot;) {|v| ...} -&gt; self</code></dt>
+<dt class="method-heading"><code>on(long, pat = /.*/, desc = &quot;&quot;) {|v| ...} -&gt; self</code></dt>
+<dt class="method-heading"><code>on(short, long, pat = /.*/, desc = &quot;&quot;) {|v| ...} -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+オプションを取り扱うためのブロックを自身に登録します。
+ブロックはコマンドラインのパース時に、オプションが指定されていれば呼ばれます。
+</p>
+<p>
+pat にはオプションの引数に許すパターンを表す正規表現で与えます。
+コマンドに与えられた引数がパターンにマッチしない場合、
+例外 OptionParser::InvalidArgument が parse 実行時に投げられます。
+</p>
+<pre>
+opts.on(&quot;--username VALUE&quot;, /[a-zA-Z0-9_]+/){|name| ...}
+# ruby command --username=ruby_user
+# ruby command --username=ruby.user #=&gt; Error
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] short:</dt>
+<dd>
+ショートオプションを表す文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] long:</dt>
+<dd>
+ロングオプションを表す文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] pat:</dt>
+<dd>
+オプションの引数に許すパターンを表す正規表現で指定します。
+</dd>
+<dt class='method-param'>[PARAM] desc:</dt>
+<dd>
+オプションの説明を文字列で与えます。サマリに表示されます。
+</dd>
+</dl>
+</dd>
+<dt class="method-heading"><code>on(short, klass = String, desc = &quot;&quot;) {|v| ...} -&gt; self</code></dt>
+<dt class="method-heading"><code>on(long, klass = String, desc = &quot;&quot;) {|v| ...} -&gt; self</code></dt>
+<dt class="method-heading"><code>on(short, long, klass = String, desc = &quot;&quot;) {|v| ...} -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+オプションを取り扱うためのブロックを自身に登録します。
+ブロックはコマンドラインのパース時に、オプションが指定されていれば呼ばれます。
+</p>
+<p>
+klass にはクラスを与えます。どのようなクラスを受け付けるかは、
+以下の「デフォルトで利用可能な引数クラス」を参照して下さい。
+OptionParser.accept や OptionParser#accept によって、受け付け
+るクラスを増やすことができます。登録されていないクラスが指定された
+場合、例外 <a href="../../../class/-argument-error.html">ArgumentError</a> を投げます。
+また、登録されたクラスであっても引数が変換できないものである場合、例外
+<a href="../../../class/-option-parser=3a=3a-invalid-argument.html">OptionParser::InvalidArgument</a> を投げます。
+</p>
+<p>
+オプションの引数は accept で登録したブロックで klass のインスタンス
+に変換されてから、ブロックに渡されます。
+</p>
+<pre>
+opts.on(&quot;-w&quot;, &quot;--width N&quot;, Integer){|w|
+  p w.class #=&gt; Integer
+}
+# ruby command --width=32
+
+opts.on(&quot;-o&quot;, &quot;--overwrite VALUE&quot;, TrueClass){|boolean| ...}
+# ruby command --overwrite yes
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] short:</dt>
+<dd>
+ショートオプションを表す文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] long:</dt>
+<dd>
+ロングオプションを表す文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] klass:</dt>
+<dd>
+オプションの引数のクラスを指定します。
+</dd>
+<dt class='method-param'>[PARAM] desc:</dt>
+<dd>
+オプションの説明を文字列で与えます。サマリに表示されます。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+登録されていないクラスが klass に指定された場合に発生します。
+</dd>
+</dl>
+<h3 >デフォルトで利用可能な引数クラス</h3>
+<dl>
+<dt>Object</dt>
+<dd>
+<p>
+オプションの引数は変換されません。
+</p>
+</dd>
+<dt>String</dt>
+<dd>
+<p>
+オプションの引数は変換されません。ただし、空文字列を指定すると
+<a href="../../../class/-option-parser=3a=3a-invalid-argument.html">OptionParser::InvalidArgument</a> が発生します。
+</p>
+</dd>
+<dt>Integer</dt>
+<dd>
+<p>
+Integer オブジェクトに変換されます。&quot;0b1&quot;、&quot;07&quot;、&quot;99&quot;、&quot;0xff&quot; といった
+2進数、8進数、10進数、16進数の整数のフォーマットを指定できます。
+</p>
+</dd>
+<dt>Float</dt>
+<dd>
+<p>
+Float オブジェクトに変換されます。&quot;1.0&quot; や &quot;0.5e0&quot; のようなフォーマッ
+トを指定できます。
+</p>
+</dd>
+<dt>Numeric</dt>
+<dd>
+<p>
+整数の場合は Integer オブジェクトに、実数の場合は Float オブジェクトに
+変換されます。
+</p>
+</dd>
+<dt>OptionParser::DecimalInteger</dt>
+<dd>
+<p>
+Integer オブジェクトに変換されます。10進数の整数の整数のフォーマットの
+みを指定できます。
+</p>
+</dd>
+<dt>OptionParser::OctalInteger</dt>
+<dd>
+<p>
+Integer オブジェクトに変換されます。&quot;0b1&quot;、&quot;07&quot;、&quot;0xff&quot; といった 2進数、
+8進数、16進数の整数のフォーマットを指定できます。
+</p>
+</dd>
+<dt>OptionParser::DecimalNumeric</dt>
+<dd>
+<p>
+整数の場合は Integer オブジェクトに、実数の場合は Float オブジェクトに
+変換されます。10進数のフォーマットを指定できます。
+</p>
+</dd>
+<dt>TrueClass</dt>
+<dd>
+<p>
+true か false に変換されます。&quot;yes&quot; や &quot;no&quot;、&quot;true&quot; や &quot;false&quot;、&quot;+&quot;
+や &quot;-&quot; を指定できます。オプションの引数を省略した場合は true になります。
+また、&quot;no-&quot; をオプションの先頭に付けた場合は値が反転します。
+</p>
+</dd>
+<dt>FalseClass</dt>
+<dd>
+<p>
+true か false に変換されます。TrueClass との違いはオプションの引数を省
+略した場合に false になります。
+</p>
+</dd>
+<dt>Array</dt>
+<dd>
+<p>
+文字列の配列に変換されます。&quot;,&quot; ごとに 1つの要素になります。
+</p>
+</dd>
+</dl>
+</dd>
+<dt class="method-heading"><code>on(short, *rest) {|v| ...} -&gt; self</code></dt>
+<dt class="method-heading"><code>on(long, *rest) {|v| ...} -&gt; self</code></dt>
+<dt class="method-heading"><code>on(short, long, *rest) {|v| ...} -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+オプションを取り扱うためのブロックを自身に登録します。
+ブロックはコマンドラインのパース時に、オプションが指定されていれば呼ばれます。
+</p>
+<p>
+コマンドに与えられた引数が配列やハッシュに含まれない場合、例外
+<a href="../../../class/-option-parser=3a=3a-invalid-argument.html">OptionParser::InvalidArgument</a> が <a href="../../../method/-option-parser/i/parse.html">OptionParser#parse</a> 実行時
+に発生します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] short:</dt>
+<dd>
+ショートオプションを表す文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] long:</dt>
+<dd>
+ロングオプションを表す文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] rest:</dt>
+<dd>
+可能な引数を列挙した配列やハッシュを与えます。文字列を与えた場合は、
+サマリに表示されるオプションの説明と見なします。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+opts.on(&quot;--protocol VALUE&quot;, [:http, :ftp, :https]){|w|
+  p w
+}
+# ruby command --protocol=http #=&gt; :http
+
+opts.on(&quot;-c&quot;, &quot;--charset VALUE&quot;, {&quot;jis&quot; =&gt; &quot;iso-2022-jp&quot;, &quot;sjis&quot; =&gt; &quot;shift_jis&quot;}){|w|
+  p w
+}
+# ruby command --charset=jis #=&gt; &quot;iso-2022-jp&quot;
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

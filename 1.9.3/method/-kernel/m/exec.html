@@ -1,0 +1,170 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>module function Kernel.#exec</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.3 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.9.3 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-kernel.html">Kernelモジュール</a>
+&gt; exec
+
+</p>
+
+
+
+
+<h1>module function Kernel.#exec</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>exec(command, options={}) -&gt; ()</code></dt>
+<dt class="method-heading"><code>exec(env, command, options={}) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+引数で指定されたコマンドを実行します。
+</p>
+<p>
+プロセスの実行コードはそのコマンド(あるいは shell)になるので、
+起動に成功した場合、このメソッドからは戻りません。
+</p>
+<h3 >引数の解釈</h3>
+<p>
+この形式では command が shell のメタ文字
+</p>
+<pre>
+  * ? {} [] &lt;&gt; () ~ &amp; | \ $ ; ' ` &quot; \n
+</pre>
+<p>
+を含む場合、shell 経由で実行されます。
+そうでなければインタプリタから直接実行されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] command:</dt>
+<dd>
+コマンドを文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+更新する環境変数を表す Hash
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+オプションパラメータ Hash
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+起動に失敗し、ruby インタプリタに制御が戻った場合に発生します。
+</dd>
+</dl>
+<pre>
+# a.rb
+puts '実行前'
+exec 'echo &quot;実行中&quot;'
+puts '実行後'
+</pre>
+<p>
+上記のスクリプトを実行すると以下のようになります。
+</p>
+<pre>
+$ ruby a.rb
+実行前
+実行中
+# '実行後' は表示されない
+</pre>
+</dd>
+<dt class="method-heading"><code>exec(program, *args, options={}) -&gt; ()</code></dt>
+<dt class="method-heading"><code>exec(evn, program, *args, options={}) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+引数で指定されたコマンドを実行します。
+</p>
+<p>
+プロセスの実行コードはそのコマンド(あるいは shell)になるので、
+起動に成功した場合、このメソッドからは戻りません。
+</p>
+<p>
+この形式では、常に shell を経由せずに実行されます。
+</p>
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/exec.html">exec(3)</a> でコマンドを実行すると、
+元々のプログラムの環境をある程度(ファイルデスクリプタなど)引き継ぎます。
+Hash を options として渡すことで、この挙動を変更できます。
+詳しくは <a href="../../../method/-kernel/m/spawn.html">Kernel.#spawn</a> を参照してください。
+</p>
+<h3 >引数の解釈</h3>
+<p>
+この形式で呼び出した場合、空白や shell のメタキャラクタも
+そのまま program の引数に渡されます。
+先頭の引数が2要素の配列であった場合、第1要素の文字列が実際に
+起動するプログラムのパスであり、第2要素が「みせかけ」のプロ
+グラム名になります。
+また、第1要素はフルパスで指定しなくても環境変数 PATH から探します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] program:</dt>
+<dd>
+文字列か2要素の配列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+渡される引数です。0 個以上の文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+更新する環境変数を表す Hash
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+オプションパラメータ Hash
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+第一引数が配列かつ要素数が 2 でない場合に発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+起動に失敗し、ruby インタプリタに制御が戻った場合に発生します。
+</dd>
+</dl>
+<p>
+例
+</p>
+<pre>
+# a.rb
+exec ['sleep', 'mysleep'], '600'
+</pre>
+<p>
+上記スクリプトを実行すると以下のようになります。
+</p>
+<pre>
+$ ruby a.rb
+## sleep してるので制御が戻ってこない。別の仮想端末に切替えて以下を実行
+$ ps aux|grep sleep
+xxxx    32754  0.0  0.0   2580   468 pts/3    S+   22:01   0:00 mysleep 600
+xxxx    32761  0.0  0.0   2824   792 pts/6    S+   22:01   0:00 grep sleep
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/system.html">Kernel.#system</a>,<a href="../../../method/-kernel/m/=60.html">Kernel.#`</a>,<a href="../../../method/-kernel/m/spawn.html">Kernel.#spawn</a>,<a href="../../../method/-kernel/m/fork.html">Kernel.#fork</a>,<a href="../../../method/-i-o/s/popen.html">IO.popen</a>,<a href="../../../method/-i-o/s/pipe.html">IO.pipe</a>,<a href="../../../method/-kernel/m/open.html">Kernel.#open</a>,<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/exec.html">exec(3)</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method WIN32OLE_TYPE#default_event_sources</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.3 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.9.3 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/win32ole.html">win32oleライブラリ</a>
+&gt; <a href="../../../class/-w-i-n32-o-l-e_-t-y-p-e.html">WIN32OLE_TYPEクラス</a>
+&gt; default_event_sources
+
+</p>
+
+
+
+
+<h1>instance method WIN32OLE_TYPE#default_event_sources</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>default_event_sources -&gt; [WIN32OLE_TYPE]</code></dt>
+<dd class="method-description">
+<p>
+型が持つソースインターフェイスを取得します。
+</p>
+<p>
+default_event_sourcesメソッドは、selfがCoClass（コンポーネントクラス）
+の場合、そのクラスがサポートするデフォルトのソースインターフェイス（イ
+ベントの通知元となるインターフェイス）を返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+デフォルトのソースインターフェイスを<a href="../../../class/-w-i-n32-o-l-e_-t-y-p-e.html">WIN32OLE_TYPE</a>の配列と
+して返します。返すのは配列ですが、デフォルトのソースインターフェ
+イスは最大でも1インターフェイスです。ソースインターフェイスを持
+たない場合は空配列を返します。
+</dd>
+</dl>
+<pre>
+tobj = WIN32OLE_TYPE.new('Microsoft Excel 14.0 Object Library', 'Worksheet')
+tobj.default_event_sources.map {|intf| intf.name} #=&gt; [&quot;DocEvents&quot;]
+</pre>
+<p>
+<a href="../../../method/-w-i-n32-o-l-e_-e-v-e-n-t/s/new.html">WIN32OLE_EVENT.new</a>でインターフェイス名を指定しない場合は、ここで
+返されたインターフェイスが選択されます。
+</p>
+<p>
+次のサンプルは、IEのnaviaget2メソッドによってどのようなイベントが通知さ
+れるかを、実際にメソッド呼び出し（=イベント通知）をトレースして調べるプ
+ログラムです。イベントを受け付けるために、
+<a href="../../../method/-w-i-n32-o-l-e_-e-v-e-n-t/s/message_loop.html">WIN32OLE_EVENT.message_loop</a>の呼び出しが必要な点に注意してください。
+ここでは最終イベントのStatusTextChangeイベントのメッセージについては既
+知としています。
+</p>
+<pre>
+# coding : cp932
+require 'win32ole'
+
+type = WIN32OLE_TYPE.new('Microsoft Internet Controls', 'InternetExplorer')
+ctl = WIN32OLE.new(type.progid)
+source = type.default_event_sources[0]
+class WebEvent
+  def initialize
+    @completed = false
+  end
+  attr_reader :completed
+end
+source.ole_methods.each do |m|
+  WebEvent.module_eval do
+    define_method(&quot;on#{m.name}&quot;) do |*arg|
+      if arg[0] == &quot;ページが表示されました&quot;
+        @completed = true
+      end
+      puts &quot;#{Time.now}: #{m.name} was called&quot;
+      p arg
+    end
+  end
+end
+evt = WIN32OLE_EVENT.new(ctl)
+evt.handler = WebEvent.new
+ctl.navigate2 'http://www.ruby-lang.org/'
+loop do
+  break if evt.handler.completed
+  WIN32OLE_EVENT.message_loop
+end
+ctl.Quit
+</pre>
+<p>
+このプログラムを実行するとWindows7のIE8環境では以下のような出力を得られ
+ます。
+</p>
+<pre>
+2010-10-06 22:33:54 +0900: PropertyChange was called
+[&quot;{265b75c1-4158-11d0-90f6-00c04fd497ea}&quot;]
+2010-10-06 22:33:54 +0900: BeforeNavigate2 was called
+[#&lt;WIN32OLE:0x9d08f0&gt;, &quot;http://www.ruby-lang.org/&quot;, 0, &quot;&quot;, nil, &quot;&quot;, false]
+2010-10-06 22:33:54 +0900: DownloadBegin was called
+[]
+2010-10-06 22:33:54 +0900: PropertyChange was called
+[&quot;{D0FCA420-D3F5-11CF-B211-00AA004AE837}&quot;]
+2010-10-06 22:33:54 +0900: CommandStateChange was called
+[2, false]
+2010-10-06 22:33:54 +0900: CommandStateChange was called
+[1, false]
+2010-10-06 22:33:54 +0900: StatusTextChange was called
+[&quot;www.ruby-lang.org を検索しています&quot;]
+2010-10-06 22:33:54 +0900: ProgressChange was called
+[100, 10000]
+2010-10-06 22:33:54 +0900: StatusTextChange was called
+[&quot;サイト 221.186.184.68 に接続しています&quot;]
+2010-10-06 22:33:54 +0900: StatusTextChange was called
+[&quot;Web サイトが見つかりました。応答を待っています...&quot;]
+……
+2010-10-06 22:33:54 +0900: TitleChange was called
+[&quot;オブジェクト指向スクリプト言語 Ruby&quot;]
+2010-10-06 22:33:54 +0900: StatusTextChange was called
+[&quot;待機中: http://www.ruby-lang.org/ja/ ...&quot;]
+2010-10-06 22:33:54 +0900: ProgressChange was called
+[10000, 10000]
+2010-10-06 22:33:54 +0900: ProgressChange was called
+[-1, 10000]
+2010-10-06 22:33:54 +0900: DownloadComplete was called
+[]
+2010-10-06 22:33:54 +0900: ProgressChange was called
+[10000, 10000]
+2010-10-06 22:33:54 +0900: DocumentComplete was called
+[#&lt;WIN32OLE:0x438a2f8&gt;, &quot;http://www.ruby-lang.org/ja/&quot;]
+2010-10-06 22:33:54 +0900: StatusTextChange was called
+[&quot;ページが表示されました&quot;]
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-w-i-n32-o-l-e_-t-y-p-e/s/new.html">WIN32OLE_TYPE.new</a>
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-w-i-n32-o-l-e_-t-y-p-e/i/progid.html">WIN32OLE_TYPE#progid</a>
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-w-i-n32-o-l-e_-t-y-p-e/i/ole_methods.html">WIN32OLE_TYPE#ole_methods</a>
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-w-i-n32-o-l-e_-m-e-t-h-o-d/i/name.html">WIN32OLE_METHOD#name</a>
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-w-i-n32-o-l-e_-e-v-e-n-t/s/new.html">WIN32OLE_EVENT.new</a>
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-w-i-n32-o-l-e_-e-v-e-n-t/i/handler=3d.html">WIN32OLE_EVENT#handler=</a>
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-w-i-n32-o-l-e_-e-v-e-n-t/s/event_loop.html">WIN32OLE_EVENT.event_loop</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

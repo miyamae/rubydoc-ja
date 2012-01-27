@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>singleton method YAML.add_private_type</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/yaml.html">yamlライブラリ</a>
+&gt; <a href="../../../class/-y-a-m-l.html">YAMLモジュール</a>
+&gt; add_private_type
+
+</p>
+
+
+
+
+<h1>singleton method YAML.add_private_type</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>add_private_type(type_re) {|type, val| ...} -&gt; nil</code></dt>
+<dd class="method-description">
+<p>
+プライベートタイプのクラスをYAMLに追加し、
+そのクラスを見つけたときの操作を指定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] type_re:</dt>
+<dd>
+プライベートタイプのクラスを文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] type:</dt>
+<dd>
+YAMLドメインとクラスの文字列
+</dd>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+YAMLデータ構造
+</dd>
+</dl>
+<pre>
+require 'yaml'
+
+class Person ; end
+
+str1=&lt;&lt;EOT
+--- !!Person
+name: taro
+country: Japan
+capital: Tokyo
+EOT
+
+YAML.each_document(str1){|obj|
+  p obj
+}
+#=&gt; #&lt;YAML::PrivateType:0x2b07a14 @type_id=&quot;Person&quot;, @value={&quot;name&quot;=&gt;&quot;taro&quot;, &quot;country&quot;=&gt;&quot;Japan&quot;, &quot;capital&quot;=&gt;&quot;Tokyo&quot;}&gt;
+YAML.add_private_type(&quot;Person&quot;){|type, val|
+  YAML.object_maker(Person, val)
+}
+YAML.each_document(str1){|obj|
+  p obj
+}
+#=&gt; #&lt;Person:0x2b07640 @country=&quot;Japan&quot;, @capital=&quot;Tokyo&quot;, @name=&quot;taro&quot;&gt;
+
+str2=&lt;&lt;EOT
+--- !Qjitsu.com,2007-05-04/Person
+name: eiji
+age: 33
+--- !!Person
+name: ichiro
+country: Japan
+capital: Tokyo
+EOT
+
+YAML.each_document(str2){|obj|
+  p obj
+}
+#=&gt; #&lt;YAML::DomainType:0x2b071a4 @type_id=&quot;Person&quot;, @domain=&quot;Qjitsu.com,2007-05-04&quot;, @value={&quot;name&quot;=&gt;&quot;eiji&quot;, &quot;age&quot;=&gt;33}&gt;
+#=&gt; #&lt;Person:0x2b06eac @country=&quot;Japan&quot;, @capital=&quot;Tokyo&quot;, @name=&quot;ichiro&quot;&gt;
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

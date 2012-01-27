@@ -1,0 +1,213 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library iconv</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.3 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.3 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; iconvライブラリ
+</p>
+
+
+
+<h1>library iconv</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+Iconv は UNIX 95 の iconv() 関数のラッパーで、
+さまざまな文字コード体系間で文字列の変換を行ないます。
+</p>
+<p>
+詳細は <a class="external" href="http://www.opengroup.org/">http://www.opengroup.org/</a> のオンラインドキュメントを
+参照して下さい。
+</p>
+<ul>
+<li><a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/iconv.html">iconv(3)</a></li>
+<li><a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/iconv_open.html">iconv_open(3)</a></li>
+<li><a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/iconv_close.html">iconv_close(3)</a></li>
+<li><a class="external" href="http://www.opengroup.org/onlinepubs/009695399/basedefs/iconv.h.html">http://www.opengroup.org/onlinepubs/009695399/basedefs/iconv.h.html</a></li>
+</ul>
+<h2 >注意</h2>
+<p>
+どの文字コード体系が利用できるかはプラットフォーム依存です。さらに文字コード体系をあらわす文字列もプラットフォーム依存です。日本語 EUC をあらわす文字列が EUC-JP, euc-jp, eucJP など異なる場合があります。このプラットフォームによる違いを吸収するために、
+「ext/iconv/charset_alias.rb」 が用意されています。
+GNU ソフトウェア texinfo (<a class="external" href="http://www.gnu.org/software/texinfo/">http://www.gnu.org/software/texinfo/</a>) に含まれるファイル config.charset を以下のミラーサイトから手に入れて
+</p>
+<ul>
+<li><a class="external" href="http://ring.riken.go.jp/archives/text/CTAN/macros/texinfo/texinfo/gnulib/lib/config.charset">http://ring.riken.go.jp/archives/text/CTAN/macros/texinfo/texinfo/gnulib/lib/config.charset</a></li>
+</ul>
+<p>
+ext/iconv/ に置き、ext/iconv/ で次のように実行すると
+</p>
+<pre>
+ruby extconf.rb
+make
+</pre>
+<p>
+iconv.rb が生成されます。この iconv.rb がプラットフォームによる文字コード体系をあらわす文字列の違いを吸収します。
+</p>
+<p>
+config.charset のライセンスは LGPL なので、生成された iconv.rb にも LGPL が適用されます。
+</p>
+<h2 >例</h2>
+<pre>
+require 'iconv'
+euc = [&quot;a4a2a4a4a4a6a4a8a4aa&quot;].pack(&quot;H*&quot;) # あいうえお
+sjis = [&quot;82a082a282a482a682a8&quot;].pack(&quot;H*&quot;)
+iconv = Iconv.new('SHIFT_JIS', 'EUC-JP')  # EUC-JP から SHIFT_JIS へ変換
+str = iconv.iconv(euc)
+str &lt;&lt; iconv.iconv(nil)
+p( str == sjis )
+</pre>
+<p>
+(1) 新しく <a href="../class/-iconv.html">Iconv</a> のインスタンスを作り, <a href="../method/-iconv/i/iconv.html">Iconv#iconv</a> メソッドを使う
+</p>
+<pre>
+cd = Iconv.new(to, from)
+begin
+  input.each {|s| output &lt;&lt; cd.iconv(s)}
+  output &lt;&lt; cd.iconv(nil)      # don't forget this
+ensure
+  cd.close
+end
+</pre>
+<p>
+(2) <a href="../method/-iconv/s/open.html">Iconv.open</a> をブロックつきで呼び出す
+</p>
+<pre>
+Iconv.open(to, from) do |cd|
+  input.each {|s| output &lt;&lt; cd.iconv(s)}
+  output &lt;&lt; cd.iconv(nil)
+end
+</pre>
+<p>
+(3) (2) の短縮系
+</p>
+<pre>
+Iconv.iconv(to, from, *input.to_a)
+</pre>
+<h2 id='gnu_options'>環境依存の機能</h2>
+<p>
+GNU libiconv で iconv ライブラリがビルドしてある場合、
+<a href="../method/-iconv/i/iconv.html">Iconv#iconv</a>、<a href="../method/-iconv/s/open.html">Iconv.open</a>、<a href="../method/-iconv/s/iconv.html">Iconv.iconv</a> の第一引数 to に
+は「文字コード//フラグ」という書式で GNU の独自拡張を利用する事もできま
+す。フラグには以下のいずれかを指定できます。
+</p>
+<dl>
+<dt>//TRANSLIT</dt>
+<dd>
+<p>
+文字列の変換時に、表現できない文字を同じ見た目の文字に&quot;翻訳&quot;します。
+<a href="../method/-iconv/i/transliterate=3d.html">Iconv#transliterate=</a> に真を渡して指定する事もできます。
+</p>
+</dd>
+<dt>//IGNORE</dt>
+<dd>
+<p>
+文字列の変換時に、 <a href="../class/-iconv=3a=3a-illegal-sequence.html">Iconv::IllegalSequence</a> が発生するような文字列
+が途中にあった場合でも無視して変換を継続します。
+<a href="../method/-iconv/i/discard_ilseq=3d.html">Iconv#discard_ilseq=</a> に真を渡して指定する事もできます。
+</p>
+</dd>
+</dl>
+<p>
+ただし、上記の拡張は移植性を損ないます。
+そのような機能が必要な場合は <a href="../method/-string/i/encode.html">String#encode</a> を使用してください。
+</p>
+<h2 >参考</h2>
+<ul>
+<li>標準添付ライブラリ紹介【第 3 回】 Kconv/NKF/Iconv (<a class="external" href="http://jp.rubyist.net/magazine/?0009-BundledLibraries#l30">http://jp.rubyist.net/magazine/?0009-BundledLibraries#l30</a>)</li>
+</ul>
+
+
+<h2>クラスとモジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-iconv.html">class Iconv</a></td>
+<td class="description"><p>
+iconv 関数のラッパークラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-iconv=3a=3a-failure.html">module Iconv::Failure</a></td>
+<td class="description"><p>
+<a href="../class/-iconv.html">Iconv</a> が起こす例外のためのモジュールです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-iconv=3a=3a-broken-library.html">class Iconv::BrokenLibrary</a></td>
+<td class="description"><p>
+iconv ライブラリのバグなどにより、<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/errno.html">errno(3)</a> が設定されなかった場合に発生します。
+(Windows で iconv.dll の使用する MSVC runtime DLL のバージョンが、ruby 本体が使用するものと一致していない場合も含みます。)
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-iconv=3a=3a-illegal-sequence.html">class Iconv::IllegalSequence</a></td>
+<td class="description"><p>
+入力か出力の文字が指示された文字集合に含まれないために変換が停止したこと
+を表します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-iconv=3a=3a-invalid-character.html">class Iconv::InvalidCharacter</a></td>
+<td class="description"><p>
+入力の最後が不完全な文字かシフトで終っているために変換が停止したこと
+を表します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-iconv=3a=3a-invalid-encoding.html">class Iconv::InvalidEncoding</a></td>
+<td class="description"><p>
+メソッドの引数等で指定された文字コード体系が見つからない (システム上で有効でない) 場合に発生します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-iconv=3a=3a-out-of-range.html">class Iconv::OutOfRange</a></td>
+<td class="description"><p>
+Iconv ライブラリの内部エラーです。この例外は起こらないはずです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

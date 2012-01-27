@@ -1,0 +1,553 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>module OpenSSL::OCSP</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/openssl.html">opensslライブラリ</a>
+&gt; OpenSSL::OCSPモジュール
+</p>
+
+
+
+<h1>module OpenSSL::OCSP</h1>
+<p>
+
+
+クラスの継承リスト: OpenSSL::OCSP
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+OCSP(Online Certificate Status Protocol)を取り扱うための
+モジュールです。OCSP は <a class="external" href="http://www.ietf.org/rfc/rfc2560.txt">[RFC2560]</a> で定義されています。
+</p>
+<p>
+このモジュールは OCSP のリクエストとレスポンスを取り扱う
+機能を持っています。
+</p>
+<p>
+OCSP レスポンダと通信する機能はありません。ユーザが例えば
+OCSP over http などを実装する必要があります。
+</p>
+<h2 >例</h2>
+<p>
+OCSP レスポンダにリクエストを送ってその返答を表示する
+</p>
+<pre>
+require 'openssl'
+require 'net/http'
+# ...
+cert # 検証対象の証明書(Certificate オブジェクト)
+ca_cert # cert の CA の証明書(Certificate オブジェクト)
+store # 信頼している証明書ストア
+cid = OpenSSL::OCSP::CertificateId(cert, ca_cert)
+req = OpenSSL::OCSP::Response.new(cid)
+req.add_nonce
+
+http = Net::HTTP.new('http://ocsp.example.com', 80)
+httpres = http.post(&quot;/&quot;, req.to_der, 'content-type' =&gt; 'application/ocsp-request')
+raise &quot;HTTP error&quot; if !httpres.kind_of?(Net::HTTPOK)
+res = OpenSSL::OCSP::Response.new(httpres.body)
+
+puts &quot;Response status: #{res.status_string}&quot;
+exit if res.status != OpenSSL::OCSP::STATUS_SUCCESSFUL
+
+basic_resp = res.basic
+raise &quot;nonce error&quot; if req.check_nonce(basic_resp)
+unless basic_resp.verify([], store)
+  puts &quot;verify response fail&quot;
+end
+rescid, status, reason, revtime, thisupd, nextupd, exts = basic_resp.status.first
+STATUS2MESSAGE = {
+  OpenSSL::OCSP::V_CERTSTATUS_GOOD =&gt; &quot;OK&quot;,
+  OpenSSL::OCSP::V_CERTSTATUS_REVOKED =&gt; &quot;REVOKED&quot;,
+  OpenSSL::OCSP::V_CERTSTATUS_UNKNOWN =&gt; &quot;UNKNOWN&quot;,
+}
+puts &quot;status: #{STATUS2MESSAGE[status]}&quot;
+puts &quot;reason: #{reason}&quot; if status == OpenSSL::OCSP::V_CERTSTATUS_REVOKED
+puts &quot;revoked time: #{revtime}&quot; if status == OpenSSL::OCSP::V_CERTSTATUS_REVOKED
+puts &quot;crl update: #{thisupd}&quot;
+puts &quot;crl next update: #{nextupd}&quot;
+puts &quot;extensions:&quot;
+exts.each{|ext| p ext}
+</pre>
+
+
+
+<h2>定数</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-n-o-c-a-s-i-g-n.html"><code>
+  NOCASIGN -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+このフラグ定数は使われていません。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-n-o-c-e-r-t-s.html"><code>
+  NOCERTS -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+署名時に署名データに証明書を含めないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-n-o-c-h-a-i-n.html"><code>
+  NOCHAIN -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書チェインを使わないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-n-o-c-h-e-c-k-s.html"><code>
+  NOCHECKS -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+署名の検証における追加的なチェックを省略することを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-n-o-d-e-l-e-g-a-t-e-d.html"><code>
+  NODELEGATED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+delegated trust を許可しないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-n-o-e-x-p-l-i-c-i-t.html"><code>
+  NOEXPLICIT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書ストア内の Root CA を信用しないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-n-o-i-n-t-e-r-n.html"><code>
+  NOINTERN -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Request/Response の署名データに含まれている証明書から
+署名者の証明書を「探さない」ことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-n-o-s-i-g-s.html"><code>
+  NOSIGS -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+署名の検証を行わないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-n-o-t-i-m-e.html"><code>
+  NOTIME -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+OCSP 応答の生成時刻を正しく設定しないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-n-o-v-e-r-i-f-y.html"><code>
+  NOVERIFY -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+署名に使った鍵の証明書の検証を行わないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-r-e-s-p-i-d_-k-e-y.html"><code>
+  RESPID_KEY -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+OCSP レスポンダ の ID として公開鍵のハッシュ値を用いること
+を意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-r-e-s-p-o-n-s-e_-s-t-a-t-u-s_-i-n-t-e-r-n-a-l-e-r-r-o-r.html"><code>
+  RESPONSE_STATUS_INTERNALERROR -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-open-s-s-l=3a=3a-o-c-s-p=3a=3a-response/i/status.html">OpenSSL::OCSP::Response#status</a> のステータスコードで 、
+OCSP レスポンダの内部エラーにより妥当な応答を返せないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-r-e-s-p-o-n-s-e_-s-t-a-t-u-s_-m-a-l-f-o-r-m-e-d-r-e-q-u-e-s-t.html"><code>
+  RESPONSE_STATUS_MALFORMEDREQUEST -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-open-s-s-l=3a=3a-o-c-s-p=3a=3a-response/i/status.html">OpenSSL::OCSP::Response#status</a> のステータスコードで 、
+リクエストの構文が正しくないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-r-e-s-p-o-n-s-e_-s-t-a-t-u-s_-s-i-g-r-e-q-u-i-r-e-d.html"><code>
+  RESPONSE_STATUS_SIGREQUIRED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-open-s-s-l=3a=3a-o-c-s-p=3a=3a-response/i/status.html">OpenSSL::OCSP::Response#status</a> のステータスコードで 、
+サーバがクライアントにリクエストへの署名を要求していることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-r-e-s-p-o-n-s-e_-s-t-a-t-u-s_-s-u-c-c-e-s-s-f-u-l.html"><code>
+  RESPONSE_STATUS_SUCCESSFUL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-open-s-s-l=3a=3a-o-c-s-p=3a=3a-response/i/status.html">OpenSSL::OCSP::Response#status</a> のステータスコードで 、
+正しく応答したことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-r-e-s-p-o-n-s-e_-s-t-a-t-u-s_-t-r-y-l-a-t-e-r.html"><code>
+  RESPONSE_STATUS_TRYLATER -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-open-s-s-l=3a=3a-o-c-s-p=3a=3a-response/i/status.html">OpenSSL::OCSP::Response#status</a> のステータスコードで 、
+レスポンダが一時的に応答できないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-r-e-s-p-o-n-s-e_-s-t-a-t-u-s_-u-n-a-u-t-h-o-r-i-z-e-d.html"><code>
+  RESPONSE_STATUS_UNAUTHORIZED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-open-s-s-l=3a=3a-o-c-s-p=3a=3a-response/i/status.html">OpenSSL::OCSP::Response#status</a> のステータスコードで 、
+クライアントからサーバへの応答が認可されていないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-r-e-v-o-k-e-d_-s-t-a-t-u-s_-a-f-f-i-l-i-a-t-i-o-n-c-h-a-n-g-e-d.html"><code>
+  REVOKED_STATUS_AFFILIATIONCHANGED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-open-s-s-l=3a=3a-o-c-s-p=3a=3a-basic-response/i/status.html">OpenSSL::OCSP::BasicResponse#status</a> の失効理由コードで、
+証明書の記載内容が変更されたことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-r-e-v-o-k-e-d_-s-t-a-t-u-s_-c-a-c-o-m-p-r-o-m-i-s-e.html"><code>
+  REVOKED_STATUS_CACOMPROMISE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-open-s-s-l=3a=3a-o-c-s-p=3a=3a-basic-response/i/status.html">OpenSSL::OCSP::BasicResponse#status</a> の失効理由コードで、
+CA が危殆化したことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-r-e-v-o-k-e-d_-s-t-a-t-u-s_-c-e-r-t-i-f-i-c-a-t-e-h-o-l-d.html"><code>
+  REVOKED_STATUS_CERTIFICATEHOLD -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-open-s-s-l=3a=3a-o-c-s-p=3a=3a-basic-response/i/status.html">OpenSSL::OCSP::BasicResponse#status</a> の失効理由コードで、
+一時的な保留を意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-r-e-v-o-k-e-d_-s-t-a-t-u-s_-c-e-s-s-a-t-i-o-n-o-f-o-p-e-r-a-t-i-o-n.html"><code>
+  REVOKED_STATUS_CESSATIONOFOPERATION -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-open-s-s-l=3a=3a-o-c-s-p=3a=3a-basic-response/i/status.html">OpenSSL::OCSP::BasicResponse#status</a> の失効理由コードで、
+証明書の運用を止めたことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-r-e-v-o-k-e-d_-s-t-a-t-u-s_-k-e-y-c-o-m-p-r-o-m-i-s-e.html"><code>
+  REVOKED_STATUS_KEYCOMPROMISE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-open-s-s-l=3a=3a-o-c-s-p=3a=3a-basic-response/i/status.html">OpenSSL::OCSP::BasicResponse#status</a> の失効理由コードで、
+鍵が危殆化したことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-r-e-v-o-k-e-d_-s-t-a-t-u-s_-n-o-s-t-a-t-u-s.html"><code>
+  REVOKED_STATUS_NOSTATUS -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-open-s-s-l=3a=3a-o-c-s-p=3a=3a-basic-response/i/status.html">OpenSSL::OCSP::BasicResponse#status</a> の失効理由コードで、
+BasicResponse にコードが含まれていないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-r-e-v-o-k-e-d_-s-t-a-t-u-s_-r-e-m-o-v-e-f-r-o-m-c-r-l.html"><code>
+  REVOKED_STATUS_REMOVEFROMCRL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-open-s-s-l=3a=3a-o-c-s-p=3a=3a-basic-response/i/status.html">OpenSSL::OCSP::BasicResponse#status</a> の失効理由コードで、
+CRL からの削除を意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-r-e-v-o-k-e-d_-s-t-a-t-u-s_-s-u-p-e-r-s-e-d-e-d.html"><code>
+  REVOKED_STATUS_SUPERSEDED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-open-s-s-l=3a=3a-o-c-s-p=3a=3a-basic-response/i/status.html">OpenSSL::OCSP::BasicResponse#status</a> の失効理由コードで、
+証明書が破棄されたことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-r-e-v-o-k-e-d_-s-t-a-t-u-s_-u-n-s-p-e-c-i-f-i-e-d.html"><code>
+  REVOKED_STATUS_UNSPECIFIED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-open-s-s-l=3a=3a-o-c-s-p=3a=3a-basic-response/i/status.html">OpenSSL::OCSP::BasicResponse#status</a> の失効理由コードで、
+未指定を意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-t-r-u-s-t-o-t-h-e-r.html"><code>
+  TRUSTOTHER -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+明示的に渡した証明書を検証なしで信用することを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-v_-c-e-r-t-s-t-a-t-u-s_-g-o-o-d.html"><code>
+  V_CERTSTATUS_GOOD -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-open-s-s-l=3a=3a-o-c-s-p=3a=3a-basic-response/i/status.html">OpenSSL::OCSP::BasicResponse#status</a>
+のステータスコードで証明書が有効であることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-v_-c-e-r-t-s-t-a-t-u-s_-r-e-v-o-k-e-d.html"><code>
+  V_CERTSTATUS_REVOKED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-open-s-s-l=3a=3a-o-c-s-p=3a=3a-basic-response/i/status.html">OpenSSL::OCSP::BasicResponse#status</a>
+のステータスコードで証明書が失効していることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-o-c-s-p/c/-v_-c-e-r-t-s-t-a-t-u-s_-u-n-k-n-o-w-n.html"><code>
+  V_CERTSTATUS_UNKNOWN -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-open-s-s-l=3a=3a-o-c-s-p=3a=3a-basic-response/i/status.html">OpenSSL::OCSP::BasicResponse#status</a>
+のステータスコードで証明書の有効性が不明であることを意味します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

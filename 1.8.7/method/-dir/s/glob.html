@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>singleton method Dir.[]</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-dir.html">Dirクラス</a>
+&gt; []
+
+</p>
+
+
+
+
+<h1>singleton method Dir.[]</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>self[*pattern] -&gt; [String]</code></dt>
+<dt class="method-heading"><code>glob(pattern, flags = 0) -&gt; [String]</code></dt>
+<dt class="method-heading"><code>glob(pattern, flags = 0) {|file| ...} -&gt; nil</code></dt>
+<dd class="method-description">
+<p>
+ワイルドカードの展開を行い、
+パターンにマッチするファイル名を文字列の配列として返します。
+パターンにマッチするファイルがない場合は空の配列を返します。
+</p>
+<p>
+ブロックが与えられたときはワイルドカードにマッチしたファイルを
+引数にそのブロックを 1 つずつ評価して nil を返します
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+パターンを文字列で指定します。
+パターンを &quot;\0&quot; で区切って 1 度に複数のパターンを指定することもで
+きます。
+パターンの区切りには &quot;\0&quot; のみ指定できます。
+</dd>
+<dt class='method-param'>[PARAM] flags:</dt>
+<dd>
+<a href="../../../method/-file/s/fnmatch.html">File.fnmatch</a> に指定できるフラグと同様のフラグを指定できます。
+このフラグを指定することでマッチの挙動を変更することができます。
+<pre>
+  Dir.glob(&quot;*&quot;)                      #=&gt; [&quot;bar&quot;, &quot;foo&quot;]
+  Dir.glob(&quot;*&quot;, File::FNM_DOTMATCH)  #=&gt; [&quot;.&quot;, &quot;..&quot;, &quot;bar&quot;, &quot;foo&quot;]
+</pre>
+</dd>
+</dl>
+<p>
+ワイルドカードには以下のものがあります。これらはバックスラッシュに
+よりエスケープすることができます。ダブルクォートの文字列中では 2
+重にエスケープする必要があることに注意してください。
+ワイルドカードはデフォルトではファイル名の先頭の &quot;.&quot; にマッチしません。
+</p>
+<dl>
+<dt>*</dt>
+<dd>
+<p>
+空文字列を含む任意の文字列と一致します。
+</p>
+</dd>
+<dt>?</dt>
+<dd>
+<p>
+任意の一文字と一致します。
+</p>
+</dd>
+<dt>[ ]</dt>
+<dd>
+<p>
+鈎括弧内のいずれかの文字と一致します。- でつな
+がれた文字は範囲を表します。鈎括弧の中の最初の文字が
+^ である時には含まれない文字と一致します。
+^ の代わりに ksh や POSIX shell のように ! も同じ意
+味で使えます。
+</p>
+</dd>
+<dt>{ }</dt>
+<dd>
+<p>
+コンマで区切られた文字列の組合せに展開します。例えば、
+foo{a,b,c} は fooa, foob, fooc
+に展開されそれぞれに対してマッチ判定を行います。
+</p>
+<p>
+括弧は入れ子にすることができます。例えば、
+{foo,bar{foo,bar}} は foo, barfoo, barbar
+のそれぞれにマッチします。
+</p>
+</dd>
+<dt>**/</dt>
+<dd>
+<p>
+ワイルドカード */ の0回以上の繰り返しを意味し、
+ディレクトリを再帰的にたどってマッチを行います。
+例えば,
+foo/**/bar は foo/bar, foo/*/bar,
+foo/*/*/bar ... (以下無限に続く)に対してそれぞれ
+マッチ判定を行います。
+</p>
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+# 一般的な例
+p Dir.glob(&quot;*&quot;)          #=&gt; [&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;]
+p Dir.glob(&quot;./b*&quot;)       #=&gt; [&quot;./bar&quot;, &quot;./baz&quot;]      先頭に &quot;./&quot; が付いている。
+p Dir.glob(&quot;*/&quot;)         #=&gt; [&quot;foo/&quot;]                ディレクトリのみにマッチする。
+p Dir.glob(&quot;wrong_name&quot;) #=&gt; []                      マッチしないと空の配列を返す。
+
+Dir.glob(&quot;b*&quot;) {|f| p f }
+
+#=&gt; &quot;bar&quot;
+    &quot;baz&quot;
+
+# 複数のパターンを指定する例
+p Dir.glob(&quot;f*\0b*&quot;)     # =&gt; [&quot;foo&quot;, &quot;bar&quot;]
+
+# ワイルドカードの例
+Dir.glob(&quot;*&quot;)            #=&gt; [&quot;foo&quot;, &quot;bar&quot;]
+Dir.glob(&quot;fo?&quot;)          #=&gt; [&quot;foo&quot;]
+Dir.glob(&quot;[^f]*&quot;)        #=&gt; [&quot;bar&quot;]
+Dir.glob(&quot;{b,f}*&quot;)       #=&gt; [&quot;bar&quot;, &quot;foo&quot;]
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

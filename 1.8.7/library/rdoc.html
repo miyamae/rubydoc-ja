@@ -1,0 +1,829 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library rdoc</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; rdocライブラリ
+</p>
+
+
+
+<h1>library rdoc</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+RDoc は Ruby のドキュメント生成を行うためのライブラリです。rdoc という
+ドキュメント生成のためのコマンドも含んでいます。
+</p>
+<p>
+このパッケージは RDoc と SimpleMarkup というふたつのコンポーネントを含
+んでいます。 RDoc とは Ruby のソースファイルに対するドキュメントを生成
+するアプリケーションです。 JavaDoc と同様に、ソースを解析し、クラス、モ
+ジュール、メソッドの定義を抜き出してきます(include,require もです)。そ
+してこれらの内容とその直前に書かれたコメントを併合し、ドキュメントを出
+力します(現在は HTML しか出力できませんが、この部分は取り替え可能にでき
+ています)。Markup とはプレーンテキストを様々なフォーマットに変換するた
+めのライブラリです。RDoc によってメソッドやクラスに関するドキュメントを
+生成するとき、コメント部を変換するために使われます。
+</p>
+<h2 >ロードマップ</h2>
+<ul>
+<li>RDoc で Ruby のソースファイルに対するドキュメントを生成したければ、まずこの文章を読みましょう。</li>
+<li>Cで書かれた拡張ライブラリを含めたければ、<a href="../library/rdoc=2fparsers=2fparse_c.html">rdoc/parsers/parse_c</a> を参照してください。</li>
+<li>コメント部で使えるマークアップについて知りたければ、<a href="../library/rdoc=2fmarkup=2fsimple_markup.html">rdoc/markup/simple_markup</a> を参照してください。</li>
+<li>RDoc をライブラリとして使いたければ、<a href="../class/-r-doc=3a=3a-r-doc.html">RDoc::RDoc</a> を参照してください。</li>
+<li>テキスト部を HTML に変換する部分をライブラリとして使いたければ、<a href="../class/-s-m=3a=3a-simple-markup.html">SM::SimpleMarkup</a> を参照してください。</li>
+</ul>
+<h2 >概要</h2>
+<p>
+インストールすれば、'rdoc' コマンドでドキュメントが生成できます。
+(Windows では 'rdoc.bat' です)
+</p>
+<pre>
+$ rdoc [options]  [names...]
+</pre>
+<p>
+&quot;rdoc --help&quot; と打てば、最新のオプションに関する情報が得られます。
+</p>
+<pre>
+$ rdoc
+</pre>
+<p>
+このコマンドでカレントディレクトリ以下にあるすべての Ruby とCのソースか
+らドキュメントを生成します。生成したドキュメントはカレントディレクトリ
+直下の 'doc' というディレクトリに置かれます。
+</p>
+<p>
+ドキュメントを読む人に取って便利なように、生成されるドキュメントのイン
+デックスページに中心的なファイに書かれている内容を含めることができます。
+例えば、Rdoc そのもののドキュメントを生成する場合は、以下のようにタイプ
+します。
+</p>
+<pre>
+$ rdoc --main rdoc/rdoc.rb
+</pre>
+<p>
+RDoc が生成するドキュメントのコメント部で使える様々なマークアップの方法
+は以下の <a href="#markup">Markup</a> の項に書かれています。
+</p>
+<p>
+RDocは拡張子によってファイルをどう処理すべきかを決めます。ファイル名の
+末尾が .rb や .rbw であるファイルは Ruby のソースファイルとして処理され
+ます。末尾が .c であるファイルはCのソースとして処理されます。それ以外の
+ファイルは単なる SimpleMarkup-style で記述されたファイルとして処理され
+ます(行の先頭に「#」というコメント記号があってもなくても同じように処理
+されます)。また、RDoc にディレクトリ名が渡されると、その中のディレクト
+リを再帰的に走査します。ただしこの場合 Ruby と C のソースファイルのみが
+処理されます。
+</p>
+<h2 id='usage'>使いかた</h2>
+<p>
+RDoc はコマンドラインから以下のようにして起動します。
+</p>
+<pre>
+$ rdoc &lt;options&gt; [name...]
+</pre>
+<p>
+ファイルをパースし、そこに含まれている情報を集め、出力します。こうして
+全ファイルに渡るクロスリファレンスが生成できます。 もし name がディレク
+トリならば、その中を走査します。 name を指定しなければ、カレントディレ
+クトリ(とそのサブディレクトリ内)の全ての Ruby のファイルを処理します。
+</p>
+<p>
+options は以下が指定できます。
+</p>
+<dl>
+<dt>--accessor name</dt>
+<dd>
+<p>
+name で指定したメソッドを attr_xxx と同様なものとして取り扱います。例え
+ば &quot;--accessor db_opt&quot; とすると、以下のような行も RDoc によって処理さ
+れドキュメントに含まれるようになります。
+</p>
+<pre>
+    db_opt :name, :age
+</pre>
+<p>
+それぞれの name には &quot;=flagtext&quot; というオプションを付けることができま
+す。例えば、&quot;=rw&quot; とすると attr_accessor と同じように取り扱われます。
+</p>
+</dd>
+<dt>--all</dt>
+<dd>
+<p>
+プロテクティッドメソッドやプライベートメソッドも出力に含まれるように
+なります(デフォルトではパブリックメソッドのみです)。
+</p>
+</dd>
+<dt>--charset charset</dt>
+<dd>
+<p>
+生成する HTML の charset を指定します。
+</p>
+</dd>
+<dt>--debug</dt>
+<dd>
+<p>
+実行時に内部情報を出力します。
+</p>
+</dd>
+<dt>--diagram</dt>
+<dd>
+<p>
+モジュールやクラスを表示するのに図を使うようになります。この機能は実
+験的なもので、すべての出力テンプレートに対応しているわけではありません。
+dot V1.8.6 かそれ以降がなければ &quot;--diagram&quot; オプションは正しい出力が
+できません(www.research.att.com/sw/tools/graphviz/)。
+</p>
+</dd>
+<dt>--exclude pattern</dt>
+<dd>
+<p>
+pattern にマッチするディレクトリおよびファイルを処理の対象から取り除きます。
+</p>
+</dd>
+<dt>--extension new=old</dt>
+<dd>
+<p>
+ファイル名の末尾が .new であるものを、末尾が .old であるものとして取
+り扱います。例えば '--extension cgi=rb' とすれば、RDoc は &quot;.cgi&quot; で
+終わるファイルを Ruby のソースとして取り扱います。
+</p>
+</dd>
+<dt>--fileboxes</dt>
+<dd>
+<p>
+--diagram を指定した場合生成された図において、クラスがどのソースファ
+イルで定義されているかを四角で囲うことで示します。複数のファイルで定
+義されているクラスは複数の四角にまたがった図が作られます。--diagram
+といっしょに使わなければ意味のないオプションです。(実験的な機能です)
+</p>
+</dd>
+<dt>--force-update</dt>
+<dd>
+<p>
+出力済みのファイルの方が新しい場合でも全てのファイルを更新します。
+1.9.2 以下では指定しなかった場合は有効になりません。1.9.2 以降は指定
+しなかった場合でも有効になります。
+</p>
+</dd>
+<dt>--fmt fmt</dt>
+<dd>
+<p>
+生成される出力を指定します。
+</p>
+</dd>
+<dt>--help</dt>
+<dd>
+<p>
+使いかたの概要を表示します。
+</p>
+</dd>
+<dt>--help-output</dt>
+<dd>
+<p>
+出力に関するオプションを解説します。
+</p>
+</dd>
+<dt>--image-format gif/png/jpg/jpeg</dt>
+<dd>
+<p>
+図のフォーマットを指定します。png、gif、jpeg、jpg が指定できます。指
+定しなかった場合は png が使われます。--diagram が必要です。
+</p>
+</dd>
+<dt>--include dir,…</dt>
+<dd>
+<p>
+:include: 命令でファイルを探すディレクトリを指定します。 --include を
+複数使ってもかまいません。これを指定しなくとも処理中のファイルはすべ
+て探索されます。
+</p>
+</dd>
+<dt>--inline-source</dt>
+<dd>
+<p>
+デフォルトでは、メソッドのソースコードはポップアップウィンドウで表示
+されます。このオプションを付けると、インラインで表示されます。
+</p>
+</dd>
+<dt>--line-numbers</dt>
+<dd>
+<p>
+ソースコードに行番号を付けます。
+</p>
+</dd>
+<dt>--main name</dt>
+<dd>
+<p>
+最初に表示されるページに置かれるもの(クラス、ファイルなど)を指定しま
+す。もし、特定のファイル(例えば、README など)を置きたければ、それをコ
+マンドラインの最初に置くだけでもかまいません。
+</p>
+</dd>
+<dt>--merge</dt>
+<dd>
+<p>
+ri の出力を生成するとき、出力ディレクトリにすでにファイルが存在すれば、
+そのファイルを上書きせずに、マージするようにします。
+</p>
+</dd>
+<dt>--one-file</dt>
+<dd>
+<p>
+すべての出力を一つのファイルに書きだします。
+</p>
+</dd>
+<dt>--op dir</dt>
+<dd>
+<p>
+出力先のディレクトリを dir に設定します(デフォルトは &quot;doc&quot; です)。
+</p>
+</dd>
+<dt>--opname name</dt>
+<dd>
+<p>
+出力の名前をnameにします(HTML を出力する場合には何の効果もありません)
+</p>
+</dd>
+<dt>--promiscuous</dt>
+<dd>
+<p>
+クラスやファイルが複数のファイルで定義されていて、ナビゲーションペイ
+ンのファイルの所をクリックした場合、そのモジュール内のクラスなどは通
+常はそのファイルで定義されている分しか表示されません。このオプション
+を指定すると、そのファイルで定義されているかどうかにかかわらず、すべ
+てのモジュール(クラス)内モジュール(クラス)を表示します。
+</p>
+</dd>
+<dt>--quiet</dt>
+<dd>
+<p>
+処理進行メッセージを表示しません。
+</p>
+</dd>
+<dt>--ri, --ri-site, and --ri-system</dt>
+<dd>
+<p>
+ri で読める出力を生成します。デフォルトでは --ri を指定すると
+~/.rdoc に出力されますが、--ri-site で $datadir/ri/&lt;ver&gt;/site
+に、--ri-system で $datadir/ri/&lt;ver&gt;/system に出力されます。これれす
+べてはうしろに指定した --op を上書きします。デフォルトのディレクトリ
+は ri のデフォルトのサーチパスです。
+</p>
+</dd>
+<dt>--show-hash</dt>
+<dd>
+<p>
+コメント内の name というところからインスタンスメソッドへのハイパーリ
+ンクを生成します。このオプションを指定しなければ '#' は取り除かれま
+す。
+</p>
+</dd>
+<dt>--style stylesheet url</dt>
+<dd>
+<p>
+(RDoc のではなく)外部スタイルシートの URL を指定する。
+</p>
+</dd>
+<dt>--tab-width n</dt>
+<dd>
+<p>
+タブの幅を指定する(デフォルトは 8)。
+</p>
+</dd>
+<dt>--template name</dt>
+<dd>
+<p>
+出力生成時に使うテンプレートを指定する(デフォルトは 'html')。実際には
+これで <a href="../method/-kernel/v/=3a.html">$:</a> の中のディレクトリの rdoc/generator/xxxx が
+使われる。 (xxxx はフォーマッタによって異なる)。
+</p>
+</dd>
+<dt>--title text</dt>
+<dd>
+<p>
+出力のタイトルを text に指定します。
+</p>
+</dd>
+<dt>--version</dt>
+<dd>
+<p>
+RDocのバージョンを表示する。
+</p>
+</dd>
+<dt>--webcvs url</dt>
+<dd>
+<p>
+CVS のウェブフロントエンドへのリンクの URL を指定する。URL が '\%s'
+を含んでいれば、そこがファイル名が置きかえられます。'\%s' を含んで
+いなければ、ファイル名を指定した URL の後に付けたものを使います。
+</p>
+</dd>
+</dl>
+<h2 id='markup'>Markup</h2>
+<p>
+コメント部はかなり自然に書くことができます。'#' で始まるコメントも使え
+ますし、=begin/=end でのコメントも使えます。=begin/=end を使う場合は、
+以下のように =begin の行に 'rdoc' タグを付ける必要があります。
+</p>
+<pre>
+=begin rdoc
+Documentation to
+be processed by RDoc.
+=end
+</pre>
+<p>
+パラグラフは左のインデントを揃えたテキストのかたまりで構成されます。そ
+れよりも深くインデントされたテキストはそのまま、マークアップを考慮せず
+にフォーマットされます。
+</p>
+<p>
+また、RDocは '#--' を含む行が現われると処理をしなくなります。これで外部
+向けコメントと内部向けコメントを分離したり、メソッド、クラスモジュール
+と関係ないコメントを取り除いたりできます。'#++' で始まる行が現われると、
+処理を再開します。
+</p>
+<pre>
+# Extract the age and calculate the
+# date-of-birth.
+#--
+# FIXME: fails if the birthday falls on
+# February 29th
+#++
+# The DOB is returned as a Time object.
+
+def get_dob(person)
+   ...
+</pre>
+<h3 id='list'>リスト</h3>
+<p>
+リストは以下のような記号が付いたパラグラフです。
+</p>
+<ul>
+<li>'*' もしくは '-' で普通のリスト</li>
+<li>数字+ピリオドで番号付きリスト</li>
+<li>アルファベット+ピリオドでアルファベットリスト</li>
+</ul>
+<p>
+例えば、上のパラグラフは以下のように書きます。
+</p>
+<pre>
+リストは以下のような記号が付いた
+パラグラフです。
+  * '*' もしくは '-' で普通のリスト
+  * 数字+ピリオドで番号付きリスト
+  * アルファベット+ピリオドで
+    アルファベットリスト
+</pre>
+<h3 id='labeled_list'>ラベル付きリスト</h3>
+<p>
+ラベル付きリスト(description list とも呼ばれる)は通常大括弧でラベルを囲
+います。
+</p>
+<pre>
+[cat]   small domestic animal
+[+cat+] command to copy standard input
+</pre>
+<p>
+ラベル付きリストはコロン2つをラベルの後に置くことでもマークアップできる。
+この場合は表形式となり、記述部(コロン2つの後のテキスト)は左揃えになりま
+す。この形式は本ドキュメントの末尾のほうの 'author' のところで使われて
+います。
+</p>
+<pre>
+cat::   small domestic animal
++cat+:: command to copy standard input
+</pre>
+<p>
+どちらの形式のラベル付きリストでも、ラベルと同じ行から記述部を書き始め
+た場合は、その記述部と同じインデントでひとかたまりとなります。また、ラ
+ベルの次の行から記述部を書き始めることもできます。ラベル部の文章が長く
+なるならこうしたほうが良いかもしれません。つまり以下の例のどちらでも良
+いということです。
+</p>
+<pre>
+&lt;tt&gt;--output&lt;/tt&gt; &lt;i&gt;name [, name]&lt;/i&gt;::
+    specify the name of one or more output files. If multiple
+    files are present, the first is used as the index.
+
+&lt;tt&gt;--quiet:&lt;/tt&gt;:: do not output the names, sizes, byte counts,
+                    index areas, or bit ratios of units as
+                    they are processed.
+</pre>
+<h3 id='headline'>見出し</h3>
+<p>
+見出し部は ASCII 文字の等号「=」を使います。
+</p>
+<pre>
+= 見出しレベル1
+== 見出しレベル2
+</pre>
+<p>
+以下レベル 3、4、…と続きます。
+</p>
+<h3 id='ruled_line'>罫線</h3>
+<p>
+罫線(横方向の線)はASCII文字のハイフン三つ '---' を使います。
+</p>
+<h3 id='italic_bold_typewriter'>イタリック体、ボールド体、タイプライター体</h3>
+<p>
+文中で以下のようなマークアップもできます。
+</p>
+<ul>
+<li>イタリック体 italic: _word_ もしくは &lt;em&gt;text&lt;/em&gt;</li>
+<li>ボールド体 bold:  *word* もしくは &lt;b&gt;text&lt;/b&gt;</li>
+<li>タイプライター体 typewriter:  +word+ もしくは &lt;tt&gt;text&lt;/tt&gt;</li>
+</ul>
+<p>
+それぞれ2つ形式がありますが、word の方は単語を囲うことしかできません。
+単語というのは、アルファベットの大文字および小文字とアンダースコアーの
+みから構成された文字列です(よって日本語では使えません)。また、これらの
+マークアップ記号の前に「\」という文字を置くと、マークアップが抑制されま
+す。上の表は以下のようにすれば作れます。
+</p>
+<pre>
+&lt;em&gt;イタリック体&lt;/em&gt; _italic_::         \_word_ もしくは \&lt;em&gt;text&lt;/em&gt;
+&lt;b&gt;ボールド体&lt;/b&gt; *bold*::               \*word* もしくは \&lt;b&gt;text&lt;/b&gt;
+&lt;tt&gt;タイプライター体&lt;/tt&gt; +typewriter+:: \+word+ もしくは \&lt;tt&gt;text&lt;/tt&gt;
+</pre>
+<h3 >クラス、メソッドへのリンク</h3>
+<p>
+コメント内のクラス名やソースファイルの名前やメソッド名(アンダースコアー
+を含んでも良いし「#」が前に付いていても良い)は、自動的にリンクが張られ
+ます。
+</p>
+<h3 >外部リンク</h3>
+<p>
+http:、 mailto:、 ftp:、 www. で始まるテキストはウェブへのリンクだと判
+別されます。外部の画像ファイルを参照している場合は &lt;IMG..&gt; に変換されま
+す。link: で始まる場合はローカルファイルへのリンクであるとみなし、--op
+で指定したディレクトリからの相対パスとなります。
+</p>
+<p>
+label[url] の形式でもハイパーリンクが張れます。この場合は label が表示
+され、url がリンク先となります。label が複数の単語を含んでいる場合(日本
+語の場合はこっちを使ってください)、
+</p>
+<p>
+中括弧を使い、&lt;em&gt;{multi word label}[&lt;/em&gt;url&lt;em&gt;]&lt;/em&gt; としてください。
+</p>
+<h3 >メソッドパラメータ</h3>
+<p>
+メソッドのパラメータは抜きだされ、ドキュメントのメソッド記述のところに
+出力されます。メソッドが yield を呼んでいる場合は、yield に渡されている
+パラメータもそこに出力されます。
+</p>
+<pre>
+def fred
+  ...
+  yield line, address
+</pre>
+<p>
+上のようなメソッド定義に対して、以下の出力が得られます。
+</p>
+<pre>
+fred() { |line, address| ... }
+</pre>
+<p>
+メソッド名の直後に ':yields: …' を含むコメントを書くと、この出力を上書
+きできます。
+</p>
+<pre>
+def fred      # :yields: index, position
+  ...
+  yield line, address
+</pre>
+<p>
+上のようにするとお、以下の出力になります。
+</p>
+<pre>
+fred() { |index, position| ... }
+</pre>
+<h3 id='escape'>エスケープ</h3>
+<p>
+マークアップは &lt;tt&gt; タグ内部などでバックスラッシュ記号でエスケープでき
+ます。バックスラッシュ自身を表示する場合は 2 回連続でバックスラッシュを
+記述します。また、&lt;tt&gt; タグの内側では後ろに続くマークアップ記号
+(&lt;tt&gt;&lt;*_+&lt;/tt&gt;)やバックスラッシュ、リンク記法は削除されます。
+</p>
+<p>
+例:
+</p>
+<dl>
+<dt>外部リンク</dt>
+<dd>
+<p>
+\{ruby-lang.org}[www.ruby-lang.org] は以下のように変換されます。
+</p>
+<pre>
+  {ruby-lang.org}[www.ruby-lang.org]
+</pre>
+</dd>
+<dt>クラスやメソッド</dt>
+<dd>
+<p>
+\RDoc::RDoc#document は以下のように変換されます。
+</p>
+<pre>
+  RDoc::RDoc#document
+</pre>
+</dd>
+<dt>タグ内のエスケープ無視(S クラスは定義済み)</dt>
+<dd>
+<p>
+&lt;tt&gt;\S&lt;/tt&gt; は以下のように変換されます。
+</p>
+<pre>
+  &lt;tt&gt;S&lt;/tt&gt;
+</pre>
+</dd>
+</dl>
+<h3 >命令</h3>
+<p>
+コメント部には他にも以下の命令を含めることができます。
+</p>
+<p>
+':yield:' はドキュメント修飾子の一例です。以下の修飾子は修飾しようとし
+ている部分の直後に書きます。ほかにも以下のようなものがあります。
+</p>
+<h4 >出力の制御</h4>
+<dl>
+<dt>:nodoc: [all]</dt>
+<dd>
+<p>
+指定した要素をドキュメントに含めません。クラスやモジュールを指定した場
+合、それに直接含まれるメソッドやエイリアスや定数や属性も省略されます。
+しかし、デフォルトでは、指定したモジュールやクラスに含まれるモジュール
+やクラスはドキュメントに 含まれます。これをオフにしたい場合は all 修飾
+子を加えます。
+</p>
+<pre>
+    module SM  #:nodoc:
+      class Input
+      end
+    end
+    module Markup #:nodoc: all
+      class Output
+      end
+    end
+</pre>
+<p>
+以上のコードでは、SM::Input のドキュメントのみが出力されます。
+</p>
+</dd>
+<dt>:stopdoc: / :startdoc:</dt>
+<dd>
+<p>
+ドキュメント要素(クラス、メソッドなど)をドキュメントに含めるかどうか
+を制御します。例えば、あるクラスにドキュメントに出力したくない定数があ
+るとすると、その前に :stopdoc: を置き、後ろに :startdoc: を置きましょう。
+もし :startdoc: を置かなければ、そのクラス、モジュール全体がドキュメ
+ントに出力されなくなり ます。
+</p>
+</dd>
+<dt>:doc:</dt>
+<dd>
+<p>
+指定したメソッドや属性を強制的にドキュメントに含めます。これは例えば特
+定のプライベートメソッドをドキュメントに含めたい場合に便利です。
+</p>
+</dd>
+<dt>:enddoc:</dt>
+<dd>
+<p>
+以降の内容を一切ドキュメントに出力しません。
+</p>
+</dd>
+<dt>:notnew:</dt>
+<dd>
+<p>
+これはインスタンスメソッドの initialize にのみ適用できます。通常、
+RDoc は initialize メソッドのドキュメントやパラメータを実際にはクラス
+メソッド new のものと仮定し、initialize の代わりに new を出力しま
+す。:notnew: 修飾子はこれを止めさせます。initialize メソッドは
+protected なので、コマンドラインで -a を指定するなどしない限り、
+initialize メソッドに関するドキュメントは出力されないことに注意してくだ
+さい。
+</p>
+</dd>
+</dl>
+<h4 >その他の命令</h4>
+<dl>
+<dt>:include: filename</dt>
+<dd>
+<p>
+指定した場所に指定したファイルを挿入します。ファイルを探すディレクト
+リは --include で指定したものとカレントディレクトリです。挿入されるファ
+イルは :include: 命令を置いたのと同じだけインデントされます。
+</p>
+</dd>
+<dt>:title: text</dt>
+<dd>
+<p>
+ドキュメントのタイトルを指定します。コマンドラインの --title パラメー
+タと同じ働きをします。(コマンドラインでの指定のほうが優先されます)
+</p>
+</dd>
+<dt>:main: name</dt>
+<dd>
+<p>
+コマンドラインの --main パラメータと同じ働きをします。
+</p>
+</dd>
+<dt>:section: title</dt>
+<dd>
+<p>
+新しいセクションを開始します。:section: の後ろに置いたタイトルはその
+セクションの見出しとなります。そして、コメントの残りの部分はそのセク
+ションの導入文となります。その後ろのメソッド、エイリアス、属性、クラス
+はこのセクションに含まれます。:section: 命令の前に何行かあってもかま
+いません。それらはドキュメントには含まれず、またそれとまったく同じ内容
+の行がブロックの終端にあった場合、それも取り除かれます。そのため、以下
+のような装飾をすることが できます。
+</p>
+<pre>
+    # ----------------------------------------
+    # :section: My Section
+    # This is the section that I wrote.
+    # See it glisten in the noon-day sun.
+    # ----------------------------------------
+</pre>
+</dd>
+<dt>:call-seq:</dt>
+<dd>
+<p>
+デフォルトではメソッドの引数や yield の引数をパースして出力しますが、
+これを指定した次の行から次の空行までをメソッド呼び出し列と解釈し、出
+力をそこに書かれたように変更します。
+</p>
+</dd>
+</dl>
+<p>
+また、他にもRuby から使用するために書かれた C 言語のソースコードのみで
+指定できる命令があります。それらについては
+<a href="../library/rdoc=2fparsers=2fparse_c.html">rdoc/parsers/parse_c</a> を参照してください。
+</p>
+
+
+
+<h2>サブライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fcode_objects.html">rdoc/code_objects</a></td>
+<td class="description"><p>
+Ruby のソースコード中にあるクラス、モジュール、メソッドなどの構成要素を
+表現するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fdiagram.html">rdoc/diagram</a></td>
+<td class="description"><p>
+モジュールやクラスの関係を描く図を作成するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fdot=2fdot.html">rdoc/dot/dot</a></td>
+<td class="description"><p>
+モジュールやクラスの関係を描く図を作成するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fmarkup=2fsimple_markup.html">rdoc/markup/simple_markup</a></td>
+<td class="description"><p>
+RDoc 形式に整形されたプレインテキストを変換するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fmarkup=2fsimple_markup=2fto_flow.html">rdoc/markup/simple_markup/to_flow</a></td>
+<td class="description"><p>
+RDoc 形式のドキュメントを表示する一段階前の構造化された状態にするための
+サブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fmarkup=2fsimple_markup=2fto_html.html">rdoc/markup/simple_markup/to_html</a></td>
+<td class="description"><p>
+RDoc 形式のドキュメントを HTML に整形するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fmarkup=2fsimple_markup=2fto_latex.html">rdoc/markup/simple_markup/to_latex</a></td>
+<td class="description"><p>
+RDoc 形式のドキュメントを LaTeX に整形するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2foptions.html">rdoc/options</a></td>
+<td class="description"><p>
+rdoc コマンドのオプションを解析するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fparsers=2fparserfactory.html">rdoc/parsers/parserfactory</a></td>
+<td class="description"><p>
+rdoc で解析できるファイルの種類を追加するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fparsers=2fparse_c.html">rdoc/parsers/parse_c</a></td>
+<td class="description"><p>
+C 言語で記述されたソースコードから組み込みクラス/モジュールのドキュメン
+トを解析するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fparsers=2fparse_f95.html">rdoc/parsers/parse_f95</a></td>
+<td class="description"><p>
+Fortran95 のソースコードを解析するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fparsers=2fparse_rb.html">rdoc/parsers/parse_rb</a></td>
+<td class="description"><p>
+Ruby のソースコードを解析するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fparsers=2fparse_simple.html">rdoc/parsers/parse_simple</a></td>
+<td class="description"><p>
+ソースコード以外のファイルを解析するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2frdoc.html">rdoc/rdoc</a></td>
+<td class="description"><p>
+rdoc コマンドのためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2ftokenstream.html">rdoc/tokenstream</a></td>
+<td class="description"><p>
+トークンを管理するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fusage.html">rdoc/usage</a></td>
+<td class="description"><p>
+プログラムの使い方(RDoc.usage を呼び出したソースファイルの先頭に記述さ
+れたコメント)を表示するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library tracer</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.3 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.3 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; tracerライブラリ
+</p>
+
+
+
+<h1>library tracer</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+実行トレース出力をとる機能を提供します。
+</p>
+<p>
+使い方は大きく分けて2通り。
+</p>
+<p>
+ひとつは以下のようにコマンドラインから <a href="../method/-kernel/m/require.html">Kernel.#require</a> する方法です。
+hoge.rb の実行をすべてトレース出力します。
+</p>
+<pre>
+ruby -rtracer hoge.rb
+</pre>
+<p>
+もうひとつはソースからrequireする方法です。
+</p>
+<pre>
+require 'tracer'
+</pre>
+<p>
+とした後
+</p>
+<pre>
+Tracer.on
+</pre>
+<p>
+によりトレース出力を有効にします。
+</p>
+<pre>
+Tracer.off
+</pre>
+<p>
+によりトレース出力を無効にします。
+</p>
+<p>
+また、ブロック付きで Tracer.on を呼び出すと、そのブロック内のみ
+トレースを出力します。
+</p>
+<h2 >サンプルコード</h2>
+<pre>
+# 例: 式の評価の中でHogeクラスのメソッドが呼び出される時、トレースする。
+
+# ruby 1.8 では警告がでますが、動作します。
+require 'tracer'
+
+class Hoge
+  def Hoge.fuga(i)
+    &quot;fuga #{i}&quot;
+  end
+end
+
+Tracer.add_filter {|event, file, line, id, binding, klass|
+  event =~ /line/ and klass.to_s =~ /hoge/i
+}
+Tracer.on
+for i in 0..3
+  puts Hoge.fuga(i) if i % 3 == 0
+end
+Tracer.off
+</pre>
+<h2 >SEE ALSO</h2>
+<p>
+<a href="../method/-kernel/m/set_trace_func.html">Kernel.#set_trace_func</a>
+</p>
+
+
+<h2>クラスとモジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-tracer.html">class Tracer</a></td>
+<td class="description"><p>
+実行トレース出力をとる機能を提供するクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

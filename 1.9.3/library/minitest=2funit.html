@@ -1,0 +1,260 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library minitest/unit</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.3 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.3 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; minitest/unitライブラリ
+</p>
+
+
+
+<h1>library minitest/unit</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+ユニットテストを行うためのライブラリです。
+</p>
+<h2 >使い方</h2>
+<p>
+<a href="../library/minitest=2funit.html">minitest/unit</a> は以下のように使います。
+</p>
+<p>
+テスト対象のソース (foo.rb) を用意します。
+</p>
+<pre>
+class Foo
+  def foo
+    &quot;foo&quot;
+  end
+  def bar
+    &quot;foo&quot;
+  end
+end
+</pre>
+<p>
+次にユニットテスト (test_foo.rb) を書きます。
+テストを実行するメソッド (テストメソッド) の名前はすべて &quot;test&quot; で始まる必要があります。
+テストメソッドが実行される前には setup メソッドが必ず実行されます。
+テストメソッドが実行された後には teardown メソッドが必ず実行されます。
+</p>
+<p>
+<a href="../library/minitest=2funit.html">minitest/unit</a> を <a href="../method/-kernel/m/require.html">Kernel.#require</a> しただけではテストが自動実行されません。
+</p>
+<pre>
+require 'minitest/unit'
+require 'foo'
+
+MiniTest::Unit.autorun
+
+class TestFoo &lt; MiniTest::Unit::TestCase
+  def setup
+    @foo = Foo.new
+  end
+  # teardown はあまり使わない
+  def teardown
+    @foo = nil
+  end
+
+  def test_foo
+    assert_equal &quot;foo&quot;, @foo.foo
+  end
+
+  def test_bar
+    assert_equal &quot;bar&quot;, @foo.bar
+  end
+end
+</pre>
+<p>
+または MiniTest::Unit.autorun を省略して以下のように書くこともできます。
+</p>
+<pre>
+require 'minitest/unit'
+require 'minitest/autorun'
+require 'foo'
+# 以下略
+</pre>
+<p>
+テストを実行するには上で用意した test_foo.rb を実行します。
+デフォルトではすべてのテストが実行されます。
+</p>
+<pre>
+$ ruby test_foo.rb
+Loaded suite test_foo
+Started
+F.
+Finished in 0.000940 seconds.
+
+  1) Failure:
+test_bar(TestFoo) [test_foo.rb:20]:
+Expected &quot;bar&quot;, not &quot;foo&quot;.
+
+2 tests, 2 assertions, 1 failures, 0 errors, 0 skips
+</pre>
+<p>
+test_bar だけテストしたい場合は以下のようなオプションを与えます。
+</p>
+<pre>
+$ ruby test_foo.rb -n test_bar
+Loaded suite test_foo
+Started
+F
+Finished in 0.000820 seconds.
+
+  1) Failure:
+test_bar(TestFoo) [test_foo.rb:20]:
+Expected &quot;bar&quot;, not &quot;foo&quot;.
+
+1 tests, 1 assertions, 1 failures, 0 errors, 0 skips
+</pre>
+<p>
+コンソールを使った testrunner のみ提供されています。
+またヘルプを表示することもできません。
+</p>
+<h2 >使用可能なオプション</h2>
+<dl>
+<dt>-v</dt>
+<dd>
+<p>
+詳細を表示します。
+</p>
+</dd>
+<dt>-n, --name</dt>
+<dd>
+<p>
+指定されたテストメソッドを実行します。テストメソッドの指定に正規表現も使えます。
+</p>
+</dd>
+</dl>
+<h2 >いつテストは実行されるか</h2>
+<p>
+上述のとおり、MiniTest::Unit.autorun や require 'minitest/autorun' をテストコードに
+明示的に書かなかった場合は、単にそのテストファイルを実行しても何も起こりません。
+</p>
+<h2 >Error と Failure と Skip の違い</h2>
+<dl>
+<dt>Error</dt>
+<dd>
+<p>
+テストメソッド実行中に例外が発生した。
+</p>
+</dd>
+<dt>Failure</dt>
+<dd>
+<p>
+アサーションに失敗した。
+</p>
+</dd>
+<dt>Skip</dt>
+<dd>
+<p>
+テストメソッド内で <a href="../method/-mini-test=3a=3a-assertions/i/skip.html">MiniTest::Assertions#skip</a> を呼び出した。
+</p>
+</dd>
+</dl>
+<h2 >test/unit からの移行</h2>
+<p>
+細かい違いはいくつかありますが、移行のためにしなければならないことは特にありません。
+require 'test/unit' している場合は互換レイヤーが読み込まれ以前の <a href="../library/test=2funit.html">test/unit</a>
+との互換性が確保されます。
+</p>
+<p>
+そうではなくて require 'minitest/unit' する場合は、テストクラスの定義時に親クラスを
+<a href="../class/-mini-test=3a=3a-unit=3a=3a-test-case.html">MiniTest::Unit::TestCase</a> にしなければなりません。
+</p>
+
+
+<h2>クラスとモジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-mini-test.html">module MiniTest</a></td>
+<td class="description"><p>
+<a href="../library/minitest=2funit.html">minitest/unit</a> で使用するクラスやモジュールを定義しているモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-mini-test=3a=3a-assertions.html">module MiniTest::Assertions</a></td>
+<td class="description"><p>
+各種 assert メソッドを提供します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-mini-test=3a=3a-unit.html">class MiniTest::Unit</a></td>
+<td class="description"><p>
+ユニットテストで使用する様々なメソッドを定義しているクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-mini-test=3a=3a-unit=3a=3a-test-case.html">class MiniTest::Unit::TestCase</a></td>
+<td class="description"><p>
+テストの基本単位(あるいは「テスト本体」)を表すクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-mini-test=3a=3a-assertion.html">class MiniTest::Assertion</a></td>
+<td class="description"><p>
+アサーションに失敗した時に発生する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-mini-test=3a=3a-skip.html">class MiniTest::Skip</a></td>
+<td class="description"><p>
+<a href="../method/-mini-test=3a=3a-assertions/i/skip.html">MiniTest::Assertions#skip</a> を呼び出した時に発生する例外です。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>サブライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/minitest=2fautorun.html">minitest/autorun</a></td>
+<td class="description"><p>
+このファイルを <a href="../method/-kernel/m/require.html">Kernel.#require</a> するとテストが <a href="../library/test=2funit.html">test/unit</a> と同じように自動実行されます。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

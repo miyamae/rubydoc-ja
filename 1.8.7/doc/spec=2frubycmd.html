@@ -1,0 +1,407 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>Rubyの起動</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+
+<a href="../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; spec/rubycmd
+
+</p>
+
+
+<h1>Rubyの起動</h1>
+
+<ul>
+<li><a href="#cmd_option">コマンドラインオプション</a></li>
+<li><a href="#shebang">インタプリタ行の解釈</a></li>
+</ul>
+<p>
+Rubyインタプリタの起動は以下の書式のコマンドラインにより行います。
+</p>
+<pre>
+ruby [ option ...] [ -- ] [ programfile ] [ argument ...]
+</pre>
+<p>
+ここで、option は後述の<a href="#cmd_option">コマンドラインオプション</a>
+のいずれかを指定します。-- は、オプション列の終りを明示するため
+に使用できます。programfile は、Ruby スクリプトを記述したファイ
+ルです。これを省略したり`-' を指定した場合には標準入力を Ruby ス
+クリプトとみなします。
+</p>
+<p>
+programfile が `#!' で始まるファイルである場合、特殊な解釈
+が行われます。詳細は後述の<a href="#shebang">インタプリタ行の解釈</a> を参照
+してください
+</p>
+<p>
+argument に指定した文字列は組み込み定数 <a href="../method/-kernel/c/-a-r-g-v.html">Kernel::ARGV</a> の初
+期値として設定されます。標準のシェルがワイルドカードを展開しない環境
+(<a href="../doc/platform=2f-win32.html">Win32</a>)では、Ruby インタプリタが自前でワイルドカードを展開して
+<a href="../method/-kernel/c/-a-r-g-v.html">Kernel::ARGV</a> に設定します。この場合ワイルドカードとして
+`*', `?', `[]', `**/' が使用できます
+(<a href="../method/-dir/s/glob.html">Dir.glob</a> と異なり `{..}' は使えません)。Win32 環境で、
+ワイルドカード展開を抑止したい場合は引数をシングルクォート(') で括りま
+す。
+</p>
+<h2 id='cmd_option'>コマンドラインオプション</h2>
+<p>
+Rubyインタプリタは以下のコマンドラインオプションを受け付けま
+す。基本的にPerlのものと良く似ています。
+</p>
+<dl>
+<dt>-0数字</dt>
+<dd>
+<p>
+入力レコードセパレータ(<a href="../method/-kernel/v/=2f.html">$/</a>)を8進数で指定します。
+</p>
+<p>
+数字を指定しない場合はヌルキャラクタがセパレータになります
+($/ = &quot;\0&quot; と同じ)。
+数の後に他のスイッチがあっても構いません。
+</p>
+<p>
+-00で, パラグラフモード($/=&quot;&quot;と同じ), -0777で
+(そのコードを持つ文字は存在しないので)ファイルの内容を全部一度に読み
+込むモード($/=nilと同じ)に設定できます。
+</p>
+</dd>
+<dt>-a</dt>
+<dd>
+<p>
+`-n'や`-p'とともに用いて, オートスプリットモードをONにします。
+オートスプリットモードでは各ループの先頭で,
+</p>
+<pre>
+    $F = $_.split
+</pre>
+<p>
+が実行されます。`-n'か`-p'オプションが同時に指定されない限り,
+このオプションは意味を持ちません。
+</p>
+</dd>
+<dt>-C directory</dt>
+<dd>
+<p>
+スクリプト実行前に指定されたディレクトリに移動します。
+</p>
+</dd>
+<dt>-c</dt>
+<dd>
+<p>
+スクリプトの内部形式へのコンパイルのみを行い, 実行しません。コンパイル終
+了後, 文法エラーが無ければ, &quot;Syntax OK&quot;と出力します。
+</p>
+</dd>
+<dt>--copyright</dt>
+<dd>
+<p>
+著作権表示をします。
+</p>
+</dd>
+<dt>-Kc</dt>
+<dd>
+<p>
+Rubyの処理する漢字コードを指定します。 Rubyは指定された文字
+が `E'または`e'の場合は文字列やアクセスするファイルの内容の
+コードがEUCであると仮定します。同様に`S'または`s'の場合は
+SJIS、'U'または'u'の場合はUTF-8として処理します。
+`N'は漢字を処理しません。デフォルトはN(NONE)です。
+</p>
+<p>
+また、このオプションを使用すると <a href="../method/-kernel/v/-k-c-o-d-e.html">$KCODE</a> にも値をセットします。
+</p>
+<p>
+このオプションは将来文字コードの取扱いが変更された場合等には
+変更される可能性があります。
+</p>
+</dd>
+<dt>-d</dt>
+<dt>--debug</dt>
+<dd>
+<p>
+デバッグモードでスクリプトを実行します。<a href="../method/-kernel/v/-d-e-b-u-g.html">$DEBUG</a> を
+true にします。
+</p>
+</dd>
+<dt>-e script</dt>
+<dd>
+<p>
+コマンドラインからスクリプトを指定します。-eオ
+プションを付けた時には引数からスクリプトファイル名を取りませ
+ん。
+</p>
+<p>
+-e オプションを複数指定した場合、各スクリプトの間に改行を
+挟んで解釈します。
+</p>
+<pre>
+    以下は等価です。
+    ruby -e &quot;5.times do |i|&quot; -e &quot;puts i&quot; -e &quot;end&quot;
+
+    ruby -e &quot;5.times do |i|
+      puts i
+    end&quot;
+
+    ruby -e &quot;5.times do |i|; puts i; end&quot;
+</pre>
+</dd>
+<dt>-Fregexp</dt>
+<dd>
+<p>
+入力フィールドセパレータ(<a href="../method/-kernel/v/=3b.html">$;</a>)に regexp をセットします。
+</p>
+</dd>
+<dt>-h</dt>
+<dt>--help</dt>
+<dd>
+<p>
+コマンドラインオプションの概要を表示します。
+</p>
+</dd>
+<dt>-i[extension]</dt>
+<dd>
+<p>
+引数で指定されたファイルの内容を置き換える(in-place edit)こ
+とを指定します。元のファイルは拡張子をつけた形で保存されます。
+拡張子がなければ、バックアップは行われず、変更されたファイル
+だけが残ります。
+</p>
+<p>
+例:
+</p>
+<pre>
+    % echo matz &gt; /tmp/junk
+    % cat /tmp/junk
+    matz
+    % ruby -p -i.bak -e '$_.upcase!' /tmp/junk
+    % cat /tmp/junk
+    MATZ
+    % cat /tmp/junk.bak
+    matz
+</pre>
+</dd>
+<dt>-I directory</dt>
+<dd>
+<p>
+ファイルをロードするパスを指定(追加)します。指定されたディレ
+クトリはRubyの配列変数(<a href="../method/-kernel/v/=3a.html">$:</a>)に追加されます。
+</p>
+</dd>
+<dt>-l</dt>
+<dd>
+<p>
+行末の自動処理を行います。まず、<a href="../method/-kernel/v/=5c.html">$\</a> を
+<a href="../method/-kernel/v/=2f.html">$/</a> と同じ値に設定し, printでの出力
+時に改行を付加するようにします。それから, -n
+フラグまたは-pフラグが指定されていると
+gets
+で読み込まれた各行の最後に対して
+<a href="../method/-string/i/chop=21.html">String#chop!</a>を行います。
+</p>
+</dd>
+<dt>-n</dt>
+<dd>
+<p>
+このフラグがセットされるとプログラム全体が
+sed -nやawk
+のように
+</p>
+<pre>
+    while gets
+     ...
+    end
+</pre>
+<p>
+で囲まれているように動作します.
+</p>
+</dd>
+<dt>-p</dt>
+<dd>
+<p>
+-nフラグとほぼ同じですが, 各ループの最後に変数 <a href="../method/-kernel/v/_.html">$_</a>
+の値を出力するようになります。
+</p>
+<p>
+例:
+</p>
+<pre>
+    % echo matz | ruby -p -e '$_.tr! &quot;a-z&quot;, &quot;A-Z&quot;'
+    MATZ
+</pre>
+</dd>
+<dt>-r feature</dt>
+<dd>
+<p>
+スクリプト実行前に feature で指定されるライブラリを
+<a href="../method/-kernel/m/require.html">Kernel.#require</a> します。
+`-n'オプション、`-p'オプションとともに使う時に特に有効です。
+</p>
+</dd>
+<dt>-s</dt>
+<dd>
+<p>
+スクリプト名に続く, `-'で始まる引数を解釈して, 同名のグローバル変数に値
+を設定します。`--'なる引数以降は解釈を行ないません。該当する引数は
+<a href="../method/-kernel/c/-a-r-g-v.html">Kernel::ARGV</a> から取り除かれます。
+</p>
+<p>
+例:
+</p>
+<pre>
+    #! /usr/local/bin/ruby -s
+    # prints &quot;true&quot; if invoked with `-xyz' switch.
+    print &quot;true\n&quot; if $xyz
+</pre>
+</dd>
+<dt>-S</dt>
+<dd>
+<p>
+スクリプト名が`/'で始まっていない場合, 環境変数
+PATHの値を使ってスクリプトを探すことを指定しま
+す。 これは、#!をサポートしていないマシンで、
+#! による実行をエミュレートするために、以下の
+ようにして使うことができます:
+</p>
+<pre>
+    #!/bin/sh
+    exec ruby -S -x $0 &quot;$@&quot;
+    #! ruby
+</pre>
+<p>
+システムは最初の行により、スクリプトを/bin/sh
+に渡します。/bin/shは2行目を実行しRubyインタプリタを起動します。
+Rubyインタプリタは-x
+オプションにより`#!'で始まり, &quot;ruby&quot;という文字列を含む行までを
+読み飛ばします。
+</p>
+<p>
+システムによっては <a href="../method/-kernel/v/0.html">$0</a>は必ずしもフルパスを含まな
+いので、`-S'を用いてRubyに必要に応じてスクリプトを探すように
+指示する必要があります。
+</p>
+</dd>
+<dt>-T[level]</dt>
+<dd>
+<p>
+不純度チェックを行います。level を指定すると安全度レベルをその
+レベルに設定します。level 省略時は 1 を指定したのと同じです。
+CGIプログラムなどでは-T1 程度を指定しておく方が良いでしょう。
+<a href="../method/-kernel/v/-s-a-f-e.html">$SAFE</a> に指定したレベルがセットされます。
+</p>
+</dd>
+<dt>-v</dt>
+<dd>
+<p>
+冗長モード。起動時にバージョンの表示を行い, 組み込み変数
+<a href="../method/-kernel/v/-v-e-r-b-o-s-e.html">$VERBOSE</a>をtrueにセットします。この変数がtrueで
+ある時, いくつかのメソッドは実行時に冗長なメッセージを出力し
+ます。`-v'オプションが指定されて, それ以外の引数がない時には
+バージョンを表示した後, 実行を終了します(標準入力からのスク
+リプトを待たない).
+</p>
+</dd>
+<dt>--verbose</dt>
+<dd>
+<p>
+冗長モード。 組み込み変数 <a href="../method/-kernel/v/-v-e-r-b-o-s-e.html">$VERBOSE</a> をtrueにセットします。この変数がtrueで
+ある時, いくつかのメソッドは実行時に冗長なメッセージを出力します。
+</p>
+</dd>
+<dt>--version</dt>
+<dd>
+<p>
+Rubyのバージョンを表示します。
+</p>
+</dd>
+<dt>-w</dt>
+<dd>
+<p>
+バージョンの表示を行う事無く冗長モードになります。
+</p>
+</dd>
+<dt>-W[level]</dt>
+<dd>
+<p>
+冗長モードを三段階のレベルで指定します。それぞれ以下の通りです。
+</p>
+<pre>
+     * -W0: 警告を出力しない
+     * -W1: 重要な警告のみ出力(デフォルト)
+     * -W2 or -W: すべての警告を出力する
+</pre>
+<p>
+組み込み変数 <a href="../method/-kernel/v/-v-e-r-b-o-s-e.html">$VERBOSE</a> はそれぞれ nil, false, true
+に設定されます。
+</p>
+</dd>
+<dt>-x[directory]</dt>
+<dd>
+<p>
+メッセージ中のスクリプトを取り出して実行します。スクリプトを
+読み込む時に、`#!'で始まり, &quot;ruby&quot;という文字列を含む行までを
+読み飛ばします。スクリプトの終りはEOF(ファイル
+の終り), ^D(コントロールD), ^Z(コ
+ントロールZ)または予約語__END__で指定されます。
+</p>
+<p>
+ディレクトリ名を指定すると、スクリプト実行前に指定されたディ
+レクトリに移動します。
+</p>
+</dd>
+<dt>-y</dt>
+<dt>--yydebug</dt>
+<dd>
+<p>
+コンパイラデバッグモード。スクリプトを内部表現にコンパイルす
+る時の構文解析の過程を表示します。この表示は非常に冗長なので,
+コンパイラそのものをデバッグする人以外には必要ないと思います。
+</p>
+</dd>
+</dl>
+<h2 id='shebang'>インタプリタ行の解釈</h2>
+<p>
+コマンドラインに指定したスクリプトが `#!' で始まるファイルで、そ
+の行に `ruby' という文字列を含まない場合、OSに代わって
+`#!' に続く文字列をコマンドラインとみなしてそのインタプリタを起
+動します。このときコマンドラインで指定した引数はそのインタプリタに渡さ
+れます。
+</p>
+<p>
+例えば、以下のシェルスクリプトを ruby で実行すると sh を起動します。
+</p>
+<pre>
+#!/bin/sh -vx
+echo &quot;$@&quot;
+</pre>
+<p>
+この行に `ruby' という文字列が含まれる場合は、その文字列よ
+り左側は無視され、右側に `-'で始まる語があればオプションとして解
+釈します。
+</p>
+<p>
+ここで指定したオプションは、コマンドラインでの指定に追加されます。これ
+はそのスクリプトで指定すべきオプションを埋め込むために使います。例えば
+以下の行で始まるスクリプトはコマンドラインに -Ke オプションを指
+定したのと同じ効果になります。
+</p>
+<pre>
+#! ruby -Ke
+</pre>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

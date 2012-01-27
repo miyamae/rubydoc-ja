@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method Object#marshal_dump</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-object.html">Objectクラス</a>
+&gt; marshal_dump
+
+</p>
+
+
+
+
+<h1>instance method Object#marshal_dump</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>marshal_dump -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+<a href="../../../method/-marshal/m/dump.html">Marshal.#dump</a> を制御するメソッドです。
+</p>
+<p>
+Marshal.dump(some) において、出力するオブジェクト some がメソッド marshal_dump を
+持つ場合には、その返り値がダンプされたものが Marshal.dump(some) の返り値となります。
+</p>
+<p>
+marshal_dump/marshal_load の仕組みは Ruby 1.8.0 から導入されました。
+これから書くプログラムでは _dump/_load ではなく
+marshal_dump/marshal_load を使うべきです。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+任意のオブジェクトで marshal_load の引数に利用できます。
+</dd>
+</dl>
+<pre>
+class Foo
+  def initialize(arg)
+    @foo = arg
+  end
+  def marshal_dump
+    @foo
+  end
+  def marshal_load(obj)
+    p obj
+    @foo = obj
+  end
+end
+foo = Foo.new(['foo', 'bar'])
+p foo                      #=&gt; #&lt;Foo:0xbaf3b0 @foo=[&quot;foo&quot;, &quot;bar&quot;]&gt;
+dms = Marshal.dump(foo)
+p dms                      #=&gt; &quot;\004\bU:\bFoo[\a\&quot;\bfoo\&quot;\bbar&quot;
+result = Marshal.load(dms) #=&gt; [&quot;foo&quot;, &quot;bar&quot;] # marshal_load の引数
+p result                   #=&gt; #&lt;Foo:0xbaf2ac @foo=[&quot;foo&quot;, &quot;bar&quot;]&gt;
+</pre>
+<p>
+インスタンス変数の情報は普通マーシャルデータに含まれるので、
+上例のように marshal_dump を定義する必要はありません
+(ただし marshal_dump を定義するとインスタンス変数の情報は
+ダンプされなくなるので、marshal_dump/marshal_load で扱う必要があります)。
+marshal_dump/marshal_load はより高度な制御を行いたい場合や
+拡張ライブラリで定義したクラスのインスタンスがインスタンス変数以外
+に情報を保持する場合に利用します。
+</p>
+<p>
+特に、marshal_dump/marshal_load を定義したオブジェクトは
+特異メソッドが定義されていてもマーシャルできるようになります
+(特異メソッドの情報が自動的に dump されるようになるわけではなく、
+marshal_dump/marshal_load によりそれを実現する余地があるということです)。
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-object/i/marshal_load.html">Object#marshal_load</a>, <a href="../../../class/-marshal.html">Marshal</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

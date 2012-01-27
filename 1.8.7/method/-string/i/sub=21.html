@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method String#sub!</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-string.html">Stringクラス</a>
+&gt; sub!
+
+</p>
+
+
+
+
+<h1>instance method String#sub!</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>sub!(pattern, replace) -&gt; self | nil</code></dt>
+<dd class="method-description">
+<p>
+文字列中で pattern にマッチした最初の部分を文字列 replace へ破壊的に置き換えます。
+</p>
+<p>
+Ruby 1.6 以前では pattern が文字列の場合、
+その文字列を正規表現にコンパイルしていました。
+しかし Ruby 1.8 以降では、その文字列そのものがパターンになります。
+</p>
+<p>
+置換文字列 replace 中の \&amp; と \0 はマッチした部分文字列に、
+\1 ... \9 は n 番目の括弧の内容に置き換えられます。
+置換文字列内では \`、\'、\+ も使えます。
+これらは <a href="../../../method/-kernel/v/=60.html">$`</a>、<a href="../../../method/-kernel/v/=27.html">$'</a>、<a href="../../../method/-kernel/v/=2b.html">$+</a> に対応します。
+</p>
+<p>
+sub! は通常 self を変更して返しますが、
+置換が起こらなかった場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターン
+</dd>
+<dt class='method-param'>[PARAM] replace:</dt>
+<dd>
+pattern で指定した文字列と置き換える文字列
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+置換した場合は self、置換しなかった場合は nil
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+buf = &quot;String-String&quot;
+buf.sub!(/in./, &quot;!!&quot;)
+p buf   # =&gt; &quot;Str!!-String&quot;
+
+buf = &quot;String.String&quot;
+buf.sub!(/in./, '&lt;&lt;\&amp;&gt;&gt;')
+p buf   # =&gt; &quot;Str&lt;&lt;ing&gt;&gt;-String&quot;
+</pre>
+<p>
+注意:
+</p>
+<p>
+引数 replace の中で <a href="../../../method/-kernel/v/1.html">$1</a> を使うことはできません。
+replace は sub メソッドの呼び出しより先に評価されるので、
+まだ sub の正規表現マッチが行われておらず、
+$1 がセットされていないからです。
+</p>
+<p>
+また、sub では「\」が部分文字列との置き換えという特別な意味を持つため、
+replace に「\」自身を入れたいときは
+「\」を二重にエスケープしなければなりません。
+</p>
+<p>
+例:
+</p>
+<pre>
+# ひとつめの括弧にマッチした部分に置き換えるときによくやる間違い
+'abbbcd'.sub!(/a(b+)/, &quot;#{$1}&quot;)       # NG
+'abbbcd'.sub!(/a(b+)/, &quot;\1&quot;)          # NG
+'abbbcd'.sub!(/a(b+)/, &quot;\\1&quot;)         # OK
+'abbbcd'.sub!(/a(b+)/, '\\1')         # OK
+'abbbcd'.sub!(/a(b+)/, '\1')          # OK
+'abbbcd'.sub!(/a(b+)/) { $1 }         # OK   これがもっとも安全
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-string/i/gsub.html">String#gsub</a>
+</p>
+</dd>
+<dt class="method-heading"><code>sub!(pattern) {|matched| .... } -&gt; self | nil</code></dt>
+<dd class="method-description">
+<p>
+文字列中で pattern にマッチした最初の部分をブロックに渡し、
+その評価結果へ破壊的に置き換えます。
+</p>
+<p>
+Ruby 1.6 以前では pattern が文字列の場合、
+その文字列を正規表現にコンパイルしていました。
+しかし Ruby 1.8 以降では、その文字列そのものがパターンになります。
+</p>
+<p>
+また、ブロックなしの sub と違い、ブロックの中からは
+組み込み変数 <a href="../../../method/-kernel/v/1.html">$1</a>, $2, $3, ... を問題なく参照できます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターン
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+置換した場合は self、置換しなかった場合は nil
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+str = 'abcabc'
+str.sub!(/b/) {|s| s.upcase }
+p str    #=&gt; &quot;aBcabc&quot;
+
+str = 'abcabc'
+str.sub!(/b/) { $&amp;.upcase }
+p str    #=&gt; &quot;aBcabc&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-string/i/gsub.html">String#gsub</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

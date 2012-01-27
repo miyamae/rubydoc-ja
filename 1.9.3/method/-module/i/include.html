@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method Module#include</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.3 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.9.3 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-module.html">Moduleクラス</a>
+&gt; include
+(private)
+</p>
+
+
+
+
+<h1>instance method Module#include</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>include(*mod) -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+モジュール mod をインクルードします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] mod:</dt>
+<dd>
+<a href="../../../class/-module.html">Module</a> のインスタンス( <a href="../../../class/-enumerable.html">Enumerable</a> など)を指定します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+継承関係が循環してしまうような include を行った場合に発生します。
+</dd>
+</dl>
+<pre>
+module M
+end
+module M2
+  include M
+end
+module M
+  include M2
+end
+</pre>
+<p>
+実行結果:
+</p>
+<pre>
+-:3:in `append_features': cyclic include detected (ArgumentError)
+        from -:3:in `include'
+        from -:3
+</pre>
+<p>
+インクルードとは、指定されたモジュールの定義
+(メソッド、定数) を引き継ぐことです。
+インクルードは多重継承の代わりに用いられており、 mix-in とも呼びます。
+</p>
+<pre>
+class C
+  include FileTest
+  include Math
+end
+
+p C.ancestors
+
+# =&gt; [C, Math, FileTest, Object, Kernel]
+</pre>
+<p>
+モジュールの機能追加は、クラスの継承関係の間にそのモジュールが挿入
+されることで実現されています。従って、メソッドの探索などは
+スーパークラスよりもインクルードされたモジュールのほうが
+先に行われます
+(上の例の <a href="../../../method/-module/i/ancestors.html">Module#ancestors</a> の結果がメソッド探索の順序です)。
+</p>
+<p>
+同じモジュールを二回以上 include すると二回目以降は無視されます。
+</p>
+<pre>
+module M
+end
+class C1
+  include M
+end
+class C2 &lt; C1
+  include M   # この include は無視される
+end
+
+p C2.ancestors  # =&gt; [C2, C1, M, Object, Kernel]
+</pre>
+<p>
+引数に複数のモジュールを指定した場合、
+最後の引数から順にインクルードします。
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>
