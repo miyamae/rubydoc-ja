@@ -138,7 +138,7 @@ function suggest() {
             $('#index a:first').addClass('current');
             $('#navi li .key, #navi li .sub').highlight(key);
             zebraList();
-            initPage($('#navi'));
+            initPage($('#index'));
             $('#navi ul a').click(function(e) {
                 clickNaviItem(this);
             });
