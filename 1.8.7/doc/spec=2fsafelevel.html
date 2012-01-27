@@ -1,0 +1,305 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>セキュリティモデル</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+
+<a href="../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; spec/safelevel
+
+</p>
+
+
+<h1>セキュリティモデル</h1>
+
+<p>
+RubyにはCGI等のプログラミングを安全に行うことを助ける為に、セキュリティ
+機構が備わっています。
+</p>
+<p>
+Rubyのセキュリティモデルは「オブジェクトの汚染」と「セーフレベル」という
+仕組みによってなりたっています。
+</p>
+<h2 >オブジェクトの汚染</h2>
+<p>
+Rubyではオブジェクトは「汚染されている」とみなされることがあります。この
+しくみは大きく分けて二つの使われ方をします。
+</p>
+<p>
+ひとつ目は、信用できない入力をもとに作られたオブジェクトを「汚染されてい
+る」とみなし、「危険な操作」の引数として使えないようにすることです。悪意
+あるデータによって、プログラムが意図しない動作をする事を防ぐことを目的と
+しています。
+</p>
+<p>
+もうひとつは、信用しているオブジェクト(汚染されていないオブジェクト)を
+信用できないプログラムから守るという使い方です。セーフレベル4で汚染されて
+いないオブジェクトへの操作が大幅に制限されるのはこの事を意図しています。
+</p>
+<p>
+オブジェクトの汚染に関連するメソッド
+</p>
+<dl>
+<dt>Object#taint</dt>
+<dd>
+<p>
+オブジェクトを汚染する
+</p>
+</dd>
+<dt>Object#tainted?</dt>
+<dd>
+<p>
+オブジェクトが汚染されている場合に真を返す
+</p>
+</dd>
+<dt>Object#untaint</dt>
+<dd>
+<p>
+オブジェクトの汚染を取り除く
+</p>
+</dd>
+</dl>
+<h2 >セーフレベル</h2>
+<p>
+各スレッドは固有の「セーフレベル」を持っています。セーフレベルが高くなるほ
+ど、行える操作は制限されます。セーフレベルはスレッドローカル変数 <a href="../method/-kernel/v/-s-a-f-e.html">$SAFE</a> で
+設定します。
+</p>
+<p>
+<a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-list/37415">[ruby-list:37415]</a>
+</p>
+<p>
+<a href="../method/-kernel/v/-s-a-f-e.html">$SAFE</a> に関するルール
+</p>
+<ul>
+<li>プログラム開始時の$SAFEの値は0</li>
+<li>各スレッドは作られた時点での親スレッドの$SAFEの値を引き継ぐ</li>
+</ul>
+<pre>
+      $SAFE = 1
+      th = Thread.new{
+        p $SAFE #=&gt; 1
+        $SAFE = 3
+      }
+      th.join
+      p $SAFE #=&gt; 1
+</pre>
+<ul>
+<li>$SAFE の値を現在の値より小さく変更する事はできない</li>
+</ul>
+<pre>
+      $ ruby -e '$SAFE = 1; $SAFE = 0'
+      -e:1: tried to downgrade safe level from 1 to 0 (SecurityError)
+</pre>
+<p>
+原則として、各セキュリティレベルにはそれ以下のセキュリティレベルの制限も
+適用されます。たとえばレベル1で許されない操作はレベル2でも行えません。
+</p>
+<h3 >レベル 0</h3>
+<p>
+デフォルトのセーフレベルです。
+</p>
+<h4 >汚染されるオブジェクト</h4>
+<ul>
+<li>IOや環境変数、コマンドライン引数(ARGV)から得られた文字列</li>
+</ul>
+<pre>
+$ ruby -e 'p ARGV[0].tainted?' hoge
+true
+</pre>
+<p>
+環境変数PATHだけは例外で、値に危険なパスを含む場合のみ汚染されます。
+</p>
+<p>
+ここでは危険なパスとは誰でも変更／書き込みが可能なパスをいいます。
+ルートディレクトリから階層が順番にチェックされ、一箇所でも誰でも
+変更可能な個所があればそのパスは危険とみなされます。
+</p>
+<p>
+なお、DOSISH(DOSとWindows)、cygwin では権限をチェックしません。
+</p>
+<h4 >禁止される操作</h4>
+<ul>
+<li>特になし</li>
+</ul>
+<h3 >レベル 1</h3>
+<p>
+信用しているプログラムで信用できないデータを処理する為のレベルです。
+CGI等でユーザからの入力を処理するのに適しています。
+</p>
+<h4 >汚染されるオブジェクト</h4>
+<ul>
+<li>レベル0と同様</li>
+</ul>
+<h4 >禁止される操作</h4>
+<ul>
+<li>汚染された文字列を引数とした以下の操作</li>
+</ul>
+<ul>
+<li><a href="../class/-dir.html">Dir</a>, <a href="../class/-i-o.html">IO</a>, <a href="../class/-file.html">File</a>, <a href="../class/-file-test.html">FileTest</a> のメソッド呼び出し</li>
+</ul>
+<pre>
+          $ ruby -e '$SAFE = 1; open(ARGV[0])' hoge
+          -e:1:in `initialize': Insecure operation - initialize (SecurityError)
+                  from -e:1
+</pre>
+<ul>
+<li>ファイルテスト演算子の使用、ファイルの更新時刻比較</li>
+<li>外部コマンド実行 (<a href="../method/-kernel/m/system.html">Kernel.#system</a>, <a href="../method/-kernel/m/exec.html">Kernel.#exec</a>, <a href="../method/-kernel/m/=60.html">Kernel.#`</a>, <a href="../method/-kernel/m/spawn.html">Kernel.#spawn</a> など)</li>
+<li><a href="../method/-kernel/m/eval.html">Kernel.#eval</a> (<a href="#level4">レベル 4</a>の説明も参照)</li>
+<li>トップレベルへの <a href="../method/-kernel/m/load.html">Kernel.#load</a> (第二引数を指定してラップすれば実行可能)</li>
+<li><a href="../method/-kernel/m/require.html">Kernel.#require</a></li>
+<li><a href="../method/-kernel/m/trap.html">Kernel.#trap</a></li>
+</ul>
+<h3 >レベル 2</h3>
+<h4 >汚染されるオブジェクト</h4>
+<ul>
+<li>レベル1と同様</li>
+</ul>
+<h4 >禁止される操作</h4>
+<p>
+レベル1の制限に加え、以下の操作が禁止されます。
+</p>
+<ul>
+<li><a href="../method/-dir/s/chdir.html">Dir.chdir</a> <a href="../method/-dir/s/chroot.html">Dir.chroot</a> <a href="../method/-dir/s/mkdir.html">Dir.mkdir</a> <a href="../method/-dir/s/rmdir.html">Dir.rmdir</a></li>
+<li><a href="../method/-file/s/chown.html">File.chown</a> <a href="../method/-file/s/chmod.html">File.chmod</a> <a href="../method/-file/s/umask.html">File.umask</a> <a href="../method/-file/s/truncate.html">File.truncate</a>
+<a href="../method/-file/i/lstat.html">File#lstat</a> <a href="../method/-file/i/chmod.html">File#chmod</a> <a href="../method/-file/i/chown.html">File#chown</a> <a href="../method/-file/s/delete.html">File.delete</a> <a href="../method/-file/s/unlink.html">File.unlink</a>
+<a href="../method/-file/i/truncate.html">File#truncate</a> <a href="../method/-file/i/flock.html">File#flock</a>
+および <a href="../class/-file-test.html">FileTest</a> モジュールのメソッド</li>
+<li><a href="../method/-i-o/i/ioctl.html">IO#ioctl</a>, <a href="../method/-i-o/i/fcntl.html">IO#fcntl</a></li>
+<li><a href="../method/-process/s/fork.html">Process.fork</a> <a href="../method/-process/m/setpgid.html">Process.#setpgid</a> <a href="../method/-process/m/setsid.html">Process.#setsid</a>
+<a href="../method/-process/m/setpriority.html">Process.#setpriority</a> <a href="../method/-process/m/egid=3d.html">Process.#egid=</a> <a href="../method/-process/m/kill.html">Process.#kill</a></li>
+<li>危険なパスからの <a href="../method/-kernel/m/load.html">Kernel.#load</a></li>
+<li>汚染された文字列を引数にしての <a href="../method/-kernel/m/load.html">Kernel.#load</a> (ラップされていても)</li>
+<li><a href="../method/-kernel/m/syscall.html">Kernel.#syscall</a></li>
+<li><a href="../method/-kernel/m/exit=21.html">Kernel.#exit!</a></li>
+<li><a href="../method/-kernel/m/trap.html">Kernel.#trap</a></li>
+</ul>
+<h3 >レベル 3</h3>
+<p>
+生成される全てのオブジェクトが汚染されます。レベル4でプログラムを実行す
+る環境を作り上げるのに適しています。
+</p>
+<h4 >汚染されるオブジェクト</h4>
+<ul>
+<li>生成される全てのオブジェクト</li>
+</ul>
+<h4 >禁止される操作</h4>
+<p>
+レベル2の制限に加え、以下の操作が禁止されます。
+</p>
+<ul>
+<li><a href="../method/-object/i/untaint.html">Object#untaint</a></li>
+</ul>
+<h3 id='level4'>レベル 4</h3>
+<p>
+信用することのできないプログラムを実行するためのレベルです。
+</p>
+<p>
+レベル4は信頼できないプログラムによる危険な操作をほぼ全て検出できますが、
+完全な安全性は保証されません。
+</p>
+<p>
+このレベルではレベル3では禁止されている「汚染された文字列のeval」が許可
+されています。(<a href="../method/-kernel/m/eval.html">Kernel.#eval</a> で実行すると危険な操作は全て禁止されているからです。)
+</p>
+<h4 >汚染されるオブジェクト</h4>
+<ul>
+<li>レベル3と同様</li>
+</ul>
+<h4 >禁止される操作</h4>
+<p>
+レベル3の制限(上記のとおりevalは除く)に加え、以下の操作が禁止されます。
+</p>
+<ul>
+<li><a href="../method/-object/i/taint.html">Object#taint</a></li>
+<li>トップレベルの定義の変更(<a href="../method/-kernel/m/autoload.html">Kernel.#autoload</a>, <a href="../method/-kernel/m/load.html">Kernel.#load</a>, <a href="../method/-module/i/include.html">Module#include</a>)</li>
+<li>既存のメソッドの再定義</li>
+<li><a href="../class/-object.html">Object</a> クラスの定義の変更</li>
+<li>汚染されていないクラスやモジュールの定義の変更およびクラス変数の変更</li>
+<li>汚染されていないオブジェクトの状態の変更</li>
+<li>グローバル変数の変更</li>
+<li>汚染されていない <a href="../class/-i-o.html">IO</a> や <a href="../class/-file.html">File</a> を使用する処理</li>
+<li><a href="../class/-i-o.html">IO</a> への出力</li>
+<li>プログラムの終了(<a href="../method/-kernel/m/exit.html">Kernel.#exit</a>, <a href="../method/-kernel/m/abort.html">Kernel.#abort</a>)
+(なお out of memory でも fatal にならない)</li>
+<li>他のスレッドに影響が出る <a href="../class/-thread.html">Thread</a> クラスの操作および他のスレッドの <a href="../method/-thread/i/=5b=5d.html">Thread#[]</a></li>
+<li><a href="../method/-object-space/m/_id2ref.html">ObjectSpace.#_id2ref</a></li>
+<li><a href="../method/-object-space/m/each_object.html">ObjectSpace.#each_object</a></li>
+<li>環境変数の変更</li>
+<li><a href="../method/-kernel/m/srand.html">Kernel.#srand</a></li>
+</ul>
+<h2 >セーフレベルに関するその他の詳細</h2>
+<ul>
+<li>requireは$SAFE = 0で実行される</li>
+<li>Level 1以上では起動時に以下の違いがある</li>
+</ul>
+<pre>
+      * 環境変数 RUBYLIB を $: に加えない
+      * カレントディレクトリを $: に加えない
+      * 環境変数 RUBYOPT を処理しない
+      * 以下のスイッチを使用できない
+        -s -S -e -r -i -I -x
+        (スクリプトがsetgid, setuidされている時も同様)
+      * 標準入力からのプログラム読み込みを行わない
+        (スクリプトがsetgid, setuidされている時も同様)
+</pre>
+<ul>
+<li>setuid, setgid されたスクリプトは $SAFE = 1 以上で実行される。</li>
+<li><a href="../class/-proc.html">Proc</a> はその時点でのセーフレベルを記憶する。
+その <a href="../class/-proc.html">Proc</a> オブジェクトが call されると、記憶していたセーフレベルで実行される。</li>
+<li>汚染された <a href="../class/-method.html">Method</a> オブジェクトが call されるとレベル4で実行される。</li>
+<li>汚染された文字列を第二引数に指定して <a href="../method/-kernel/m/trap.html">Kernel.#trap</a>/<a href="../method/-kernel/m/trace_var.html">Kernel.#trace_var</a> を
+実行するとその時点で例外 <a href="../class/-security-error.html">SecurityError</a> が発生する。</li>
+<li>レベル4以上では out of memory でも <a href="../class/fatal.html">fatal</a> にならない。</li>
+<li>実装の都合上 <a href="../class/-fixnum.html">Fixnum</a>, <a href="../class/-symbol.html">Symbol</a>, true, false, nil は汚染されない。
+なお <a href="../class/-bignum.html">Bignum</a>, <a href="../class/-float.html">Float</a> は汚染されることは注意が必要。</li>
+</ul>
+<h2 >使用例</h2>
+<p>
+一旦高くした$SAFEレベルを低く変更する事はできませんが、以下のようにスレッ
+ドを使うことで、プログラムの一部だけを高いセーフレベルで実行することが可
+能です。
+</p>
+<p>
+例:
+</p>
+<pre>
+def safe(level)
+  result = nil
+  Thread.start {
+    $SAFE = level
+    result = yield
+  }.join
+  result
+end
+
+safe(4) { puts &quot;hello&quot; }    # $SAFEなので例外
+puts &quot;world&quot;                # 外側は影響を受けない
+</pre>
+<h2 >拡張ライブラリでの扱い</h2>
+<ul>
+<li>拡張ライブラリではオブジェクトの汚染状態を適切に伝播させる必要があります。</li>
+<li>グローバルな状態を変更する場合や外部とのやりとりの前にセキュリティレベルを
+チェックする必要があります。</li>
+</ul>
+<p>
+@see <a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-list/37407">[ruby-list:37407]</a>
+</p>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

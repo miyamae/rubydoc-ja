@@ -1,0 +1,316 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library rdoc/parsers/parse_c</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; rdoc/parsers/parse_cライブラリ
+</p>
+
+
+
+<h1>library rdoc/parsers/parse_c</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+C 言語で記述されたソースコードから組み込みクラス/モジュールのドキュメン
+トを解析するためのサブライブラリです。
+</p>
+<p>
+C 言語で記述された拡張ライブラリなどを解析するのに使用します。
+<a href="../function/rb_define_class.html">rb_define_class</a> や <a href="../function/rb_define_method.html">rb_define_method</a> などで定義されたものに
+対応する C 言語の関数のコメントを解析します。
+</p>
+<p>
+例: Array#flatten の場合。rb_ary_flatten のコメントが解析されます。
+</p>
+<pre>
+/*
+ * Returns a new array that is a one-dimensional flattening of this
+ * array (recursively). That is, for every element that is an array,
+ * extract its elements into the new array.
+ *
+ *    s = [ 1, 2, 3 ]           #=&gt; [1, 2, 3]
+ *    t = [ 4, 5, 6, [7, 8] ]   #=&gt; [4, 5, 6, [7, 8]]
+ *    a = [ s, t, 9, 10 ]       #=&gt; [[1, 2, 3], [4, 5, 6, [7, 8]], 9, 10]
+ *    a.flatten                 #=&gt; [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+ */
+ static VALUE
+ rb_ary_flatten(ary)
+     VALUE ary;
+ {
+     ary = rb_obj_dup(ary);
+     rb_ary_flatten_bang(ary);
+     return ary;
+ }
+
+ ...
+
+ void
+ Init_Array()
+ {
+   ...
+   rb_define_method(rb_cArray, &quot;flatten&quot;, rb_ary_flatten, 0);
+</pre>
+<p>
+上記の例の場合、rb_ary_flatten 関数と Init_Array 関数は同じファイルに記
+述されている必要があります。
+</p>
+<p>
+また、Ruby のソースコードとは別にコメントには特別な命令を指定する事がで
+きます。
+</p>
+<dl>
+<dt>Document-class: name</dt>
+<dd>
+<p>
+記述する内容を name で指定した Ruby のクラスのものに指定します。同じ
+.c ファイルに複数のクラス定義がある場合などのように、Init_xxx 関数の
+xxx の部分がクラス名と同一ではない場合に使用します。
+</p>
+</dd>
+<dt>Document-method: name</dt>
+<dd>
+<p>
+記述する内容を name で指定した Ruby のメソッドのものに指定します。
+RDoc が対応するメソッドを見つけられなかった場合に使用します。
+</p>
+</dd>
+<dt>call-seq:</dt>
+<dd>
+<p>
+指定した次の行から次の空行までをメソッド呼び出し列と解釈します。
+</p>
+</dd>
+</dl>
+<p>
+また、RDoc は rb_define_method などの定義と C 言語の関数の実装が同じファ
+イルにある事を前提としています。そうでない場合は以下のような指定を行います。
+</p>
+<pre>
+rb_define_method(....);  // in ファイル名
+</pre>
+<p>
+例:
+</p>
+<pre>
+/*
+ * Document-class:  MyClass
+ *
+ * Encapsulate the writing and reading of the configuration
+ * file. ...
+ */
+
+/*
+ * Document-method: read_value
+ *
+ * call-seq:
+ *   cfg.read_value(key)            -&gt; value
+ *   cfg.read_value(key} { |key| }  -&gt; value
+ *
+ * Return the value corresponding to +key+ from the configuration.
+ * In the second form, if the key isn't found, invoke the
+ * block and return its value.
+ */
+</pre>
+
+
+<h2>クラスとモジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-r-doc=3a=3a-c_-parser.html">class RDoc::C_Parser</a></td>
+<td class="description"><p>
+C 言語で記述されたソースコードから組み込みクラス/モジュールのドキュメン
+トを解析するためのクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>同時にrequireされるライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/e2mmap.html">e2mmap</a></td>
+<td class="description"><p>
+例外クラスに特定のエラーメッセージ用フォーマットを関連づけるためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/find.html">find</a></td>
+<td class="description"><p>
+ディレクトリ配下のファイルを探索するためのモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/ftools.html">ftools</a></td>
+<td class="description"><p>
+ファイル操作のためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/getoptlong.html">getoptlong</a></td>
+<td class="description"><p>
+getoptlong は、GNU の getopt_long() とまったく同じ方式でコマンド
+行オプションの解析を行う Ruby のライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fslex.html">irb/slex</a></td>
+<td class="description"><p>
+(uninitialized)
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fcode_objects.html">rdoc/code_objects</a></td>
+<td class="description"><p>
+Ruby のソースコード中にあるクラス、モジュール、メソッドなどの構成要素を
+表現するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fdiagram.html">rdoc/diagram</a></td>
+<td class="description"><p>
+モジュールやクラスの関係を描く図を作成するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fdot=2fdot.html">rdoc/dot/dot</a></td>
+<td class="description"><p>
+モジュールやクラスの関係を描く図を作成するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2foptions.html">rdoc/options</a></td>
+<td class="description"><p>
+rdoc コマンドのオプションを解析するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fparsers=2fparserfactory.html">rdoc/parsers/parserfactory</a></td>
+<td class="description"><p>
+rdoc で解析できるファイルの種類を追加するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fparsers=2fparse_c.html">rdoc/parsers/parse_c</a></td>
+<td class="description"><p>
+C 言語で記述されたソースコードから組み込みクラス/モジュールのドキュメン
+トを解析するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fparsers=2fparse_f95.html">rdoc/parsers/parse_f95</a></td>
+<td class="description"><p>
+Fortran95 のソースコードを解析するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fparsers=2fparse_rb.html">rdoc/parsers/parse_rb</a></td>
+<td class="description"><p>
+Ruby のソースコードを解析するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fparsers=2fparse_simple.html">rdoc/parsers/parse_simple</a></td>
+<td class="description"><p>
+ソースコード以外のファイルを解析するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2frdoc.html">rdoc/rdoc</a></td>
+<td class="description"><p>
+rdoc コマンドのためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2ftokenstream.html">rdoc/tokenstream</a></td>
+<td class="description"><p>
+トークンを管理するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/singleton.html">singleton</a></td>
+<td class="description"><p>
+Singleton パターンを扱うためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/time.html">time</a></td>
+<td class="description"><p>
+組み込みの <a href="../class/-time.html">Time</a> クラスを拡張します。
+日時を表す文字列をパースして <a href="../class/-time.html">Time</a> オブジェクトに変換したり、
+逆に <a href="../class/-time.html">Time</a> オブジェクトを RFC などで定められた文字列に
+変換する機能を提供します。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>追加・再定義されるメソッド</h2>
+<p><code>
+
+<a href="../method/-r-doc/c/-k-n-o-w-n_-c-l-a-s-s-e-s.html">RDoc::KNOWN_CLASSES</a>
+
+</code></p>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

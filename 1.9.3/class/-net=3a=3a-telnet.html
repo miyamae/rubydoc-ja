@@ -1,0 +1,577 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class Net::Telnet</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.3 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.3 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/net=2ftelnet.html">net/telnetライブラリ</a>
+&gt; Net::Telnetクラス
+</p>
+
+
+
+<h1>class Net::Telnet</h1>
+<p>
+
+
+クラスの継承リスト: Net::Telnet
+
+      &lt; <a href="../class/-simple-delegator.html">SimpleDelegator</a>
+      
+
+      &lt; <a href="../class/-delegator.html">Delegator</a>
+      
+
+      &lt; <a href="../class/-delegator=3a=3a-method-delegation.html">Delegator::MethodDelegation</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+このクラスは telnet のクライアント機能を提供します。
+</p>
+<p>
+このクラスは接続に利用している
+ソケットオブジェクト(通常は <a href="../class/-t-c-p-socket.html">TCPSocket</a>)のメソッドを
+すべて利用することができます(<a href="../class/-simple-delegator.html">SimpleDelegator</a> を用いて
+います)。
+これによって、<a href="../method/-i-o/i/close.html">IO#close</a> で接続を
+閉じたり、<a href="../method/-i-o/i/sysread.html">IO#sysread</a> で <a href="../method/-net=3a=3a-telnet/i/waitfor.html">Net::Telnet#waitfor</a> を
+使わずにデータを直接読むことができます。
+</p>
+<p>
+telnet でリモートホストにログインしてシェル経由で
+コマンドを実行することを考えてみましょう。
+これを Net::Telnet で実現するためには、
+まず <a href="../method/-net=3a=3a-telnet/s/new.html">Net::Telnet.new</a> に &quot;Host&quot; オプションを
+与えてオブジェクトを作り、 <a href="../method/-net=3a=3a-telnet/i/login.html">Net::Telnet#login</a> で
+ユーザ名とパスワードを送ってログインし、
+<a href="../method/-net=3a=3a-telnet/i/cmd.html">Net::Telnet#cmd</a> でコマンドを
+実行、最後に IO#close で接続を閉じます。
+<a href="../method/-net=3a=3a-telnet/i/waitfor.html">Net::Telnet#waitfor</a>, <a href="../method/-net=3a=3a-telnet/i/print.html">Net::Telnet#print</a>,
+<a href="../method/-net=3a=3a-telnet/i/puts.html">Net::Telnet#puts</a>, <a href="../method/-net=3a=3a-telnet/i/write.html">Net::Telnet#write</a> などと
+いったメソッドはより複雑なことをする場合にのみ使ってください。
+</p>
+<p>
+Net::Telnet のオブジェクトは SMTP や HTTP のような telnet で
+ないサービスにも利用できます。この場合には
+<a href="../method/-net=3a=3a-telnet/s/new.html">Net::Telnet.new</a> に &quot;Port&quot; オプションを与えることで
+ポートを指定する必要があるでしょう。また、
+&quot;Telnetmode&quot; オプションに false を
+渡すことで telnet のコマンド列を解釈しないように
+しなければなりません。<a href="../method/-net=3a=3a-telnet/i/login.html">Net::Telnet#login</a> は普通
+うまく動かないので、認証をプログラマ自身が実装
+する必要があります。
+</p>
+<p>
+通信プロトコルによっては、<a href="../method/-net=3a=3a-telnet/s/new.html">Net::Telnet.new</a> に&quot;Prompt&quot;
+を渡しておいて <a href="../method/-net=3a=3a-telnet/i/cmd.html">Net::Telnet#cmd</a> をうまく動作させることが
+できるかもしれません。
+また、<a href="../method/-net=3a=3a-telnet/i/cmd.html">Net::Telnet#cmd</a> を呼ぶごとに &quot;Match&quot; を
+指定しても同様のことができます。
+また、<a href="../method/-net=3a=3a-telnet/i/puts.html">Net::Telnet#puts</a> や <a href="../method/-net=3a=3a-telnet/i/waitfor.html">Net::Telnet#waitfor</a> を
+直接使ってやりとりすることもできます。
+それでうまくいかない場合は、
+<a href="../method/-i-o/i/sysread.html">IO#sysread</a> を直接呼ぶ必要があるかもしれません。
+</p>
+<p>
+<a href="../method/-net=3a=3a-telnet/s/new.html">Net::Telnet.new</a> には &quot;Proxy&quot; オプションで指定した
+オブジェクトを通して通信をすることができます。
+&quot;Proxy&quot; オプションに <a href="../class/-net=3a=3a-telnet.html">Net::Telnet</a> のオブジェクトを
+渡した場合には、通信路が共用されます。<a href="../class/-socket.html">Socket</a>
+のような読み書き可能な <a href="../class/-i-o.html">IO</a> オブジェクトを渡した場合には、
+そのオブジェクトを通してやり取りが行われます。
+この機能はユニットテストをする場合などに便利でしょう。
+</p>
+<h2 >使用例</h2>
+<p>
+ログインしてコマンドを送る例、リモートホストから返ってきた文字列は
+すべて標準出力に表示する
+</p>
+<pre>
+require 'net/telnet'
+
+# リモートホスト &quot;foobar&quot; に接続
+# タイムアウトは 10 秒
+localhost = Net::Telnet.new(&quot;Host&quot; =&gt; &quot;localhost&quot;,
+                            &quot;Timeout&quot; =&gt; 10)
+
+# ログインし、プロンプトが出るまで待ち合わせる
+telnet.login(&quot;your name&quot;, &quot;your password&quot;) {|c| print c}
+
+# ls コマンドを実行し、実行後、プロンプトが出るまで待ち合わせる
+telnet.cmd(&quot;ls&quot;) {|c| print c}
+
+# sleep で 5 秒
+telnet.cmd(&quot;sleep 5 &amp;&amp; echo foobar &amp;&quot;) {|c| print c}
+
+STDOUT.flush # &lt;- これがないとここまで処理が来てることがわかりにくい
+
+# 前のコマンドの出力を待ち合わせる
+telnet.waitfor(/foobar\Z/) {|c| print c}
+
+# ログインセッションの終了
+telnet.cmd(&quot;exit&quot;) {|c| print c}
+telnet.close
+</pre>
+<p>
+POP サーバにメールが来ているかどうかを見る。リモートホストからきた文字列は
+すべて標準出力に表示
+</p>
+<pre>
+require 'net/telnet'
+
+# リモートホスト(POPサーバ) &quot;foobar&quot; に接続
+# ポート番号は110(POPのwell-knownポート)、
+# &quot;Telnetmode&quot; は off (telnet用の特殊なバイト列を解釈しない)、
+# Prompt (コマンドの区切り) は POP の仕様により /^\+OK/n とする
+pop = Net::Telnet::new(&quot;Host&quot; =&gt; &quot;foobar&quot;,
+                       &quot;Port&quot; =&gt; 110,
+                       &quot;Telnetmode&quot; =&gt; false,
+                       &quot;Prompt&quot; =&gt; /^\+OK/n)
+# 認証をする
+# Net::Telnet#login は使えない(ログインのコマンドが異なる)ので
+# Net::Telnet#cmd でユーザ名とパスワードを送る
+pop.cmd(&quot;user &quot; + &quot;your_username&quot;) { |c| print c }
+pop.cmd(&quot;pass &quot; + &quot;your_password&quot;) { |c| print c }
+
+# list コマンドで来ているメールを表示する
+pop.cmd(&quot;list&quot;) { |c| print c }
+
+# 終了する
+pop.close
+</pre>
+
+
+
+<h2>特異メソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-net=3a=3a-telnet/s/new.html"><code>
+  new(opts) -&gt; Net::Telnet<br>new(opts) {|message| ... } -&gt; Net::Telnet
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Telnet オブジェクトを生成します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>インスタンスメソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-net=3a=3a-telnet/i/binmode.html"><code>
+  binmode(mode=nil) -&gt; bool|()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+引数を指定しない場合には&quot;Binmode&quot;の値を返します。
+引数を与えた場合は&quot;Binmode&quot;の値を変更します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-net=3a=3a-telnet/i/binmode=3d.html"><code>
+  binmode=(mode)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+&quot;Binmode&quot; を設定します。これは改行文字の変換をするかどうかを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-net=3a=3a-telnet/i/cmd.html"><code>
+  cmd(opts) -&gt; String<br>cmd(opts) {|mesg| ...} -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+コマンドをホストに送ります。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-net=3a=3a-telnet/i/login.html"><code>
+  login(opts, password=nil) -&gt; String<br>login(opts, password=nil) {|mesg| ...} -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+指定したユーザ名とパスワードでログインします。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-net=3a=3a-telnet/i/preprocess.html"><code>
+  preprocess(string) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ホストから受け取った文字列の前処理をします。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-net=3a=3a-telnet/i/print.html"><code>
+  print(string) -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ホストに文字列を送ります。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-net=3a=3a-telnet/i/puts.html"><code>
+  puts(string) -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+改行を付加した文字列をホストに送ります。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-net=3a=3a-telnet/i/sock.html"><code>
+  sock -&gt; IO
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+リモートホストに接続している <a href="../class/-i-o.html">IO</a> オブジェクトを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-net=3a=3a-telnet/i/telnetmode.html"><code>
+  telnetmode(mode=nil) -&gt; bool|()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+引数を指定しない場合には&quot;Telnetmode&quot;の値を返します。
+引数を与えた場合は&quot;Telnetmode&quot;の値を変更します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-net=3a=3a-telnet/i/telnetmode=3d.html"><code>
+  telnetmode=(mode)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+&quot;Telnetmode&quot; を設定します。これは telnet の特殊なバイト列を解釈するかどうかを
+意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-net=3a=3a-telnet/i/waitfor.html"><code>
+  waitfor(opt) -&gt; String|nil<br>waitfor(opt) {|buf| ...} -&gt; String|nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+指定した正規表現にマッチする文字列がホストから来るまでデータを読み込みます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-net=3a=3a-telnet/i/write.html"><code>
+  write(string) -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ホストに文字列を送ります。
+文字列に変換は一切施しません。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+<h2>継承したメソッド</h2>
+<p><code>
+
+<a href="../method/-delegator/i/=21.html">!</a>
+
+<a href="../method/-delegator/i/=21=3d.html">!=</a>
+
+<a href="../method/-delegator/i/freeze.html">freeze</a>
+
+<a href="../method/-delegator/i/methods.html">methods</a>
+
+<a href="../method/-delegator/i/protected_methods.html">protected_methods</a>
+
+<a href="../method/-delegator/i/public_methods.html">public_methods</a>
+
+<a href="../method/-delegator/i/respond_to_missing=3f.html">respond_to_missing?</a>
+
+<a href="../method/-delegator=3a=3a-method-delegation/i/=3d=3d.html">==</a>
+
+<a href="../method/-delegator=3a=3a-method-delegation/i/__getobj__.html">__getobj__</a>
+
+<a href="../method/-delegator=3a=3a-method-delegation/i/__setobj__.html">__setobj__</a>
+
+<a href="../method/-delegator=3a=3a-method-delegation/i/clone.html">clone</a>
+
+<a href="../method/-delegator=3a=3a-method-delegation/i/equal=3f.html">equal?</a>
+
+<a href="../method/-delegator=3a=3a-method-delegation/i/marshal_dump.html">marshal_dump</a>
+
+<a href="../method/-delegator=3a=3a-method-delegation/i/marshal_load.html">marshal_load</a>
+
+<a href="../method/-delegator=3a=3a-method-delegation/i/method_missing.html">method_missing</a>
+
+<a href="../method/-delegator=3a=3a-method-delegation/i/respond_to=3f.html">respond_to?</a>
+
+<a href="../method/-object/i/=3d=3d=3d.html">===</a>
+
+<a href="../method/-object/i/=3d=7e.html">=~</a>
+
+<a href="../method/-object/i/__id__.html">__id__</a>
+
+<a href="../method/-object/i/__send__.html">__send__</a>
+
+<a href="../method/-object/i/_dump.html">_dump</a>
+
+<a href="../method/-object/i/class.html">class</a>
+
+<a href="../method/-object/i/dclone.html">dclone</a>
+
+<a href="../method/-object/i/display.html">display</a>
+
+<a href="../method/-object/i/enum_for.html">enum_for</a>
+
+<a href="../method/-object/i/eql=3f.html">eql?</a>
+
+<a href="../method/-object/i/extend.html">extend</a>
+
+<a href="../method/-object/i/frozen=3f.html">frozen?</a>
+
+<a href="../method/-object/i/hash.html">hash</a>
+
+<a href="../method/-object/i/initialize.html">initialize</a>
+
+<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
+
+<a href="../method/-object/i/inspect.html">inspect</a>
+
+<a href="../method/-object/i/instance_eval.html">instance_eval</a>
+
+<a href="../method/-object/i/instance_exec.html">instance_exec</a>
+
+<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
+
+<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
+
+<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
+
+<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
+
+<a href="../method/-object/i/instance_variables.html">instance_variables</a>
+
+<a href="../method/-object/i/is_a=3f.html">is_a?</a>
+
+<a href="../method/-object/i/method.html">method</a>
+
+<a href="../method/-object/i/must_be.html">must_be</a>
+
+<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
+
+<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
+
+<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
+
+<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
+
+<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
+
+<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
+
+<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
+
+<a href="../method/-object/i/must_equal.html">must_equal</a>
+
+<a href="../method/-object/i/must_include.html">must_include</a>
+
+<a href="../method/-object/i/must_match.html">must_match</a>
+
+<a href="../method/-object/i/must_raise.html">must_raise</a>
+
+<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
+
+<a href="../method/-object/i/must_send.html">must_send</a>
+
+<a href="../method/-object/i/must_throw.html">must_throw</a>
+
+<a href="../method/-object/i/nil=3f.html">nil?</a>
+
+<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
+
+<a href="../method/-object/i/pretty_print.html">pretty_print</a>
+
+<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
+
+<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
+
+<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
+
+<a href="../method/-object/i/private_methods.html">private_methods</a>
+
+<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
+
+<a href="../method/-object/i/singleton_class.html">singleton_class</a>
+
+<a href="../method/-object/i/singleton_method_added.html">singleton_method_added</a>
+
+<a href="../method/-object/i/singleton_method_removed.html">singleton_method_removed</a>
+
+<a href="../method/-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
+
+<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
+
+<a href="../method/-object/i/taguri.html">taguri</a>
+
+<a href="../method/-object/i/taguri=3d.html">taguri=</a>
+
+<a href="../method/-object/i/taint.html">taint</a>
+
+<a href="../method/-object/i/tainted=3f.html">tainted?</a>
+
+<a href="../method/-object/i/tap.html">tap</a>
+
+<a href="../method/-object/i/to_a.html">to_a</a>
+
+<a href="../method/-object/i/to_ary.html">to_ary</a>
+
+<a href="../method/-object/i/to_hash.html">to_hash</a>
+
+<a href="../method/-object/i/to_int.html">to_int</a>
+
+<a href="../method/-object/i/to_io.html">to_io</a>
+
+<a href="../method/-object/i/to_proc.html">to_proc</a>
+
+<a href="../method/-object/i/to_regexp.html">to_regexp</a>
+
+<a href="../method/-object/i/to_s.html">to_s</a>
+
+<a href="../method/-object/i/to_str.html">to_str</a>
+
+<a href="../method/-object/i/to_yaml.html">to_yaml</a>
+
+<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
+
+<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
+
+<a href="../method/-object/i/trust.html">trust</a>
+
+<a href="../method/-object/i/untaint.html">untaint</a>
+
+<a href="../method/-object/i/untrust.html">untrust</a>
+
+<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
+
+<a href="../method/-object/s/psych_to_yaml.html">.psych_to_yaml</a>
+
+<a href="../method/-object/s/yaml_tag.html">.yaml_tag</a>
+
+<a href="../method/-object/s/yaml_tag_subclasses=3f.html">.yaml_tag_subclasses?</a>
+
+</code></p>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

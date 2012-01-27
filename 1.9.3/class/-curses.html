@@ -1,0 +1,4374 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>module Curses</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.3 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.3 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/curses.html">cursesライブラリ</a>
+&gt; Cursesモジュール
+</p>
+
+
+
+<h1>module Curses</h1>
+<p>
+
+
+クラスの継承リスト: Curses
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+Curses モジュールや <a href="../class/-curses=3a=3a-window.html">Curses::Window</a> クラスは、curses ライブラリを利用して、
+端末に依存しない形式でテキストユーザインタフェースを作成できます。
+curses ライブラリとは、
+C のプログラムから端末のディスプレイ画面を制御するためのライブラリのことで、
+次のような実装があります。
+</p>
+<ul>
+<li><a class="external" href="http://pdcurses.sourceforge.net/">http://pdcurses.sourceforge.net/</a></li>
+<li><a class="external" href="http://www.gnu.org/software/ncurses/ncurses.html">http://www.gnu.org/software/ncurses/ncurses.html</a></li>
+</ul>
+<p>
+本モジュールを使ってテキストユーザインタフェースを作成する流れは次のようになります。
+</p>
+<ol>
+<li><a href="../method/-curses/m/init_screen.html">Curses.#init_screen</a> で初期化を行います。</li>
+<li><a href="../class/-curses.html">Curses</a> のモジュール関数を使って、
+入力のエコーを無効にするなどの curses の設定を行います。</li>
+<li><a href="../method/-curses/m/stdscr.html">Curses.#stdscr</a> で <a href="../class/-curses=3a=3a-window.html">Curses::Window</a> オブジェクトを取得し、
+それを使ってインタフェースを構築する。</li>
+<li><a href="../method/-curses/m/getch.html">Curses.#getch</a> や <a href="../method/-curses/m/getstr.html">Curses.#getstr</a> により、
+ユーザからの入力を取得します。入力した情報に従って処理を行い、
+そして、入力を待つということを繰り返します。</li>
+<li>最後に <a href="../method/-curses/m/close_screen.html">Curses.#close_screen</a> で終了処理を行います。</li>
+</ol>
+<p>
+例: 画面中央に「Hello World!」と表示し、何か入力があると終了する。
+</p>
+<pre>
+require &quot;curses&quot;
+
+Curses.init_screen
+begin
+  s = &quot;Hello World!&quot;
+  Curses.setpos(Curses.lines / 2, Curses.cols / 2 - (s.length / 2))
+  Curses.addstr(s)
+  Curses.refresh
+  Curses.getch
+ensure
+  Curses.close_screen
+end
+</pre>
+<p>
+なお、curses や ncurses をインストールしていない環境では、
+本モジュールは利用できません。
+利用できない場合、require の時点で以下のような例外が発生します。
+</p>
+<pre>
+foo:1:in `require': no such file to load -- bar (LoadError)
+        from foo:1:in `&lt;main&gt;'
+</pre>
+<p>
+いくつかの操作において、サポートしていない環境では、
+例外 NotImplementedError が発生します。
+</p>
+<p>
+セーフレベル ($SAFE) が 4 の場合、ほとんどの操作で例外 SecurityError を発生します。
+</p>
+
+
+
+<h2>モジュール関数</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/-e-s-c-d-e-l-a-y.html"><code>
+  ESCDELAY -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ESC の入力を破棄する時間(ミリ秒単位)を取得します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/-e-s-c-d-e-l-a-y=3d.html"><code>
+  ESCDELAY=(val)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ESC の入力を破棄する時間(ミリ秒単位)を val に設定します。
+設定した値を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/-t-a-b-s-i-z-e.html"><code>
+  TABSIZE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+タブ幅を取得します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/-t-a-b-s-i-z-e=3d.html"><code>
+  TABSIZE=(val)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+タブ幅を val に設定します。設定した値を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/addch.html"><code>
+  addch(ch) -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+stdscr のカーソルの位置に ch (1 バイト) を上書きします。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/addstr.html"><code>
+  addstr(str) -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+stdscr のカーソルの位置に文字列 str を挿入します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/attroff.html"><code>
+  attroff(attrs) -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+Turns on the named attributes +attrs+ without affecting any others.
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/attron.html"><code>
+  attron(attron) -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+Turns off the named attributes +attrs+
+without turning any other attributes on or off.
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/attrset.html"><code>
+  attrset(attrs) -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+Sets the current attributes of the given window to +attrs+.
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/beep.html"><code>
+  beep -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+音を出します。
+この機能がないところでは単に無視されます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/bkgd.html"><code>
+  bkgd(ch) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/bkgdset.html"><code>
+  bkgdset(ch) -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Manipulate the background of the named window
+with character Integer +ch+
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/can_change_color=3f.html"><code>
+  can_change_color? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+端末が色を変更できる場合は真を返します。
+そうでない場合は偽を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/cbreak.html"><code>
+  cbreak -&gt; nil<br>crmode -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+キーボード入力のバッファリングをやめ、ユーザの入力を即座に処理できるようにします。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/clear.html"><code>
+  clear -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+画面全体を表すウィンドウ stdscr の文字を消去し、画面をクリアします。
+画面のクリアを反映させるために、
+本メソッドのあとに <a href="../method/-curses/m/refresh.html">Curses.#refresh</a> を呼び出す必要はありません。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/close_screen.html"><code>
+  close_screen -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+curses の終了処理を行います。
+端末の状態を復帰させ、カーソルを左端に移動させます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/closed=3f.html"><code>
+  closed? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+curses が終了しているかどうかを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/clrtoeol.html"><code>
+  clrtoeol -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+現在のカーソル位置からウィンドウの最後までをクリアします。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/color_content.html"><code>
+  color_content(color) -&gt; Array
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+与えられた色の RGB 値を三要素の配列として返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/color_pair.html"><code>
+  color_pair(attrs) -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/color_pairs.html"><code>
+  color_pairs -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/colors.html"><code>
+  colors -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo ???
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/cols.html"><code>
+  cols -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+画面に表示可能な桁数(バイト)を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/curs_set.html"><code>
+  curs_set(visibility) -&gt; Integer | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/def_prog_mode.html"><code>
+  def_prog_mode -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+Save the current terminal modes as the &quot;program&quot;
+state for use by the Curses.reset_prog_mode
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/delch.html"><code>
+  delch -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+カーソルの下の文字を削除します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/deleteln.html"><code>
+  deleteln -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+stdscr のカーソルがある行を削除し、後の行を上に詰めます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/doupdate.html"><code>
+  doupdate -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+画面全体を表すウィンドウ stdscr の表示を更新します。
+<a href="../method/-curses/m/refresh.html">Curses.#refresh</a> 以上に能率良く更新処理を行います。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/echo.html"><code>
+  echo -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ユーザの入力内容を画面に表示するようにします。
+つまり、入力のエコーを有効にします。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/flash.html"><code>
+  flash -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+画面を一瞬点滅させます。
+この機能がないところでは単に無視されます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/getch.html"><code>
+  getch -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+標準入力から 1 バイト読み込みます。
+戻り値は ASCII コードを表す整数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/getmouse.html"><code>
+  getmouse -&gt; Integer | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/getstr.html"><code>
+  getstr -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+標準入力から一行読み込みます。
+戻り値は文字列です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/has_colors=3f.html"><code>
+  has_colors? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+端末がカラー表示に対応している場合は真を返します。
+そうでない場合は偽を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/inch.html"><code>
+  inch -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+stdscr のカーソル位置から 1 バイト読みとって返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/init_color.html"><code>
+  init_color(color, r, g, b) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/init_pair.html"><code>
+  init_pair(pair, f, b) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/init_screen.html"><code>
+  init_screen -&gt; Curses::Window<br>stdscr -&gt; Curses::Window
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+端末の種類や curses に関するデータを初期化し、画面をクリアします。
+stdscr と呼ばれる画面全体を表すウィンドウを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/insch.html"><code>
+  insch(ch) -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+stdscr のカーソルの位置に ch (1 バイト) を挿入します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/insertln.html"><code>
+  insertln -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+現在のカーソル位置に一行挿入します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/keyname.html"><code>
+  keyname(c) -&gt; String | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/lines.html"><code>
+  lines -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+画面に表示可能な行数を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/mouseinterval.html"><code>
+  mouseinterval(interval) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+The Curses.mouseinterval function sets the maximum time
+(in thousands of a second) that can elapse between press
+and release events for them to be recognized as a click.
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/mousemask.html"><code>
+  mousemask(mask) -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+与えられた mask から報告可能なイベントを取り出して返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/nl.html"><code>
+  nl -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/nocbreak.html"><code>
+  nocbreak -&gt; nil<br>nocrmode -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+通常の端末のように、キーボード入力のバッファリングを有効にします。
+ユーザの入力はエンターキーなどを押すまで処理できません。
+この状態のことを「cooked」モードといいます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/noecho.html"><code>
+  noecho
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ユーザの入力内容を画面に表示しないようにします。
+つまり、入力のエコーを止めます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/nonl.html"><code>
+  nonl -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/noraw.html"><code>
+  noraw -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+raw モードを抜け、通常の状態にします。
+つまり、キーボード入力のバッファリングを行い、
+割り込み(Ctrl-C)、サスペンド(Ctrl-Z) などの特殊キーの処理を行うようにします。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/pair_content.html"><code>
+  pair_content(pair) -&gt; Array
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+与えられた pair に含まれる文字色と背景色を要素とする二要素の配列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/pair_number.html"><code>
+  pair_number(attrs) -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+Returns the Fixnum color pair number of attributes +attrs+.
+@param attrs
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/raw.html"><code>
+  raw -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-curses/m/cbreak.html">Curses.#cbreak</a> と同様に、キーボード入力のバッファリングをやめ、
+ユーザの入力を即座に処理できるようにします。なおかつ、
+割り込み(Ctrl-C)、サスペンド(Ctrl-Z) などの特殊キーの処理をやめます。
+この状態のことを「raw」モードといいます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/refresh.html"><code>
+  refresh -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+画面全体を表すウィンドウ stdscr の表示を更新します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/reset_prog_mode.html"><code>
+  reset_prog_mode -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+Reset the current terminal modes to the saved state
+by the Curses.def_prog_mode
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/resize.html"><code>
+  resizeterm(lines, cols) -&gt; bool | nil<br>resize(lines, cols) -&gt; bool | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+現在の端末サイズを変更します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/scrl.html"><code>
+  scrl(num) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+Scrolls the current window Fixnum +num+ lines.
+The current cursor position is not changed.
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/setpos.html"><code>
+  setpos(y, x) -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+stdscr のカーソルを座標 (x,y) に移動します。
+座標はともに 0 が始点です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/setscrreg.html"><code>
+  setscrreg(top, bottom) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+Set a software scrolling region in a window.
++top+ and +bottom+ are lines numbers of the margin.
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/standend.html"><code>
+  standend -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+強調する文字の書き込みを終えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/standout.html"><code>
+  standout -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+以降書き込む文字を強調します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/start_color.html"><code>
+  start_color -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+Initializes the color attributes, for terminals that support it.
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/timeout=3d.html"><code>
+  timeout=(delay)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+Sets block and non-blocking reads for the window.
+- If delay is negative, blocking read is used (i.e., waits indefinitely for input).
+- If delay is zero, then non-blocking read is used (i.e., read returns ERR if no input is waiting).
+- If delay is positive, then read blocks for delay milliseconds, and returns ERR if there is still no input.
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/ungetch.html"><code>
+  ungetch(ch) -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字 ch (ASCII コードを示す整数) をストリームに戻します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/ungetmouse.html"><code>
+  ungetmouse(mevent) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+It pushes a KEY_MOUSE event onto the input queue, and associates with that
+event the given state data and screen-relative character-cell coordinates.
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/m/use_default_colors.html"><code>
+  use_default_colors -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+前景色と背景色を端末のデフォルト値 (-1) に設定します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>定数</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a-l-l_-m-o-u-s-e_-e-v-e-n-t-s.html"><code>
+  ALL_MOUSE_EVENTS -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+全てのボタンの状態の変化を取得するために使用するマスク用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-a-l-t-c-h-a-r-s-e-t.html"><code>
+  A_ALTCHARSET -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+代替文字セットを表す属性のマスク用定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-a-t-t-r-i-b-u-t-e-s.html"><code>
+  A_ATTRIBUTES -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+属性を展開するために使用する文字列の属性マスク用定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-b-l-i-n-k.html"><code>
+  A_BLINK -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の点滅を表す属性のマスク用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-b-o-l-d.html"><code>
+  A_BOLD -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列を明るくするか太字にするための属性マスク用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-c-h-a-r-t-e-x-t.html"><code>
+  A_CHARTEXT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字を抽出するための属性マスク用定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-c-o-l-o-r.html"><code>
+  A_COLOR -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+色ペアのフィールド情報を抽出するための文字列の属性マスク用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-d-i-m.html"><code>
+  A_DIM -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列を半分明るくするための属性マスク用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-h-o-r-i-z-o-n-t-a-l.html"><code>
+  A_HORIZONTAL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+水平方向のハイライトを表す属性マスク用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-i-n-v-i-s.html"><code>
+  A_INVIS -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+インビジブルかブランクを表す属性マスク用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-l-e-f-t.html"><code>
+  A_LEFT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"></td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-l-o-w.html"><code>
+  A_LOW -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo ???
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-n-o-r-m-a-l.html"><code>
+  A_NORMAL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-p-r-o-t-e-c-t.html"><code>
+  A_PROTECT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+プロテクトモードを表す属性マスク用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-r-e-v-e-r-s-e.html"><code>
+  A_REVERSE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列を反転を表す属性マスク用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-r-i-g-h-t.html"><code>
+  A_RIGHT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+???を表す属性マスク用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-s-t-a-n-d-o-u-t.html"><code>
+  A_STANDOUT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+ターミナルで使用できる最も強調するモードを表す属性マスク用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-t-o-p.html"><code>
+  A_TOP -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+top highlight
+@see curs_attr(3x)
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-u-n-d-e-r-l-i-n-e.html"><code>
+  A_UNDERLINE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列に下線を引くことを表す属性マスク用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-a_-v-e-r-t-i-c-a-l.html"><code>
+  A_VERTICAL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+vertical highlight
+@see curs_attr(3x)
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n1_-c-l-i-c-k-e-d.html"><code>
+  BUTTON1_CLICKED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 1 をクリックしたことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n1_-d-o-u-b-l-e_-c-l-i-c-k-e-d.html"><code>
+  BUTTON1_DOUBLE_CLICKED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 1 をダブルクリックしたことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n1_-p-r-e-s-s-e-d.html"><code>
+  BUTTON1_PRESSED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 1 を押したことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n1_-r-e-l-e-a-s-e-d.html"><code>
+  BUTTON1_RELEASED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 1 を離したことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n1_-t-r-i-p-l-e_-c-l-i-c-k-e-d.html"><code>
+  BUTTON1_TRIPLE_CLICKED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 1 をトリプルクリックしたことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n2_-c-l-i-c-k-e-d.html"><code>
+  BUTTON2_CLICKED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 2 をクリックしたことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n2_-d-o-u-b-l-e_-c-l-i-c-k-e-d.html"><code>
+  BUTTON2_DOUBLE_CLICKED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 2 をダブルクリックしたことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n2_-p-r-e-s-s-e-d.html"><code>
+  BUTTON2_PRESSED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 2 を押したことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n2_-r-e-l-e-a-s-e-d.html"><code>
+  BUTTON2_RELEASED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 2 を離したことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n2_-t-r-i-p-l-e_-c-l-i-c-k-e-d.html"><code>
+  BUTTON2_TRIPLE_CLICKED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 2 をトリプルクリックしたことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n3_-c-l-i-c-k-e-d.html"><code>
+  BUTTON3_CLICKED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 3 をクリックしたことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n3_-d-o-u-b-l-e_-c-l-i-c-k-e-d.html"><code>
+  BUTTON3_DOUBLE_CLICKED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 3 をダブルクリックしたことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n3_-p-r-e-s-s-e-d.html"><code>
+  BUTTON3_PRESSED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 3 を押したことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n3_-r-e-l-e-a-s-e-d.html"><code>
+  BUTTON3_RELEASED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 3 を離したことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n3_-t-r-i-p-l-e_-c-l-i-c-k-e-d.html"><code>
+  BUTTON3_TRIPLE_CLICKED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 3 をトリプルクリックしたことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n4_-c-l-i-c-k-e-d.html"><code>
+  BUTTON4_CLICKED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 4 をクリックしたことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n4_-d-o-u-b-l-e_-c-l-i-c-k-e-d.html"><code>
+  BUTTON4_DOUBLE_CLICKED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 4 をダブルクリックしたことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n4_-p-r-e-s-s-e-d.html"><code>
+  BUTTON4_PRESSED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 4 を押したことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n4_-r-e-l-e-a-s-e-d.html"><code>
+  BUTTON4_RELEASED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 4 を離したことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n4_-t-r-i-p-l-e_-c-l-i-c-k-e-d.html"><code>
+  BUTTON4_TRIPLE_CLICKED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスボタン 3 をトリプルクリックしたことを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n_-a-l-t.html"><code>
+  BUTTON_ALT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウス操作中に ALT キーを押下していることを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n_-c-t-r-l.html"><code>
+  BUTTON_CTRL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウス操作中に CTRL キーを押下していることを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-b-u-t-t-o-n_-s-h-i-f-t.html"><code>
+  BUTTON_SHIFT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウス操作中に SHIFT キーを押下していることを表すマウスイベント用の定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-c-o-l-o-r_-b-l-a-c-k.html"><code>
+  COLOR_BLACK -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+黒を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-c-o-l-o-r_-b-l-u-e.html"><code>
+  COLOR_BLUE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+青を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-c-o-l-o-r_-c-y-a-n.html"><code>
+  COLOR_CYAN -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+シアンを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-c-o-l-o-r_-g-r-e-e-n.html"><code>
+  COLOR_GREEN -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+緑を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-c-o-l-o-r_-m-a-g-e-n-t-a.html"><code>
+  COLOR_MAGENTA -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マゼンタを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-c-o-l-o-r_-r-e-d.html"><code>
+  COLOR_RED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+赤を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-c-o-l-o-r_-w-h-i-t-e.html"><code>
+  COLOR_WHITE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+白を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-c-o-l-o-r_-y-e-l-l-o-w.html"><code>
+  COLOR_YELLOW -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+黄色を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-a1.html"><code>
+  KEY_A1 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+キーパッドの左上を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-a3.html"><code>
+  KEY_A3 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+キーパッドの右上を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-b2.html"><code>
+  KEY_B2 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+キーパッドの中心を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-b-a-c-k-s-p-a-c-e.html"><code>
+  KEY_BACKSPACE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+バックスペースキーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-b-e-g.html"><code>
+  KEY_BEG -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo ???
+BEG キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-b-r-e-a-k.html"><code>
+  KEY_BREAK -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+BREAK キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-b-t-a-b.html"><code>
+  KEY_BTAB -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Back TAB キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c1.html"><code>
+  KEY_C1 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+キーパッドの左下を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c3.html"><code>
+  KEY_C3 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+キーパッドの右下を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-a-n-c-e-l.html"><code>
+  KEY_CANCEL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Cancel キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-a-t-a-b.html"><code>
+  KEY_CATAB -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+Clear all tabs
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-l-e-a-r.html"><code>
+  KEY_CLEAR -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+スクリーンのクリアを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-l-o-s-e.html"><code>
+  KEY_CLOSE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Close キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-o-m-m-a-n-d.html"><code>
+  KEY_COMMAND -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Command キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-o-p-y.html"><code>
+  KEY_COPY -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Copy キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-r-e-a-t-e.html"><code>
+  KEY_CREATE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Create キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-a-b.html"><code>
+  KEY_CTAB -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+Clear tab
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-a.html"><code>
+  KEY_CTRL_A -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + A を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-b.html"><code>
+  KEY_CTRL_B -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + B を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-c.html"><code>
+  KEY_CTRL_C -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + C を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-d.html"><code>
+  KEY_CTRL_D -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + D を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-e.html"><code>
+  KEY_CTRL_E -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + E を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-f.html"><code>
+  KEY_CTRL_F -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + F を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-g.html"><code>
+  KEY_CTRL_G -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + G を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-h.html"><code>
+  KEY_CTRL_H -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + H を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-i.html"><code>
+  KEY_CTRL_I -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + I を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-j.html"><code>
+  KEY_CTRL_J -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + J を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-k.html"><code>
+  KEY_CTRL_K -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + K を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-l.html"><code>
+  KEY_CTRL_L -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + L を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-m.html"><code>
+  KEY_CTRL_M -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + M を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-n.html"><code>
+  KEY_CTRL_N -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + N を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-o.html"><code>
+  KEY_CTRL_O -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + O を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-p.html"><code>
+  KEY_CTRL_P -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + P を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-q.html"><code>
+  KEY_CTRL_Q -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + Q を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-r.html"><code>
+  KEY_CTRL_R -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + R を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-s.html"><code>
+  KEY_CTRL_S -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + S を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-t.html"><code>
+  KEY_CTRL_T -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + T を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-u.html"><code>
+  KEY_CTRL_U -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + U を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-v.html"><code>
+  KEY_CTRL_V -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + V を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-w.html"><code>
+  KEY_CTRL_W -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + W を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-x.html"><code>
+  KEY_CTRL_X -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + X を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-y.html"><code>
+  KEY_CTRL_Y -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + Y を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-c-t-r-l_-z.html"><code>
+  KEY_CTRL_Z -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Ctrl + Z を表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-d-c.html"><code>
+  KEY_DC -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo ???
+Delete キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-d-l.html"><code>
+  KEY_DL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+行を削除するキーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-d-o-w-n.html"><code>
+  KEY_DOWN -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+下矢印キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-e-i-c.html"><code>
+  KEY_EIC -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+挿入モードに入るキーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-e-n-d.html"><code>
+  KEY_END -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+End キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-e-n-t-e-r.html"><code>
+  KEY_ENTER -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Enter キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-e-o-l.html"><code>
+  KEY_EOL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+行末までクリアするキーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-e-o-s.html"><code>
+  KEY_EOS -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+スクリーンの末尾までクリアするキーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-e-x-i-t.html"><code>
+  KEY_EXIT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Exit キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f0.html"><code>
+  KEY_F0 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F0 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f1.html"><code>
+  KEY_F1 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F1 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f10.html"><code>
+  KEY_F10 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F10 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f11.html"><code>
+  KEY_F11 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F11 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f12.html"><code>
+  KEY_F12 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F12 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f13.html"><code>
+  KEY_F13 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F13 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f14.html"><code>
+  KEY_F14 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F14 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f15.html"><code>
+  KEY_F15 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F15 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f16.html"><code>
+  KEY_F16 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F16 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f17.html"><code>
+  KEY_F17 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F17 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f18.html"><code>
+  KEY_F18 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F18 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f19.html"><code>
+  KEY_F19 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F19 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f2.html"><code>
+  KEY_F2 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F2 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f20.html"><code>
+  KEY_F20 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F20 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f21.html"><code>
+  KEY_F21 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F21 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f22.html"><code>
+  KEY_F22 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F22 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f23.html"><code>
+  KEY_F23 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F23 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f24.html"><code>
+  KEY_F24 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F24 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f25.html"><code>
+  KEY_F25 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F25 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f26.html"><code>
+  KEY_F26 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F26 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f27.html"><code>
+  KEY_F27 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F27 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f28.html"><code>
+  KEY_F28 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F28 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f29.html"><code>
+  KEY_F29 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F29 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f3.html"><code>
+  KEY_F3 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F3 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f30.html"><code>
+  KEY_F30 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F30 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f31.html"><code>
+  KEY_F31 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F31 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f32.html"><code>
+  KEY_F32 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F32 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f33.html"><code>
+  KEY_F33 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F33 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f34.html"><code>
+  KEY_F34 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F34 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f35.html"><code>
+  KEY_F35 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F35 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f36.html"><code>
+  KEY_F36 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F36 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f37.html"><code>
+  KEY_F37 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F37 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f38.html"><code>
+  KEY_F38 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F38 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f39.html"><code>
+  KEY_F39 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F39 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f4.html"><code>
+  KEY_F4 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F4 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f40.html"><code>
+  KEY_F40 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F40 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f41.html"><code>
+  KEY_F41 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F41 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f42.html"><code>
+  KEY_F42 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F42 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f43.html"><code>
+  KEY_F43 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F43 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f44.html"><code>
+  KEY_F44 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F44 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f45.html"><code>
+  KEY_F45 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F45 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f46.html"><code>
+  KEY_F46 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F46 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f47.html"><code>
+  KEY_F47 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F47 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f48.html"><code>
+  KEY_F48 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F48 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f49.html"><code>
+  KEY_F49 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F49 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f5.html"><code>
+  KEY_F5 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F5 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f50.html"><code>
+  KEY_F50 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F50 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f51.html"><code>
+  KEY_F51 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F51 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f52.html"><code>
+  KEY_F52 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F52 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f53.html"><code>
+  KEY_F53 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F53 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f54.html"><code>
+  KEY_F54 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F54 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f55.html"><code>
+  KEY_F55 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F55 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f56.html"><code>
+  KEY_F56 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F56 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f57.html"><code>
+  KEY_F57 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F57 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f58.html"><code>
+  KEY_F58 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F58 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f59.html"><code>
+  KEY_F59 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F59 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f6.html"><code>
+  KEY_F6 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F6 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f60.html"><code>
+  KEY_F60 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F60 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f61.html"><code>
+  KEY_F61 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F61 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f62.html"><code>
+  KEY_F62 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F62 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f63.html"><code>
+  KEY_F63 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F63 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f7.html"><code>
+  KEY_F7 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F7 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f8.html"><code>
+  KEY_F8 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F8 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f9.html"><code>
+  KEY_F9 -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+F9 キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-f-i-n-d.html"><code>
+  KEY_FIND -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Find キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-h-e-l-p.html"><code>
+  KEY_HELP -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Help キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-h-o-m-e.html"><code>
+  KEY_HOME -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Home キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-i-c.html"><code>
+  KEY_IC -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字を挿入するか挿入モードに入るキーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-i-l.html"><code>
+  KEY_IL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+行を挿入するキーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-l-e-f-t.html"><code>
+  KEY_LEFT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+左矢印キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-l-l.html"><code>
+  KEY_LL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+Home down or bottom (lower left)
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-m-a-r-k.html"><code>
+  KEY_MARK -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Mark キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-m-a-x.html"><code>
+  KEY_MAX -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+curses で利用可能なキーを表す定数の最大値です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-m-e-s-s-a-g-e.html"><code>
+  KEY_MESSAGE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Message キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-m-i-n.html"><code>
+  KEY_MIN -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+curses で利用可能なキーを表す定数の最小値です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-m-o-u-s-e.html"><code>
+  KEY_MOUSE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+Mouse event read
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-m-o-v-e.html"><code>
+  KEY_MOVE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+Move キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-n-e-x-t.html"><code>
+  KEY_NEXT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Next object キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-n-p-a-g-e.html"><code>
+  KEY_NPAGE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Next Page キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-o-p-e-n.html"><code>
+  KEY_OPEN -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Open キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-o-p-t-i-o-n-s.html"><code>
+  KEY_OPTIONS -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Opetions キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-p-p-a-g-e.html"><code>
+  KEY_PPAGE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Previous Page キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-p-r-e-v-i-o-u-s.html"><code>
+  KEY_PREVIOUS -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Previous object キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-p-r-i-n-t.html"><code>
+  KEY_PRINT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Print キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-r-e-d-o.html"><code>
+  KEY_REDO -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Redo キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-r-e-f-e-r-e-n-c-e.html"><code>
+  KEY_REFERENCE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Reference キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-r-e-f-r-e-s-h.html"><code>
+  KEY_REFRESH -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Refresh キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-r-e-p-l-a-c-e.html"><code>
+  KEY_REPLACE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Replace キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-r-e-s-e-t.html"><code>
+  KEY_RESET -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Reset キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-r-e-s-i-z-e.html"><code>
+  KEY_RESIZE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+スクリーンがリサイズされたことを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-r-e-s-t-a-r-t.html"><code>
+  KEY_RESTART -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Restart キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-r-e-s-u-m-e.html"><code>
+  KEY_RESUME -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Resume キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-r-i-g-h-t.html"><code>
+  KEY_RIGHT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+右矢印キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-a-v-e.html"><code>
+  KEY_SAVE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Save キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-b-e-g.html"><code>
+  KEY_SBEG -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+Shifted beginning key
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-c-a-n-c-e-l.html"><code>
+  KEY_SCANCEL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Cancel キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-c-o-m-m-a-n-d.html"><code>
+  KEY_SCOMMAND -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Command キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-c-o-p-y.html"><code>
+  KEY_SCOPY -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Copy キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-c-r-e-a-t-e.html"><code>
+  KEY_SCREATE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Create キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-d-c.html"><code>
+  KEY_SDC -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo ???
+Shift + Delete キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-d-l.html"><code>
+  KEY_SDL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + 行を削除するキーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-e-l-e-c-t.html"><code>
+  KEY_SELECT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Select キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-e-n-d.html"><code>
+  KEY_SEND -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + End キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-e-o-l.html"><code>
+  KEY_SEOL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + 行末までクリアするキーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-e-x-i-t.html"><code>
+  KEY_SEXIT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Exit キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-f.html"><code>
+  KEY_SF -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+前に一行スクロールすることを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-f-i-n-d.html"><code>
+  KEY_SFIND -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Find キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-h-e-l-p.html"><code>
+  KEY_SHELP -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Help キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-h-o-m-e.html"><code>
+  KEY_SHOME -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Home キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-i-c.html"><code>
+  KEY_SIC -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo ???
+Shift + ... キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-l-e-f-t.html"><code>
+  KEY_SLEFT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + 左矢印キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-m-e-s-s-a-g-e.html"><code>
+  KEY_SMESSAGE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Message キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-m-o-v-e.html"><code>
+  KEY_SMOVE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Move キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-n-e-x-t.html"><code>
+  KEY_SNEXT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Next キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-o-p-t-i-o-n-s.html"><code>
+  KEY_SOPTIONS -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Options キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-p-r-e-v-i-o-u-s.html"><code>
+  KEY_SPREVIOUS -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Previous キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-p-r-i-n-t.html"><code>
+  KEY_SPRINT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Print キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-r.html"><code>
+  KEY_SR -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+後に一行スクロールすることを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-r-e-d-o.html"><code>
+  KEY_SREDO -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Redo キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-r-e-p-l-a-c-e.html"><code>
+  KEY_SREPLACE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Replace キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-r-e-s-e-t.html"><code>
+  KEY_SRESET -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Reset キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-r-i-g-h-t.html"><code>
+  KEY_SRIGHT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + 右矢印キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-r-s-u-m-e.html"><code>
+  KEY_SRSUME -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Resume キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-s-a-v-e.html"><code>
+  KEY_SSAVE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Save キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-s-u-s-p-e-n-d.html"><code>
+  KEY_SSUSPEND -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Suspend キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-t-a-b.html"><code>
+  KEY_STAB -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + TAB キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-u-n-d-o.html"><code>
+  KEY_SUNDO -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Shift + Undo キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-s-u-s-p-e-n-d.html"><code>
+  KEY_SUSPEND -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Suspend キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-u-n-d-o.html"><code>
+  KEY_UNDO -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+Undo キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-k-e-y_-u-p.html"><code>
+  KEY_UP -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+上矢印キーを表す定数です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-curses/c/-r-e-p-o-r-t_-m-o-u-s-e_-p-o-s-i-t-i-o-n.html"><code>
+  REPORT_MOUSE_POSITION -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+マウスの位置を取得するために使用するマスク用の定数です。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

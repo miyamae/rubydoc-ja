@@ -1,0 +1,433 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library test/unit</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; test/unitライブラリ
+</p>
+
+
+
+<h1>library test/unit</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+ユニットテストを行うためのライブラリです。
+</p>
+<h2 >使い方</h2>
+<p>
+Test::Unit は以下のように使います。
+</p>
+<p>
+まずテスト対象のソース(foo.rb)が必要です。
+</p>
+<pre>
+class Foo
+   def foo
+     &quot;foo&quot;
+   end
+   def bar
+     &quot;foo&quot;
+   end
+end
+</pre>
+<p>
+次にユニットテスト(test_foo.rb)を書きます。テストを実行するメソッド(テストメソッド)の名前は
+全て test_ で始まる必要があります。テストメソッドが実行される前には setup メソッドが必ず
+呼ばれます。実行されたあとには、teardown メソッドが必ず呼ばれます。
+</p>
+<pre>
+require 'test/unit'
+require 'foo'
+
+class TC_Foo &lt; Test::Unit::TestCase
+  def setup
+    @obj = Foo.new
+  end
+
+  # def teardown
+  # end
+
+  def test_foo
+    assert_equal(&quot;foo&quot;, @obj.foo)
+  end
+  def test_bar
+    assert_equal(&quot;bar&quot;, @obj.bar)
+  end
+end
+</pre>
+<p>
+テストを実行するには上で用意した test_foo.rb を実行します。
+デフォルトではすべてのテストが実行されます。
+</p>
+<pre>
+$ ruby test_foo.rb
+
+Loaded suite test_foo
+Started
+F.
+Finished in 0.022223 seconds.
+
+  1) Failure!!!
+test_bar(TC_Foo) [test_foo.rb:16]:
+&lt;bar&gt; expected but was
+&lt;foo&gt;
+
+2 tests, 2 assertions, 1 failures, 0 errors
+</pre>
+<p>
+test_bar だけテストしたい場合は以下のようなオプションを与えます。
+</p>
+<pre>
+$ ruby test_foo.rb --name=test_bar
+
+Loaded suite test_foo
+Started
+F
+Finished in 0.019573 seconds.
+
+  1) Failure!!!
+test_bar(TC_Foo) [test_foo.rb:16]:
+&lt;bar&gt; expected but was
+&lt;foo&gt;
+
+1 tests, 1 assertions, 1 failures, 0 errors
+</pre>
+<p>
+gtk を使った testrunner
+</p>
+<pre>
+$ ruby test_foo.rb --runner=gtk --name=test_bar
+</pre>
+<p>
+fox を使う
+</p>
+<pre>
+$ ruby test_foo.rb --runner=fox --name=test_bar
+</pre>
+<p>
+console を使う (default)
+</p>
+<pre>
+$ ruby test_foo.rb --runner=console --name=test_bar
+</pre>
+<p>
+以下のようにすると help も表示されます。
+</p>
+<pre>
+$ ruby test_foo.rb --help
+
+   Usage: test_foo.rb [options] [-- untouched arguments]
+
+       -r, --runner=RUNNER              Use the given RUNNER.
+                                        (c[onsole], f[ox], g[tk], g[tk]2, t[k])
+       -b, --basedir=DIR                Base directory of test suites.
+       -w, --workdir=DIR                Working directory to run tests.
+       -n, --name=NAME                  Runs tests matching NAME.
+                                        (patterns may be used).
+       -t, --testcase=TESTCASE          Runs tests in TestCases matching TESTCASE.
+                                        (patterns may be used).
+       -v, --verbose=[LEVEL]            Set the output level (default is verbose).
+                                        (s[ilent], p[rogress], n[ormal], v[erbose])
+           --                           Stop processing options so that the
+                                        remaining options will be passed to the
+                                        test.
+       -h, --help                       Display this help.
+</pre>
+<p>
+複数のテストを一度に行う場合、以下のように書いただけのファイルを実行します。
+</p>
+<pre>
+require 'test/unit'
+require 'test_foo.rb'
+require 'test_bar.rb'
+</pre>
+<p>
+もう少し高度なテストの実行方法に関しては <a href="../class/-test=3a=3a-unit=3a=3a-auto-runner.html">Test::Unit::AutoRunner</a> を
+参照して下さい。
+</p>
+<h2 >いつテストは実行されるか</h2>
+<p>
+上の例では、テストクラスを「定義しただけ」で、テストが実行されています。
+これは、<a href="../method/-kernel/m/at_exit.html">Kernel.#at_exit</a> と <a href="../method/-object-space/m/each_object.html">ObjectSpace.#each_object</a> を使って
+実装されています。つまり、上の例ではテストは終了時の後処理として実行されます。
+</p>
+<p>
+大抵の場合は、これで問題ありません。が、そうでない場合は、
+testrb コマンドや <a href="../class/-test=3a=3a-unit=3a=3a-auto-runner.html">Test::Unit::AutoRunner</a> 、各種 TestRunner クラスを使うことにより、
+明示的にテストを実行することができます。
+</p>
+<h2 >Error と Failure の違い</h2>
+<dl>
+<dt>Error</dt>
+<dd>
+<p>
+テストメソッド実行中に例外が発生した。
+</p>
+</dd>
+<dt>Failure</dt>
+<dd>
+<p>
+アサーションに失敗した。
+</p>
+</dd>
+</dl>
+
+
+<h2>クラスとモジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-test=3a=3a-unit.html">module Test::Unit</a></td>
+<td class="description"><p>
+ユニットテストを行うためのモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-test=3a=3a-unit=3a=3a-assertions.html">module Test::Unit::Assertions</a></td>
+<td class="description"><p>
+各種の assert メソッドを提供するモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-test=3a=3a-unit=3a=3a-auto-runner.html">class Test::Unit::AutoRunner</a></td>
+<td class="description"><p>
+テストの実行を操作したいときにこの AutoRunner クラスを使います。
+大量のテストの中から特定のテストスクリプトのみを実行したい場合、
+特定のテストクラスのみを実行したい場合などに使います。
+AutoRunner は Collector::Dir オブジェクトなどの Collector に
+テストを集めさせて、UI::Console::TestRunner オブジェクトなどの
+Runner にテストを実行させているクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-test=3a=3a-unit=3a=3a-error.html">class Test::Unit::Error</a></td>
+<td class="description"><p>
+テスト時のエラーを表現するクラスです。テスト中に例外が発生した時に
+<a href="../class/-test=3a=3a-unit=3a=3a-test-case.html">Test::Unit::TestCase</a> から作られます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-test=3a=3a-unit=3a=3a-failure.html">class Test::Unit::Failure</a></td>
+<td class="description"><p>
+テストの失敗を表現するクラスです。テスト中にアサーションが失敗した時に
+<a href="../class/-test=3a=3a-unit=3a=3a-test-case.html">Test::Unit::TestCase</a>から作られます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-test=3a=3a-unit=3a=3a-test-case.html">class Test::Unit::TestCase</a></td>
+<td class="description"><p>
+テストの基本単位(あるいは「テスト本体」)を表すクラスです。
+テストを行うメソッド(テストメソッド)は TestCase のサブクラスのインスタンスメソッド
+として定義されます。テストメソッドの名前は「test」で始まっていなければなりません。
+逆に、「test」で始まっているメソッドは全てテストメソッドと見なされます。
+各テストメソッドは、<a href="../method/-test=3a=3a-unit=3a=3a-test-case/s/suite.html">Test::Unit::TestCase.suite</a> により <a href="../class/-test=3a=3a-unit=3a=3a-test-suite.html">Test::Unit::TestSuite</a>
+オブジェクトへとひとつにまとめられます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-test=3a=3a-unit=3a=3a-test-suite.html">class Test::Unit::TestSuite</a></td>
+<td class="description"><p>
+複数のテストをひとつにまとめたクラスです。TestSuite 同士をまとめてひとつの
+TestSuite にすることもできます。
+<a href="../method/-test=3a=3a-unit=3a=3a-test-suite/i/run.html">Test::Unit::TestSuite#run</a> によりまとめたテストを一度に
+実行することができます。テストは TestSuite へ加えられた順に実行されます。
+自身が TestSuite を含んでいる場合は、再帰的にテストを実行します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-test=3a=3a-unit=3a=3a-u-i.html">module Test::Unit::UI</a></td>
+<td class="description"><p>
+各種 TestRunner を実装するためのモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-test=3a=3a-unit=3a=3a-u-i=3a=3a-test-runner-utilities.html">module Test::Unit::UI::TestRunnerUtilities</a></td>
+<td class="description"><p>
+各種 TestRunner を実装するためのモジュールです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-test=3a=3a-unit=3a=3a-assertion-failed-error.html">class Test::Unit::AssertionFailedError</a></td>
+<td class="description"><p>
+アサーションに失敗した時に <a href="../class/-test=3a=3a-unit=3a=3a-assertions.html">Test::Unit::Assertions</a> から raise されます。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>同時にrequireされるライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/test=2funit.html">test/unit</a></td>
+<td class="description"><p>
+ユニットテストを行うためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/test=2funit=2fassertions.html">test/unit/assertions</a></td>
+<td class="description"><p>
+各種の assert メソッドを提供します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/test=2funit=2fautorunner.html">test/unit/autorunner</a></td>
+<td class="description"><p>
+ユニットテストの実行を操作したいときに使います。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/test=2funit=2ftestcase.html">test/unit/testcase</a></td>
+<td class="description"><p>
+テストケースを記述するときに使います。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/test=2funit=2ftestsuite.html">test/unit/testsuite</a></td>
+<td class="description"><p>
+複数のテストをひとつにまとめるためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/test=2funit=2fui=2ftestrunnerutilities.html">test/unit/ui/testrunnerutilities</a></td>
+<td class="description"><p>
+各種 TestRunner を実装するために使われます。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>サブライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/test=2funit=2ftestresult.html">test/unit/testresult</a></td>
+<td class="description"><p>
+テストの結果を処理するときに使われます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/test=2funit=2fui=2fconsole=2ftestrunner.html">test/unit/ui/console/testrunner</a></td>
+<td class="description"><p>
+コンソール上でユニットテストを実行し、結果を表示するための
+ライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/test=2funit=2fui=2ffox=2ftestrunner.html">test/unit/ui/fox/testrunner</a></td>
+<td class="description"><p>
+FOX Toolkit を用いた UI 上でユニットテストを実行し、結果を表示するため
+のライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/test=2funit=2fui=2fgtk=2ftestrunner.html">test/unit/ui/gtk/testrunner</a></td>
+<td class="description"><p>
+GTK を用いた UI 上でユニットテストを実行し、結果を表示するためのライブ
+ラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/test=2funit=2fui=2fgtk2=2ftestrunner.html">test/unit/ui/gtk2/testrunner</a></td>
+<td class="description"><p>
+GTK+ を用いた UI 上でユニットテストを実行し、結果を表示するためのライブ
+ラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/test=2funit=2fui=2ftestrunnermediator.html">test/unit/ui/testrunnermediator</a></td>
+<td class="description"><p>
+各種 TestRunner を実装するために使われます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/test=2funit=2fui=2ftk=2ftestrunner.html">test/unit/ui/tk/testrunner</a></td>
+<td class="description"><p>
+Tk を用いた UI 上でユニットテストを実行し、結果を表示するためのライブラ
+リです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/test=2funit=2futil=2fobservable.html">test/unit/util/observable</a></td>
+<td class="description"><p>
+イベントに対して通知を行うメソッドを提供するためのライブラリです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

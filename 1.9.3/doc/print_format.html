@@ -1,0 +1,461 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>sprintf フォーマット</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.3 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+
+<a href="../doc/index.html">Ruby 1.9.3 リファレンスマニュアル</a>
+&gt; print_format
+
+</p>
+
+
+<h1>sprintf フォーマット</h1>
+
+<h3 >sprintf フォーマット</h3>
+<p>
+Ruby の sprintf フォーマットは基本的に C 言語の <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/sprintf.html">sprintf(3)</a>
+のものと同じです。ただし、short や long などの C 特有の型に対する修飾子が
+ないこと、2進数の指示子(%b)が存在すること、sprintf のすべての方言をサ
+ポートしていないこと(%': 3桁区切り)などの違いがあります。
+</p>
+<p>
+Ruby には整数の大きさに上限がないので、%b, %o, %x
+に負の数を与えると (左側に無限に1が続くとみなせるので)
+..f のような表示をします。絶対値に符号を付けた形式
+で出力するためには %+x、% x のように指定します。
+</p>
+<p>
+以下は sprintf フォーマットの書式です。[] で囲まれた部分は省略可
+能であることを示しています。
+</p>
+<pre>
+%[引数指定$][フラグ][幅][.精度]指示子
+</pre>
+<p>
+`%' 自身を出力するには `%%' とします。
+</p>
+<p>
+以下それぞれの要素に関して説明します。
+</p>
+<h3 >フラグ</h3>
+<p>
+フラグには #, +, ' '(スペース), -, 0 の5種類があります。
+</p>
+<dl>
+<dt>#</dt>
+<dd>
+<p>
+2進、8進、16進の指示子(b, o, x, X) ではそれぞれプレフィック
+スとして &quot;0b&quot;, &quot;0&quot;, &quot;0x&quot;, &quot;0X&quot; を付加します。
+C 言語とは異なり引数が 0 の場合にもプレフィックスが付加されます。
+</p>
+<pre>
+  p sprintf(&quot;%#b&quot;, 10) #=&gt; &quot;0b1010&quot;
+  p sprintf(&quot;%#o&quot;, 10) #=&gt; &quot;012&quot;
+  p sprintf(&quot;%#x&quot;, 10) #=&gt; &quot;0xa&quot;
+  p sprintf(&quot;%#X&quot;, 10) #=&gt; &quot;0XA&quot;
+</pre>
+<p>
+浮動小数点数 (f, e, E, g, G) に対しては必ず出力に&quot;.&quot;をつけます。
+</p>
+<pre>
+  p sprintf(&quot;%.0f&quot;, 10) #=&gt; &quot;10&quot;
+  p sprintf(&quot;%#.0f&quot;, 10) #=&gt; &quot;10.&quot;
+  p sprintf(&quot;%.0e&quot;, 10) #=&gt; &quot;1e+01&quot;
+  p sprintf(&quot;%#.0e&quot;, 10) #=&gt; &quot;1.e+01&quot;
+</pre>
+<p>
+また g, G では上記に加えて末尾の余分な0が残ります。
+</p>
+<pre>
+  p sprintf(&quot;%.05g&quot;, 10) #=&gt; &quot;10&quot;
+  p sprintf(&quot;%#.05g&quot;, 10) #=&gt; &quot;10.000&quot;
+</pre>
+</dd>
+<dt>+</dt>
+<dd>
+<p>
+出力文字列を符号付きにします。特に正の数では`+'が付加されます。
+数値の指示子
+(d, i, b, o, x, X, u, f, e, E, g, G)
+に対してだけ意味を持ちます。
+また、特に b, o, x, X, u に対しては、負数に対して &quot;-&quot;
+を付加することを示します。
+</p>
+<pre>
+  p sprintf(&quot;%d&quot;, 1)   #=&gt; &quot;1&quot;
+  p sprintf(&quot;%+d&quot;, 1)  #=&gt; &quot;+1&quot;
+
+  p sprintf(&quot;%x&quot;, -1)  #=&gt; &quot;..f&quot;  # &quot;..&quot; は無限に f が続くことを表している
+  p sprintf(&quot;%+x&quot;, -1) #=&gt; &quot;-1&quot;
+</pre>
+</dd>
+<dt>' '(スペース)</dt>
+<dd>
+<p>
+`+' と同じですが正の符号 `+' の代わりに空白を用います。数値の指示子
+(d, i, b, o, x, X, u, f, e, E, g, G)
+に対してだけ意味を持ちます。
+</p>
+<pre>
+  p sprintf(&quot;%d&quot;, 1)   #=&gt; &quot;1&quot;
+  p sprintf(&quot;%+d&quot;, 1)  #=&gt; &quot;+1&quot;
+  p sprintf(&quot;% d&quot;, 1)  #=&gt; &quot; 1&quot;
+
+  p sprintf(&quot;%x&quot;, -1)  #=&gt; &quot;..f&quot;
+  p sprintf(&quot;% x&quot;, 1)  #=&gt; &quot; 1&quot;
+  p sprintf(&quot;% x&quot;, -1) #=&gt; &quot;-1&quot;
+</pre>
+</dd>
+<dt>-</dt>
+<dd>
+<p>
+出力を左詰めにします幅の指定がなければ
+意味がありません。
+</p>
+</dd>
+<dt>0</dt>
+<dd>
+<p>
+出力が右詰めの場合に余った部分に空白の代わりに &quot;0&quot; を詰めます。
+</p>
+<p>
+数値の指示子の一部(d, i, b, o, x, X, u, f, g, G)に対し
+てだけ意味を持ちます(e, E には意味がない)
+</p>
+<pre>
+  p sprintf(&quot;%010d&quot;, 10)   #=&gt; &quot;0000000010&quot;
+</pre>
+<p>
+`#' と一緒に指定した場合の出力は以下のようになります。
+</p>
+<pre>
+  p sprintf(&quot;%#010x&quot;, 10)  #=&gt; &quot;0x0000000a&quot;
+  p sprintf(&quot;%#010o&quot;, 10)  #=&gt; &quot;0000000012&quot;
+  p sprintf(&quot;%#010b&quot;, 10)  #=&gt; &quot;0b00001010&quot;
+</pre>
+<p>
+これは、以下と同じです。
+</p>
+<pre>
+  p sprintf(&quot;%#10.8x&quot;, 10) #=&gt; &quot;0x0000000a&quot;
+  p sprintf(&quot;%#10.9o&quot;, 10) #=&gt; &quot;0000000012&quot;
+  p sprintf(&quot;%#10.8b&quot;, 10) #=&gt; &quot;0b00001010&quot;
+</pre>
+<p>
+通常は、以下のようになります。
+</p>
+<pre>
+  p sprintf(&quot;%#10x&quot;, 10)   #=&gt; &quot;       0xa&quot;
+  p sprintf(&quot;%#10o&quot;, 10)   #=&gt; &quot;       012&quot;
+  p sprintf(&quot;%#10b&quot;, 10)   #=&gt; &quot;    0b1010&quot;
+</pre>
+</dd>
+</dl>
+<h3 >幅</h3>
+<p>
+0以外の数字で始まる数字列は幅指定になります。幅は生成文字列の長さを示
+します。後述の精度の値によらずこの幅分だ
+けの文字列が生成されます。
+</p>
+<p>
+幅の指定はフラグで付与される &quot; &quot;, &quot;+&quot;,
+&quot;-&quot;, &quot;0b&quot;, &quot;0&quot;, &quot;0x&quot;, &quot;0X&quot; の長さも考慮されます。
+</p>
+<pre>
+p sprintf(&quot;%+5d&quot;, 11)  #=&gt; &quot;  +11&quot;
+p sprintf(&quot;%+-5d&quot;, 11) #=&gt; &quot;+11  &quot;
+p sprintf(&quot;%+05d&quot;, 11) #=&gt; &quot;+0011&quot;
+</pre>
+<p>
+幅は「最低限必要な幅」の指定になります。結果の文字列が指定した幅を超
+える場合は幅の指定は無効になります。
+</p>
+<p>
+幅として `*' を指定すると幅の値を引数から得ることになります。
+</p>
+<pre>
+p sprintf(&quot;%#05x&quot;, 10)    #=&gt; &quot;0x00a&quot;
+p sprintf(&quot;%#0*x&quot;, 5, 10) #=&gt; &quot;0x00a&quot;
+</pre>
+<h3 >精度</h3>
+<p>
+&quot;.&quot; の後に続く数字列は精度を表します(&quot;.&quot; のみの場合 &quot;.0&quot; と同じです)。精度は
+整数の指示子
+(d, i, b, o, x, X, u)
+に対しては、数値列部分の長さを意味します。
+</p>
+<pre>
+p sprintf(&quot;%10.5d&quot;, 1)  #=&gt; &quot;     00001&quot;
+p sprintf(&quot;%#10.5x&quot;, 1) #=&gt; &quot;   0x00001&quot;
+p sprintf(&quot;%+10.5x&quot;, 1) #=&gt; &quot;    +00001&quot;
+</pre>
+<p>
+浮動小数点数の指示子
+(f)
+に対しては小数部の桁数を意味します。
+</p>
+<pre>
+p sprintf(&quot;%10.5f&quot;, 1)   #=&gt; &quot;   1.00000&quot;
+p sprintf(&quot;%10.5f&quot;, 10)  #=&gt; &quot;  10.00000&quot;
+</pre>
+<p>
+浮動小数点数の指示子
+(e, E, g, G)
+に対しては有効桁数を意味します。
+</p>
+<pre>
+p sprintf(&quot;%10.5e&quot;, 1)   #=&gt; &quot;1.00000e+00&quot;
+p sprintf(&quot;%10.5e&quot;, 10)  #=&gt; &quot;1.00000e+01&quot;
+p sprintf(&quot;%10.5g&quot;,  10)  #=&gt; &quot;        10&quot;
+p sprintf(&quot;%#10.5G&quot;, 10)  #=&gt; &quot;    10.000&quot;
+</pre>
+<p>
+文字列の指示子(s, p)
+に対しては引数の文字列のうち指定した数を超える分を切り捨てます。
+幅と精度を同じ値にすれば、どのような引数に対してもその
+長さだけの出力を行うことになります。
+</p>
+<pre>
+p sprintf(&quot;%10.2s&quot;, &quot;foo&quot;)  #=&gt; &quot;        fo&quot;
+
+p sprintf(&quot;%5.5s&quot;, &quot;foo&quot;)     #=&gt; &quot;  foo&quot;
+p sprintf(&quot;%5.5s&quot;, &quot;foobar&quot;)  #=&gt; &quot;fooba&quot;
+</pre>
+<p>
+精度として `*' を指定すると精度の値を引数から得ることになります。
+</p>
+<pre>
+p sprintf(&quot;%.5s&quot;, &quot;foobar&quot;)    #=&gt; &quot;fooba&quot;
+p sprintf(&quot;%.*s&quot;, 5, &quot;foobar&quot;) #=&gt; &quot;fooba&quot;
+</pre>
+<h3 >指示子</h3>
+<p>
+指示子は引数の型の解釈を示します。指示子を省略することはできません。
+指示子には大きく分けて
+</p>
+<ul>
+<li>文字列を表す指示子: c, s, p</li>
+<li>整数を表す指示子: d, i, u, b, o, x, X,</li>
+<li>浮動小数点数を表す指示子: f, g, e, E, G</li>
+</ul>
+<p>
+があります
+</p>
+<dl>
+<dt>c</dt>
+<dd>
+<p>
+引数の数値(0〜255)を文字コードとみなして対応する文字を出力します。
+引数が数値以外のオブジェクトの場合 to_int メソッドによる変換を試みます。
+引数として範囲内の一文字の文字列も受けつけます。文字そのものを出力します。
+</p>
+<pre>
+  p sprintf(&quot;%c&quot;, 97)  #=&gt; &quot;a&quot;
+  p sprintf(&quot;%c&quot;, 'a') #=&gt; &quot;a&quot;
+</pre>
+<p>
+フラグ `-' と幅 の指定だけが意味を持ちます。
+</p>
+</dd>
+<dt>s</dt>
+<dd>
+<p>
+文字列を出力します。
+</p>
+<p>
+引数が <a href="../class/-string.html">String</a> オブジェクトでなければ to_s メソッドにより文字列化
+したものを引数として扱います。
+</p>
+</dd>
+<dt>p</dt>
+<dd>
+<p>
+<a href="../method/-object/i/inspect.html">Object#inspect</a> の結果を出力します。
+</p>
+<pre>
+  p sprintf(&quot;%s&quot;, /e+/)  #=&gt; &quot;(?-mix:e+)&quot;
+  p sprintf(&quot;%p&quot;, /e+/)  #=&gt; &quot;/e+/&quot;
+</pre>
+</dd>
+<dt>d</dt>
+<dt>i</dt>
+<dd>
+<p>
+引数の数値を10進表現の整数として出力します。
+</p>
+<p>
+引数が整数でなければ関数 <a href="../method/-kernel/m/-integer.html">Kernel.#Integer</a> と同じ規則で整数に
+変換されます。
+</p>
+<pre>
+  p sprintf(&quot;%d&quot;, -1) #=&gt; &quot;-1&quot;
+  p sprintf(&quot;%d&quot;, 3.1) #=&gt; &quot;3&quot;
+  p sprintf(&quot;%d&quot;, '0b1010') #=&gt; &quot;10&quot;
+</pre>
+</dd>
+<dt>u</dt>
+<dd>
+<p>
+引数の数値を符号なし整数とみなして10進表現の整数として出力します。
+</p>
+<pre>
+  p sprintf(&quot;%u&quot;, '0b1010') #=&gt; &quot;10&quot;
+  p sprintf(&quot;%u&quot;, -1) #=&gt; &quot;-1&quot;
+</pre>
+</dd>
+<dt>b</dt>
+<dt>o</dt>
+<dt>x</dt>
+<dt>X</dt>
+<dd>
+<p>
+整数をそれぞれ2進、8進、16進、16進(大文字)表現の文字列で出力します。
+</p>
+<p>
+`#' フラグを指定すれば &quot;0b&quot;, &quot;0&quot;, &quot;0x&quot;, &quot;0X&quot; を先頭に付加します。
+</p>
+<p>
+`+', ` ' フラグがない場合、負の数には &quot;..&quot; が先頭(`#' フラグがあれば
+&quot;0x&quot; などの後)に付加されます。これは最上位桁の文字が無限に続くことを
+意味し、2の補数表現で負の数を表しています。
+</p>
+<pre>
+   p sprintf(&quot;%#b&quot;, 10)    #=&gt; &quot;0b1010&quot;
+   p sprintf(&quot;%#o&quot;, 10)    #=&gt; &quot;012&quot;
+   p sprintf(&quot;%#x&quot;, 10)    #=&gt; &quot;0xa&quot;
+
+   # 負の数に対して &quot;..&quot; が付加されます
+   p sprintf(&quot;%#b&quot;, -1)    #=&gt; &quot;0b..1&quot;
+   p sprintf(&quot;%#o&quot;, -1)    #=&gt; &quot;0..7&quot;
+   p sprintf(&quot;%#x&quot;, -1)    #=&gt; &quot;0x..f&quot;
+
+   p sprintf(&quot;%10x&quot;, -1)   #=&gt; &quot;       ..f&quot;
+   p sprintf(&quot;%-10x&quot;, -1)  #=&gt; &quot;..f       &quot;
+
+   # ruby 1.9.1 以降では「精度」を指定した場合も、&quot;..&quot; は付加されます
+   p sprintf(&quot;%.10x&quot;, -1) #=&gt; &quot;..ffffffff&quot;
+</pre>
+</dd>
+<dt>f</dt>
+<dt>e</dt>
+<dt>E</dt>
+<dt>g</dt>
+<dt>G</dt>
+<dt>a</dt>
+<dt>A</dt>
+<dd>
+<p>
+f は小数点表現(xxx.xxx)で数値を出力します。
+</p>
+<p>
+e は指数表現(x.xxxe+xx)で数値を出力します。
+</p>
+<p>
+g は 指数が -4 より小さいか精度以上の場合に e と同じ出力を、それ以
+外では f と同じ出力を行います。ただし、小数部の末尾の0は取り除かれ
+ます。
+</p>
+<p>
+a, A は指数表現の16進数(&quot;-h.hhh±pd&quot;) で数値を出力します。ただし、<a href="../method/-float/c/-i-n-f-i-n-i-t-y.html">Float::INFINITY</a>、<a href="../method/-float/c/-n-a-n.html">Float::NAN</a> はそれぞれ 'Inf'、'NaN' になります。詳しくは <a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-dev/40650">[ruby-dev:40650]</a> を参照してください。
+</p>
+<pre>
+  p sprintf(&quot;%a&quot;, -0.0)            # =&gt; &quot;-0x0p+0&quot;
+  p sprintf(&quot;%a&quot;, 729.0/10)        # =&gt; &quot;0x1.239999999999ap+6&quot;
+  p sprintf(&quot;%a&quot;, Float::INFINITY) # =&gt; &quot;Inf&quot;
+</pre>
+<p>
+大文字の指示子(E, G)は出力のアルファベットを大文字にします。
+</p>
+<pre>
+  p sprintf(&quot;%f&quot;, 1.0) #=&gt; &quot;1.000000&quot;
+  p sprintf(&quot;%e&quot;, 1.0) #=&gt; &quot;1.000000e+00&quot;
+  p sprintf(&quot;%g&quot;, 1.0) #=&gt; &quot;1&quot;
+
+  p sprintf(&quot;%f&quot;, 10.1) #=&gt; &quot;10.100000&quot;
+  p sprintf(&quot;%e&quot;, 10.1) #=&gt; &quot;1.010000e+01&quot;
+  p sprintf(&quot;%g&quot;, 10.1) #=&gt; &quot;10.1&quot;
+
+  p sprintf(&quot;%g&quot;, 10 ** 6)  #=&gt; &quot;1e+06&quot;
+  p sprintf(&quot;%g&quot;, 10 ** -5) #=&gt; &quot;1e-05&quot;
+</pre>
+<p>
+精度の省略値は 6 です。
+</p>
+<p>
+無限大、NaN(Not a Number) に対する出力は以下のとおりです。
+</p>
+<pre>
+  p sprintf(&quot;%f&quot;,  1.0/0)  #=&gt; &quot;inf&quot;
+  p sprintf(&quot;%f&quot;, -1.0/0)  #=&gt; &quot;-inf&quot;
+  p sprintf(&quot;%f&quot;,  0.0/0)  #=&gt; &quot;nan&quot;
+
+  p sprintf(&quot;%E&quot;,  1.0/0)  #=&gt; &quot;INF&quot;
+  p sprintf(&quot;%E&quot;, -1.0/0)  #=&gt; &quot;-INF&quot;
+  p sprintf(&quot;%E&quot;,  0.0/0)  #=&gt; &quot;NAN&quot;
+</pre>
+<p>
+f, e, E, g, G に関しては <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/sprintf.html">sprintf(3)</a> の結果を利用しています。従って出力結果は
+実際にはシステムに依存することになります。
+</p>
+</dd>
+</dl>
+<h3 >引数指定</h3>
+<p>
+利用頻度が低いので最後に説明します。
+</p>
+<dl>
+<dt>nth$</dt>
+<dd>
+<p>
+nth 番目の引数のフォーマットを行うことを示します。
+</p>
+<pre>
+  p sprintf(&quot;%d, %x, %o&quot;, 1, 2, 3) #=&gt; &quot;1, 2, 3&quot;
+  p sprintf(&quot;%3$d, %2$x, %1$o&quot;, 1, 2, 3) #=&gt; &quot;3, 2, 1&quot;
+
+  p sprintf(&quot;%1$d, %1$x, %1$o&quot;, 10) #=&gt; &quot;10, a, 12&quot;
+</pre>
+<p>
+状況によってフォーマットを変えたいが引数の順序を変えたくない場合に使
+用します。
+</p>
+<pre>
+  case ENV['LC_TIME']
+  when /^ja_JP/
+    fmt = &quot;%1$d年%2$d月%3$d日&quot;
+  else
+    fmt = &quot;%2$02d/%03$2d/%1$02d&quot;
+  end
+
+  p sprintf(fmt, 1, 4, 22) #=&gt; &quot;04/22/01&quot;
+</pre>
+<p>
+&quot;*&quot; の後に指定することで幅や
+精度を引数で指定することもできます。
+</p>
+<pre>
+  p sprintf(&quot;%5.2f&quot;, 1)              #=&gt; &quot; 1.00&quot;
+  p sprintf(&quot;%*.*f&quot;, 5, 2, 1)        #=&gt; &quot; 1.00&quot;
+  p sprintf(&quot;%1$*2$.*3$f&quot;, 1, 5, 2)  #=&gt; &quot; 1.00&quot;
+</pre>
+</dd>
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

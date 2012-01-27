@@ -1,0 +1,501 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class ERB</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/erb.html">erbライブラリ</a>
+&gt; ERBクラス
+</p>
+
+
+
+<h1>class ERB</h1>
+<p>
+
+
+クラスの継承リスト: ERB
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+eRuby スクリプトを処理するクラス。
+</p>
+<p>
+従来 ERbLight と呼ばれていたもので、
+標準出力への印字が文字列の挿入とならない点が eruby と異なります。
+</p>
+<ul>
+<li><a class="external" href="http://jp.rubyist.net/magazine/?0017-BundledLibraries">http://jp.rubyist.net/magazine/?0017-BundledLibraries</a></li>
+</ul>
+<h2 >使い方</h2>
+<p>
+ERB クラスを使うためには require 'erb' する必要があります。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'erb'
+
+ERB.new($&lt;.read).run
+</pre>
+<h2 >trim_mode</h2>
+<p>
+trim_mode は整形の挙動を変更するオプションです。次の振舞いを指定できます。
+</p>
+<ul>
+<li>改行の扱い</li>
+<li>%ではじまる行の扱い (ERB 2.0 から追加されました)</li>
+</ul>
+<p>
+trim_mode に指定できる値は次の通りです。
+</p>
+<ul>
+<li>ERb-1.4.x 互換の指定方法</li>
+<li>nil, 0: そのまま変換</li>
+<li>1: 行末が%&gt;のとき改行を出力しない</li>
+<li>2: 行頭が&lt;%で行末が%&gt;のとき改行を出力しない</li>
+</ul>
+<ul>
+<li>2.0 からの指定方法</li>
+<li>nil, &quot;&quot;: そのまま変換</li>
+<li>&quot;&gt;&quot;: 1と同じ</li>
+<li>&quot;&lt;&gt;&quot;: 2と同じ</li>
+<li>&quot;-&quot;: 行末が-%&gt;のとき改行を出力しない。また、行頭が&lt;%-のとき行頭の空白文字を削除する</li>
+<li>&quot;%&quot;: %ではじまる行を&lt;%..%&gt;とみなして変換する。この行の改行は出力しない</li>
+<li>&quot;%&gt;&quot;, &quot;&gt;%&quot;: 1と&quot;%&quot;の両方を行なう</li>
+<li>&quot;%&lt;&gt;&quot;, &quot;&lt;&gt;%&quot;: 2と&quot;%&quot;の両方を行なう</li>
+<li>&quot;%-&quot;: &quot;-&quot;と&quot;%&quot;の両方を行なう</li>
+</ul>
+<p>
+実行例:
+</p>
+<pre>
+# スクリプト
+&lt;% 3.times do |n| %&gt;
+% n = 0
+* &lt;%= n%&gt;
+&lt;% end %&gt;
+
+# trim_mode = nil, '', 0
+
+% n = 0
+* 0
+
+% n = 0
+* 1
+
+% n = 0
+* 2
+
+# trim_mode = 1, '&gt;'
+% n = 0
+* 0% n = 0
+* 1% n = 0
+* 2
+
+# trim_mode = 2, '&lt;&gt;'
+% n = 0
+* 0
+% n = 0
+* 1
+% n = 0
+* 2
+
+# trim_mode = '%'
+
+* 0
+
+* 0
+
+* 0
+
+# trim_mode = '%&gt;', '&gt;%'
+* 0* 0* 0
+
+# trim_mode = '%&lt;&gt;', '&lt;&gt;%'
+* 0
+* 0
+* 0
+
+# スクリプト
+&lt;% 3.times do |n| -%&gt;
+% n = 0
+  &lt;%- m = 0 %&gt;*
+* &lt;%= n%&gt;
+&lt;% end -%&gt;
+
+# trim_mode = '%-'
+*
+* 0
+*
+* 0
+*
+* 0
+
+# スクリプト
+&lt;% 3.times do |n| %&gt;
+% n = 0
+  &lt;%- m = 0 %&gt;*
+* &lt;%= n%&gt;
+&lt;% end %&gt;
+
+# trim_mode = '%'
+
+  *
+* 0
+
+  *
+* 0
+
+  *
+* 0
+</pre>
+
+
+
+<h2>特異メソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-e-r-b/s/new.html"><code>
+  new(eruby_script, safe_level=nil, trim_mode=nil, eoutvar='_erbout') -&gt; ERB
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+eRubyスクリプト から ERB オブジェクトを生成して返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-e-r-b/s/version.html"><code>
+  version -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+erb.rbのリビジョン情報を返します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>インスタンスメソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-e-r-b/i/def_class.html"><code>
+  def_class(superklass=Object, methodname='erb') -&gt; Class
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+変換した Ruby スクリプトをメソッドとして定義した無名のクラスを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-e-r-b/i/def_method.html"><code>
+  def_method(mod, methodname, fname='(ERB)') -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+変換した Ruby スクリプトをメソッドとして定義します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-e-r-b/i/def_module.html"><code>
+  def_module(methodname='erb') -&gt; Module
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+変換した Ruby スクリプトをメソッドとして定義した無名のモジュールを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-e-r-b/i/filename.html"><code>
+  filename -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+エラーメッセージを表示する際のファイル名を取得します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-e-r-b/i/filename=3d.html"><code>
+  filename= -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+エラーメッセージを表示する際のファイル名を設定します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-e-r-b/i/result.html"><code>
+  result(b=TOPLEVEL_BINDING) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ERB を b の binding で実行し、結果の文字列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-e-r-b/i/run.html"><code>
+  run(b=TOPLEVEL_BINDING) -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ERB を b の binding で実行し、結果を標準出力へ印字します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-e-r-b/i/set_eoutvar.html"><code>
+  set_eoutvar(compiler, eoutvar = '_erbout') -&gt; Array
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ERBの中でeRubyスクリプトの出力をためていく変数を設定します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-e-r-b/i/src.html"><code>
+  src -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+変換した Ruby スクリプトを取得します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+<h2>継承したメソッド</h2>
+<p><code>
+
+<a href="../method/-object/i/=3d=3d.html">==</a>
+
+<a href="../method/-object/i/=3d=3d=3d.html">===</a>
+
+<a href="../method/-object/i/=3d=7e.html">=~</a>
+
+<a href="../method/-object/i/__id__.html">__id__</a>
+
+<a href="../method/-object/i/__send__.html">__send__</a>
+
+<a href="../method/-object/i/_dump.html">_dump</a>
+
+<a href="../method/-object/i/class.html">class</a>
+
+<a href="../method/-object/i/clone.html">clone</a>
+
+<a href="../method/-object/i/dclone.html">dclone</a>
+
+<a href="../method/-object/i/display.html">display</a>
+
+<a href="../method/-object/i/enum_for.html">enum_for</a>
+
+<a href="../method/-object/i/eql=3f.html">eql?</a>
+
+<a href="../method/-object/i/equal=3f.html">equal?</a>
+
+<a href="../method/-object/i/extend.html">extend</a>
+
+<a href="../method/-object/i/freeze.html">freeze</a>
+
+<a href="../method/-object/i/frozen=3f.html">frozen?</a>
+
+<a href="../method/-object/i/hash.html">hash</a>
+
+<a href="../method/-object/i/initialize.html">initialize</a>
+
+<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
+
+<a href="../method/-object/i/inspect.html">inspect</a>
+
+<a href="../method/-object/i/instance_eval.html">instance_eval</a>
+
+<a href="../method/-object/i/instance_exec.html">instance_exec</a>
+
+<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
+
+<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
+
+<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
+
+<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
+
+<a href="../method/-object/i/instance_variables.html">instance_variables</a>
+
+<a href="../method/-object/i/is_a=3f.html">is_a?</a>
+
+<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
+
+<a href="../method/-object/i/marshal_load.html">marshal_load</a>
+
+<a href="../method/-object/i/method.html">method</a>
+
+<a href="../method/-object/i/method_missing.html">method_missing</a>
+
+<a href="../method/-object/i/methods.html">methods</a>
+
+<a href="../method/-object/i/nil=3f.html">nil?</a>
+
+<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
+
+<a href="../method/-object/i/pretty_print.html">pretty_print</a>
+
+<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
+
+<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
+
+<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
+
+<a href="../method/-object/i/private_methods.html">private_methods</a>
+
+<a href="../method/-object/i/protected_methods.html">protected_methods</a>
+
+<a href="../method/-object/i/public_methods.html">public_methods</a>
+
+<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
+
+<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
+
+<a href="../method/-object/i/singleton_method_added.html">singleton_method_added</a>
+
+<a href="../method/-object/i/singleton_method_removed.html">singleton_method_removed</a>
+
+<a href="../method/-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
+
+<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
+
+<a href="../method/-object/i/taguri.html">taguri</a>
+
+<a href="../method/-object/i/taguri=3d.html">taguri=</a>
+
+<a href="../method/-object/i/taint.html">taint</a>
+
+<a href="../method/-object/i/tainted=3f.html">tainted?</a>
+
+<a href="../method/-object/i/tap.html">tap</a>
+
+<a href="../method/-object/i/to_a.html">to_a</a>
+
+<a href="../method/-object/i/to_ary.html">to_ary</a>
+
+<a href="../method/-object/i/to_hash.html">to_hash</a>
+
+<a href="../method/-object/i/to_int.html">to_int</a>
+
+<a href="../method/-object/i/to_io.html">to_io</a>
+
+<a href="../method/-object/i/to_proc.html">to_proc</a>
+
+<a href="../method/-object/i/to_regexp.html">to_regexp</a>
+
+<a href="../method/-object/i/to_s.html">to_s</a>
+
+<a href="../method/-object/i/to_str.html">to_str</a>
+
+<a href="../method/-object/i/to_yaml.html">to_yaml</a>
+
+<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
+
+<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
+
+<a href="../method/-object/i/untaint.html">untaint</a>
+
+<a href="../method/-object/s/yaml_tag_subclasses=3f.html">.yaml_tag_subclasses?</a>
+
+</code></p>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

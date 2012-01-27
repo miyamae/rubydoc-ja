@@ -1,0 +1,272 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library dl</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; dlライブラリ
+</p>
+
+
+
+<h1>library dl</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+*.dllや*.soなど、ダイナミックリンクライブラリを扱うためのライブラリです。
+</p>
+<p>
+Ruby/DL は、UNIX の <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/dlopen.html">dlopen(3)</a> や
+Windows の LoadLibrary() などの
+ダイナミックリンカへのインタフェースを提供します。
+</p>
+<h2 >Using Ruby/DL</h2>
+<p>
+通常は、<a href="../class/-d-l=3a=3a-importable.html">DL::Importable</a> モジュールを使用します。
+これは <a href="../class/-d-l.html">DL</a> モジュールの便利なラッパーです。
+ある Ruby のモジュールを拡張するには以下のように使用します。
+</p>
+<pre>
+require &quot;dl/import&quot;
+module LIBC
+  extend DL::Importable
+end
+</pre>
+<p>
+以後、このモジュールの dlload と extern メソッドを使用できます。
+以下のように dlload 使ってライブラリをロードし、
+それぞれのライブラリ関数に対して extern を使用することで
+ラッパーメソッドを定義します。
+</p>
+<pre>
+module LIBC
+  extend DL::Importable
+  dlload &quot;libc.so.6&quot;,&quot;libm.so.6&quot;
+  extern &quot;int strlen(char*)&quot;
+end
+# Note that we should not include the module M from some reason.
+
+p LIBC.strlen('abc') #=&gt; 3
+</pre>
+<p>
+LIBC.strlen を使用することで、ライブラリ関数 strlen() を使用できます。
+与えられた関数名の最初の文字が大文字なら、
+定義されるメソッド名の最初の文字は小文字になります。
+</p>
+<h3 >構造体を扱う</h3>
+<p>
+構造体も扱うことができます。たとえば <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/gettimeofday.html">gettimeofday(2)</a>
+を使って現在時刻を得たい場合は以下のとおりです。
+</p>
+<pre>
+require 'dl/import'
+module LIBC
+  extend DL::Importable
+  dlload &quot;libc.so.6&quot;
+  extern('int gettimeofday(void *, void *)')
+end
+
+timeval = DL.malloc(DL.sizeof('LL'))
+timeval.struct!('LL', :tv_sec, :tv_usec)
+
+e = LIBC.gettimeofday(timeval, nil)
+if e == 0
+ p timeval[:tv_sec] #=&gt; 1173519547
+end
+</pre>
+<p>
+構造体や共用体の作成には、以下のように <a href="../library/dl=2fstruct.html">dl/struct</a> で定義されている
+<a href="../method/-d-l=3a=3a-importable=3a=3a-internal/i/struct.html">DL::Importable::Internal#struct</a> メソッドや
+<a href="../method/-d-l=3a=3a-importable=3a=3a-internal/i/union.html">DL::Importable::Internal#union</a> メソッドを使用することもできます。
+</p>
+<pre>
+require 'dl/import'
+require &quot;dl/struct&quot;
+
+module LIBC
+  extend DL::Importable
+  dlload &quot;libc.so.6&quot;
+  extern('int gettimeofday(void *, void *)')
+  Timeval = struct [&quot;long tv_sec&quot;, &quot;long tv_usec&quot;]
+end
+
+timeval = LIBC::Timeval.malloc # allocate memory.
+
+e = LIBC.gettimeofday(timeval, nil)
+if e == 0
+ p timeval.tv_sec #=&gt; 1173519547
+end
+</pre>
+<p>
+上の例で、メモリの割り当てに LIBC::Timeval.new ではなく、
+LIBC::Timeval.malloc を使用していることに注意してください。
+LIBC::Timeval.new は作成済みの PtrData オブジェクトをラップするためのものです。
+</p>
+<h3 >コールバック</h3>
+<p>
+以下のように モジュール関数 callback を使用したコールバックを定義できます。
+</p>
+<pre>
+require 'dl/import'
+module M
+  extend DL::Importable
+  dlload &quot;libc.so.6&quot;
+
+  COMPARE = DL.callback('IPP'){|ptr1, ptr2|
+    str1 = ptr1.ptr.to_s
+    str2 = ptr2.ptr.to_s
+    ret = str1[-1] &lt;=&gt; str2[-1]
+  }
+  extern 'void qsort(void *, int, int, void *)'
+end
+
+a = ['1b', '2a', '3c']
+ap = a.to_ptr
+M.qsort(ap, a.size, DL.sizeof('P'), M::COMPARE)
+p ap.to_a('P').map{|s| s.to_s } #=&gt; [&quot;2a&quot;, &quot;1b&quot;, &quot;3c&quot;]
+</pre>
+<p>
+ここで M::COMPARE は、ブロックを呼ぶ <a href="../class/-d-l=3a=3a-symbol.html">DL::Symbol</a> オブジェクトです。
+</p>
+<p>
+DL::Importable モジュールはとても便利です。
+しかし、ときにはdlsym() のような低レベル関数を
+直接使わなければならない場面に遭遇します。
+このような場合には DL モジュールの関数を使用することになるでしょう。
+これについては <a href="../class/-d-l.html">DL</a> で説明します。
+</p>
+
+
+<h2>クラスとモジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-d-l.html">module DL</a></td>
+<td class="description"><p>
+UNIX の <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/dlopen.html">dlopen(3)</a> や Windows の LoadLibrary() などのダイナミックリンカへの低レベルな
+インターフェースを提供するモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-d-l=3a=3a-handle.html">class DL::Handle</a></td>
+<td class="description"><p>
+オープンされたダイナミックライブラリを表すクラスです。
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/dlopen.html">dlopen(3)</a> が返すハンドラーのラッパーです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-d-l=3a=3a-memory-space.html">module DL::MemorySpace</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-d-l=3a=3a-ptr-data.html">class DL::PtrData</a></td>
+<td class="description"><p>
+メモリ領域を表すクラスです。C 言語のポインタに相当します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-d-l=3a=3a-symbol.html">class DL::Symbol</a></td>
+<td class="description"><p>
+ダイナミックライブラリの関数を表すクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-d-l=3a=3a-d-l-error.html">class DL::DLError</a></td>
+<td class="description"><p>
+DL に関する一般的なエラーが発生したときに投げられます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-d-l=3a=3a-d-l-type-error.html">class DL::DLTypeError</a></td>
+<td class="description"><p>
+型に関するエラーが発生したときに投げられます。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>サブライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/dl=2fimport.html">dl/import</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/dl=2fstruct.html">dl/struct</a></td>
+<td class="description"><p>
+DL::Importable を extend したモジュールに構造体/共用体を定義する機能を与えます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/dl=2ftypes.html">dl/types</a></td>
+<td class="description"><p>
+improt dl
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/dl=2fwin32.html">dl/win32</a></td>
+<td class="description"><p>
+Ruby/DL が <a href="../class/-win32-a-p-i.html">Win32API</a> と互換性を持つようにするライブラリ。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>追加・再定義されるメソッド</h2>
+<p><code>
+
+<a href="../method/-array/i/to_ptr.html">Array#to_ptr</a>
+
+<a href="../method/-i-o/i/to_ptr.html">IO#to_ptr</a>
+
+<a href="../method/-string/i/to_ptr.html">String#to_ptr</a>
+
+</code></p>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

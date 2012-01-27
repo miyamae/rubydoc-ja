@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>singleton method IO.popen</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-i-o.html">IOクラス</a>
+&gt; popen
+
+</p>
+
+
+
+
+<h1>singleton method IO.popen</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>popen(command, mode = &quot;r&quot;) -&gt; IO</code></dt>
+<dt class="method-heading"><code>popen(command, mode = &quot;r&quot;) {|io| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+command をサブプロセスとして実行し、そのプロセスの標準入出力
+との間にパイプラインを確立します。command はシェルを経由して実行されます。
+生成したパイプを <a href="../../../class/-i-o.html">IO</a> オブジェクトとして返します。
+</p>
+<pre>
+p io = IO.popen(&quot;cat&quot;, &quot;r+&quot;)  # =&gt; #&lt;IO:0x401b75c8&gt;
+io.puts &quot;foo&quot;
+io.close_write
+p io.gets                     # =&gt; &quot;foo\n&quot;
+</pre>
+<p>
+ブロックが与えられた場合は生成した IO オブジェクトを引数にブ
+ロックを実行し、その結果を返します。ブロックの実行後、生成したパイ
+プは自動的にクローズされます。
+</p>
+<pre>
+p IO.popen(&quot;cat&quot;, &quot;r+&quot;) {|io|
+  io.puts &quot;foo&quot;
+  io.close_write
+  io.gets
+}
+# =&gt; &quot;foo\n&quot;
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] command:</dt>
+<dd>
+コマンド名を文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+オープンする IO ポートのモードを指定します。mode の詳細は <a href="../../../method/-kernel/m/open.html">Kernel.#open</a> 参照して下さい。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+パイプ、あるいは子プロセスの生成に失敗した場合に発生します。
+</dd>
+</dl>
+</dd>
+<dt class="method-heading"><code>popen(&quot;-&quot;, mode = &quot;r&quot;) -&gt; IO</code></dt>
+<dt class="method-heading"><code>popen(&quot;-&quot;, mode = &quot;r&quot;) {|io| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+第一引数に文字列 &quot;-&quot; が指定された時、<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fork.html">fork(2)</a> を
+行い子プロセスの標準入出力との間にパイプラインを確立します。
+親プロセスでは IO オブジェクトを返し、子プロセスでは
+nil を返します。
+</p>
+<pre>
+io = IO.popen(&quot;-&quot;, &quot;r+&quot;)
+if io  # parent
+  io.puts &quot;foo&quot;
+  p io.gets                   # =&gt; &quot;child output: foo\n&quot;
+  io.close
+else   # child
+  s = gets
+  print &quot;child output: &quot; + s
+  exit
+end
+</pre>
+<p>
+ブロックを与えられた場合、親プロセスでは生成した IO オブジェクトを引数に
+ブロックを実行し、その結果を返します。ブロックの実行後、生成したパイ
+プは自動的にクローズされます。
+子プロセスでは nil を引数にブロックを実行し終了します。
+</p>
+<pre>
+p IO.popen(&quot;-&quot;, &quot;r+&quot;) {|io|
+  if io   # parent
+    io.puts &quot;foo&quot;
+    io.gets
+  else    # child
+    s = gets
+    puts &quot;child output: &quot; + s
+  end
+}
+# =&gt; &quot;child output: foo\n&quot;
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+オープンする IO ポートのモードを指定します。mode の詳細は <a href="../../../method/-kernel/m/open.html">Kernel.#open</a> 参照して下さい。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+パイプ、あるいは子プロセスの生成に失敗した場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

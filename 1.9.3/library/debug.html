@@ -1,0 +1,350 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library debug</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.3 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.3 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; debugライブラリ
+</p>
+
+
+
+<h1>library debug</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+Ruby デバッガです。Ruby スクリプトのソースコードデバッグに使用します。
+</p>
+<p>
+また、Emacs を使用したインタフェース rubydb3x.el が
+Ruby のアーカイブの misc/ にあるので、活用してください。
+</p>
+<h2 >使い方</h2>
+<pre>
+$ ruby -rdebug foo.rb
+</pre>
+<p>
+または、Emacs から
+</p>
+<pre>
+M-x load-library rubydb3x.el
+M-x rubydb
+</pre>
+<h2 >デバッグコマンド</h2>
+<p>
+以下は、デバッガで使用できるコマンド名とその用法の一覧です。
+各コマンド名には省略形があります。
+</p>
+<p>
+ここに挙げたもの以外を入力した場合、その入力を ruby の式として評価します。
+</p>
+<dl>
+<dt>break</dt>
+<dt>break [&lt;file&gt;:]&lt;position&gt;|&lt;class&gt;:&lt;method&gt;</dt>
+<dd>
+<p>
+ブレークポイントを設定します。引数を省略した場合設定したブレークポ
+イントを表示します。
+</p>
+<p>
+設定するブレークポイントの書式は プログラムファイル名:位置 か
+クラス名:メソッド名 です。
+位置 はファイル中の行番号もしくはメソッド名で指定します。
+ファイル名: を省略した場合は現在実行中のファイルを指定した
+ものと見倣されます。
+</p>
+<p>
+このコマンドの省略形は b です。
+</p>
+</dd>
+<dt>catch &lt;an Exception&gt;</dt>
+<dd>
+<p>
+例外が発生した時にデバッガを停止させるキャッチポイントを設定します。
+引数を省略した場合設定したキャッチポイントを表示します。
+</p>
+<p>
+発生した例外が &lt;an Exception&gt; のサブクラスであれば
+デバッガが停止します。デフォルトのキャッチポイントは
+StandardErrorに設定されています。
+</p>
+<p>
+&lt;an Exception&gt;として off を指定すると
+例外発生時に停止しなくなります。
+</p>
+<p>
+このコマンドの省略形は cat です。
+</p>
+</dd>
+<dt>watch &lt;expression&gt;</dt>
+<dd>
+<p>
+式 &lt;expression&gt; の値が変化したときに停止するウォッ
+チポイントを設定します。
+</p>
+<p>
+このコマンドの省略形は wat です。
+</p>
+</dd>
+<dt>delete [nnn]</dt>
+<dd>
+<p>
+指定したブレークポイントを取り除きます。引数を省略した場合すべての
+ブレークポイントを取り除きます。
+</p>
+<p>
+このコマンドの省略形は del です。
+</p>
+</dd>
+<dt>display &lt;expression&gt;</dt>
+<dd>
+<p>
+処理が停止するごとに &lt;expression&gt; を評価するディス
+プレイ式を設定します。
+引数を省略した場合すべてのディスプレイ式を表示します。
+</p>
+<p>
+このコマンドの省略形は disp です。
+</p>
+</dd>
+<dt>undisplay &lt;nnn&gt;</dt>
+<dd>
+<p>
+指定したディスプレイ式を取り除きます。引数を省略した場合すべての
+ディスプレイ式を取り除きます。
+</p>
+<p>
+このコマンドの省略形は undisp です。
+</p>
+</dd>
+<dt>cont</dt>
+<dd>
+<p>
+スクリプトが終了するまで、もしくは次のブレークポイントに到達するま
+で処理を続行します。
+</p>
+<p>
+このコマンドの省略形は c です。
+</p>
+</dd>
+<dt>step [nnn]</dt>
+<dd>
+<p>
+一行ずつ処理を実行します。引数を指定した場合、指定した行数分、処理を
+続行します。メソッドの中に入ります。
+</p>
+<p>
+このコマンドの省略形は s です。
+</p>
+</dd>
+<dt>next [nnn]</dt>
+<dd>
+<p>
+一行ずつ処理を実行します。引数を指定した場合、指定した行数分、処理を
+続行します。step [nnn]との違いは、メソッド呼び出しのところでそのメ
+ソッドの中に入らないことです。
+</p>
+<p>
+このコマンドの省略形は n です。
+</p>
+</dd>
+<dt>where</dt>
+<dt>frame</dt>
+<dd>
+<p>
+フレームのスタックと、現在のフレーム位置を表示します。
+</p>
+<p>
+このコマンドの省略形は w または f です。
+</p>
+</dd>
+<dt>list [(-|nn-mm)]</dt>
+<dd>
+<p>
+スクリプトを表示します。引数が `-' ならば前の行を表示します。
+nn-mm の形式では指定した範囲の行のスクリプトを表示します。
+</p>
+<p>
+このコマンドの省略形は l です。
+</p>
+</dd>
+<dt>up [nn]</dt>
+<dd>
+<p>
+上位のフレームに上がります。
+</p>
+</dd>
+<dt>down [nn]</dt>
+<dd>
+<p>
+下位のフレームに下がります。
+</p>
+</dd>
+<dt>finish</dt>
+<dd>
+<p>
+外側のフレームに上がるまで処理を続行します。
+</p>
+<p>
+このコマンドの省略形は fin です。
+</p>
+</dd>
+<dt>trace [(on|off)] [all]</dt>
+<dd>
+<p>
+トレースモードの設定を変更します。トレースモードをonにすると、以後
+の実行においてメソッドの呼び出し関係が表示されます。引数を省略した
+場合現在のモードを表示します。all を指定した場合、全てのスレッドに
+対してモードの設定を変更します。
+</p>
+<p>
+このコマンドの省略形は tr です。
+</p>
+</dd>
+<dt>quit</dt>
+<dd>
+<p>
+スクリプトを中断し、デバッガを終了します。
+</p>
+<p>
+このコマンドの省略形は q です。
+</p>
+</dd>
+<dt>var g[lobal]</dt>
+<dt>var l[ocal]</dt>
+<dt>var i[nstance] &lt;object&gt;</dt>
+<dt>var c[onst] &lt;object&gt;</dt>
+<dd>
+<p>
+それぞれ、グローバル変数、ローカル変数、オブジェクト&lt;object&gt;の
+インスタンス変数、&lt;object&gt;の定数を表示します。
+</p>
+<p>
+このコマンドの省略形は v です。
+</p>
+</dd>
+<dt>method i[nstance] &lt;object&gt;</dt>
+<dt>method &lt;class|module&gt;</dt>
+<dd>
+<p>
+それぞれ、オブジェクト&lt;object&gt;のインスタンスメソッド
+クラスメソッド または モジュールメソッドを表示します。
+</p>
+<p>
+このコマンドの省略形は m です。
+</p>
+</dd>
+<dt>thread l[ist]</dt>
+<dd>
+<p>
+スレッドの一覧を表示します。
+</p>
+<p>
+このコマンドの省略形は th です。
+</p>
+</dd>
+<dt>thread c[ur[rent]]</dt>
+<dd>
+<p>
+現在のスレッドを表示します。
+</p>
+</dd>
+<dt>thread &lt;nnn&gt;</dt>
+<dt>thread sw[itch] &lt;nnn&gt;</dt>
+<dd>
+<p>
+実行するスレッドを &lt;nnn&gt; に切替えます。
+</p>
+</dd>
+<dt>thread stop &lt;nnn&gt;</dt>
+<dd>
+<p>
+スレッド &lt;nnn&gt; を停止します。
+</p>
+</dd>
+<dt>thread resume &lt;nnn&gt;</dt>
+<dd>
+<p>
+スレッド &lt;nnn&gt; を再開します。
+</p>
+</dd>
+<dt>pp &lt;expression&gt;</dt>
+<dd>
+<p>
+ruby の式 &lt;expression&gt; の結果を見やすく表示します。
+</p>
+</dd>
+<dt>p &lt;expression&gt;</dt>
+<dd>
+<p>
+ruby の式 &lt;expression&gt; の結果を表示します。
+</p>
+</dd>
+<dt>restart</dt>
+<dd>
+<p>
+プログラムを最初からやり直します。
+</p>
+<p>
+このコマンドの省略形は r です。
+</p>
+</dd>
+<dt>help</dt>
+<dd>
+<p>
+デバッグコマンドの一覧を表示します。
+</p>
+<p>
+このコマンドの省略形は h です。
+</p>
+</dd>
+</dl>
+<h2 >注意</h2>
+<p>
+このライブラリは <a href="../method/-kernel/v/-s-a-f-e.html">$SAFE</a> が 0 より大きい場合には使用できません。
+</p>
+
+
+<h2>クラスとモジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-d-e-b-u-g-g-e-r__.html">class DEBUGGER__</a></td>
+<td class="description"><p>
+ライブラリの内部で使用します。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+<h2>追加・再定義されるメソッド</h2>
+<p><code>
+
+<a href="../method/-tracer/s/trace_func.html">Tracer.trace_func</a>
+
+</code></p>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library net/smtp</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; net/smtpライブラリ
+</p>
+
+
+
+<h1>library net/smtp</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+メールを送信するためのプロトコル SMTP (Simple Mail Transfer Protocol)
+を扱うライブラリです。
+</p>
+<p>
+ヘッダなどメールのデータを扱うことはできません。
+SMTP の実装は <a class="external" href="http://www.ietf.org/rfc/rfc2821.txt">[RFC2821]</a> に基いています。
+</p>
+<h2 >使用例</h2>
+<h3 >とにかくメールを送る</h3>
+<p>
+SMTP を使ってメールを送るにはまず SMTP.start でセッションを開きます。
+第一引数がサーバのアドレスで第二引数がポート番号です。
+ブロックを使うと File.open と同じように終端処理を自動的にやってくれる
+のでおすすめです。
+</p>
+<pre>
+require 'net/smtp'
+Net::SMTP.start( 'smtp.example.com', 25 ) {|smtp|
+  # use smtp object only in this block
+}
+</pre>
+<p>
+smtp-server.example.com は適切な SMTP サーバのアドレスに読みかえてください。
+通常は LAN の管理者やプロバイダが SMTP サーバを用意してくれているはずです。
+</p>
+<p>
+セッションが開いたらあとは <a href="../method/-net=3a=3a-s-m-t-p/i/send_message.html">Net::SMTP#send_message</a>
+でメールを流しこむだけです。
+</p>
+<pre>
+require 'net/smtp'
+
+Net::SMTP.start('smtp.example.com', 25) {|smtp|
+  smtp.send_message(&lt;&lt;-EndOfMail, 'from@example.com', 'to@example.net')
+From: Your Name &lt;from@example.com&gt;
+To: Dest Address &lt;to@example.net&gt;
+Subject: test mail
+Date: Sat, 23 Jun 2001 16:26:43 +0900
+Message-Id: &lt;unique.message.id.string@yourhost.example.com&gt;
+
+This is a test mail.
+  EndOfMail
+}
+</pre>
+<h3 >セッションを終了する</h3>
+<p>
+メールを送ったら <a href="../method/-net=3a=3a-s-m-t-p/i/finish.html">Net::SMTP#finish</a> を呼んで
+セッションを終了しなければいけません。
+File のように GC 時に勝手に close されることもありません。
+</p>
+<pre>
+# using SMTP#finish
+require 'net/smtp'
+smtp = Net::SMTP.start('smtp.example.com', 25)
+smtp.send_message mail_string, 'from@example.com', 'to@example.net'
+smtp.finish
+</pre>
+<p>
+またブロック付きの <a href="../method/-net=3a=3a-s-m-t-p/s/start.html">Net::SMTP.start</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a>
+を使うと finish を呼んでくれるので便利です。
+可能な限りブロック付きの start を使うのがよいでしょう。
+</p>
+<pre>
+# using block form of SMTP.start
+require 'net/smtp'
+Net::SMTP.start('smtp.example.com', 25) {|smtp|
+  smtp.send_message mail_string, 'from@example.com', 'to@example.net'
+}
+</pre>
+<h3 >文字列以外からの送信</h3>
+<p>
+ひとつ上の例では文字列リテラル (ヒアドキュメント) を使って送信しましたが、
+each メソッドを持ったオブジェクトからならなんでも送ることができます。
+以下は File オブジェクトから直接送信する例です。
+</p>
+<pre>
+require 'net/smtp'
+
+Net::SMTP.start('your.smtp.server', 25) {|smtp|
+  File.open('Mail/draft/1') {|f|
+    smtp.send_message f, 'from@example.com', 'to@example.net'
+  }
+}
+</pre>
+<h2 >HELO ドメイン</h2>
+<p>
+SMTP ではメールを送る側のホストの名前 (HELO ドメインと呼ぶ) を要求
+されます。HELO ドメインは <a href="../method/-net=3a=3a-s-m-t-p/s/start.html">Net::SMTP.start</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a>
+の第三引数 helo_domain に指定します。
+たいていの SMTP サーバはこの HELO ドメイン
+による認証はあまり真面目に行わないので (簡単に偽造できるからです)
+デフォルト値を用いて問題にならないことが多いのですが、セッションを切られる
+こともあります。そういうときはとりあえず HELO ドメインを与えてみて
+ください。もちろんそれ以外の時も HELO ドメインはちゃんと渡すのが
+よいでしょう。
+</p>
+<pre>
+Net::SMTP.start('smtp.example.com', 25, 'yourdomain.example.com') {|smtp|
+</pre>
+<p>
+よくあるダイヤルアップホストの場合、HELO ドメインには ISP のメール
+サーバのドメインを使っておけばたいてい通ります。
+</p>
+<h2 >SMTP認証</h2>
+<p>
+<a href="../class/-net=3a=3a-s-m-t-p.html">Net::SMTP</a> は PLAIN, LOGIN, CRAM MD5 の3つの方法で認証をすることができます。
+(認証については <a class="external" href="http://www.ietf.org/rfc/rfc2554.txt">[RFC2554]</a>, <a class="external" href="http://www.ietf.org/rfc/rfc2195.txt">[RFC2195]</a> を参照してください)
+</p>
+<p>
+認証するためには、<a href="../method/-net=3a=3a-s-m-t-p/s/start.html">Net::SMTP.start</a> もしくは <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a>
+の引数に追加の引数を渡してください。
+</p>
+<pre>
+# 例
+Net::SMTP.start('smtp.example.com', 25, 'yourdomain.example.com',
+                'your_account', 'your_password', :cram_md5)
+</pre>
+<h2 >TLSを用いたSMTP通信</h2>
+<p>
+<a href="../class/-net=3a=3a-s-m-t-p.html">Net::SMTP</a> は <a class="external" href="http://www.ietf.org/rfc/rfc3207.txt">[RFC3207]</a> に基づいた STARTTLS を用いる
+方法、もしくは SMTPS と呼ばれる非標準的な方法
+(ポート465を用い、通信全体をTLSで包む)
+によるメール送信の暗号化が可能です。
+</p>
+<p>
+この2つは排他で、同時に利用できません。
+</p>
+<p>
+TLSを用いることで、通信相手の認証、および通信経路の暗号化ができます。
+ただし、現在のメール送信の仕組みとして、あるサーバから別のサーバへの
+中継を行うことがあります。そこでの通信が認証されているか否か、暗号化され
+ているか否かはこの仕組みの範囲外であり、なんらかの保証があるわけでは
+ないことに注意してください。メールそのものの暗号化や、メールを
+送る人、受け取る人を認証する
+必要がある場合は別の方法を考える必要があるでしょう。
+</p>
+<pre>
+# STARTTLSの例
+smtp = Net::SMTP.new('smtp.example.com', 25)
+# SSLのコンテキストを作成してSSLの設定をし、context に代入しておく
+# TLSを常に使うようにする
+smtp.enable_starttls(context)
+smtp.start() do
+  # send messages ...
+end
+</pre>
+
+
+<h2>クラスとモジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-net=3a=3a-s-m-t-p.html">class Net::SMTP</a></td>
+<td class="description"><p>
+SMTP のセッションを表現したクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-net=3a=3a-s-m-t-p=3a=3a-response.html">class Net::SMTP::Response</a></td>
+<td class="description"><p>
+<a href="../class/-net=3a=3a-s-m-t-p.html">Net::SMTP</a> の内部用クラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-net=3a=3a-s-m-t-p-error.html">module Net::SMTPError</a></td>
+<td class="description"><p>
+SMTP 関連の例外に include されるモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-net=3a=3a-s-m-t-p.html">class Net::SMTPSession</a></td>
+<td class="description"><p>
+Alias of <a href="../class/-net=3a=3a-s-m-t-p.html">Net::SMTP</a>
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-net=3a=3a-s-m-t-p-authentication-error.html">class Net::SMTPAuthenticationError</a></td>
+<td class="description"><p>
+SMTP 認証エラー(エラーコード 530)に対応する例外クラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-net=3a=3a-s-m-t-p-fatal-error.html">class Net::SMTPFatalError</a></td>
+<td class="description"><p>
+SMTP 致命的エラー(エラーコード 5xx、 ただし500除く)に対応する
+例外クラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-net=3a=3a-s-m-t-p-server-busy.html">class Net::SMTPServerBusy</a></td>
+<td class="description"><p>
+SMTP 一時エラーに対応する例外クラスです。
+SMTP エラーコード 420, 450 に対応します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-net=3a=3a-s-m-t-p-syntax-error.html">class Net::SMTPSyntaxError</a></td>
+<td class="description"><p>
+SMTP コマンド文法エラー(エラーコード 500) に対応する
+例外クラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-net=3a=3a-s-m-t-p-unknown-error.html">class Net::SMTPUnknownError</a></td>
+<td class="description"><p>
+サーバからの応答コードが予期されていない値であった場合に
+対応する例外クラスです。サーバもしくはクライアントに何らかの
+バグがあった場合に発生します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-net=3a=3a-s-m-t-p-unsupported-command.html">class Net::SMTPUnsupportedCommand</a></td>
+<td class="description"><p>
+サーバで利用できないコマンドを送ろうとした時に発生する
+例外のクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

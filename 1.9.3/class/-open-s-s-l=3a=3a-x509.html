@@ -1,0 +1,918 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>module OpenSSL::X509</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.3 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.3 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/openssl.html">opensslライブラリ</a>
+&gt; OpenSSL::X509モジュール
+</p>
+
+
+
+<h1>module OpenSSL::X509</h1>
+<p>
+
+
+クラスの継承リスト: OpenSSL::X509
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+OpenSSL の X509 証明書、CRL(証明書失効リスト)、
+CSR(証明書署名要求)、証明書ストアなどに関するモジュールです。
+</p>
+<h2 id='verify_error'>検証時エラー定数</h2>
+<p>
+以下の定数は <a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-store/i/error.html">OpenSSL::X509::Store#error</a>,
+<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-store-context/i/error.html">OpenSSL::X509::StoreContext#error</a>,
+<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-socket/i/verify_result.html">OpenSSL::SSL::SSLSocket#verify_result</a>
+の返り値として用いられます。
+V_OK はエラーなしを意味しています。
+</p>
+<ul>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-o-k.html">OpenSSL::X509::V_OK</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-a-k-i-d_-s-k-i-d_-m-i-s-m-a-t-c-h.html">OpenSSL::X509::V_ERR_AKID_SKID_MISMATCH</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-a-p-p-l-i-c-a-t-i-o-n_-v-e-r-i-f-i-c-a-t-i-o-n.html">OpenSSL::X509::V_ERR_APPLICATION_VERIFICATION</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-e-r-t_-c-h-a-i-n_-t-o-o_-l-o-n-g.html">OpenSSL::X509::V_ERR_CERT_CHAIN_TOO_LONG</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-e-r-t_-h-a-s_-e-x-p-i-r-e-d.html">OpenSSL::X509::V_ERR_CERT_HAS_EXPIRED</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-e-r-t_-n-o-t_-y-e-t_-v-a-l-i-d.html">OpenSSL::X509::V_ERR_CERT_NOT_YET_VALID</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-e-r-t_-r-e-j-e-c-t-e-d.html">OpenSSL::X509::V_ERR_CERT_REJECTED</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-e-r-t_-r-e-v-o-k-e-d.html">OpenSSL::X509::V_ERR_CERT_REVOKED</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-e-r-t_-s-i-g-n-a-t-u-r-e_-f-a-i-l-u-r-e.html">OpenSSL::X509::V_ERR_CERT_SIGNATURE_FAILURE</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-e-r-t_-u-n-t-r-u-s-t-e-d.html">OpenSSL::X509::V_ERR_CERT_UNTRUSTED</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-r-l_-h-a-s_-e-x-p-i-r-e-d.html">OpenSSL::X509::V_ERR_CRL_HAS_EXPIRED</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-r-l_-n-o-t_-y-e-t_-v-a-l-i-d.html">OpenSSL::X509::V_ERR_CRL_NOT_YET_VALID</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-r-l_-s-i-g-n-a-t-u-r-e_-f-a-i-l-u-r-e.html">OpenSSL::X509::V_ERR_CRL_SIGNATURE_FAILURE</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-d-e-p-t-h_-z-e-r-o_-s-e-l-f_-s-i-g-n-e-d_-c-e-r-t.html">OpenSSL::X509::V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-e-r-r-o-r_-i-n_-c-e-r-t_-n-o-t_-a-f-t-e-r_-f-i-e-l-d.html">OpenSSL::X509::V_ERR_ERROR_IN_CERT_NOT_AFTER_FIELD</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-e-r-r-o-r_-i-n_-c-e-r-t_-n-o-t_-b-e-f-o-r-e_-f-i-e-l-d.html">OpenSSL::X509::V_ERR_ERROR_IN_CERT_NOT_BEFORE_FIELD</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-e-r-r-o-r_-i-n_-c-r-l_-l-a-s-t_-u-p-d-a-t-e_-f-i-e-l-d.html">OpenSSL::X509::V_ERR_ERROR_IN_CRL_LAST_UPDATE_FIELD</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-e-r-r-o-r_-i-n_-c-r-l_-n-e-x-t_-u-p-d-a-t-e_-f-i-e-l-d.html">OpenSSL::X509::V_ERR_ERROR_IN_CRL_NEXT_UPDATE_FIELD</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-i-n-v-a-l-i-d_-c-a.html">OpenSSL::X509::V_ERR_INVALID_CA</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-i-n-v-a-l-i-d_-p-u-r-p-o-s-e.html">OpenSSL::X509::V_ERR_INVALID_PURPOSE</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-k-e-y-u-s-a-g-e_-n-o_-c-e-r-t-s-i-g-n.html">OpenSSL::X509::V_ERR_KEYUSAGE_NO_CERTSIGN</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-o-u-t_-o-f_-m-e-m.html">OpenSSL::X509::V_ERR_OUT_OF_MEM</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-p-a-t-h_-l-e-n-g-t-h_-e-x-c-e-e-d-e-d.html">OpenSSL::X509::V_ERR_PATH_LENGTH_EXCEEDED</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-s-e-l-f_-s-i-g-n-e-d_-c-e-r-t_-i-n_-c-h-a-i-n.html">OpenSSL::X509::V_ERR_SELF_SIGNED_CERT_IN_CHAIN</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-s-u-b-j-e-c-t_-i-s-s-u-e-r_-m-i-s-m-a-t-c-h.html">OpenSSL::X509::V_ERR_SUBJECT_ISSUER_MISMATCH</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-u-n-a-b-l-e_-t-o_-d-e-c-o-d-e_-i-s-s-u-e-r_-p-u-b-l-i-c_-k-e-y.html">OpenSSL::X509::V_ERR_UNABLE_TO_DECODE_ISSUER_PUBLIC_KEY</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-u-n-a-b-l-e_-t-o_-d-e-c-r-y-p-t_-c-e-r-t_-s-i-g-n-a-t-u-r-e.html">OpenSSL::X509::V_ERR_UNABLE_TO_DECRYPT_CERT_SIGNATURE</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-u-n-a-b-l-e_-t-o_-d-e-c-r-y-p-t_-c-r-l_-s-i-g-n-a-t-u-r-e.html">OpenSSL::X509::V_ERR_UNABLE_TO_DECRYPT_CRL_SIGNATURE</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-u-n-a-b-l-e_-t-o_-g-e-t_-c-r-l.html">OpenSSL::X509::V_ERR_UNABLE_TO_GET_CRL</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-u-n-a-b-l-e_-t-o_-g-e-t_-i-s-s-u-e-r_-c-e-r-t.html">OpenSSL::X509::V_ERR_UNABLE_TO_GET_ISSUER_CERT</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-u-n-a-b-l-e_-t-o_-g-e-t_-i-s-s-u-e-r_-c-e-r-t_-l-o-c-a-l-l-y.html">OpenSSL::X509::V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-u-n-a-b-l-e_-t-o_-v-e-r-i-f-y_-l-e-a-f_-s-i-g-n-a-t-u-r-e.html">OpenSSL::X509::V_ERR_UNABLE_TO_VERIFY_LEAF_SIGNATURE</a></li>
+</ul>
+
+
+
+<h2>定数</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-d-e-f-a-u-l-t_-c-e-r-t_-a-r-e-a.html"><code>
+  DEFAULT_CERT_AREA -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書や設定ファイルなど OpenSSL 関連のデータを
+置いてあるディレクトリの名前を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-d-e-f-a-u-l-t_-c-e-r-t_-d-i-r.html"><code>
+  DEFAULT_CERT_DIR -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+デフォルトの CA 証明書ディレクトリ名です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-d-e-f-a-u-l-t_-c-e-r-t_-d-i-r_-e-n-v.html"><code>
+  DEFAULT_CERT_DIR_ENV -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+CA 証明書ディレクトリ名を指定する環境変数名です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-d-e-f-a-u-l-t_-c-e-r-t_-f-i-l-e.html"><code>
+  DEFAULT_CERT_FILE -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+デフォルトの CA 証明書ファイル名です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-d-e-f-a-u-l-t_-c-e-r-t_-f-i-l-e_-e-n-v.html"><code>
+  DEFAULT_CERT_FILE_ENV -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+CA 証明書ファイル名を指定する環境変数名です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-d-e-f-a-u-l-t_-p-r-i-v-a-t-e_-d-i-r.html"><code>
+  DEFAULT_PRIVATE_DIR -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+デフォルトの秘密鍵ディレクトリ名です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-p-u-r-p-o-s-e_-a-n-y.html"><code>
+  PURPOSE_ANY -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書の目的を確認しないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-p-u-r-p-o-s-e_-c-r-l_-s-i-g-n.html"><code>
+  PURPOSE_CRL_SIGN -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書が CRL の署名をするのに利用可能かを
+チェックすることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-p-u-r-p-o-s-e_-n-s_-s-s-l_-s-e-r-v-e-r.html"><code>
+  PURPOSE_NS_SSL_SERVER -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書が
+Netscape SSL server の証明書として使えるか
+チェックすることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-p-u-r-p-o-s-e_-o-c-s-p_-h-e-l-p-e-r.html"><code>
+  PURPOSE_OCSP_HELPER -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+OCSP関連でOpenSSLの内部的に利用されます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-p-u-r-p-o-s-e_-s-m-i-m-e_-e-n-c-r-y-p-t.html"><code>
+  PURPOSE_SMIME_ENCRYPT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書が
+S/MIME の暗号化をするのに使えるか
+チェックすることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-p-u-r-p-o-s-e_-s-m-i-m-e_-s-i-g-n.html"><code>
+  PURPOSE_SMIME_SIGN -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書が
+S/MIME の署名をするのに使えるか
+チェックすることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-p-u-r-p-o-s-e_-s-s-l_-c-l-i-e-n-t.html"><code>
+  PURPOSE_SSL_CLIENT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書が
+SSL のクライアントサイドの証明書として使えるか
+チェックすることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-p-u-r-p-o-s-e_-s-s-l_-s-e-r-v-e-r.html"><code>
+  PURPOSE_SSL_SERVER -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書が
+SSL のサーバサイドの証明書として使えるか。
+チェックすることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-t-r-u-s-t_-c-o-m-p-a-t.html"><code>
+  TRUST_COMPAT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ルート CA 証明書が自分自身の秘密鍵で署名されています。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-t-r-u-s-t_-e-m-a-i-l.html"><code>
+  TRUST_EMAIL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-t-r-u-s-t_-o-b-j-e-c-t_-s-i-g-n.html"><code>
+  TRUST_OBJECT_SIGN -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-t-r-u-s-t_-o-c-s-p_-r-e-q-u-e-s-t.html"><code>
+  TRUST_OCSP_REQUEST -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-t-r-u-s-t_-o-c-s-p_-s-i-g-n.html"><code>
+  TRUST_OCSP_SIGN -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-t-r-u-s-t_-s-s-l_-c-l-i-e-n-t.html"><code>
+  TRUST_SSL_CLIENT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-t-r-u-s-t_-s-s-l_-s-e-r-v-e-r.html"><code>
+  TRUST_SSL_SERVER -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-a-k-i-d_-i-s-s-u-e-r_-s-e-r-i-a-l_-m-i-s-m-a-t-c-h.html"><code>
+  V_ERR_AKID_ISSUER_SERIAL_MISMATCH -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書の拡張領域の Authority Key Identifier のシリアルと
+issuer の証明書のシリアルが一致しないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-a-k-i-d_-s-k-i-d_-m-i-s-m-a-t-c-h.html"><code>
+  V_ERR_AKID_SKID_MISMATCH -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書の authorityKeyIdentifier 拡張領域の内容が
+issuer(発行者)の証明書の subjectKeyIdentifier の内容と
+食い違っていることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-a-p-p-l-i-c-a-t-i-o-n_-v-e-r-i-f-i-c-a-t-i-o-n.html"><code>
+  V_ERR_APPLICATION_VERIFICATION -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+アプリケーションが利用するエラーコードです。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-e-r-t_-c-h-a-i-n_-t-o-o_-l-o-n-g.html"><code>
+  V_ERR_CERT_CHAIN_TOO_LONG -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書チェインが長すぎることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-e-r-t_-h-a-s_-e-x-p-i-r-e-d.html"><code>
+  V_ERR_CERT_HAS_EXPIRED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書が期限切れであることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-e-r-t_-n-o-t_-y-e-t_-v-a-l-i-d.html"><code>
+  V_ERR_CERT_NOT_YET_VALID -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書の開始時刻以前であることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-e-r-t_-r-e-j-e-c-t-e-d.html"><code>
+  V_ERR_CERT_REJECTED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ルート CA 証明書に指定した目標に使ってはならないと
+されていることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-e-r-t_-r-e-v-o-k-e-d.html"><code>
+  V_ERR_CERT_REVOKED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書が CRL によって失効されられていることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-e-r-t_-s-i-g-n-a-t-u-r-e_-f-a-i-l-u-r-e.html"><code>
+  V_ERR_CERT_SIGNATURE_FAILURE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書になされた署名の検証に失敗したことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-e-r-t_-u-n-t-r-u-s-t-e-d.html"><code>
+  V_ERR_CERT_UNTRUSTED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ルート CA 証明書が指定した目的では信頼できないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-r-l_-h-a-s_-e-x-p-i-r-e-d.html"><code>
+  V_ERR_CRL_HAS_EXPIRED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+CRL が期限切れであることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-r-l_-n-o-t_-y-e-t_-v-a-l-i-d.html"><code>
+  V_ERR_CRL_NOT_YET_VALID -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+CRL の開始時刻がまだ来ていないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-c-r-l_-s-i-g-n-a-t-u-r-e_-f-a-i-l-u-r-e.html"><code>
+  V_ERR_CRL_SIGNATURE_FAILURE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+CRL になされた署名の検証に失敗したことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-d-e-p-t-h_-z-e-r-o_-s-e-l-f_-s-i-g-n-e-d_-c-e-r-t.html"><code>
+  V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+検証している証明書がルート CA (自己署名証明書)であり、
+それが信頼されている証明書でないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-e-r-r-o-r_-i-n_-c-e-r-t_-n-o-t_-a-f-t-e-r_-f-i-e-l-d.html"><code>
+  V_ERR_ERROR_IN_CERT_NOT_AFTER_FIELD -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書の notAfter フィールドの値が不正である
+ことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-e-r-r-o-r_-i-n_-c-e-r-t_-n-o-t_-b-e-f-o-r-e_-f-i-e-l-d.html"><code>
+  V_ERR_ERROR_IN_CERT_NOT_BEFORE_FIELD -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書の notBefore フィールドの値が不正である
+ことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-e-r-r-o-r_-i-n_-c-r-l_-l-a-s-t_-u-p-d-a-t-e_-f-i-e-l-d.html"><code>
+  V_ERR_ERROR_IN_CRL_LAST_UPDATE_FIELD -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+CRL の lastUpdate フィールドの値が不正である
+ことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-e-r-r-o-r_-i-n_-c-r-l_-n-e-x-t_-u-p-d-a-t-e_-f-i-e-l-d.html"><code>
+  V_ERR_ERROR_IN_CRL_NEXT_UPDATE_FIELD -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+CRL の nextUpdate フィールドの値が不正である
+ことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-i-n-v-a-l-i-d_-c-a.html"><code>
+  V_ERR_INVALID_CA -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+CA 証明書が不正であることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-i-n-v-a-l-i-d_-p-u-r-p-o-s-e.html"><code>
+  V_ERR_INVALID_PURPOSE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書が指定した目的で使えないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-k-e-y-u-s-a-g-e_-n-o_-c-e-r-t-s-i-g-n.html"><code>
+  V_ERR_KEYUSAGE_NO_CERTSIGN -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+署名できない証明書で署名しようしとたことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-o-u-t_-o-f_-m-e-m.html"><code>
+  V_ERR_OUT_OF_MEM -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+メモリが不足したことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-p-a-t-h_-l-e-n-g-t-h_-e-x-c-e-e-d-e-d.html"><code>
+  V_ERR_PATH_LENGTH_EXCEEDED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+CA 証明書の basicConstraints 拡張領域の pathlen を
+越えている場合に発生します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-s-e-l-f_-s-i-g-n-e-d_-c-e-r-t_-i-n_-c-h-a-i-n.html"><code>
+  V_ERR_SELF_SIGNED_CERT_IN_CHAIN -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書チェインのルート CA (自己署名証明書)が
+信頼されている証明書でないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-s-u-b-j-e-c-t_-i-s-s-u-e-r_-m-i-s-m-a-t-c-h.html"><code>
+  V_ERR_SUBJECT_ISSUER_MISMATCH -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書の issuer(発行者)名と上位の証明書のsubject(所有者)名が
+異なっていることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-u-n-a-b-l-e_-t-o_-d-e-c-o-d-e_-i-s-s-u-e-r_-p-u-b-l-i-c_-k-e-y.html"><code>
+  V_ERR_UNABLE_TO_DECODE_ISSUER_PUBLIC_KEY -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書の SubjectPublicKeyInfo フィールドが読めなかった
+ことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-u-n-a-b-l-e_-t-o_-d-e-c-r-y-p-t_-c-e-r-t_-s-i-g-n-a-t-u-r-e.html"><code>
+  V_ERR_UNABLE_TO_DECRYPT_CERT_SIGNATURE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書の署名が復号できないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-u-n-a-b-l-e_-t-o_-d-e-c-r-y-p-t_-c-r-l_-s-i-g-n-a-t-u-r-e.html"><code>
+  V_ERR_UNABLE_TO_DECRYPT_CRL_SIGNATURE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+CRL の署名が復号できないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-u-n-a-b-l-e_-t-o_-g-e-t_-c-r-l.html"><code>
+  V_ERR_UNABLE_TO_GET_CRL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+CRL が見付からないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-u-n-a-b-l-e_-t-o_-g-e-t_-i-s-s-u-e-r_-c-e-r-t.html"><code>
+  V_ERR_UNABLE_TO_GET_ISSUER_CERT -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+issuer(発行者)の証明書が
+信頼している証明書群の中から見付からない
+ような証明書を、信頼している証明書群に含んでいることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-u-n-a-b-l-e_-t-o_-g-e-t_-i-s-s-u-e-r_-c-e-r-t_-l-o-c-a-l-l-y.html"><code>
+  V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書チェイン末尾の証明書の issuer(発行者)の証明書が
+信頼している証明書群の中から見付からないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-e-r-r_-u-n-a-b-l-e_-t-o_-v-e-r-i-f-y_-l-e-a-f_-s-i-g-n-a-t-u-r-e.html"><code>
+  V_ERR_UNABLE_TO_VERIFY_LEAF_SIGNATURE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書チェインにある証明書がただ一つでその証明書が
+自己署名証明書でないことを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-f-l-a-g_-c-r-l_-c-h-e-c-k.html"><code>
+  V_FLAG_CRL_CHECK -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書の検証時に CRL をチェックすることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-f-l-a-g_-c-r-l_-c-h-e-c-k_-a-l-l.html"><code>
+  V_FLAG_CRL_CHECK_ALL -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+証明書チェーンすべてに CRL をチェックすることを意味します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-open-s-s-l=3a=3a-x509/c/-v_-o-k.html"><code>
+  V_OK -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+エラーが発生していないことを意味します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

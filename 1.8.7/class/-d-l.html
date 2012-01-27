@@ -1,0 +1,539 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>module DL</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/dl.html">dlライブラリ</a>
+&gt; DLモジュール
+</p>
+
+
+
+<h1>module DL</h1>
+<p>
+
+
+クラスの継承リスト: DL
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+UNIX の <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/dlopen.html">dlopen(3)</a> や Windows の LoadLibrary() などのダイナミックリンカへの低レベルな
+インターフェースを提供するモジュールです。
+</p>
+<p>
+モジュール DL は 3 つのクラスから成っています。
+</p>
+<dl>
+<dt><a href="../class/-d-l=3a=3a-symbol.html">DL::Symbol</a></dt>
+<dd>
+<p>
+ダイナミックライブラリの関数のラッパークラスです。
+</p>
+</dd>
+<dt><a href="../class/-d-l=3a=3a-ptr-data.html">DL::PtrData</a></dt>
+<dd>
+<p>
+C のポインタのようなメモリブロックを表すクラスです。
+</p>
+</dd>
+<dt><a href="../class/-d-l=3a=3a-handle.html">DL::Handle</a></dt>
+<dd>
+<p>
+オープンされたダイナミックライブラリを表すクラスです。
+</p>
+</dd>
+</dl>
+<h2 >Type specifiers</h2>
+<p>
+プロトタイプは以下の型修飾子から成ります。プロトタイプの最初の要素は戻り値
+の型を意味します。残りの要素は各引数の型を意味します。
+</p>
+<dl>
+<dt>C</dt>
+<dd>
+<p>
+文字 (char)
+</p>
+</dd>
+<dt>c</dt>
+<dd>
+<p>
+文字を指すポインタ (char *)
+</p>
+</dd>
+<dt>H</dt>
+<dd>
+<p>
+short 整数  (short)
+</p>
+</dd>
+<dt>h</dt>
+<dd>
+<p>
+short 整数を指すポインタ (short *)
+</p>
+</dd>
+<dt>I</dt>
+<dd>
+<p>
+整数 (char, short, int)
+</p>
+</dd>
+<dt>i</dt>
+<dd>
+<p>
+整数を指すポインタ (char *, short *, int *)
+</p>
+</dd>
+<dt>L</dt>
+<dd>
+<p>
+long int
+</p>
+</dd>
+<dt>l</dt>
+<dd>
+<p>
+long int へのポインタ (long *)
+</p>
+</dd>
+<dt>F</dt>
+<dd>
+<p>
+実数 (float)
+</p>
+</dd>
+<dt>f</dt>
+<dd>
+<p>
+実数へのポインタ (float *)
+</p>
+</dd>
+<dt>D</dt>
+<dd>
+<p>
+実数 (double)
+</p>
+</dd>
+<dt>d</dt>
+<dd>
+<p>
+実数へのポインタ(double *)
+</p>
+</dd>
+<dt>S</dt>
+<dd>
+<p>
+不変 (immutable) の文字列 (const char *)
+</p>
+</dd>
+<dt>s</dt>
+<dd>
+<p>
+変更可能(mutable)な文字列 (char *)
+</p>
+</dd>
+<dt>A</dt>
+<dd>
+<p>
+配列 (const type[])
+</p>
+</dd>
+<dt>a</dt>
+<dd>
+<p>
+変更可能 (mutable) な配列 (type[])
+</p>
+</dd>
+<dt>P</dt>
+<dd>
+<p>
+ポインタ (void *)
+</p>
+</dd>
+<dt>p</dt>
+<dd>
+<p>
+変更可能 (mutable) なポインタ (void *)
+</p>
+</dd>
+<dt>0</dt>
+<dd>
+<p>
+void 関数 (これはプロトタイプの最初の文字でなければならない)
+</p>
+</dd>
+</dl>
+<p>
+cbtype は型修飾子 0, C, I, H, L, F, D, S そして P から成ります。
+例えば,
+</p>
+<pre>
+DL.callback('IPP'){|ptr1,ptr2|
+  str1 = ptr1.ptr.to_s
+  str2 = ptr2.ptr.to_s
+  str1 &lt;=&gt; str2
+}
+</pre>
+<h2 >Ruby のオブジェクトから C の型への変換</h2>
+<p>
+<a href="../method/-d-l/m/callback.html">DL.#callback</a> や <a href="../method/-d-l=3a=3a-handle/i/sym.html">DL::Handle#sym</a> で指定した
+型指定子に従って Ruby のオブジェクトと C の型は相互に変換されます。
+</p>
+
+
+
+<h2>特異メソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/s/last_error.html"><code>
+  last_error<br>last_error=
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/s/win32_last_error.html"><code>
+  win32_last_error<br>win32_last_error=
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>モジュール関数</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/m/callback.html"><code>
+  callback(type) -&gt; DL::Symbol<br>define_callback(type) -&gt; DL::Symbol
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/m/dlopen.html"><code>
+  dlopen(lib) -&gt; DL::Handle<br>dlopen(lib) {|handle| ... } -&gt; DL::Handle
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ダイナミックライブラリ lib をロードし、
+<a href="../class/-d-l=3a=3a-handle.html">DL::Handle</a> として返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/m/malloc.html"><code>
+  malloc(size) -&gt; DL::PtrData
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+size バイトのメモリ領域を確保し、
+その領域を指す <a href="../class/-d-l=3a=3a-ptr-data.html">DL::PtrData</a> オブジェクトを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/m/remove_callback.html"><code>
+  remove_callback(sym) -&gt; nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+コールバック関数 sym を <a href="../method/-d-l/c/-func-table.html">DL::FuncTable</a> から削除します。
+以後 sym.call を呼ぶことができなくなります。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/m/sizeof.html"><code>
+  sizeof(type) -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+型のサイズを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/m/strdup.html"><code>
+  strdup(str) -&gt; DL::PtrData
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列 str を複製し、その新しい文字列へのポインタ
+<a href="../class/-d-l=3a=3a-ptr-data.html">DL::PtrData</a> オブジェクトを返します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>定数</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/c/-a-l-i-g-n_-d-o-u-b-l-e.html"><code>
+  ALIGN_DOUBLE
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/c/-a-l-i-g-n_-f-l-o-a-t.html"><code>
+  ALIGN_FLOAT
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/c/-a-l-i-g-n_-i-n-t.html"><code>
+  ALIGN_INT
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/c/-a-l-i-g-n_-l-o-n-g.html"><code>
+  ALIGN_LONG
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/c/-a-l-i-g-n_-s-h-o-r-t.html"><code>
+  ALIGN_SHORT
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/c/-a-l-i-g-n_-v-o-i-d-p.html"><code>
+  ALIGN_VOIDP
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/c/-d-l-s-t-a-c-k.html"><code>
+  DLSTACK
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/c/-f-r-e-e.html"><code>
+  FREE
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/c/-func-table.html"><code>
+  FuncTable
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/c/-m-a-x_-a-r-g.html"><code>
+  MAX_ARG
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/c/-r-t-l-d_-g-l-o-b-a-l.html"><code>
+  RTLD_GLOBAL
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/c/-r-t-l-d_-l-a-z-y.html"><code>
+  RTLD_LAZY
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-l/c/-r-t-l-d_-n-o-w.html"><code>
+  RTLD_NOW
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

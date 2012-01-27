@@ -1,0 +1,2594 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class String</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.3 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.9.3 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Stringクラス
+</p>
+
+
+
+<h1>class String</h1>
+<p>
+
+
+クラスの継承リスト: String
+
+      &lt; <a href="../class/-comparable.html">Comparable</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+文字列のクラスです。
+NUL 文字を含む任意のバイト列を扱うことができます。
+文字列の長さにはメモリ容量以外の制限はありません。
+</p>
+<p>
+文字列は通常、文字列リテラルを使って生成します。
+以下に文字列リテラルの例をいくつか示します。
+</p>
+<pre>
+'str\\ing'   # シングルクオート文字列 (エスケープシーケンスがほぼ無効)
+&quot;string\n&quot;   # ダブルクオート文字列 (エスケープシーケンスがすべて有効)
+%q(str\\ing) # 「%q」文字列 (エスケープシーケンスがほぼ無効、デリミタが変えられる)
+%Q(string\n) # 「%Q」文字列 (エスケープシーケンスがすべて有効、デリミタが変えられる)
+
+# ヒアドキュメント
+&lt;&lt;End
+この行はヒアドキュメント
+End
+
+# ダブルクオートヒアドキュメント (クオートなしの場合と同じ)
+&lt;&lt;&quot;End&quot;
+この行はヒアドキュメント
+End
+
+# シングルクオートヒアドキュメント (一切のエスケープシーケンスが無効)
+&lt;&lt;'End'
+この行はヒアドキュメント
+End
+
+# 終端記号がインデントされたヒアドキュメント
+# シングルクオート、ダブルクオートとの併用も可能
+&lt;&lt;-End
+この行はヒアドキュメント (終端記号をインデントできる)
+   End
+</pre>
+<h2 id='mutable'>破壊的な変更</h2>
+<p>
+Ruby の String クラスは mutable です。
+つまり、オブジェクト自体を破壊的に変更できます。
+</p>
+<p>
+「破壊的な変更」とは、あるオブジェクトの内容自体を変化させることです。
+例えば文字列のすべての文字を破壊的に大文字へ変更する
+<a href="../method/-string/i/upcase=21.html">String#upcase!</a> メソッドの使用例を以下に示します。
+</p>
+<pre>
+a = &quot;string&quot;
+b = a
+a.upcase!
+p a   # =&gt; &quot;STRING&quot;
+p b   # =&gt; &quot;STRING&quot;
+</pre>
+<p>
+この例では、a に対してメソッドを呼んだにも関わらず b も変更されています。
+これは、変数 a と b が一つの文字列オブジェクトを指していて、
+upcase! メソッドでそのオブジェクト自体が変更されたからです。
+</p>
+<p>
+upcase! の非破壊版である <a href="../method/-string/i/upcase.html">String#upcase</a> を使った例を以下に示します。
+こちらでは a の変更が b に波及しません。
+</p>
+<pre>
+a = &quot;string&quot;
+b = a
+a = a.upcase
+p a   # =&gt; &quot;STRING&quot;
+p b   # =&gt; &quot;string&quot;
+</pre>
+<p>
+一般には、破壊的「ではない」メソッドを
+中心に使っていくほうがバグが出にくくなります。
+</p>
+<p>
+String クラスのメソッドには破壊的なメソッドも非破壊的なメソッドもあります。
+破壊的なメソッドの例としては concat, sub!, upcase! などが挙げられます。
+非破壊的なメソッドの例としては index, sub, upcase などが挙げられます。
+</p>
+<p>
+同じ動作で破壊的なメソッドと非破壊的なメソッドの両方が定義されているときは、
+破壊的なバージョンには名前の最後に「!」が付いています。
+例えば upcase メソッドは非破壊的で、upcase! メソッドは破壊的です。
+</p>
+<p>
+ただし、この命名ルールを
+「破壊的なメソッドにはすべて『!』が付いている」と解釈しないでください。
+例えば concat には「!」が付いていませんが、破壊的です。あくまでも、
+「『!』が付いているメソッドと付いていないメソッドの両方があるときは、
+『!』が付いているほうが破壊的」というだけです。
+「『!』が付いているならば破壊的」は常に成立しますが、逆は必ずしも成立しません。
+</p>
+<h2 id='m17n'>多言語化と文字列のエンコーディング</h2>
+<p>
+String オブジェクトは自身のエンコーディング情報を持ちます。
+インスタンスメソッドはエンコーディングに従い、1バイトではなく1文字を単位として動作します。
+エンコーディングの変換にはメソッド <a href="../method/-string/i/encode.html">String#encode</a> を使います。
+</p>
+<p>
+動作例:  (注)一行目にmagic commentが必要です。
+</p>
+<pre>
+# vim:set fileencoding=UTF-8:
+p &quot;いろは&quot;.size      #=&gt; 3
+p &quot;漢字&quot;[0]          #=&gt; &quot;漢&quot;
+p &quot;山本山&quot;.reverse   #=&gt; &quot;山本山&quot;
+
+s = &quot;ruビー&quot;
+s[0..1] = &quot;ル&quot;
+p s                  #=&gt; &quot;ルビー&quot;
+
+e = &quot;言語&quot;.encode(&quot;EUC-JP&quot;)
+u = &quot;言語&quot;.encode(&quot;UTF-8&quot;)
+p e.encoding                   #=&gt; Encoding::EUC_JP
+p u.encoding                   #=&gt; Encoding::UTF_8
+</pre>
+<p>
+より詳しく知りたい場合は、<a href="../doc/spec=2fm17n.html">多言語化</a> を参照してください。
+</p>
+<h3 >文字列同士の比較・結合</h3>
+<p>
+文字列同士の比較・結合などでは両者のエンコーディングを意識する必要があります。
+例えば <a href="../method/-string/i/=3d=3d.html">String#==</a> は両者のエンコーディングが等しくバイト列表現が
+等しい場合にのみ true を返します。
+このときエンコーディングが UTF-8 であっても正規化せずに比較します。
+文字列の結合も同様です。異なるエンコーディング同士の文字列を結合する時は
+明示的にエンコーディングを変換する必要があります。
+</p>
+<p>
+動作例:  (注)一行目にmagic commentが必要です。
+</p>
+<pre>
+# vim:set fileencoding=UTF-8:
+s = &quot;いろは&quot;
+a = s.encode(&quot;EUC-JP&quot;)
+b = s.encode(&quot;UTF-8&quot;)
+p a == b                            #=&gt; false
+
+s = &quot;合&quot;.encode(&quot;EUC-JP&quot;)
+p s + &quot;\u{4f53}&quot;.encode(&quot;EUC-JP&quot;)   #=&gt; &quot;合体&quot;
+p s + &quot;\u{4f53}&quot;                    #=&gt; ArgumentError
+</pre>
+<p>
+ハッシュのキーの比較に使われる <a href="../method/-string/i/eql=3f.html">String#eql?</a> は <a href="../method/-string/i/=3d=3d.html">String#==</a> の別名です。なので、
+ハッシュのキーに非 ASCII 文字列を使う場合には注意が必要です。
+</p>
+<p>
+動作例:  (注)一行目にmagic commentが必要です。
+</p>
+<pre>
+# encoding: UTF-8
+h = {}
+s = &quot;いろは&quot;
+s.force_encoding(&quot;EUC-JP&quot;)
+h[s] = 1
+s.force_encoding(&quot;ASCII-8BIT&quot;)
+p h[s]                             #=&gt; nil
+</pre>
+<h3 >7bit クリーンな文字列</h3>
+<p>
+ASCII 互換エンコーディングをもつ 7bit クリーンな文字列は
+エンコーディングに関わらず ASCII として扱うことができます。
+例えば <a href="../method/-string/i/=3d=3d.html">String#==</a> は両者の文字エンコーディングが異なっていても
+true を返します。
+ASCII 互換エンコーディングをもつ文字列にエンコーディングの変換なしで結合することができます。
+</p>
+<p>
+例:
+</p>
+<pre>
+s = &quot;abc&quot;
+a = s.encode(&quot;EUC-JP&quot;)
+b = s.encode(&quot;UTF-8&quot;)
+p a == b                           #=&gt; true
+p a + b                            #=&gt; &quot;abcabc&quot;
+</pre>
+<p>
+ここで言う「ASCII互換エンコーディング」とは、コードポイントが同一という意味ではなく
+バイト列が同じことを意味します。従って UTF-16 はASCII互換ではありません。
+また厳密性を追求せず、おおむね互換なら互換と呼びます。よって Shift_JIS は ASCII 互換です。
+</p>
+<h3 >バイト列を表す文字列</h3>
+<p>
+文字列ではない単なるバイト列も String オブジェクトで表されます。
+その時のエンコーディングは ASCII-8BIT です。
+</p>
+
+
+
+<h2>特異メソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/s/new.html"><code>
+  new(string = &quot;&quot;) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+string と同じ内容の新しい文字列を作成して返します。
+引数を省略した場合は空文字列を生成して返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/s/try_convert.html"><code>
+  try_convert(obj) -&gt; String | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+obj を String に変換しようと試みます。変換には <a href="../method/-object/i/to_str.html">Object#to_str</a> メソッ
+ドが使われます。変換後の文字列を返すか、何らかの理由により変換できなかっ
+た場合は nil が返されます。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>インスタンスメソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=25.html"><code>
+  self % args -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+printf と同じ規則に従って args をフォーマットします。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=2a.html"><code>
+  self * times -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の内容を times 回だけ繰り返した新しい文字列を作成して返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=2b.html"><code>
+  self + other -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列と other を連結した新しい文字列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=3c=3c.html"><code>
+  self &lt;&lt; other -&gt; self<br>concat(other) -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self に文字列 other を破壊的に連結します。
+other が 0 から 255 のまでの整数である場合は
+その 1 バイトを末尾に追加します (つまり、整数が示す ASCII コードの文字が追加されます)。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=3c=3d=3e.html"><code>
+  self &lt;=&gt; other -&gt; Integer | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self と other を ASCII コード順で比較して、
+self が大きい時には正の整数、等しい時には 0、小さい時には負の整数を返します。
+このメソッドは Comparable モジュールのメソッドを実装するために使われます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=3d=3d.html"><code>
+  self == other -&gt; bool<br>self === other -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の内容が文字列 other の内容と等しいときに true を返します。
+等しくなければ false を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=3d=7e.html"><code>
+  self =~ other -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+正規表現 other とのマッチを行います。
+マッチが成功すればマッチした位置のインデックスを、そうでなければ nil を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=5b=5d.html"><code>
+  self[nth] -&gt; Integer<br>slice(nth) -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+nth 番目の文字を返します。
+nth が負の場合は文字列の末尾から数えます。
+つまり、 self.size + nth 番目の文字を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=5b=5d.html"><code>
+  self[nth, len] -&gt; String | nil<br>slice(nth, len) -&gt; String | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+nth 文字目から長さ len 文字の部分文字列を新しく作って返します。
+nth が負の場合は文字列の末尾から数えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=5b=5d.html"><code>
+  self[substr] -&gt; String | nil<br>slice(substr) -&gt; String | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self が substr を含む場合、一致した文字列を新しく作って返します。
+substr を含まなければ nil を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=5b=5d.html"><code>
+  self[regexp, nth = 0] -&gt; String<br>slice(regexp, nth = 0) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+正規表現 regexp の nth 番目の括弧にマッチする最初の部分文字列を返します。
+nth を省略したときや 0 の場合は正規表現がマッチした部分文字列全体を返します。
+正規表現が self にマッチしなかった場合や nth に対応する括弧がないときは nil を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=5b=5d.html"><code>
+  self[regexp, name] -&gt; String<br>slice(regexp, name) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+正規表現 regexp の name で指定した名前付きキャプチャにマッチする最初の
+部分文字列を返します。正規表現が self にマッチしなかった場合は nil を返
+します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=5b=5d.html"><code>
+  self[range] -&gt; String<br>slice(range) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+rangeで指定したインデックスの範囲に含まれる部分文字列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=5b=5d=3d.html"><code>
+  self[nth] = val
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+nth 番目の文字を文字列 val で置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=5b=5d=3d.html"><code>
+  self[nth, len] = val
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+nth 番目の文字から len 文字の部分文字列を文字列 val で置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=5b=5d=3d.html"><code>
+  self[substr] = val
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列中の substr に一致する最初の部分文字列を文字列 val で置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=5b=5d=3d.html"><code>
+  self[regexp, nth] = val
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+正規表現 regexp の nth 番目の括弧にマッチする
+最初の部分文字列を文字列 val で置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=5b=5d=3d.html"><code>
+  self[regexp, name] = val
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+正規表現 regexp の name で指定した名前付きキャプチャにマッチする最初の
+部分文字列を文字列 val で置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=5b=5d=3d.html"><code>
+  self[regexp] = val
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+正規表現 regexp にマッチした部分文字列全体を val で置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/=5b=5d=3d.html"><code>
+  self[range] = val
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+rangeで指定したインデックスの範囲に含まれる部分文字列を文字列 val で置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/ascii_only=3f.html"><code>
+  ascii_only? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列がASCII文字のみで構成されている場合に true を返します。さもなくば
+false を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/bytes.html"><code>
+  each_byte {|byte| ... } -&gt; self<br>bytes {|byte| ... } -&gt; self<br>each_byte -&gt; Enumerator<br>bytes -&gt; Enumerator
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の各バイトに対して繰り返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/bytesize.html"><code>
+  bytesize -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列のバイト長を整数で返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/capitalize.html"><code>
+  capitalize -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列先頭の文字を大文字に、残りを小文字に変更した文字列を返します。
+ただし、アルファベット以外の文字は位置に関わらず変更しません。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/capitalize=21.html"><code>
+  capitalize! -&gt; self | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列先頭の文字を大文字に、残りを小文字に変更します。
+ただし、アルファベット以外の文字は位置に関わらず変更しません。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/casecmp.html"><code>
+  casecmp(other) -&gt; Integer | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-string/i/=3c=3d=3e.html">String#&lt;=&gt;</a> と同様に文字列の順序を比較しますが、
+アルファベットの大文字小文字の違いを無視します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/center.html"><code>
+  center(width, padding = ' ') -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+長さ width の文字列に self を中央寄せした文字列を返します。
+self の長さが width より長い時には元の文字列の複製を返します。
+また、第 2 引数 padding を指定したときは
+空白文字の代わりに padding を詰めます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/chars.html"><code>
+  each_char {|cstr| block } -&gt; self<br>chars {|cstr| block } -&gt; self<br>each_char -&gt; Enumerator<br>chars -&gt; Enumerator
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の各文字に対して繰り返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/chomp.html"><code>
+  chomp(rs = $/) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self の末尾から rs で指定する改行コードを取り除いた文字列を生成し返します。
+ただし、rs が &quot;\n&quot; ($/ のデフォルト値) のときは、
+実行環境によらず &quot;\r&quot;, &quot;\r\n&quot;, &quot;\n&quot; のすべてを改行コードとみなして取り除きます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/chomp=21.html"><code>
+  chomp!(rs = $/) -&gt; self | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self の末尾から rs で指定する改行コードを取り除きます。
+ただし rs が &quot;\n&quot; ($/ のデフォルト値) のときは、
+システムによらず &quot;\r&quot;, &quot;\r\n&quot;, &quot;\n&quot; のすべてを改行コードとみなして取り除きます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/chop.html"><code>
+  chop -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の最後の文字を取り除いた新しい文字列を生成して返します。
+ただし、文字列の終端が &quot;\r\n&quot; であればその 2 文字を取り除きます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/chop=21.html"><code>
+  chop! -&gt; self | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の最後の文字を取り除きます。
+ただし、終端が &quot;\r\n&quot; であればその 2 文字を取り除きます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/chr.html"><code>
+  chr -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self の最初の文字だけを含む文字列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/clear.html"><code>
+  clear -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の内容を削除して空にします。
+self を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/codepoints.html"><code>
+  each_codepoint {|codepoint| block } -&gt; self<br>codepoints {|codepoint| block } -&gt; self<br>each_codepoint -&gt; Enumerator<br>codepoints -&gt; Enumerator
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の各コードポイントに対して繰り返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/count.html"><code>
+  count(*chars) -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+chars で指定された文字が文字列 self にいくつあるか数えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/crypt.html"><code>
+  crypt(salt) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self と salt から暗号化された文字列を生成して返します。
+salt には英数字、ドット (「.」)、スラッシュ (「/」) から構成される、
+2 バイト以上の文字列を指定します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/delete.html"><code>
+  delete(*strs) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self から strs に含まれる文字を取り除いた文字列を生成し返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/delete=21.html"><code>
+  delete!(*strs) -&gt; self | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self から strs に含まれる文字を破壊的に取り除きます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/downcase.html"><code>
+  downcase -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+'A' から 'Z' までの
+アルファベット大文字をすべて小文字に置き換えた新しい文字列を生成し返します。
+アルファベット大文字以外の文字はすべてそのまま保存されます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/downcase=21.html"><code>
+  downcase! -&gt; self | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列中の 'A' から 'Z' までの
+アルファベット大文字をすべて破壊的に小文字に置き換えます。
+アルファベット大文字以外の文字はすべてそのまま保存されます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/dump.html"><code>
+  dump -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列中の非表示文字をバックスラッシュ記法に置き換えた文字列を返します。
+str == eval(str.dump) となることが保証されています。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/each_line.html"><code>
+  each_line(rs = $/) {|line| ... } -&gt; ()<br>lines(rs = $/) {|line| ... } -&gt; ()<br>each_line(rs = $/) -&gt; Enumerator<br>lines(rs = $/) -&gt; Enumerator
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列中の各行に対して繰り返します。
+行の区切りは rs に指定した文字列で、
+そのデフォルト値は変数 <a href="../method/-kernel/v/=2f.html">$/</a> の値です。
+各 line には区切りの文字列も含みます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/empty=3f.html"><code>
+  empty? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列が空 (つまり長さ 0) の時、真を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/encode.html"><code>
+  encode(encoding, options = nil) -&gt; String<br>encode(encoding, from_encoding, options = nil) -&gt; String<br>encode(options = nil) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self を指定したエンコーディングに変換した文字列を作成して返します。引数
+を2つ与えた場合、第二引数は変換元のエンコーディングを意味します。さもな
+くば self のエンコーディングが使われます。
+無引数の場合は、<a href="../method/-encoding/s/default_internal.html">Encoding.default_internal</a> が nil でなければそれが変換先のエンコーディングになり、かつ :invalid =&gt; replace と :undef =&gt; replace が指定されたと見なされ、nil ならば変換は行われません。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/encode=21.html"><code>
+  encode!(encoding, options = nil) -&gt; self<br>encode!(encoding, from_encoding, options = nil) -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self を指定したエンコーディングに変換し、自身を置き換えます。引数を2つ
+与えた場合、第二引数は変換元のエンコーディングを意味します。さもなくば
+self のエンコーディングが使われます。変換後の self を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/encoding.html"><code>
+  encoding -&gt; Encoding
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列のエンコーディング情報を表現した Encoding オブジェクトを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/end_with=3f.html"><code>
+  end_with?(str) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self の末尾が str であるとき true を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/eql=3f.html"><code>
+  eql?(other) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self == other と同じです。
+<a href="../class/-hash.html">Hash</a> クラス内での比較に使われます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/force_encoding.html"><code>
+  force_encoding(encoding) -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の持つエンコーディング情報を指定された encoding に変えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/getbyte.html"><code>
+  getbyte(index) -&gt; Integer | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+index バイト目のバイトを整数で返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/gsub.html"><code>
+  gsub(pattern, replace) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列中で pattern にマッチする部分全てを
+文字列 replace で置き換えた文字列を生成し返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/gsub.html"><code>
+  gsub(pattern) {|matched| .... } -&gt; String<br>gsub(pattern) -&gt; Enumerator
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列中で pattern にマッチした部分を順番にブロックに渡し、
+その実行結果で置き換えます。
+ブロックなしの場合と違い、ブロックの中からは
+組み込み変数 <a href="../method/-kernel/v/1.html">$1</a>, $2, $3, ... を問題なく参照できます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/gsub.html"><code>
+  gsub(pattern, hash) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列中の pattern にマッチした部分をキーにして hash を引いた値で置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/gsub=21.html"><code>
+  gsub!(pattern, replace) -&gt; self | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列中で pattern にマッチする部分全てを文字列 replace に破壊的に置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/gsub=21.html"><code>
+  gsub!(pattern) {|matched| .... } -&gt; self | nil<br>gsub!(pattern) -&gt; Enumerator
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列中で pattern にマッチする部分全てを順番にブロックに渡し、
+その評価結果に置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/gsub=21.html"><code>
+  gsub!(pattern, hash) -&gt; self | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列中の pattern にマッチした部分をキーにして hash を引いた値で置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/hash.html"><code>
+  hash -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self のハッシュ値を返します。
+eql? で等しい文字列は、常にハッシュ値も等しくなります。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/hex.html"><code>
+  hex -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列に 16 進数で数値が表現されていると解釈して整数に変換します。
+接頭辞 &quot;0x&quot;, &quot;0X&quot; とアンダースコアは無視されます。
+文字列が [_0-9a-fA-F] 以外の文字を含むときはその文字以降を無視します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/include=3f.html"><code>
+  include?(substr) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列中に部分文字列 substr が含まれていれば真を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/index.html"><code>
+  index(pattern, pos = 0) -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+インデックス pos から右に向かって pattern を検索し、
+最初に見つかった部分文字列の左端のインデックスを返します。
+見つからなければ nil を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/insert.html"><code>
+  insert(pos, other) -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+nth 番目の文字の直前に文字列 other を挿入します。
+self[pos, 0] = other と同じ操作です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/inspect.html"><code>
+  inspect -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列オブジェクトの内容を、出力したときに人間が読みやすいような適当な形式に変換します。
+変換された文字列は印字可能な文字のみによって構成されます
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/intern.html"><code>
+  intern -&gt; Symbol<br>to_sym -&gt; Symbol
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列に対応するシンボル値 <a href="../class/-symbol.html">Symbol</a> を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/length.html"><code>
+  length -&gt; Integer<br>size -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の文字数を返します。バイト数を知りたいときは bytesize メソッドを使ってください。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/ljust.html"><code>
+  ljust(width, padding = ' ') -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+長さ width の文字列に self を左詰めした文字列を返します。
+self の長さが width より長い時には元の文字列の複製を返します。
+また、第 2 引数 padding を指定したときは
+空白文字の代わりに padding を詰めます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/lstrip.html"><code>
+  lstrip -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の先頭にある空白文字を全て取り除いた新しい文字列を返します。
+空白文字の定義は &quot; \t\r\n\f\v&quot; です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/lstrip=21.html"><code>
+  lstrip! -&gt; self | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の先頭にある空白文字を全て破壊的に取り除きます。
+空白文字の定義は &quot; \t\r\n\f\v&quot; です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/match.html"><code>
+  match(regexp, pos = 0) -&gt; MatchData
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+regexp.match(self, pos) と同じです。
+regexp が文字列の場合は、正規表現にコンパイルします。
+詳しくは <a href="../method/-regexp/i/match.html">Regexp#match</a> を参照してください。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/next.html"><code>
+  succ -&gt; String<br>next -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self の「次の」文字列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/next=21.html"><code>
+  succ! -&gt; String<br>next! -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self を「次の」文字列に置き換えます。
+「次の」文字列は、アルファベットなら 16 進数、
+数字なら 10 進数とみなして計算されます。
+「次の」文字列の計算では &quot;99&quot; → &quot;100&quot; のように繰り上げも行われます。
+このとき負符号などは考慮されません。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/oct.html"><code>
+  oct -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列を 8 進文字列であると解釈して、整数に変換します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/ord.html"><code>
+  ord -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の最初の文字の文字コードを整数で返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/partition.html"><code>
+  partition(sep) -&gt; [String, String, String]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+セパレータ sep が最初に登場する部分で self を 3 つに分割し、
+[最初のセパレータより前の部分, セパレータ, それ以降の部分]
+の 3 要素の配列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/prepend.html"><code>
+  prepend(other_str) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列 other_str を先頭に破壊的に追加します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/replace.html"><code>
+  replace(other) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self の内容を other の内容で置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/reverse.html"><code>
+  reverse -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列を文字単位で左右逆転した文字列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/reverse=21.html"><code>
+  reverse! -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列を文字単位で左右逆転します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/rindex.html"><code>
+  rindex(pattern, pos = self.size) -&gt; Integer | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列のインデックス pos から左に向かって pattern を探索します。
+見つかった部分文字列の左端のインデックスを返します。
+見つからなければ nil を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/rjust.html"><code>
+  rjust(width, padding = ' ') -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+長さ width の文字列に self を右詰めした文字列を返します。
+self の長さが width より長い時には元の文字列の複製を返します。
+また、第 2 引数 padding を指定したときは
+空白文字の代わりに padding を詰めます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/rpartition.html"><code>
+  rpartition(sep) -&gt; [String, String, String]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+セパレータ sep が最後に登場する部分で self を 3 つに分割し、
+[最後のセパレータより前の部分, セパレータ, それ以降の部分]
+の 3 要素の配列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/rstrip.html"><code>
+  rstrip -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の末尾にある空白文字を全て取り除いた新しい文字列を返します。
+空白文字の定義は &quot; \t\r\n\f\v\0&quot; です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/rstrip=21.html"><code>
+  rstrip! -&gt; self | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の末尾にある空白文字を全て破壊的に取り除きます。
+空白文字の定義は &quot; \t\r\n\f\v\0&quot; です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/scan.html"><code>
+  scan(re) -&gt; [String] | [[String]]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self に対して正規表現 re を繰り返しマッチし、
+マッチした部分文字列の配列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/scan.html"><code>
+  scan(re) {|s| ... } -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+正規表現 re がマッチした部分文字列をブロックに渡して実行します。
+正規表現 re が括弧を含む場合は、
+括弧で括られたパターンにマッチした文字列の配列を渡します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/setbyte.html"><code>
+  setbyte(index, b) -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+index バイト目のバイトを b に変更します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/slice=21.html"><code>
+  slice!(nth) -&gt; Integer<br>slice!(pos, len) -&gt; String<br>slice!(substr) -&gt; String<br>slice!(regexp, nth = 0) -&gt; String<br>slice!(first..last) -&gt; String<br>slice!(first...last) -&gt; String<br>slice!(regexp, nth = 0) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+指定した範囲 (<a href="../method/-string/i/=5b=5d.html">String#[]</a> 参照) を
+文字列から取り除いたうえで取り除いた部分文字列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/split.html"><code>
+  split(sep = $;, limit = 0) -&gt; [String] | [[String]]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+第 1 引数 sep で指定されたセパレータによって文字列を limit 個まで分割し、
+結果を文字列の配列で返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/squeeze.html"><code>
+  squeeze(*chars) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+chars に含まれる文字が複数並んでいたら 1 文字にまとめます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/squeeze=21.html"><code>
+  squeeze!(*chars) -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+chars に含まれる文字が複数並んでいたら 1 文字にまとめます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/start_with=3f.html"><code>
+  start_with?(str) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self の先頭が str であるとき true を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/strip.html"><code>
+  strip -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列先頭と末尾の空白文字を全て取り除いた文字列を生成して返します。
+空白文字の定義は &quot; \t\r\n\f\v&quot; です。
+また、文字列右側からは &quot;\0&quot; も取り除きますが、
+左側の &quot;\0&quot; は取り除きません。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/strip=21.html"><code>
+  strip! -&gt; self | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+先頭と末尾の空白文字を全て破壊的に取り除きます。
+空白文字の定義は &quot; \t\r\n\f\v&quot; です。
+また、文字列右側からは &quot;\0&quot; も取り除きますが、
+左側の &quot;\0&quot; は取り除きません。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/sub.html"><code>
+  sub(pattern, replace) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列中で pattern にマッチした最初の部分を
+文字列 replace で置き換えた文字列を生成し返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/sub.html"><code>
+  sub(pattern) {|matched| .... } -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列中で pattern にマッチした最初の部分をブロックに渡し、
+その評価結果で置き換えた新しい文字列を返します。
+ブロックなしの sub と違い、ブロックの中からは
+組み込み変数 <a href="../method/-kernel/v/1.html">$1</a>, $2, $3, ... を問題なく参照できます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/sub.html"><code>
+  sub(pattern, hash) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列中の pattern にマッチした部分をキーにして hash を引いた値で置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/sub=21.html"><code>
+  sub!(pattern, replace) -&gt; self | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列中で pattern にマッチした最初の部分を文字列 replace へ破壊的に置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/sub=21.html"><code>
+  sub!(pattern) {|matched| .... } -&gt; self | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列中で pattern にマッチした最初の部分をブロックに渡し、
+その評価結果へ破壊的に置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/sub=21.html"><code>
+  sub!(pattern, hash) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列中の pattern にマッチした部分をキーにして hash を引いた値で破壊的に置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/sum.html"><code>
+  sum(bits = 16) -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の bits ビットのチェックサムを計算します。
+以下と同じです。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/swapcase.html"><code>
+  swapcase -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+'A' から 'Z' までのアルファベット大文字を小文字に、
+'a' から 'z' までのアルファベット小文字を大文字に変更した文字列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/swapcase=21.html"><code>
+  swapcase! -&gt; self | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+'A' から 'Z' までのアルファベット大文字を小文字に、
+'a' から 'z' までのアルファベット小文字を大文字に、破壊的に変更します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/to_c.html"><code>
+  to_c -&gt; Complex
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身を複素数 (<a href="../class/-complex.html">Complex</a>) に変換した結果を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/to_f.html"><code>
+  to_f -&gt; Float
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列を 10 進数表現と解釈して、浮動小数点数 <a href="../class/-float.html">Float</a> に変換します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/to_i.html"><code>
+  to_i(base = 10) -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列を 10 進数表現された整数であると解釈して、整数に変換します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/to_r.html"><code>
+  to_r -&gt; Rational
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身を有理数(<a href="../class/-rational.html">Rational</a>)に変換した結果を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/to_s.html"><code>
+  to_s -&gt; String<br>to_str -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/tr.html"><code>
+  tr(pattern, replace) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+pattern 文字列に含まれる文字を検索し、
+それを replace 文字列の対応する文字に置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/tr=21.html"><code>
+  tr!(pattern, replace) -&gt; self | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+pattern 文字列に含まれる文字を検索し、
+それを replace 文字列の対応する文字に破壊的に置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/tr_s.html"><code>
+  tr_s(pattern, replace) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の中に pattern 文字列に含まれる文字が存在したら、
+replace 文字列の対応する文字に置き換えます。さらに、
+置換した部分内に同一の文字の並びがあったらそれを 1 文字に圧縮します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/tr_s=21.html"><code>
+  tr_s!(pattern, replace) -&gt; self | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の中に pattern 文字列に含まれる文字が存在したら、
+replace 文字列の対応する文字に置き換えます。さらに、
+置換した部分内に同一の文字の並びがあったらそれを 1 文字に圧縮します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/unpack.html"><code>
+  unpack(template) -&gt; Array
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-array/i/pack.html">Array#pack</a> で生成された文字列を
+テンプレート文字列 template にしたがってアンパックし、
+それらの要素を含む配列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/upcase.html"><code>
+  upcase -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+'a' から 'z' までのアルファベット小文字を大文字に変換した文字列を作成し返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/upcase=21.html"><code>
+  upcase! -&gt; self | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ASCII 文字列の範囲内で 'a' から 'z' までの
+アルファベット小文字を全て大文字にします。
+このメソッドは self を破壊的に変更して返しますが、
+置換が起こらなかった場合は nil を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/upto.html"><code>
+  upto(max, exclusive = false) {|s| ... } -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self から始めて max まで
+「次の文字列」を順番にブロックに与えて繰り返します。
+「次」の定義については <a href="../method/-string/i/succ.html">String#succ</a> を参照してください。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/valid_encoding=3f.html"><code>
+  valid_encoding? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+文字列の内容が、現在のエンコーディングに照らしあわせて妥当であれば
+true を返します。さもなくば false を返します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+<h2>継承したメソッド</h2>
+<p><code>
+
+<a href="../method/-basic-object/i/=21.html">!</a>
+
+<a href="../method/-basic-object/i/=21=3d.html">!=</a>
+
+<a href="../method/-comparable/i/=3c.html">&lt;</a>
+
+<a href="../method/-comparable/i/=3c=3d.html">&lt;=</a>
+
+<a href="../method/-comparable/i/=3e.html">&gt;</a>
+
+<a href="../method/-comparable/i/=3e=3d.html">&gt;=</a>
+
+<a href="../method/-comparable/i/between=3f.html">between?</a>
+
+<a href="../method/-object/i/__id__.html">__id__</a>
+
+<a href="../method/-object/i/__send__.html">__send__</a>
+
+<a href="../method/-object/i/_dump.html">_dump</a>
+
+<a href="../method/-object/i/class.html">class</a>
+
+<a href="../method/-object/i/clone.html">clone</a>
+
+<a href="../method/-object/i/dclone.html">dclone</a>
+
+<a href="../method/-object/i/display.html">display</a>
+
+<a href="../method/-object/i/enum_for.html">enum_for</a>
+
+<a href="../method/-object/i/equal=3f.html">equal?</a>
+
+<a href="../method/-object/i/extend.html">extend</a>
+
+<a href="../method/-object/i/freeze.html">freeze</a>
+
+<a href="../method/-object/i/frozen=3f.html">frozen?</a>
+
+<a href="../method/-object/i/initialize.html">initialize</a>
+
+<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
+
+<a href="../method/-object/i/instance_eval.html">instance_eval</a>
+
+<a href="../method/-object/i/instance_exec.html">instance_exec</a>
+
+<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
+
+<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
+
+<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
+
+<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
+
+<a href="../method/-object/i/instance_variables.html">instance_variables</a>
+
+<a href="../method/-object/i/is_a=3f.html">is_a?</a>
+
+<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
+
+<a href="../method/-object/i/marshal_load.html">marshal_load</a>
+
+<a href="../method/-object/i/method.html">method</a>
+
+<a href="../method/-object/i/method_missing.html">method_missing</a>
+
+<a href="../method/-object/i/methods.html">methods</a>
+
+<a href="../method/-object/i/must_be.html">must_be</a>
+
+<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
+
+<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
+
+<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
+
+<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
+
+<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
+
+<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
+
+<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
+
+<a href="../method/-object/i/must_equal.html">must_equal</a>
+
+<a href="../method/-object/i/must_include.html">must_include</a>
+
+<a href="../method/-object/i/must_match.html">must_match</a>
+
+<a href="../method/-object/i/must_raise.html">must_raise</a>
+
+<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
+
+<a href="../method/-object/i/must_send.html">must_send</a>
+
+<a href="../method/-object/i/must_throw.html">must_throw</a>
+
+<a href="../method/-object/i/nil=3f.html">nil?</a>
+
+<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
+
+<a href="../method/-object/i/pretty_print.html">pretty_print</a>
+
+<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
+
+<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
+
+<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
+
+<a href="../method/-object/i/private_methods.html">private_methods</a>
+
+<a href="../method/-object/i/protected_methods.html">protected_methods</a>
+
+<a href="../method/-object/i/public_methods.html">public_methods</a>
+
+<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
+
+<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
+
+<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
+
+<a href="../method/-object/i/singleton_class.html">singleton_class</a>
+
+<a href="../method/-object/i/singleton_method_added.html">singleton_method_added</a>
+
+<a href="../method/-object/i/singleton_method_removed.html">singleton_method_removed</a>
+
+<a href="../method/-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
+
+<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
+
+<a href="../method/-object/i/taint.html">taint</a>
+
+<a href="../method/-object/i/tainted=3f.html">tainted?</a>
+
+<a href="../method/-object/i/tap.html">tap</a>
+
+<a href="../method/-object/i/to_a.html">to_a</a>
+
+<a href="../method/-object/i/to_ary.html">to_ary</a>
+
+<a href="../method/-object/i/to_hash.html">to_hash</a>
+
+<a href="../method/-object/i/to_int.html">to_int</a>
+
+<a href="../method/-object/i/to_io.html">to_io</a>
+
+<a href="../method/-object/i/to_proc.html">to_proc</a>
+
+<a href="../method/-object/i/to_regexp.html">to_regexp</a>
+
+<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
+
+<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
+
+<a href="../method/-object/i/trust.html">trust</a>
+
+<a href="../method/-object/i/untaint.html">untaint</a>
+
+<a href="../method/-object/i/untrust.html">untrust</a>
+
+<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
+
+<a href="../method/-object/s/psych_to_yaml.html">.psych_to_yaml</a>
+
+<a href="../method/-object/s/yaml_tag.html">.yaml_tag</a>
+
+</code></p>
+
+
+
+<h2>追加されるメソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th>説明</th>
+  <th>ライブラリ</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/ext.html"><code>
+  ext(newext = '') -&gt; String
+  </code></a>
+</td>
+<td class="description"><p>
+自身の拡張子を与えられた拡張子で置き換えます。
+</p>
+</td>
+<td class="library"><a href="../library/rake.html">rake</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/is_binary_data=3f.html"><code>
+  is_binary_data? -&gt; true | nil
+  </code></a>
+</td>
+<td class="description"><p>
+自身が ASCII 文字以外の文字列を含む場合に true を返します。
+</p>
+</td>
+<td class="library"><a href="../library/syck=2frubytypes.html">syck/rubytypes</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/is_complex_yaml=3f.html"><code>
+  is_complex_yaml? -&gt; Integer | nil
+  </code></a>
+</td>
+<td class="description"><p>
+自身が複数行になるキーを含むような YAML である場合に真になる値を返しま
+す。
+</p>
+</td>
+<td class="library"><a href="../library/syck=2frubytypes.html">syck/rubytypes</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/iseuc.html"><code>
+  iseuc -&gt; bool
+  </code></a>
+</td>
+<td class="description"><p>
+self が EUC-JP なバイト列として正当であるかどうかを判定します。
+</p>
+</td>
+<td class="library"><a href="../library/kconv.html">kconv</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/isjis.html"><code>
+  isjis -&gt; bool
+  </code></a>
+</td>
+<td class="description"><p>
+self が ISO-2022-JP なバイト列として正当であるかどうかを判定します。
+</p>
+</td>
+<td class="library"><a href="../library/kconv.html">kconv</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/issjis.html"><code>
+  issjis -&gt; bool
+  </code></a>
+</td>
+<td class="description"><p>
+self が Shift_JIS なバイト列として正当であるかどうかを判定します。
+</p>
+</td>
+<td class="library"><a href="../library/kconv.html">kconv</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/isutf8.html"><code>
+  isutf8 -&gt; bool
+  </code></a>
+</td>
+<td class="description"><p>
+self が UTF-8 なバイト列として正当であるかどうかを判定します。
+</p>
+</td>
+<td class="library"><a href="../library/kconv.html">kconv</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/kconv.html"><code>
+  kconv(out_code, in_code = Kconv::AUTO) -&gt; String
+  </code></a>
+</td>
+<td class="description"><p>
+self のエンコーディングを out_code に変換した文字列を
+返します。
+out_code in_code は <a href="../class/-kconv.html">Kconv</a> の定数で指定します。
+</p>
+</td>
+<td class="library"><a href="../library/kconv.html">kconv</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/pathmap.html"><code>
+  pathmap(spec = nil) { ... } -&gt; String
+  </code></a>
+</td>
+<td class="description"><p>
+与えられた書式指定文字列に応じてパス(自身)を変換します。
+</p>
+</td>
+<td class="library"><a href="../library/rake.html">rake</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/pathmap_explode.html"><code>
+  pathmap_explode -&gt; Array
+  </code></a>
+</td>
+<td class="description"><p>
+自身をパスを表す部分ごとに分解して配列にして返します。
+</p>
+</td>
+<td class="library"><a href="../library/rake.html">rake</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/pathmap_partial.html"><code>
+  pathmap_partial(n) -&gt; String
+  </code></a>
+</td>
+<td class="description"><p>
+自身から与えられた階層分パスを抜粋します。
+</p>
+</td>
+<td class="library"><a href="../library/rake.html">rake</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/pathmap_replace.html"><code>
+  pathmap_replace(patterns) { ... } -&gt; String
+  </code></a>
+</td>
+<td class="description"><p>
+与えられたパスを前もって置き換えます。
+</p>
+</td>
+<td class="library"><a href="../library/rake.html">rake</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/scanf.html"><code>
+  scanf(format) -&gt; Array<br>scanf(format) {|*ary| ...} -&gt; Array
+  </code></a>
+</td>
+<td class="description"><p>
+ブロックを指定しない場合、見つかった文字列を format に従って変
+換し、そのオブジェクトの配列を返します。
+format で指定した文字列が見つからない場合は空の配列を
+生成して返します。
+</p>
+</td>
+<td class="library"><a href="../library/scanf.html">scanf</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/shellescape.html"><code>
+  shellescape -&gt; String
+  </code></a>
+</td>
+<td class="description"><p>
+文字列を Bourne シェルのコマンドライン中で安全に使えるようにエスケープします。
+</p>
+</td>
+<td class="library"><a href="../library/shellwords.html">shellwords</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/shellsplit.html"><code>
+  shellsplit -&gt; [String]
+  </code></a>
+</td>
+<td class="description"><p>
+Bourne シェルの単語分割規則に従った空白区切りの単語分割を行い、
+単語 (文字列) の配列を返します。
+</p>
+</td>
+<td class="library"><a href="../library/shellwords.html">shellwords</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/taguri.html"><code>
+  taguri -&gt; String
+  </code></a>
+</td>
+<td class="description"><p>
+自身のタグ URI を返します。
+</p>
+</td>
+<td class="library"><a href="../library/syck=2frubytypes.html">syck/rubytypes</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/taguri=3d.html"><code>
+  taguri=(val)
+  </code></a>
+</td>
+<td class="description"><p>
+自身のタグ URI を val に設定します。
+</p>
+</td>
+<td class="library"><a href="../library/syck=2frubytypes.html">syck/rubytypes</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/to_d.html"><code>
+  to_d -&gt; BigDecimal
+  </code></a>
+</td>
+<td class="description"><p>
+自身を <a href="../class/-big-decimal.html">BigDecimal</a> に変換します。BigDecimal(self) と同じです。
+</p>
+</td>
+<td class="library"><a href="../library/bigdecimal=2futil.html">bigdecimal/util</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/to_yaml.html"><code>
+  to_yaml(opts = {})
+  </code></a>
+</td>
+<td class="description"><p>
+自身を YAML ドキュメントに変換します。
+</p>
+</td>
+<td class="library"><a href="../library/syck=2frubytypes.html">syck/rubytypes</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/toeuc.html"><code>
+  toeuc -&gt; String
+  </code></a>
+</td>
+<td class="description"><p>
+self のエンコーディングを EUC-JP に変換した文字列を
+返します。変換元のエンコーディングは文字列の内容から推測します。
+</p>
+</td>
+<td class="library"><a href="../library/kconv.html">kconv</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/tojis.html"><code>
+  tojis -&gt; String
+  </code></a>
+</td>
+<td class="description"><p>
+self のエンコーディングを iso-2022-jp に変換した文字列を
+返します。変換元のエンコーディングは文字列の内容から推測します。
+</p>
+</td>
+<td class="library"><a href="../library/kconv.html">kconv</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/tolocale.html"><code>
+  tolocale -&gt; String
+  </code></a>
+</td>
+<td class="description"><p>
+self のエンコーディングをロケールエンコーディングに変換した文字列を
+返します。変換元のエンコーディングは文字列の内容から推測します。
+</p>
+</td>
+<td class="library"><a href="../library/kconv.html">kconv</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/tosjis.html"><code>
+  tosjis -&gt; String
+  </code></a>
+</td>
+<td class="description"><p>
+self のエンコーディングを shift_jis に変換した文字列を
+返します。変換元のエンコーディングは文字列の内容から推測します。
+</p>
+</td>
+<td class="library"><a href="../library/kconv.html">kconv</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/toutf16.html"><code>
+  toutf16 -&gt; String
+  </code></a>
+</td>
+<td class="description"><p>
+self のエンコーディングを UTF-16BE に変換した文字列を
+返します。変換元のエンコーディングは文字列の内容から推測します。
+</p>
+</td>
+<td class="library"><a href="../library/kconv.html">kconv</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/toutf32.html"><code>
+  toutf32 -&gt; String
+  </code></a>
+</td>
+<td class="description"><p>
+self のエンコーディングを UTF-32 に変換した文字列を
+返します。変換元のエンコーディングは文字列の内容から推測します。
+</p>
+</td>
+<td class="library"><a href="../library/kconv.html">kconv</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/i/toutf8.html"><code>
+  toutf8 -&gt; String
+  </code></a>
+</td>
+<td class="description"><p>
+self のエンコーディングを UTF-8 に変換した文字列を
+返します。変換元のエンコーディングは文字列の内容から推測します。
+</p>
+</td>
+<td class="library"><a href="../library/kconv.html">kconv</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/s/yaml_new.html"><code>
+  yaml_new(klass, tag, val)
+  </code></a>
+</td>
+<td class="description"><p>
+ライブラリ内部で使用します。
+</p>
+</td>
+<td class="library"><a href="../library/syck=2frubytypes.html">syck/rubytypes</a></td>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-string/s/yaml_tag_subclasses=3f.html"><code>
+  yaml_tag_subclasses? -&gt; true
+  </code></a>
+</td>
+<td class="description"><p>
+常に true を返します。
+</p>
+</td>
+<td class="library"><a href="../library/syck=2frubytypes.html">syck/rubytypes</a></td>
+</tr>
+
+</table>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

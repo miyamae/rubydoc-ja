@@ -1,0 +1,527 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>object ARGF</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; ARGFオブジェクト
+</p>
+
+
+
+<h1>object ARGF</h1>
+<p>
+
+
+クラスの継承リスト: ARGF
+
+
+
+
+<br>extend: <a href="../class/-enumerable.html">Enumerable</a>
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+スクリプトに指定した引数
+(<a href="../method/-kernel/c/-a-r-g-v.html">Kernel::ARGV</a> を参照) をファイル名とみなして、
+それらのファイルを連結した 1 つの仮想ファイルを表すオブジェクトです。
+ARGV が空なら標準入力を対象とします。
+ARGV を変更すればこのオブジェクトの動作に影響します。
+</p>
+<pre>
+while line = ARGF.gets
+  ....
+end
+</pre>
+<p>
+は、
+</p>
+<pre>
+while argv = ARGV.shift
+  File.open(argv) {|file|
+    while line = file.gets
+      ....
+    end
+  }
+end
+</pre>
+<p>
+のように動作します。
+</p>
+<p>
+ARGF を処理するごとに ARGV の要素は一つずつ取り除かれます。
+最後まで ARGF を読み込んだ後、再度 ARGF から内容を読むと
+(ARGV が空なので)標準入力からの読み込みとなります。
+</p>
+<pre>
+ARGV.replace %w(/tmp/foo /tmp/bar)
+ARGF.each {|line|
+    # 処理中の ARGV の内容を表示
+    p [ARGF.filename, ARGV]
+    ARGF.skip
+}
+    # =&gt; [&quot;/tmp/foo&quot;, [&quot;/tmp/bar&quot;]]
+    #    [&quot;/tmp/bar&quot;, []]
+# 最後まで読んだ後 (ARGV が空) の動作
+p ARGF.gets      # =&gt; nil
+p ARGF.filename  # =&gt; &quot;-&quot;
+</pre>
+<p>
+<a href="../method/-kernel/m/gets.html">Kernel.#gets</a> など一部の組み込み関数は
+ARGF.gets などこのオブジェクトをレシーバとしたメソッドの省略形です。
+</p>
+
+
+
+<h2>特異メソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/binmode.html"><code>
+  binmode -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-i-o/i/binmode.html">IO#binmode</a>を参照
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/bytes.html"><code>
+  bytes -&gt; Enumerable::Enumerator
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身を 1 バイトずつ整数としてイテレートするような
+<a href="../class/-enumerable=3a=3a-enumerator.html">Enumerable::Enumerator</a> オブジェクトを生成して返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/chars.html"><code>
+  each_char {|c| ... } -&gt; self<br>chars {|c| ... } -&gt; self<br>each_char -&gt; Enumerable::Enumerator<br>chars -&gt; Enumerable::Enumerator
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+レシーバに含まれる文字を一文字つつブロックに渡して評価します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/close.html"><code>
+  close -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+処理対象のファイルをクローズします。開くファイルが残っている場合は次のファイルをオープンします。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/closed=3f.html"><code>
+  closed? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ARGFがcloseされていればtrueを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/each.html"><code>
+  each(rs = $/) {|line| ... } -&gt; self<br>each_line(rs = $/) {|line| ... } -&gt; self<br>each(rs = $/) -&gt; Enumerable::Enumerator<br>each_line(rs = $/) -&gt; Enumerable::Enumerator
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ARGFの現在位置から一行ずつ文字列として読み込みます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/each_byte.html"><code>
+  each_byte {|char| ...} -&gt; self<br>each_byte -&gt; Enumerable::Enumerator
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ARGF の現在位置から 1 バイトずつ読み込み、それを整数として与え、ブロックを実行します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/eof.html"><code>
+  eof -&gt; bool<br>eof? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+現在開いているファイルがeofに達したらtrueを返します。そうでない場合はfalseを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/file.html"><code>
+  file -&gt; IO
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+処理対象の <a href="../class/-file.html">File</a> オブジェクト(または <a href="../class/-i-o.html">IO</a> オブジェクト)を
+返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/filename.html"><code>
+  filename -&gt; String<br>path -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+処理対象のファイル名を返します。
+標準入力に対しては - を返します。
+組み込み変数 <a href="../method/-kernel/v/-f-i-l-e-n-a-m-e.html">$FILENAME</a> と同じです。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/fileno.html"><code>
+  fileno -&gt; Integer<br>to_i -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+現在オープンしているファイルのファイル記述子を表す整数を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/getbyte.html"><code>
+  getbyte -&gt; Integer | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身から 1 バイトを読み込み整数として返します。
+既に EOF に達していれば nil を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/getc.html"><code>
+  getc -&gt; Integer | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ARGFから 1 文字読み込んで、その文字に対応する Fixnum を返します。EOF に到達した時には nil を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/gets.html"><code>
+  gets -&gt; String | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ARGFの現在位置から一行ずつ文字列として読み込みます。EOF に到達した時には nil を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/lineno.html"><code>
+  lineno -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+全引数ファイルを一つのファイルとみなしたときの現在の行番号を返します。
+個々の引数ファイル毎の行番号を得るには ARGF.file.lineno とします。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/lineno=3d.html"><code>
+  lineno=(number)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+全引数ファイルを一つのファイルとみなしたときの現在の行番号を number に書き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/lines.html"><code>
+  lines(rs = $/) -&gt; Enumerable::Enumerator
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身を 1 行ずつイテレートするような
+<a href="../class/-enumerable=3a=3a-enumerator.html">Enumerable::Enumerator</a> オブジェクトを生成して返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/pos.html"><code>
+  pos -&gt; Integer<br>tell -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ARGFが現在開いているファイルのファイルポインタの現在の位置を整数で返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/pos=3d.html"><code>
+  pos=(n)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ARGFが開いているファイルのファイルポインタを指定位置に移動します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/read.html"><code>
+  read(length = nil, str = nil) -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ARGVに指定されたファイルを先頭のファイルからlengthバイト読み込み、
+その文字列をstrに出力します。読み込んだ文字列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/readbyte.html"><code>
+  readbyte -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身から 1 バイトを読み込み整数として返します。
+既に EOF に達していれば EOFError が発生します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/readchar.html"><code>
+  readchar -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ARGFから 1 文字読み込んで、その文字に対応する Fixnum を返します。EOF に到達した時には EOFErrorを発生します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/readline.html"><code>
+  readline -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ARGFの現在位置から一行ずつ文字列として読み込みます。EOF に到達した時にはEOFErrorを発生します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/readlines.html"><code>
+  readlines(rs = $/) -&gt; [String]<br>to_a(rs = $/) -&gt; [String]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ARGFの各行を配列に読み込んで返します。rsがnilの場合は要素に各ファイルをすべて読み込んだ配列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/rewind.html"><code>
+  rewind -&gt; 0
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ARGFが現在開いているファイルのファイルポインタを先頭に戻します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/seek.html"><code>
+  seek(offset, whence = IO::SEEK_SET) -&gt; 0
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ARGFが現在開いているファイルのファイルポインタを whence の位置から offset だけ移動させます。 offset 位置への移動が成功すれば 0 を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/skip.html"><code>
+  skip -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+処理対象のファイルをクローズします。
+次回の読み込みは次の引数が処理対象になります。
+self を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/to_io.html"><code>
+  to_io -&gt; IO
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ARGFが現在開いているファイルの<a href="../class/-file.html">File</a>、または<a href="../class/-i-o.html">IO</a>オブジェクトを返します
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-a-r-g-f/s/to_s.html"><code>
+  to_s -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+常に文字列 &quot;ARGF&quot; を返します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

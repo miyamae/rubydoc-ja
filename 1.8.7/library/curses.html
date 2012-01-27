@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library curses</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; cursesライブラリ
+</p>
+
+
+
+<h1>library curses</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+Ruby の curses ライブラリ(以下、Ruby curses)は、C のプログラムから端末
+の画面を制御するための curses ライブラリ(以下、C curses)を利用して、端
+末に依存しない形式でテキストユーザインタフェースを構築するためのライブ
+ラリです。
+</p>
+<p>
+C curses には、次のような実装があります。
+</p>
+<ul>
+<li><a class="external" href="http://www.gnu.org/software/ncurses/ncurses.html">http://www.gnu.org/software/ncurses/ncurses.html</a></li>
+<li><a class="external" href="http://pdcurses.sourceforge.net/">http://pdcurses.sourceforge.net/</a></li>
+</ul>
+<p>
+Ruby curses を使ってテキストユーザインタフェース(以下、TUI)を
+構築する流れは次のようになります。
+</p>
+<ol>
+<li><a href="../method/-curses/m/init_screen.html">Curses.#init_screen</a> で初期化を行います。</li>
+<li><a href="../class/-curses.html">Curses</a> のモジュール関数を使い、
+入力のエコーを無効にするなどの Ruby curses の設定を行います。</li>
+<li><a href="../method/-curses/m/stdscr.html">Curses.#stdscr</a> やそのサブウインドウを操作し、TUI を構築します。</li>
+<li><a href="../method/-curses/m/getch.html">Curses.#getch</a> や <a href="../method/-curses/m/getstr.html">Curses.#getstr</a> により、
+ユーザからの入力を取得します。入力した情報に従って処理を行い、
+そして、入力を待つということを繰り返します。</li>
+<li>最後に <a href="../method/-curses/m/close_screen.html">Curses.#close_screen</a> で終了処理を行います。</li>
+</ol>
+<p>
+例: 画面中央に「Hello World!」と表示し、何か入力があると終了する。
+</p>
+<pre>
+require &quot;curses&quot;
+
+Curses.init_screen
+begin
+  s = &quot;Hello World!&quot;
+  Curses.setpos(Curses.lines / 2, Curses.cols / 2 - (s.length / 2))
+  Curses.addstr(s)
+  Curses.refresh
+  Curses.getch
+ensure
+  Curses.close_screen
+end
+</pre>
+<p>
+例: 上記の例と同様だが、Curses モジュールを include する場合
+</p>
+<pre>
+require &quot;curses&quot;
+
+include Curses
+
+init_screen
+begin
+  s = &quot;Hello World!&quot;
+  setpos(lines / 2, cols / 2 - (s.length / 2))
+  addstr(s)
+  refresh
+  getch
+ensure
+  close_screen
+end
+</pre>
+<p>
+なお、C curses を利用できない環境で Ruby をコンパイルしている場合、
+Ruby curses は利用できません。
+利用できない場合、require の時点で例外 LoadError が発生します。
+</p>
+<pre>
+foo:1:in `require': no such file to load -- curses (LoadError)
+        from foo:1:in `&lt;main&gt;'
+</pre>
+<p>
+Ruby curses の操作によっては、
+利用する C curses が提供していない機能を使うものがあります。
+そのような操作を行った場合、例外 NotImplementedError が発生します。
+</p>
+<p>
+セーフレベル ($SAFE) が 4 の場合、いくつかの操作で例外 SecurityError を発生します。
+</p>
+
+
+<h2>クラスとモジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../class/-curses.html">module Curses</a></td>
+<td class="description"><p>
+Curses モジュールや <a href="../class/-curses=3a=3a-window.html">Curses::Window</a> クラスは、curses ライブラリを利用して、
+端末に依存しない形式でテキストユーザインタフェースを作成できます。
+curses ライブラリとは、
+C のプログラムから端末のディスプレイ画面を制御するためのライブラリのことで、
+次のような実装があります。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-curses=3a=3a-key.html">module Curses::Key</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-curses=3a=3a-mouse-event.html">class Curses::MouseEvent</a></td>
+<td class="description"><p>
+マウスの位置や状態などの情報を取得するためのクラスです。
+ncurses を利用して curses ライブラリをインストールした場合にだけ、
+本クラスが定義されています。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../class/-curses=3a=3a-window.html">class Curses::Window</a></td>
+<td class="description"></td>
+</tr>
+
+</table>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>
