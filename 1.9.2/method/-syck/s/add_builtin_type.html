@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>singleton method Syck.add_builtin_type</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/syck.html">syckライブラリ</a>
+&gt; <a href="../../../class/-syck.html">Syckモジュール</a>
+&gt; add_builtin_type
+
+</p>
+
+
+
+
+<h1>singleton method Syck.add_builtin_type</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>add_builtin_type(type_tag) {|type, val| ...} -&gt; nil</code></dt>
+<dd class="method-description">
+<p>
+yaml.org,2002ドメインに属しているクラスをYAMLに追加し
+そのクラスを見つけたときの操作を指定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] type_tag:</dt>
+<dd>
+加えるクラスを指定する。
+</dd>
+<dt class='method-param'>[PARAM] type:</dt>
+<dd>
+YAMLドメインとクラスの文字列
+</dd>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+YAMLデータ構造
+</dd>
+</dl>
+<pre>
+require 'yaml'
+
+str1=&lt;&lt;EOT
+--- !ruby.yaml.org,2002/Rational 5/6
+EOT
+str2=&lt;&lt;EOT
+--- !yaml.org,2002/Rational 3/4
+EOT
+
+p YAML.load(str1)
+#=&gt; #&lt;YAML::DomainType:0x2b07528 @type_id=&quot;Rational&quot;, @domain=&quot;ruby.yaml.org,2002&quot;, @value=&quot;5/6&quot;&gt;
+
+p YAML.load(str2)
+#=&gt; #&lt;YAML::DomainType:0x2b0767c @type_id=&quot;Rational&quot;, @domain=&quot;yaml.org,2002&quot;, @value=&quot;3/4&quot;&gt;
+
+YAML.add_builtin_type(&quot;Rational&quot;){|type, val|
+  md = val.split(/\//)
+  Rational.new!(md[0].to_i, md[1].to_i)
+}
+
+p YAML.load(str1)
+#=&gt; #&lt;YAML::DomainType:0x2b06fec @type_id=&quot;Rational&quot;, @domain=&quot;ruby.yaml.org,2002&quot;, @value=&quot;5/6&quot;&gt;
+## 前回と変化なし
+
+rt = YAML.load(str2)
+p rt        # =&gt; Rational(3, 4)
+p rt + 0.25 # =&gt; 1.0
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

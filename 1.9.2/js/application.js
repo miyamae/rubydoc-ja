@@ -138,7 +138,7 @@ function suggest() {
             $('#index a:first').addClass('current');
             $('#navi li .key, #navi li .sub').highlight(key);
             zebraList();
-            initPage($('#navi'));
+            initPage($('#index'));
             $('#navi ul a').click(function(e) {
                 clickNaviItem(this);
             });
@@ -162,7 +162,7 @@ function handleKey(key) {
         }
     } else if (key == 13) { //[Enter]
         var url = $('#navi ul a.current').attr('href');
-        location.href = url;
+        if (url) location.href = url;
     }
 }
 
