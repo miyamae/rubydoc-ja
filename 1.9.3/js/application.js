@@ -92,9 +92,10 @@ function zebraList() {
 
 _key = '';
 function suggest() {
-    var key = $('#search-box').val().toLowerCase();
+    var key = $('#search-box').val();
     if (key != _key) {
         _key = key;
+        var re = new RegExp(key.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1').replace(/ +/g, '.*'), 'i');
         var ul = $('#index'); 
         ul.empty();
         $('#navi a').removeClass('current');
@@ -105,8 +106,8 @@ function suggest() {
             $.each(_index, function() {
                 var item = this;
                 var found = false;
-                var key_matched = item.key ? item.key.toLowerCase().indexOf(key) : -1;
-                if (key_matched == 0) {
+                var key_matched = item.key ? item.key.match(re) : false;
+                if (key_matched) {
                     results[0].push([item, null]);
                     found = true;
                 }
