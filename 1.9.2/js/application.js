@@ -37,11 +37,19 @@ function loadPage() {
     if (location.hash.match(/^#!/)) {
         var path = currentPath();
         $('#body').html('<div class="loading"></div>');
-        $('#body').load(absolutePath(path), null, function() {
-            initPage($('#body'));
-            if (path.match(/\?(.*)$/)) {
-                var offset = $('#' + RegExp.$1).offset();
-                if (offset) $('#content').scrollTop(offset.top);
+        $.ajax({
+            type: 'GET',
+            url: absolutePath(path),
+            success: function(html) {
+                $('#body').html(html);
+                initPage($('#body'));
+                if (path.match(/\?(.*)$/)) {
+                    var offset = $('#' + RegExp.$1).offset();
+                    if (offset) $('#content').scrollTop(offset.top);
+                }
+            },
+            error: function(xhr, status, e) {
+                $('#body').html(xhr.responseText);
             }
         });
         $('#search-box').focus();
