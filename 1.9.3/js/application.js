@@ -36,12 +36,20 @@ function isAbsoluteUri(uri) {
 function loadPage() {
     if (location.hash.match(/^#!/)) {
         var path = currentPath();
-        $('#body').html('<div class="loading"></div');
-        $('#body').load(absolutePath(path), null, function() {
-            initPage($('#body'));
-            if (path.match(/\?(.*)$/)) {
-                var offset = $('#' + RegExp.$1).offset();
-                if (offset) $('#content').scrollTop(offset.top);
+        $('#body').html('<div class="loading"></div>');
+        $.ajax({
+            type: 'GET',
+            url: absolutePath(path),
+            success: function(html) {
+                $('#body').html(html);
+                initPage($('#body'));
+                if (path.match(/\?(.*)$/)) {
+                    var offset = $('#' + RegExp.$1).offset();
+                    if (offset) $('#content').scrollTop(offset.top);
+                }
+            },
+            error: function(xhr, status, e) {
+                $('#body').html(xhr.responseText);
             }
         });
         $('#search-box').focus();
@@ -51,6 +59,7 @@ function loadPage() {
 function initPage(elem) {
     var as = elem ? elem.find('a') : $('a');
     as.each(function() {
+        $(this).attr('href', $(this).attr('href').replace('_builtin.html', 'builtin.html')); // for GitHub Pages
         var src_url = $(this).attr('href');
         if (src_url.match(/^#(.*)$/)) {
             var id = RegExp.$1;
