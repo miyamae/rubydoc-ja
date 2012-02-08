@@ -91,6 +91,16 @@ function loadIndex() {
         $('#search-box').removeAttr('disabled');
         $('#search-box').focus();
         $('#index').empty();
+        $.each(_index, function() {
+            var item = this;
+            var tgt_str = item.key;
+            if (tgt_str && item.sub && typeof(item.sub) == 'object') {
+                $.each(item.sub, function() {
+                    tgt_str = tgt_str + ' ' + this.replace(/ .*$/, '');
+                });
+            }
+            item['index'] = tgt_str;
+        });
     });
 }
 
@@ -104,7 +114,7 @@ function suggest() {
     var key = $('#search-box').val();
     if (key != _key) {
         _key = key;
-        var re = new RegExp(key.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1').replace(/ +/g, '.*'), 'i');
+        var re = new RegExp(key.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1').replace(/[ #\.]+/g, '.*'), 'i');
         var ul = $('#index'); 
         ul.empty();
         $('#navi a').removeClass('current');
@@ -114,23 +124,15 @@ function suggest() {
             var results = [[], [], []];
             $.each(_index, function() {
                 var item = this;
-                var found = false;
-                var key_matched = item.key ? item.key.match(re) : false;
-                if (key_matched) {
-                    results[0].push([item, null]);
-                    found = true;
-                }
-                if (!found && item.sub && typeof(item.sub) == 'object') {
-                    for (var i=0; i<item.sub.length; i++) {
-                        var sub_matched = item.sub[i].toLowerCase().indexOf(key);
-                        if (sub_matched != -1) {
-                            results[sub_matched == 0 ? 1 : 2].push([item, i]);
-                            found = true;
-                        }
+                var key_matched = item.index.search(re);
+                if (key_matched >= 0) {
+                    var i =2;
+                    if (item.key.search(re) == 0) {
+                        i = 0;
+                    } else if (key_matched == 0) {
+                        i = 1;
                     }
-                }
-                if (!found && key_matched > 0) {
-                    results[2].push([item, null]);
+                    results[i].push([item, null]);
                 }
                 return true;
             });
