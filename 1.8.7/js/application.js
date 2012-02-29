@@ -39,8 +39,9 @@ function loadPage() {
         $('#body').html('<div class="loading"></div>');
         $.ajax({
             type: 'GET',
+            dataType: 'html',
             url: absolutePath(path),
-            success: function(html) {
+            success: function(html, status) {
                 $('#body').html(html);
                 initPage($('#body'));
                 if (path.match(/\?(.*)$/)) {
