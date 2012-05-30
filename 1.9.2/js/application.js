@@ -115,7 +115,7 @@ function suggest() {
     if (key != _key) {
         _key = key;
         var re = new RegExp(key.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1').replace(/[ #\.]+/g, '.*'), 'i');
-        var ul = $('#index'); 
+        var ul = $('#index');
         ul.empty();
         $('#navi a').removeClass('current');
         $('#navi').scrollTop(0);
@@ -164,10 +164,14 @@ function suggest() {
 
 function handleKey(key) {
     if (key == 38 || key == 40) { //[Up][Down]
+        var first_idx = 0;
+        if ($('#search-box').val()) {
+            first_idx = $('#contents ul a').size();
+        }
         var all = $('#navi ul a');
         var current = $('#navi ul a.current');
         var new_idx = all.index(current) + (key - 39);
-        if (new_idx >= 0 && new_idx < all.size()) {
+        if (new_idx >= first_idx && new_idx < all.size()) {
             var next = all.eq(new_idx);
             current.removeClass('current');
             next.addClass('current');
