@@ -176,6 +176,14 @@ function handleKey(key) {
             var next = all.eq(new_idx);
             current.removeClass('current');
             next.addClass('current');
+            var navi = $('#navi');
+            var cur_top = next.offset().top + navi.scrollTop();
+            if (navi.height() <= next.offset().top + next.height() + 20) {
+                navi.scrollTop(navi.scrollTop() + 150);
+            }
+            if (next.offset().top <= 50) {
+                navi.scrollTop(navi.scrollTop() - 150);
+            }
         }
     } else if (key == 13) { //[Enter]
         var url = $('#navi ul a.current').attr('href');
