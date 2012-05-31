@@ -68,6 +68,14 @@ function initPage(elem) {
         } else if (!isAbsoluteUri(src_url)) {
             $(this).attr('href', '#!/' + absolutePath(src_url.replace('#', '?')));
         }
+        if (typeof(macgap) != 'undefined') {
+            if (src_url.match(/^http/)) {
+                $(this).click(function() {
+                    macgap.app.open(src_url);
+                    return false;
+                });
+            }
+        }
     });
 }
 
@@ -203,6 +211,7 @@ $(function() {
     $('#navi ul a:first').addClass('current');
 
     loadIndex();
+    initPage($('#search'));
 
     $(window).hashchange(function() {
         loadPage();
