@@ -26,11 +26,35 @@
 
 <dl class="methodlist">
 
-<dt class="method-heading"><code>timestamp</code></dt>
+<dt class="method-heading"><code>timestamp -&gt; Time</code></dt>
 <dd class="method-description">
-<p class="todo">
-[TODO]
+<p>
+タイムスタンプ制御メッセージに含まれる時刻を <a href="../../../class/-time.html">Time</a> オブジェクト
+で返します。
 </p>
+<p>
+&quot;タイムスタンプ制御メッセージ&quot; は以下のいずれかです。
+</p>
+<ul>
+<li>SOL_SOCKET/SCM_TIMESTAMP (micro second) GNU/Linux, FreeBSD, NetBSD, OpenBSD, Solaris, MacOS X</li>
+<li>SOL_SOCKET/SCM_TIMESTAMPNS (nano second) GNU/Linux</li>
+<li>SOL_SOCKET/SCM_BINTIME (2**(-64) second) FreeBSD</li>
+</ul>
+<pre>
+Addrinfo.udp(&quot;127.0.0.1&quot;, 0).bind {|s1|
+  Addrinfo.udp(&quot;127.0.0.1&quot;, 0).bind {|s2|
+    s1.setsockopt(:SOCKET, :TIMESTAMP, true)
+    s2.send &quot;a&quot;, 0, s1.local_address
+    ctl = s1.recvmsg.last
+    p ctl
+    #=&gt; #&lt;Socket::AncillaryData: INET SOCKET TIMESTAMP 2009-02-24 17:35:46.775581&gt;
+    t = ctl.timestamp
+    p t      #=&gt; 2009-02-24 17:35:46 +0900
+    p t.usec #=&gt; 775581
+    p t.nsec #=&gt; 775581000
+  }
+}
+</pre>
 </dd>
 
 

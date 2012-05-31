@@ -54,17 +54,28 @@
 
 <h2>要約</h2>
 <p>
-ソケットそのものに対するシステムコールレベルのアクセスを提供
-するクラス。Perl のソケットに対するアクセスと同レベルの機能を
-提供しています。このクラスではソケットアドレスは <a href="../method/-array/i/pack.html">Array#pack</a>
-された文字列で指定します
-(<a href="../library/socket.html#pack_string">socket/ソケットアドレス構造体を pack した文字列</a>を参照)。
+汎用ソケットクラス。
 </p>
 <p>
-一般的なソケットプログラミングはより高レベルの
-<a href="../class/-t-c-p-socket.html">TCPSocket</a> クラスや
-<a href="../class/-t-c-p-server.html">TCPServer</a> クラスを用い
-て行われることが多く、このクラスはあまり用いられません。
+システムコールレベルから高水準の機能までを提供します。
+</p>
+<p>
+ソケットオブジェクトを生成する汎用的な方法として
+<a href="../method/-socket/s/new.html">Socket.new</a> がありますが、以下のようなより便利な
+メソッドがあります。
+</p>
+<ul>
+<li>TCP のクライアントソケット <a href="../method/-socket/s/tcp.html">Socket.tcp</a> <a href="../method/-t-c-p-socket/s/open.html">TCPSocket.open</a></li>
+<li>TCP のサーバソケット <a href="../method/-socket/s/tcp_server_loop.html">Socket.tcp_server_loop</a>,
+<a href="../method/-socket/s/tcp_server_sockets.html">Socket.tcp_server_sockets</a>, <a href="../method/-t-c-p-server/s/open.html">TCPServer.open</a></li>
+<li>UNIX socket のクライアントソケット <a href="../method/-socket/s/unix.html">Socket.unix</a> <a href="../method/-u-n-i-x-socket/s/open.html">UNIXSocket.open</a></li>
+<li>UNIX socket のサーバソケット <a href="../method/-socket/s/unix_server_loop.html">Socket.unix_server_loop</a>,
+<a href="../method/-socket/s/unix_server_socket.html">Socket.unix_server_socket</a>, <a href="../method/-u-n-i-x-server/s/open.html">UNIXServer.open</a></li>
+</ul>
+<p>
+また、クライアントソケットは <a href="../class/-addrinfo=23connect.html">Addrinfo#connect</a> で、
+サーバソケットを <a href="../class/-addrinfo=23bind.html">Addrinfo#bind</a> や <a href="../class/-addrinfo=23listen.html">Addrinfo#listen</a> で
+作ることもできます。
 </p>
 
 
@@ -79,12 +90,14 @@
 <tr>
 <td class="signature">
   <a href="../method/-socket/s/accept_loop.html"><code>
-  accept_loop
+  accept_loop(sockets) {|sock, client_addrinfo| ...} -&gt; ()
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+sockets でサーバソケットを受け取り、接続を待ち受け、
+クライアントとの接続が確立するたびにブロックにその接続
+ソケットを渡し呼び出します。
 </p>
 </td>
 
@@ -194,7 +207,6 @@ service, protoに対応するポート番号を返
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
 ポート番号に対応するサービスの正式名を返します。
 </p>
 </td>
@@ -204,12 +216,12 @@ service, protoに対応するポート番号を返
 <tr>
 <td class="signature">
   <a href="../method/-socket/s/ip_address_list.html"><code>
-  ip_address_list
+  ip_address_list -&gt; [Addrinfo]
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+ローカルの IP アドレスを配列で返します。
 </p>
 </td>
 
@@ -218,7 +230,7 @@ service, protoに対応するポート番号を返
 <tr>
 <td class="signature">
   <a href="../method/-socket/s/new.html"><code>
-  open(domain, type, protocol) -&gt; Socket<br>new(domain, type, protocol) -&gt; Socket
+  open(domain, type, protocol=0) -&gt; Socket<br>new(domain, type, protocol=0) -&gt; Socket
   </code></a>
 </td>
 
@@ -289,7 +301,6 @@ Socket クラスの定数として定義されています。domain
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
 TCP/IP で host:port に接続するソケットオブジェクトを作成します。
 </p>
 </td>
@@ -299,12 +310,13 @@ TCP/IP で host:port に接続するソケットオブジェクトを作成し�
 <tr>
 <td class="signature">
   <a href="../method/-socket/s/tcp_server_loop.html"><code>
-  tcp_server_loop
+  tcp_server_loop(port) {|sock,addr| ...} -&gt; ()<br>tcp_server_loop(host, port) {|sock,addr| ...} -&gt; ()
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+TCP/IP で host:port で待ち受けるサーバ側のソケットを作成し、
+新しい接続を受け入れるごとにブロックを呼び出します。
 </p>
 </td>
 
@@ -313,12 +325,13 @@ TCP/IP で host:port に接続するソケットオブジェクトを作成し�
 <tr>
 <td class="signature">
   <a href="../method/-socket/s/tcp_server_sockets.html"><code>
-  tcp_server_sockets
+  tcp_server_sockets(port) -&gt; [Socket]<br>tcp_server_sockets(host, port) -&gt; [Socket]<br>tcp_server_sockets(port) {|sockets| ...} -&gt; object<br>tcp_server_sockets(host, port) {|sockets| ...} -&gt; object
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+TCP/IP で host:port で待ち受けるサーバ側のソケットを
+作成します。
 </p>
 </td>
 
@@ -327,12 +340,13 @@ TCP/IP で host:port に接続するソケットオブジェクトを作成し�
 <tr>
 <td class="signature">
   <a href="../method/-socket/s/udp_server_loop.html"><code>
-  udp_server_loop
+  udp_server_loop(port) {|msg, msg_src| ... } -&gt; ()<br>udp_server_loop(host, port) {|msg, msg_src| ... } -&gt; ()
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+UDP のサーバを起動して、メッセージが来るごとに
+ブロックを呼び出します。
 </p>
 </td>
 
@@ -341,12 +355,12 @@ TCP/IP で host:port に接続するソケットオブジェクトを作成し�
 <tr>
 <td class="signature">
   <a href="../method/-socket/s/udp_server_loop_on.html"><code>
-  udp_server_loop_on
+  udp_server_loop_on(sockets) {|msg, msg_src| ... } -&gt; ()
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+sockets (UDP のソケット)に対し、通信を待ち受けます。
 </p>
 </td>
 
@@ -355,12 +369,12 @@ TCP/IP で host:port に接続するソケットオブジェクトを作成し�
 <tr>
 <td class="signature">
   <a href="../method/-socket/s/udp_server_recv.html"><code>
-  udp_server_recv
+  udp_server_recv(sockets) {|msg, msg_src| ... } -&gt; ()
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+socketsで与えられた各 UDP ソケットからデータを読み取ります。
 </p>
 </td>
 
@@ -369,12 +383,12 @@ TCP/IP で host:port に接続するソケットオブジェクトを作成し�
 <tr>
 <td class="signature">
   <a href="../method/-socket/s/udp_server_sockets.html"><code>
-  udp_server_sockets
+  udp_server_sockets(port) -&gt; [Sockets]<br>udp_server_sockets(host, port) -&gt; [Sockets]<br>udp_server_sockets(port) {|sockets| ... } -&gt; object<br>udp_server_sockets(host, port) {|sockets| ... } -&gt; object
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+UDP で host:port を待ち受けるサーバ側のソケットを作成します。
 </p>
 </td>
 
@@ -383,12 +397,12 @@ TCP/IP で host:port に接続するソケットオブジェクトを作成し�
 <tr>
 <td class="signature">
   <a href="../method/-socket/s/unix.html"><code>
-  unix
+  unix(path) -&gt; Socket<br>unix(path) {|sock| ... } -&gt; object
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+Unix クライアントソケットを生成します。
 </p>
 </td>
 
@@ -397,12 +411,13 @@ TCP/IP で host:port に接続するソケットオブジェクトを作成し�
 <tr>
 <td class="signature">
   <a href="../method/-socket/s/unix_server_loop.html"><code>
-  unix_server_loop
+  unix_server_loop(path) {|socket, client_addrinfo| ... } -&gt; ()
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+Unix サーバソケットを生成し、
+新しい接続を受け入れるごとにブロックを呼び出します。
 </p>
 </td>
 
@@ -411,12 +426,12 @@ TCP/IP で host:port に接続するソケットオブジェクトを作成し�
 <tr>
 <td class="signature">
   <a href="../method/-socket/s/unix_server_socket.html"><code>
-  unix_server_socket
+  unix_server_socket(path) -&gt; Socket<br>unix_server_socket(path) {|sock| ... } -&gt; object
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+Unix サーバソケットを生成します。
 </p>
 </td>
 
@@ -500,7 +515,8 @@ unpack したソケットパス名を返します。
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+ソケットを my_sockaddr に結合します。<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/bind.html">bind(2)</a>
+と同じ働きをします。
 </p>
 </td>
 
@@ -514,7 +530,7 @@ unpack したソケットパス名を返します。
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/connect.html">connect(2)</a> でソケットを接続します。
 </p>
 </td>
 
@@ -523,7 +539,7 @@ unpack したソケットパス名を返します。
 <tr>
 <td class="signature">
   <a href="../method/-socket/i/connect_nonblock.html"><code>
-  connect_nonblock(server_sockaddr) -&gt; Fixnum
+  connect_nonblock(server_sockaddr) -&gt; 0
   </code></a>
 </td>
 
@@ -538,12 +554,12 @@ unpack したソケットパス名を返します。
 <tr>
 <td class="signature">
   <a href="../method/-socket/i/ipv6only=21.html"><code>
-  ipv6only!
+  ipv6only! -&gt; ()
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+ソケットの IPV6_V6ONLY オプションを有効にします。
 </p>
 </td>
 
@@ -566,14 +582,12 @@ unpack したソケットパス名を返します。
 <tr>
 <td class="signature">
   <a href="../method/-socket/i/recvfrom.html"><code>
-  recvfrom(maxlen[, flags]) -&gt; Array
+  recvfrom(maxlen, flags=0) -&gt; [String, Addrinfo]
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-recv と同様にソケットからデータを受け取りますが、
-戻り値は文字列と相手ソケットのアドレスのペアです。引数につい
-ては recv と同様です。
+ソケットからデータを受け取ります。
 </p>
 </td>
 
@@ -582,12 +596,13 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/i/recvfrom_nonblock.html"><code>
-  recvfrom_nonblock(maxlen[, flags])
+  recvfrom_nonblock(maxlen, flags=0) -&gt; [String, Addrinfo]
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+ソケットをノンブロッキングモードに設定した後、
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/recvfrom.html">recvfrom(2)</a> を呼び出します。
 </p>
 </td>
 
@@ -620,7 +635,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-a-f_-a-p-p-l-e-t-a-l-k.html"><code>
-  AF_APPLETALK<br>AF_ATM<br>AF_AX25<br>AF_CCITT<br>AF_CHAOS<br>AF_CNT<br>AF_COIP<br>AF_DATAKIT<br>AF_DEC<br>AF_DLI<br>AF_E164<br>AF_ECMA<br>AF_HYLINK<br>AF_IMPLINK<br>AF_INET<br>AF_INET6<br>AF_IPX<br>AF_ISDN<br>AF_ISO<br>AF_LAT<br>AF_LINK<br>AF_LOCAL<br>AF_MAX<br>AF_NATM<br>AF_NDRV<br>AF_NETBIOS<br>AF_NETGRAPH<br>AF_NS<br>AF_OSI<br>AF_PPP<br>AF_PUP<br>AF_ROUTE<br>AF_SIP<br>AF_SNA<br>AF_SYSTEM<br>AF_UNIX<br>AF_UNSPEC
+  AF_APPLETALK -&gt; Integer<br>AF_ATM -&gt; Integer<br>AF_AX25 -&gt; Integer<br>AF_CCITT -&gt; Integer<br>AF_CHAOS -&gt; Integer<br>AF_CNT -&gt; Integer<br>AF_COIP -&gt; Integer<br>AF_DATAKIT -&gt; Integer<br>AF_DEC -&gt; Integer<br>AF_DLI -&gt; Integer<br>AF_E164 -&gt; Integer<br>AF_ECMA -&gt; Integer<br>AF_HYLINK -&gt; Integer<br>AF_IMPLINK -&gt; Integer<br>AF_INET -&gt; Integer<br>AF_INET6 -&gt; Integer<br>AF_IPX -&gt; Integer<br>AF_ISDN -&gt; Integer<br>AF_ISO -&gt; Integer<br>AF_LAT -&gt; Integer<br>AF_LINK -&gt; Integer<br>AF_LOCAL -&gt; Integer<br>AF_MAX -&gt; Integer<br>AF_NATM -&gt; Integer<br>AF_NDRV -&gt; Integer<br>AF_NETBIOS -&gt; Integer<br>AF_NETGRAPH -&gt; Integer<br>AF_NS -&gt; Integer<br>AF_OSI -&gt; Integer<br>AF_PACKET -&gt; Integer<br>AF_PPP -&gt; Integer<br>AF_PUP -&gt; Integer<br>AF_ROUTE -&gt; Integer<br>AF_SIP -&gt; Integer<br>AF_SNA -&gt; Integer<br>AF_SYSTEM -&gt; Integer<br>AF_UNIX -&gt; Integer<br>AF_UNSPEC -&gt; Integer
   </code></a>
 </td>
 
@@ -634,7 +649,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-a-i_-a-d-d-r-c-o-n-f-i-g.html"><code>
-  AI_ADDRCONFIG<br>AI_ALL<br>AI_CANONNAME<br>AI_DEFAULT<br>AI_MASK<br>AI_NUMERICHOST<br>AI_PASSIVE<br>AI_V4MAPPED<br>AI_V4MAPPED_CFG
+  AI_ADDRCONFIG -&gt; Integer<br>AI_ALL -&gt; Integer<br>AI_CANONNAME -&gt; Integer<br>AI_DEFAULT -&gt; Integer<br>AI_MASK -&gt; Integer<br>AI_NUMERICHOST -&gt; Integer<br>AI_NUMERICSERV -&gt; Integer<br>AI_PASSIVE -&gt; Integer<br>AI_V4MAPPED -&gt; Integer<br>AI_V4MAPPED_CFG -&gt; Integer
   </code></a>
 </td>
 
@@ -648,7 +663,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-e-a-i_-a-d-d-r-f-a-m-i-l-y.html"><code>
-  EAI_ADDRFAMILY<br>EAI_AGAIN<br>EAI_BADFLAGS<br>EAI_BADHINTS<br>EAI_FAIL<br>EAI_FAMILY<br>EAI_MAX<br>EAI_MEMORY<br>EAI_NODATA<br>EAI_NONAME<br>EAI_PROTOCOL<br>EAI_SERVICE<br>EAI_SOCKTYPE<br>EAI_SYSTEM
+  EAI_ADDRFAMILY -&gt; Integer<br>EAI_AGAIN -&gt; Integer<br>EAI_BADFLAGS -&gt; Integer<br>EAI_BADHINTS -&gt; Integer<br>EAI_FAIL -&gt; Integer<br>EAI_FAMILY -&gt; Integer<br>EAI_MAX -&gt; Integer<br>EAI_MEMORY -&gt; Integer<br>EAI_NODATA -&gt; Integer<br>EAI_NONAME -&gt; Integer<br>EAI_OVERFLOW -&gt; Integer<br>EAI_PROTOCOL -&gt; Integer<br>EAI_SERVICE -&gt; Integer<br>EAI_SOCKTYPE -&gt; Integer<br>EAI_SYSTEM -&gt; Integer
   </code></a>
 </td>
 
@@ -661,8 +676,19 @@ recv と同様にソケットからデータを受け取りますが、
 
 <tr>
 <td class="signature">
+  <a href="../method/-socket/c/-i-f-n-a-m-s-i-z.html"><code>
+  INET6_ADDRSTRLEN -&gt; Integer<br>INET_ADDRSTRLEN -&gt; Integer<br>IFNAMSIZ -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"></td>
+
+</tr>
+
+<tr>
+<td class="signature">
   <a href="../method/-socket/c/-i-n-a-d-d-r_-a-l-l-h-o-s-t-s_-g-r-o-u-p.html"><code>
-  INADDR_ALLHOSTS_GROUP<br>INADDR_ANY<br>INADDR_BROADCAST<br>INADDR_LOOPBACK<br>INADDR_MAX_LOCAL_GROUP<br>INADDR_NONE<br>INADDR_UNSPEC_GROUP
+  INADDR_ALLHOSTS_GROUP -&gt; Integer<br>INADDR_ANY -&gt; Integer<br>INADDR_BROADCAST -&gt; Integer<br>INADDR_LOOPBACK -&gt; Integer<br>INADDR_MAX_LOCAL_GROUP -&gt; Integer<br>INADDR_NONE -&gt; Integer<br>INADDR_UNSPEC_GROUP -&gt; Integer
   </code></a>
 </td>
 
@@ -676,7 +702,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-i-p-p-o-r-t_-r-e-s-e-r-v-e-d.html"><code>
-  IPPORT_RESERVED<br>IPPORT_USERRESERVED
+  IPPORT_RESERVED -&gt; Integer<br>IPPORT_USERRESERVED -&gt; Integer
   </code></a>
 </td>
 
@@ -689,8 +715,8 @@ recv と同様にソケットからデータを受け取りますが、
 
 <tr>
 <td class="signature">
-  <a href="../method/-socket/c/-i-p-p-r-o-t-o_-b-i-p.html"><code>
-  IPPROTO_BIP<br>IPPROTO_EGP<br>IPPROTO_EON<br>IPPROTO_GGP<br>IPPROTO_HELLO<br>IPPROTO_ICMP<br>IPPROTO_IDP<br>IPPROTO_IGMP<br>IPPROTO_IP<br>IPPROTO_MAX<br>IPPROTO_ND<br>IPPROTO_PUP<br>IPPROTO_RAW<br>IPPROTO_TCP<br>IPPROTO_TP<br>IPPROTO_UDP<br>IPPROTO_XTP
+  <a href="../method/-socket/c/-i-p-p-r-o-t-o_-a-h.html"><code>
+  IPPROTO_AH -&gt; Integer<br>IPPROTO_DSTOPTS -&gt; Integer<br>IPPROTO_ESP -&gt; Integer<br>IPPROTO_FRAGMENT -&gt; Integer<br>IPPROTO_HOPOPTS -&gt; Integer<br>IPPROTO_ICMPV6 -&gt; Integer<br>IPPROTO_IPV6 -&gt; Integer<br>IPPROTO_NONE -&gt; Integer<br>IPPROTO_ROUTING -&gt; Integer<br>IPPROTO_BIP -&gt; Integer<br>IPPROTO_EGP -&gt; Integer<br>IPPROTO_EON -&gt; Integer<br>IPPROTO_GGP -&gt; Integer<br>IPPROTO_HELLO -&gt; Integer<br>IPPROTO_ICMP -&gt; Integer<br>IPPROTO_IDP -&gt; Integer<br>IPPROTO_IGMP -&gt; Integer<br>IPPROTO_IP -&gt; Integer<br>IPPROTO_MAX -&gt; Integer<br>IPPROTO_ND -&gt; Integer<br>IPPROTO_PUP -&gt; Integer<br>IPPROTO_RAW -&gt; Integer<br>IPPROTO_TCP -&gt; Integer<br>IPPROTO_TP -&gt; Integer<br>IPPROTO_UDP -&gt; Integer<br>IPPROTO_XTP -&gt; Integer
   </code></a>
 </td>
 
@@ -698,13 +724,66 @@ recv と同様にソケットからデータを受け取りますが、
 @todo
 </p>
 </td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-socket/c/-i-p-v6_-c-h-e-c-k-s-u-m.html"><code>
+  IPV6_CHECKSUM -&gt; Integer<br>IPV6_DONTFRAG -&gt; Integer<br>IPV6_DSTOPTS -&gt; Integer<br>IPV6_HOPLIMIT -&gt; Integer<br>IPV6_HOPOPTS -&gt; Integer<br>IPV6_JOIN_GROUP -&gt; Integer<br>IPV6_LEAVE_GROUP -&gt; Integer<br>IPV6_MULTICAST_HOPS -&gt; Integer<br>IPV6_MULTICAST_IF -&gt; Integer<br>IPV6_MULTICAST_LOOP -&gt; Integer<br>IPV6_NEXTHOP -&gt; Integer<br>IPV6_PATHMTU -&gt; Integer<br>IPV6_PKTINFO -&gt; Integer<br>IPV6_RECVDSTOPTS -&gt; Integer<br>IPV6_RECVHOPLIMIT -&gt; Integer<br>IPV6_RECVHOPOPTS -&gt; Integer<br>IPV6_RECVPATHMTU -&gt; Integer<br>IPV6_RECVPKTINFO -&gt; Integer<br>IPV6_RECVRTHDR -&gt; Integer<br>IPV6_RECVTCLASS -&gt; Integer<br>IPV6_RTHDR -&gt; Integer<br>IPV6_RTHDRDSTOPTS -&gt; Integer<br>IPV6_RTHDR_TYPE_0 -&gt; Integer<br>IPV6_TCLASS -&gt; Integer<br>IPV6_UNICAST_HOPS -&gt; Integer<br>IPV6_USE_MIN_MTU -&gt; Integer<br>IPV6_V6ONLY -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-socket/c/-i-p-x_-t-y-p-e.html"><code>
+  IPX_TYPE -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"></td>
 
 </tr>
 
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-i-p_-a-d-d_-m-e-m-b-e-r-s-h-i-p.html"><code>
-  IP_ADD_MEMBERSHIP<br>IP_DEFAULT_MULTICAST_LOOP<br>IP_DEFAULT_MULTICAST_TTL<br>IP_DROP_MEMBERSHIP<br>IP_HDRINCL<br>IP_MAX_MEMBERSHIPS<br>IP_MULTICAST_IF<br>IP_MULTICAST_LOOP<br>IP_MULTICAST_TTL<br>IP_OPTIONS<br>IP_RECVDSTADDR<br>IP_RECVOPTS<br>IP_RECVRETOPTS<br>IP_RETOPTS<br>IP_TOS<br>IP_TTL
+  IP_ADD_MEMBERSHIP -&gt; Integer<br>IP_DEFAULT_MULTICAST_LOOP -&gt; Integer<br>IP_DEFAULT_MULTICAST_TTL -&gt; Integer<br>IP_DROP_MEMBERSHIP -&gt; Integer<br>IP_HDRINCL -&gt; Integer<br>IP_MAX_MEMBERSHIPS -&gt; Integer<br>IP_MULTICAST_IF -&gt; Integer<br>IP_MULTICAST_LOOP -&gt; Integer<br>IP_MULTICAST_TTL -&gt; Integer<br>IP_OPTIONS -&gt; Integer<br>IP_RECVDSTADDR -&gt; Integer<br>IP_RECVOPTS -&gt; Integer<br>IP_RECVRETOPTS -&gt; Integer<br>IP_RETOPTS -&gt; Integer<br>IP_TOS -&gt; Integer<br>IP_TTL -&gt; Integer<br>IP_ADD_SOURCE_MEMBERSHIP -&gt; Integer<br>IP_BLOCK_SOURCE -&gt; Integer<br>IP_DONTFRAG -&gt; Integer<br>IP_DROP_SOURCE_MEMBERSHIP -&gt; Integer<br>IP_FREEBIND -&gt; Integer<br>IP_IPSEC_POLICY -&gt; Integer<br>IP_MINTTL -&gt; Integer<br>IP_MSFILTER -&gt; Integer<br>IP_MTU -&gt; Integer<br>IP_MTU_DISCOVER -&gt; Integer<br>IP_ONESBCAST -&gt; Integer<br>IP_PASSSEC -&gt; Integer<br>IP_PKTINFO -&gt; Integer<br>IP_PKTOPTIONS -&gt; Integer<br>IP_PMTUDISC_DO -&gt; Integer<br>IP_PMTUDISC_DONT -&gt; Integer<br>IP_PMTUDISC_WANT -&gt; Integer<br>IP_PORTRANGE -&gt; Integer<br>IP_RECVERR -&gt; Integer<br>IP_RECVIF -&gt; Integer<br>IP_RECVSLLA -&gt; Integer<br>IP_RECVTOS -&gt; Integer<br>IP_RECVTTL -&gt; Integer<br>IP_ROUTER_ALERT -&gt; Integer<br>IP_SENDSRCADDR -&gt; Integer<br>IP_UNBLOCK_SOURCE -&gt; Integer<br>IP_XFRM_POLICY -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-socket/c/-l-o-c-a-l_-c-o-n-n-w-a-i-t.html"><code>
+  LOCAL_CONNWAIT -&gt; Integer<br>LOCAL_CREDS -&gt; Integer<br>LOCAL_PEERCRED -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-socket/c/-m-c-a-s-t_-b-l-o-c-k_-s-o-u-r-c-e.html"><code>
+  MCAST_BLOCK_SOURCE -&gt; Integer<br>MCAST_EXCLUDE -&gt; Integer<br>MCAST_INCLUDE -&gt; Integer<br>MCAST_JOIN_GROUP -&gt; Integer<br>MCAST_JOIN_SOURCE_GROUP -&gt; Integer<br>MCAST_LEAVE_GROUP -&gt; Integer<br>MCAST_LEAVE_SOURCE_GROUP -&gt; Integer<br>MCAST_MSFILTER -&gt; Integer<br>MCAST_UNBLOCK_SOURCE -&gt; Integer
   </code></a>
 </td>
 
@@ -718,7 +797,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-m-s-g_-c-o-m-p-a-t.html"><code>
-  MSG_COMPAT<br>MSG_CTRUNC<br>MSG_DONTROUTE<br>MSG_DONTWAIT<br>MSG_EOF<br>MSG_EOR<br>MSG_FLUSH<br>MSG_HAVEMORE<br>MSG_HOLD<br>MSG_OOB<br>MSG_PEEK<br>MSG_RCVMORE<br>MSG_SEND<br>MSG_TRUNC<br>MSG_WAITALL
+  MSG_COMPAT -&gt; Integer<br>MSG_CTRUNC -&gt; Integer<br>MSG_DONTROUTE -&gt; Integer<br>MSG_DONTWAIT -&gt; Integer<br>MSG_EOF -&gt; Integer<br>MSG_EOR -&gt; Integer<br>MSG_FLUSH -&gt; Integer<br>MSG_HAVEMORE -&gt; Integer<br>MSG_HOLD -&gt; Integer<br>MSG_OOB -&gt; Integer<br>MSG_PEEK -&gt; Integer<br>MSG_RCVMORE -&gt; Integer<br>MSG_SEND -&gt; Integer<br>MSG_TRUNC -&gt; Integer<br>MSG_WAITALL -&gt; Integer<br>MSG_CONFIRM -&gt; Integer<br>MSG_ERRQUEUE -&gt; Integer<br>MSG_FIN -&gt; Integer<br>MSG_MORE -&gt; Integer<br>MSG_NOSIGNAL -&gt; Integer<br>MSG_PROXY -&gt; Integer<br>MSG_RST -&gt; Integer<br>MSG_SYN -&gt; Integer
   </code></a>
 </td>
 
@@ -732,7 +811,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-n-i_-d-g-r-a-m.html"><code>
-  NI_DGRAM<br>NI_MAXHOST<br>NI_MAXSERV<br>NI_NAMEREQD<br>NI_NOFQDN<br>NI_NUMERICHOST<br>NI_NUMERICSERV
+  NI_DGRAM -&gt; Integer<br>NI_MAXHOST -&gt; Integer<br>NI_MAXSERV -&gt; Integer<br>NI_NAMEREQD -&gt; Integer<br>NI_NOFQDN -&gt; Integer<br>NI_NUMERICHOST -&gt; Integer<br>NI_NUMERICSERV -&gt; Integer
   </code></a>
 </td>
 
@@ -746,7 +825,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-a-p-p-l-e-t-a-l-k.html"><code>
-  PF_APPLETALK
+  PF_APPLETALK -&gt; Integer
   </code></a>
 </td>
 
@@ -760,7 +839,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-a-t-m.html"><code>
-  PF_ATM
+  PF_ATM -&gt; Integer
   </code></a>
 </td>
 
@@ -774,7 +853,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-a-x25.html"><code>
-  PF_AX25
+  PF_AX25 -&gt; Integer
   </code></a>
 </td>
 
@@ -788,7 +867,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-c-c-i-t-t.html"><code>
-  PF_CCITT
+  PF_CCITT -&gt; Integer
   </code></a>
 </td>
 
@@ -802,7 +881,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-c-h-a-o-s.html"><code>
-  PF_CHAOS
+  PF_CHAOS -&gt; Integer
   </code></a>
 </td>
 
@@ -816,7 +895,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-c-n-t.html"><code>
-  PF_CNT
+  PF_CNT -&gt; Integer
   </code></a>
 </td>
 
@@ -830,7 +909,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-c-o-i-p.html"><code>
-  PF_COIP
+  PF_COIP -&gt; Integer
   </code></a>
 </td>
 
@@ -844,7 +923,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-d-a-t-a-k-i-t.html"><code>
-  PF_DATAKIT
+  PF_DATAKIT -&gt; Integer
   </code></a>
 </td>
 
@@ -858,7 +937,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-d-e-c.html"><code>
-  PF_DEC
+  PF_DEC -&gt; Integer
   </code></a>
 </td>
 
@@ -872,7 +951,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-d-l-i.html"><code>
-  PF_DLI
+  PF_DLI -&gt; Integer
   </code></a>
 </td>
 
@@ -886,7 +965,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-e-c-m-a.html"><code>
-  PF_ECMA
+  PF_ECMA -&gt; Integer
   </code></a>
 </td>
 
@@ -900,7 +979,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-h-y-l-i-n-k.html"><code>
-  PF_HYLINK
+  PF_HYLINK -&gt; Integer
   </code></a>
 </td>
 
@@ -914,7 +993,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-i-m-p-l-i-n-k.html"><code>
-  PF_IMPLINK
+  PF_IMPLINK -&gt; Integer
   </code></a>
 </td>
 
@@ -928,7 +1007,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-i-n-e-t.html"><code>
-  PF_INET
+  PF_INET -&gt; Integer
   </code></a>
 </td>
 
@@ -942,7 +1021,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-i-n-e-t6.html"><code>
-  PF_INET6
+  PF_INET6 -&gt; Integer
   </code></a>
 </td>
 
@@ -956,7 +1035,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-i-p-x.html"><code>
-  PF_IPX
+  PF_IPX -&gt; Integer
   </code></a>
 </td>
 
@@ -970,7 +1049,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-i-s-d-n.html"><code>
-  PF_ISDN
+  PF_ISDN -&gt; Integer
   </code></a>
 </td>
 
@@ -984,7 +1063,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-i-s-o.html"><code>
-  PF_ISO
+  PF_ISO -&gt; Integer
   </code></a>
 </td>
 
@@ -998,7 +1077,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-k-e-y.html"><code>
-  PF_KEY
+  PF_KEY -&gt; Integer
   </code></a>
 </td>
 
@@ -1012,7 +1091,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-l-a-t.html"><code>
-  PF_LAT
+  PF_LAT -&gt; Integer
   </code></a>
 </td>
 
@@ -1026,7 +1105,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-l-i-n-k.html"><code>
-  PF_LINK
+  PF_LINK -&gt; Integer
   </code></a>
 </td>
 
@@ -1040,7 +1119,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-l-o-c-a-l.html"><code>
-  PF_LOCAL
+  PF_LOCAL -&gt; Integer
   </code></a>
 </td>
 
@@ -1054,7 +1133,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-m-a-x.html"><code>
-  PF_MAX
+  PF_MAX -&gt; Integer
   </code></a>
 </td>
 
@@ -1068,7 +1147,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-n-a-t-m.html"><code>
-  PF_NATM
+  PF_NATM -&gt; Integer
   </code></a>
 </td>
 
@@ -1082,7 +1161,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-n-d-r-v.html"><code>
-  PF_NDRV
+  PF_NDRV -&gt; Integer
   </code></a>
 </td>
 
@@ -1096,7 +1175,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-n-e-t-b-i-o-s.html"><code>
-  PF_NETBIOS
+  PF_NETBIOS -&gt; Integer
   </code></a>
 </td>
 
@@ -1110,7 +1189,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-n-e-t-g-r-a-p-h.html"><code>
-  PF_NETGRAPH
+  PF_NETGRAPH -&gt; Integer
   </code></a>
 </td>
 
@@ -1124,7 +1203,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-n-s.html"><code>
-  PF_NS
+  PF_NS -&gt; Integer
   </code></a>
 </td>
 
@@ -1138,7 +1217,21 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-o-s-i.html"><code>
-  PF_OSI
+  PF_OSI -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-socket/c/-p-f_-p-a-c-k-e-t.html"><code>
+  PF_PACKET -&gt; Integer
   </code></a>
 </td>
 
@@ -1152,7 +1245,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-p-i-p.html"><code>
-  PF_PIP
+  PF_PIP -&gt; Integer
   </code></a>
 </td>
 
@@ -1166,7 +1259,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-p-p-p.html"><code>
-  PF_PPP
+  PF_PPP -&gt; Integer
   </code></a>
 </td>
 
@@ -1180,7 +1273,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-p-u-p.html"><code>
-  PF_PUP
+  PF_PUP -&gt; Integer
   </code></a>
 </td>
 
@@ -1194,7 +1287,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-r-o-u-t-e.html"><code>
-  PF_ROUTE
+  PF_ROUTE -&gt; Integer
   </code></a>
 </td>
 
@@ -1208,7 +1301,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-r-t-i-p.html"><code>
-  PF_RTIP
+  PF_RTIP -&gt; Integer
   </code></a>
 </td>
 
@@ -1222,7 +1315,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-s-i-p.html"><code>
-  PF_SIP
+  PF_SIP -&gt; Integer
   </code></a>
 </td>
 
@@ -1236,7 +1329,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-s-n-a.html"><code>
-  PF_SNA
+  PF_SNA -&gt; Integer
   </code></a>
 </td>
 
@@ -1250,7 +1343,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-s-y-s-t-e-m.html"><code>
-  PF_SYSTEM
+  PF_SYSTEM -&gt; Integer
   </code></a>
 </td>
 
@@ -1264,7 +1357,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-u-n-i-x.html"><code>
-  PF_UNIX
+  PF_UNIX -&gt; Integer
   </code></a>
 </td>
 
@@ -1278,7 +1371,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-u-n-s-p-e-c.html"><code>
-  PF_UNSPEC
+  PF_UNSPEC -&gt; Integer
   </code></a>
 </td>
 
@@ -1292,7 +1385,21 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-p-f_-x-t-p.html"><code>
-  PF_XTP
+  PF_XTP -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+@todo
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-socket/c/-s-c-m_-b-i-n-t-i-m-e.html"><code>
+  SCM_BINTIME -&gt; Integer<br>SCM_CREDENTIALS -&gt; Integer<br>SCM_CREDS -&gt; Integer<br>SCM_RIGHTS -&gt; Integer<br>SCM_TIMESTAMP -&gt; Integer<br>SCM_TIMESTAMPNS -&gt; Integer<br>SCM_UCRED -&gt; Integer
   </code></a>
 </td>
 
@@ -1306,12 +1413,40 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-s-h-u-t_-r-d.html"><code>
-  SHUT_RD<br>SHUT_RDWR<br>SHUT_WR
+  SHUT_RD -&gt; Integer
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+<a href="../method/-basic-socket/i/shutdown.html">BasicSocket#shutdown</a> の how 引数に使用します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-socket/c/-s-h-u-t_-r-d-w-r.html"><code>
+  SHUT_RDWR -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-basic-socket/i/shutdown.html">BasicSocket#shutdown</a> の how 引数に使用します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-socket/c/-s-h-u-t_-w-r.html"><code>
+  SHUT_WR -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-basic-socket/i/shutdown.html">BasicSocket#shutdown</a> の how 引数に使用します。
 </p>
 </td>
 
@@ -1320,12 +1455,13 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-s-o-c-k_-d-g-r-a-m.html"><code>
-  SOCK_DGRAM
+  SOCK_DGRAM -&gt; Integer
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+<a href="../method/-socket/s/open.html">Socket.open</a> の第二引数 type に使用します。
+詳しくは <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/socket.html">socket(2)</a> を見てください。
 </p>
 </td>
 
@@ -1334,7 +1470,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-s-o-c-k_-p-a-c-k-e-t.html"><code>
-  SOCK_PACKET
+  SOCK_PACKET -&gt; Integer
   </code></a>
 </td>
 
@@ -1348,7 +1484,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-s-o-c-k_-r-a-w.html"><code>
-  SOCK_RAW
+  SOCK_RAW -&gt; Integer
   </code></a>
 </td>
 
@@ -1362,7 +1498,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-s-o-c-k_-r-d-m.html"><code>
-  SOCK_RDM
+  SOCK_RDM -&gt; Integer
   </code></a>
 </td>
 
@@ -1376,12 +1512,13 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-s-o-c-k_-s-e-q-p-a-c-k-e-t.html"><code>
-  SOCK_SEQPACKET
+  SOCK_SEQPACKET -&gt; Integer
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+<a href="../method/-socket/s/open.html">Socket.open</a> の第二引数 type に使用します。
+詳しくは <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/socket.html">socket(2)</a> を見てください。
 </p>
 </td>
 
@@ -1390,7 +1527,22 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-s-o-c-k_-s-t-r-e-a-m.html"><code>
-  SOCK_STREAM
+  SOCK_STREAM -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+<a href="../method/-socket/s/open.html">Socket.open</a> の第二引数 type に使用します。
+詳しくは <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/socket.html">socket(2)</a> を見てください。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-socket/c/-s-o-l_-a-t-a-l-k.html"><code>
+  SOL_ATALK -&gt; Integer<br>SOL_AX25 -&gt; Integer<br>SOL_IP -&gt; Integer<br>SOL_IPX -&gt; Integer<br>SOL_SOCKET -&gt; Integer<br>SOL_TCP -&gt; Integer<br>SOL_UDP -&gt; Integer
   </code></a>
 </td>
 
@@ -1403,8 +1555,8 @@ recv と同様にソケットからデータを受け取りますが、
 
 <tr>
 <td class="signature">
-  <a href="../method/-socket/c/-s-o-l_-a-t-a-l-k.html"><code>
-  SOL_ATALK<br>SOL_AX25<br>SOL_IP<br>SOL_IPX<br>SOL_SOCKET<br>SOL_TCP<br>SOL_UDP
+  <a href="../method/-socket/c/-s-o-m-a-x-c-o-n-n.html"><code>
+  SOMAXCONN -&gt; Integer
   </code></a>
 </td>
 
@@ -1418,7 +1570,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-s-o-p-r-i_-b-a-c-k-g-r-o-u-n-d.html"><code>
-  SOPRI_BACKGROUND<br>SOPRI_INTERACTIVE<br>SOPRI_NORMAL
+  SOPRI_BACKGROUND -&gt; Integer<br>SOPRI_INTERACTIVE -&gt; Integer<br>SOPRI_NORMAL -&gt; Integer
   </code></a>
 </td>
 
@@ -1432,7 +1584,7 @@ recv と同様にソケットからデータを受け取りますが、
 <tr>
 <td class="signature">
   <a href="../method/-socket/c/-s-o_-a-c-c-e-p-t-c-o-n-n.html"><code>
-  SO_ACCEPTCONN<br>SO_ACCEPTFILTER<br>SO_ATTACH_FILTER<br>SO_BINDTODEVICE<br>SO_BROADCAST<br>SO_DEBUG<br>SO_DETACH_FILTER<br>SO_DONTROUTE<br>SO_DONTTRUNC<br>SO_ERROR<br>SO_KEEPALIVE<br>SO_LINGER<br>SO_NKE<br>SO_NOSIGPIPE<br>SO_NO_CHECK<br>SO_NREAD<br>SO_OOBINLINE<br>SO_PASSCRED<br>SO_PEERCRED<br>SO_PEERNAME<br>SO_PRIORITY<br>SO_RCVBUF<br>SO_RCVLOWAT<br>SO_RCVTIMEO<br>SO_REUSEADDR<br>SO_REUSEPORT<br>SO_SECURITY_AUTHENTICATION<br>SO_SECURITY_ENCRYPTION_NETWORK<br>SO_SECURITY_ENCRYPTION_TRANSPORT<br>SO_SNDBUF<br>SO_SNDLOWAT<br>SO_SNDTIMEO<br>SO_TIMESTAMP<br>SO_TYPE<br>SO_USELOOPBACK<br>SO_WANTMORE<br>SO_WANTOOBFLAG
+  SO_ACCEPTCONN -&gt; Integer<br>SO_ACCEPTFILTER -&gt; Integer<br>SO_ATTACH_FILTER -&gt; Integer<br>SO_BINDTODEVICE -&gt; Integer<br>SO_BROADCAST -&gt; Integer<br>SO_DEBUG -&gt; Integer<br>SO_DETACH_FILTER -&gt; Integer<br>SO_DONTROUTE -&gt; Integer<br>SO_DONTTRUNC -&gt; Integer<br>SO_ERROR -&gt; Integer<br>SO_KEEPALIVE -&gt; Integer<br>SO_LINGER -&gt; Integer<br>SO_NKE -&gt; Integer<br>SO_NOSIGPIPE -&gt; Integer<br>SO_NO_CHECK -&gt; Integer<br>SO_NREAD -&gt; Integer<br>SO_OOBINLINE -&gt; Integer<br>SO_PASSCRED -&gt; Integer<br>SO_PEERCRED -&gt; Integer<br>SO_PEERNAME -&gt; Integer<br>SO_PRIORITY -&gt; Integer<br>SO_RCVBUF -&gt; Integer<br>SO_RCVLOWAT -&gt; Integer<br>SO_RCVTIMEO -&gt; Integer<br>SO_REUSEADDR -&gt; Integer<br>SO_REUSEPORT -&gt; Integer<br>SO_SECURITY_AUTHENTICATION -&gt; Integer<br>SO_SECURITY_ENCRYPTION_NETWORK -&gt; Integer<br>SO_SECURITY_ENCRYPTION_TRANSPORT -&gt; Integer<br>SO_SNDBUF -&gt; Integer<br>SO_SNDLOWAT -&gt; Integer<br>SO_SNDTIMEO -&gt; Integer<br>SO_TIMESTAMP -&gt; Integer<br>SO_TYPE -&gt; Integer<br>SO_USELOOPBACK -&gt; Integer<br>SO_WANTMORE -&gt; Integer<br>SO_WANTOOBFLAG -&gt; Integer<br>SO_ALLZONES -&gt; Integer<br>SO_BINTIME -&gt; Integer<br>SO_MAC_EXEMPT -&gt; Integer<br>SO_RECVUCRED -&gt; Integer<br>SO_TIMESTAMPNS -&gt; Integer
   </code></a>
 </td>
 
@@ -1445,8 +1597,8 @@ recv と同様にソケットからデータを受け取りますが、
 
 <tr>
 <td class="signature">
-  <a href="../method/-socket/c/-t-c-p_-m-a-x-s-e-g.html"><code>
-  TCP_MAXSEG<br>TCP_NODELAY
+  <a href="../method/-socket/c/-t-c-p_-c-o-r-k.html"><code>
+  TCP_MAXSEG -&gt; Integer<br>TCP_NODELAY -&gt; Integer<br>TCP_CORK -&gt; Integer<br>TCP_DEFER_ACCEPT -&gt; Integer<br>TCP_INFO -&gt; Integer<br>TCP_KEEPCNT -&gt; Integer<br>TCP_KEEPIDLE -&gt; Integer<br>TCP_KEEPINTVL -&gt; Integer<br>TCP_LINGER2 -&gt; Integer<br>TCP_MD5SIG -&gt; Integer<br>TCP_NOOPT -&gt; Integer<br>TCP_NOPUSH -&gt; Integer<br>TCP_QUICKACK -&gt; Integer<br>TCP_SYNCNT -&gt; Integer<br>TCP_WINDOW_CLAMP -&gt; Integer<br>UDP_CORK -&gt; Integer
   </code></a>
 </td>
 
@@ -1468,7 +1620,13 @@ recv と同様にソケットからデータを受け取りますが、
 
 <a href="../method/-basic-object/i/=21=3d.html">!=</a>
 
+<a href="../method/-basic-socket/i/connect_address.html">connect_address</a>
+
 <a href="../method/-basic-socket/i/do_not_reverse_lookup.html">do_not_reverse_lookup</a>
+
+<a href="../method/-basic-socket/i/do_not_reverse_lookup=3d.html">do_not_reverse_lookup=</a>
+
+<a href="../method/-basic-socket/i/getpeereid.html">getpeereid</a>
 
 <a href="../method/-basic-socket/i/getpeername.html">getpeername</a>
 
@@ -1476,17 +1634,31 @@ recv と同様にソケットからデータを受け取りますが、
 
 <a href="../method/-basic-socket/i/getsockopt.html">getsockopt</a>
 
+<a href="../method/-basic-socket/i/local_address.html">local_address</a>
+
 <a href="../method/-basic-socket/i/recv.html">recv</a>
 
 <a href="../method/-basic-socket/i/recv_nonblock.html">recv_nonblock</a>
 
+<a href="../method/-basic-socket/i/recvmsg.html">recvmsg</a>
+
+<a href="../method/-basic-socket/i/recvmsg_nonblock.html">recvmsg_nonblock</a>
+
+<a href="../method/-basic-socket/i/remote_address.html">remote_address</a>
+
 <a href="../method/-basic-socket/i/send.html">send</a>
+
+<a href="../method/-basic-socket/i/sendmsg.html">sendmsg</a>
+
+<a href="../method/-basic-socket/i/sendmsg_nonblock.html">sendmsg_nonblock</a>
 
 <a href="../method/-basic-socket/i/setsockopt.html">setsockopt</a>
 
 <a href="../method/-basic-socket/i/shutdown.html">shutdown</a>
 
 <a href="../method/-basic-socket/s/do_not_reverse_lookup.html">.do_not_reverse_lookup</a>
+
+<a href="../method/-basic-socket/s/do_not_reverse_lookup=3d.html">.do_not_reverse_lookup=</a>
 
 <a href="../method/-basic-socket/s/for_fd.html">.for_fd</a>
 
@@ -1769,6 +1941,8 @@ recv と同様にソケットからデータを受け取りますが、
 <a href="../method/-object/i/protected_methods.html">protected_methods</a>
 
 <a href="../method/-object/i/public_methods.html">public_methods</a>
+
+<a href="../method/-object/i/public_send.html">public_send</a>
 
 <a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
 

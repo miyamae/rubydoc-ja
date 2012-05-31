@@ -26,11 +26,53 @@
 
 <dl class="methodlist">
 
-<dt class="method-heading"><code>unix_rights</code></dt>
+<dt class="method-heading"><code>unix_rights -&gt; [IO] | nil</code></dt>
 <dd class="method-description">
-<p class="todo">
-[TODO]
+<p>
+Unix domain socket の SCM_RIGHTS 制御メッセージに含まれる
+ファイルディスクリプタを IO オブジェクトの配列として返します。
 </p>
+<p>
+得られる IO オブジェクトか <a href="../../../class/-i-o.html">IO</a> か <a href="../../../class/-socket.html">Socket</a> です。
+</p>
+<p>
+この配列は <a href="../../../class/-socket=3a=3a-ancillary-data.html">Socket::AncillaryData</a> が初期化されたときに
+作られます。例えば <a href="../../../method/-basic-socket/i/recvmsg.html">BasicSocket#recvmsg</a> を :scm_rights =&gt; true
+</p>
+<pre>
+オプションを付けて呼びだし、
+</pre>
+<p>
+SCM_RIGHTS な 制御メッセージを受け取ったときに配列が作られます。
+適切なオプションを指定しなかった場合は配列は生成されず、
+このメソッドは nil を返します。
+</p>
+<pre>
+# recvmsg needs :scm_rights=&gt;true for unix_rights
+s1, s2 = UNIXSocket.pair
+p s1                                         #=&gt; #&lt;UNIXSocket:fd 3&gt;
+s1.sendmsg &quot;stdin and a socket&quot;, 0, nil, Socket::AncillaryData.unix_rights(STDIN, s1)
+_, _, _, ctl = s2.recvmsg(:scm_rights=&gt;true)
+p ctl
+#=&gt; #&lt;Socket::AncillaryData: UNIX SOCKET RIGHTS 6 7&gt;
+p ctl.unix_rights                            #=&gt; [#&lt;IO:fd 6&gt;, #&lt;Socket:fd 7&gt;]
+p File.identical?(STDIN, ctl.unix_rights[0]) #=&gt; true
+p File.identical?(s1, ctl.unix_rights[1])    #=&gt; true
+
+# If :scm_rights=&gt;true is not given, unix_rights returns nil
+s1, s2 = UNIXSocket.pair
+s1.sendmsg &quot;stdin and a socket&quot;, 0, nil, Socket::AncillaryData.unix_rights(STDIN, s1)
+_, _, _, ctl = s2.recvmsg
+p ctl #=&gt; #&lt;Socket::AncillaryData: UNIX SOCKET RIGHTS 6 7&gt;
+p ctl.unix_rights #=&gt; nil
+</pre>
+<dl>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+family/level/type が AF_UNIX/SOL_SOCKET/SCM_RIGHTS でない場合
+に発生します。
+</dd>
+</dl>
 </dd>
 
 

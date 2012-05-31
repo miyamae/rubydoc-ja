@@ -26,32 +26,45 @@
 
 <dl class="methodlist">
 
-<dt class="method-heading"><code>getsockopt(level, optname) -&gt; String</code></dt>
+<dt class="method-heading"><code>getsockopt(level, optname) -&gt; Socket::Option</code></dt>
 <dd class="method-description">
 <p>
 ソケットのオプションを取得します。<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/getsockopt.html">getsockopt(2)</a>
-を参照してください。取得したオプションのデータをパックした文字列を
-返します。
+を参照してください。
+取得したオプションのデータを <a href="../../../class/-socket=3a=3a-option.html">Socket::Option</a> で返します。
+</p>
+<p>
+level, optname には Socket::SOL_SOCKET や Socket::SO_REUSEADDR
+といった整数値の他、文字列(&quot;SOL_SOCKET&quot;, prefixなしの &quot;SOCKET&quot;)や
+シンボル(:SO_REUSEADDR, :REUSEADDR)を用いることができます。
 </p>
 <dl>
 <dt class='method-param'>[PARAM] level:</dt>
 <dd>
-<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/getsockopt.html">getsockopt(2)</a> の 第二引数のlevel に相当する整数を指定します。
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/getsockopt.html">getsockopt(2)</a> の 第二引数のlevel
 </dd>
 <dt class='method-param'>[PARAM] optname:</dt>
 <dd>
-<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/getsockopt.html">getsockopt(2)</a> の 第三引数のoption_name に相当する整数を指定します。
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/getsockopt.html">getsockopt(2)</a> の 第三引数のoption_name
 </dd>
 </dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-basic-socket/i/setsockopt.html">BasicSocket#setsockopt</a>
+</p>
 <p>
 例:
 </p>
 <pre>
-serv = TCPServer.open(&quot;&quot;, 0)
-c = TCPSocket.open(*Socket.unpack_sockaddr_in(serv.getsockname).reverse)
+serv = Socket.tcp_server_sockets(&quot;&quot;, 0)[0]
+c = serv.local_address.connect
 s = serv.accept
-p c.getsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY)  #=&gt; &quot;\000\000\000\000&quot;
-p opt.unpack(&quot;i&quot;)[0]                                      #=&gt; 0   (Nagle アルゴリズム有効)
+opt = c.getsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY)
+# c.getsockopt(&quot;TCP&quot;, &quot;NODELAY&quot;),  なども可能
+p opt #=&gt; #&lt;Socket::Option: INET TCP NODELAY 0&gt;
+p opt.bool #=&gt; false (Nagle アルゴリズム有効)
+p opt.unpack(&quot;i&quot;)[0] #=&gt; 0 (Socket::Option#unpack が互換性のために存在する)
+# 整数値の場合は Socket::Option#int を用いる
+p c.getsockopt(:IP, :TTL).int #=&gt; 64
 </pre>
 </dd>
 
