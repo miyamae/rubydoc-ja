@@ -179,10 +179,10 @@ function handleKey(key) {
             var navi = $('#navi');
             var cur_top = next.offset().top + navi.scrollTop();
             if (navi.height() <= next.offset().top + next.height() + 20) {
-                navi.scrollTop(navi.scrollTop() + 150);
+                navi.animate({ scrollTop: navi.scrollTop() + 150 }, 'fast');
             }
             if (next.offset().top <= 50) {
-                navi.scrollTop(navi.scrollTop() - 150);
+                navi.animate({ scrollTop: navi.scrollTop() - 150 }, 'fast');
             }
         }
     } else if (key == 13) { //[Enter]
