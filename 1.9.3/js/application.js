@@ -68,6 +68,14 @@ function initPage(elem) {
         } else if (!isAbsoluteUri(src_url)) {
             $(this).attr('href', '#!/' + absolutePath(src_url.replace('#', '?')));
         }
+        if (typeof(macgap) != 'undefined') {
+            if (src_url.match(/^http/)) {
+                $(this).click(function() {
+                    macgap.app.open(src_url);
+                    return false;
+                });
+            }
+        }
     });
 }
 
@@ -116,7 +124,7 @@ function suggest() {
     if (key != _key) {
         _key = key;
         var re = new RegExp(key.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1').replace(/[ #\.]+/g, '.*'), 'i');
-        var ul = $('#index'); 
+        var ul = $('#index');
         ul.empty();
         $('#navi a').removeClass('current');
         $('#navi').scrollTop(0);
@@ -165,13 +173,25 @@ function suggest() {
 
 function handleKey(key) {
     if (key == 38 || key == 40) { //[Up][Down]
+        var first_idx = 0;
+        if ($('#search-box').val()) {
+            first_idx = $('#contents ul a').size();
+        }
         var all = $('#navi ul a');
         var current = $('#navi ul a.current');
         var new_idx = all.index(current) + (key - 39);
-        if (new_idx >= 0 && new_idx < all.size()) {
+        if (new_idx >= first_idx && new_idx < all.size()) {
             var next = all.eq(new_idx);
             current.removeClass('current');
             next.addClass('current');
+            var navi = $('#navi');
+            var cur_top = next.offset().top + navi.scrollTop();
+            if (navi.height() <= next.offset().top + next.height() + 20) {
+                navi.animate({ scrollTop: navi.scrollTop() + 150 }, 'fast');
+            }
+            if (next.offset().top <= 50) {
+                navi.animate({ scrollTop: navi.scrollTop() - 150 }, 'fast');
+            }
         }
     } else if (key == 13) { //[Enter]
         var url = $('#navi ul a.current').attr('href');
@@ -191,6 +211,7 @@ $(function() {
     $('#navi ul a:first').addClass('current');
 
     loadIndex();
+    initPage($('#search'));
 
     $(window).hashchange(function() {
         loadPage();
