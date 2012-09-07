@@ -76,7 +76,6 @@ IO の読み込みメソッドは2種類存在します。
 <ul>
 <li><a href="../method/-i-o/s/foreach.html">IO.foreach</a></li>
 <li><a href="../method/-i-o/s/readlines.html">IO.readlines</a></li>
-<li><a href="../method/-i-o/i/each.html">IO#each</a></li>
 <li><a href="../method/-i-o/i/each_line.html">IO#each_line</a></li>
 <li><a href="../method/-i-o/i/lines.html">IO#lines</a></li>
 <li><a href="../method/-i-o/i/gets.html">IO#gets</a></li>
@@ -261,7 +260,6 @@ IO.foreach(空ファイル)        何もしない
 <pre>
 メソッド                      既にEOFだったら
 
-IO#each                       何もしない
 IO#each_byte                  何もしない
 IO#getc                       nil
 IO#gets                       nil
@@ -364,7 +362,7 @@ path のオープンに成功すれば nil を返します。
 <tr>
 <td class="signature">
   <a href="../method/-i-o/s/pipe.html"><code>
-  pipe -&gt; [IO]<br>pipe(ext_enc) -&gt; [IO]<br>pipe(enc_str, opts={}) -&gt; [IO]<br>pipe(ext_enc, int_enc, opts={}) -&gt; [IO]<br>pipe {|read_iom write_io| ... } -&gt; object<br>pipe(ext_enc) {|read_iom write_io| ... } -&gt; object<br>pipe(enc_str, opt={}) {|read_iom write_io| ... } -&gt; object<br>pipe(ext_enc, int_enc, opt={}) {|read_iom write_io| ... } -&gt; object
+  pipe -&gt; [IO]<br>pipe(ext_enc) -&gt; [IO]<br>pipe(enc_str, opts={}) -&gt; [IO]<br>pipe(ext_enc, int_enc, opts={}) -&gt; [IO]<br>pipe {|read_io, write_io| ... } -&gt; object<br>pipe(ext_enc) {|read_io, write_io| ... } -&gt; object<br>pipe(enc_str, opt={}) {|read_io, write_io| ... } -&gt; object<br>pipe(ext_enc, int_enc, opt={}) {|read_io, write_io| ... } -&gt; object
   </code></a>
 </td>
 
@@ -426,7 +424,7 @@ length バイト分読み込んで返します。
 <tr>
 <td class="signature">
   <a href="../method/-i-o/s/readlines.html"><code>
-  readlines(path, rs = $/) -&gt; [String]
+  readlines(path, rs = $/, opts={})<br>readlines(path, limit, opts={})<br>readlines(path, rs, limit, opts={})
   </code></a>
 </td>
 
@@ -738,21 +736,6 @@ IO の各コードポイントに対して繰り返しブロックを呼びだ�
 
 <tr>
 <td class="signature">
-  <a href="../method/-i-o/i/each.html"><code>
-  each(rs = $/) {|line| ... } -&gt; self<br>each(limit) {|line| ... } -&gt; self<br>each(rs, limit) {|line| ... } -&gt; self<br>each(rs = $/) -&gt; Enumerator<br>each(limit) -&gt; Enumerator<br>each(rs, limit) -&gt; Enumerator<br>each_line(rs = $/) {|line| ... } -&gt; self<br>each_line(limit) {|line| ... } -&gt; self<br>each_line(rs, limit) {|line| ... } -&gt; self<br>each_line(rs = $/) -&gt; Enumerator<br>each_line(limit) -&gt; Enumerator<br>each_line(rs, limit) -&gt; Enumerator<br>lines(rs = $/) {|line| ... } -&gt; self<br>lines(limit) {|line| ... } -&gt; self<br>lines(rs, limit) {|line| ... } -&gt; self<br>lines(rs = $/) -&gt; Enumerator<br>lines(limit) -&gt; Enumerator<br>lines(rs, limit) -&gt; Enumerator
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-IO の現在位置から 1 行ずつ文字列として読み込み、それを引数として
-与えられたブロックを実行します。
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
   <a href="../method/-i-o/i/each_byte.html"><code>
   each_byte {|ch| ... } -&gt; self<br>each_byte -&gt; Enumerator
   </code></a>
@@ -760,6 +743,21 @@ IO の現在位置から 1 行ずつ文字列として読み込み、それを�
 
 <td class="description" colspan="2"><p>
 IO の現在位置から 1 バイトずつ読み込み、それを整数として与え、ブロックを実行します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-i-o/i/each_line.html"><code>
+  each_line(rs = $/) {|line| ... } -&gt; self<br>each_line(limit) {|line| ... } -&gt; self<br>each_line(rs, limit) {|line| ... } -&gt; self<br>each_line(rs = $/) -&gt; Enumerator<br>each_line(limit) -&gt; Enumerator<br>each_line(rs, limit) -&gt; Enumerator<br>lines(rs = $/) {|line| ... } -&gt; self<br>lines(limit) {|line| ... } -&gt; self<br>lines(rs, limit) {|line| ... } -&gt; self<br>lines(rs = $/) -&gt; Enumerator<br>lines(limit) -&gt; Enumerator<br>lines(rs, limit) -&gt; Enumerator
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+IO の現在位置から 1 行ずつ文字列として読み込み、それを引数として
+与えられたブロックを実行します。
 </p>
 </td>
 
@@ -901,15 +899,11 @@ EOF に到達した時には nil を返します。
 <tr>
 <td class="signature">
   <a href="../method/-i-o/i/gets.html"><code>
-  gets(rs = $/, limit) -&gt; String | nil
+  gets(rs = $/) -&gt; String | nil<br>gets(limit) -&gt; String | nil<br>gets(rs, limit) -&gt; String | nil
   </code></a>
 </td>
 
-<td class="description" colspan="2"><p>
-一行読み込んで、読み込みに成功した時にはその文字列を返します。
-EOF に到達した時には nil を返します。
-</p>
-</td>
+<td class="description" colspan="2"></td>
 
 </tr>
 
@@ -1155,7 +1149,7 @@ EOF に到達した時には EOFError が発生します。
 <tr>
 <td class="signature">
   <a href="../method/-i-o/i/readline.html"><code>
-  readline(rs = $/) -&gt; String
+  readline(rs = $/) -&gt; String<br>readline(limit) -&gt; String<br>readline(rs, limit) -&gt; String
   </code></a>
 </td>
 
@@ -1483,34 +1477,6 @@ IO をノンブロッキングモードに設定し、string を <a class="exter
 
 </tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-i-o/c/-wait-readable.html"><code>
-  WaitReadable -&gt; Module
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-例外が読み込み待ちで発生したことを意味します。
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-i-o/c/-wait-writable.html"><code>
-  WaitWritable -&gt; Module
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-例外が書き込み待ちで発生したことを意味します。
-</p>
-</td>
-
-</tr>
-
 </table>
 
 
@@ -1518,11 +1484,21 @@ IO をノンブロッキングモードに設定し、string を <a class="exter
 <h2>継承したメソッド</h2>
 <p><code>
 
-<a href="../method/-basic-object/i/=21.html">!</a>
-
 <a href="../method/-basic-object/i/=21=3d.html">!=</a>
 
 <a href="../method/-basic-object/i/__id__.html">__id__</a>
+
+<a href="../method/-basic-object/i/instance_eval.html">instance_eval</a>
+
+<a href="../method/-basic-object/i/instance_exec.html">instance_exec</a>
+
+<a href="../method/-basic-object/i/singleton_method_added.html">singleton_method_added</a>
+
+<a href="../method/-basic-object/i/singleton_method_removed.html">singleton_method_removed</a>
+
+<a href="../method/-basic-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
+
+<a href="../method/-object/i/=21.html">!</a>
 
 <a href="../method/-object/i/=3d=3d.html">==</a>
 
@@ -1559,10 +1535,6 @@ IO をノンブロッキングモードに設定し、string を <a class="exter
 <a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
 
 <a href="../method/-object/i/inspect.html">inspect</a>
-
-<a href="../method/-object/i/instance_eval.html">instance_eval</a>
-
-<a href="../method/-object/i/instance_exec.html">instance_exec</a>
 
 <a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
 
@@ -1645,12 +1617,6 @@ IO をノンブロッキングモードに設定し、string を <a class="exter
 <a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
 
 <a href="../method/-object/i/singleton_class.html">singleton_class</a>
-
-<a href="../method/-object/i/singleton_method_added.html">singleton_method_added</a>
-
-<a href="../method/-object/i/singleton_method_removed.html">singleton_method_removed</a>
-
-<a href="../method/-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
 
 <a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
 
