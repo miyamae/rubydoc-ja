@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../../../style.css">
   <link rel="icon" type="image/png" href="../../../rurema.png">
-  <title>instance method Array#at</title>
+  <title>instance method Array#[]</title>
   <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
@@ -15,32 +15,114 @@
 &gt; <a href="../../../library/index.html">ライブラリ一覧</a>
 &gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
 &gt; <a href="../../../class/-array.html">Arrayクラス</a>
-&gt; at
+&gt; []
 
 </p>
 
 
 
 
-<h1>instance method Array#at</h1>
+<h1>instance method Array#[]</h1>
 
 <dl class="methodlist">
 
-<dt class="method-heading"><code>at(pos) -&gt; object</code></dt>
+<dt class="method-heading"><code>self[nth] -&gt; object | nil</code></dt>
+<dt class="method-heading"><code>at(nth) -&gt; object | nil</code></dt>
 <dd class="method-description">
 <p>
-配列の pos の位置にある要素を返します。
-self[pos] と同じです。
+nth 番目の要素を返します。nth 番目の要素が存在しない時には nil を返します。
 </p>
 <dl>
-<dt class='method-param'>[PARAM] pos:</dt>
+<dt class='method-param'>[PARAM] nth:</dt>
 <dd>
 インデックスを整数で指定します。
+先頭の要素が 0 番目になります。nth の値が負の時には末尾からのインデックスと見倣します。末尾
+の要素が -1 番目になります。
 </dd>
 </dl>
+<p>
+例:
+</p>
 <pre>
-a = [0, 1, 2, 3]
-p a.at(1)        #=&gt; 1
+a = [ &quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot; ]
+a[0]  #=&gt; &quot;a&quot;
+a[1]  #=&gt; &quot;b&quot;
+a[-1] #=&gt; &quot;e&quot;
+a[-2] #=&gt; &quot;d&quot;
+a[10] #=&gt; nil
+</pre>
+</dd>
+<dt class="method-heading"><code>self[range] -&gt; Array | nil</code></dt>
+<dd class="method-description">
+<p>
+<a href="../../../class/-range.html">Range</a> オブジェクト range の範囲にある要素からなる部分配列を返します。
+range の first の値が配列の範囲に収まらない場合 nil を返します。
+range の first が end より後にある場合には空の配列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] range:</dt>
+<dd>
+生成したい部分配列の範囲を <a href="../../../class/-range.html">Range</a> オブジェクトで指定します。
+range の first や end の値が負の時には末尾からのインデックスと見倣します。末尾
+の要素が -1 番目になります。
+end の値が配列の範囲を越える時には、越えた分は無視されます。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+a = [ &quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot; ]
+a[0..1]   #=&gt; [&quot;a&quot;, &quot;b&quot;]
+a[0...1]  #=&gt; [&quot;a&quot;]
+a[0..-1]  #=&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot;]
+a[-2..-1] #=&gt; [&quot;d&quot;, &quot;e&quot;]
+a[-2..4]  #=&gt; [&quot;d&quot;, &quot;e&quot;]  (start は末尾から -2 番目、end は先頭から (4+1) 番目となる。)
+a[0..10]  #=&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot;]
+a[10..11] #=&gt; nil
+a[2..1]   #=&gt; []
+a[-1..-2] #=&gt; []
+
+# 特殊なケース。first が自身の長さと同じ場合には以下のようになります。
+a[5]                   #=&gt; nil
+a[5, 1]                #=&gt; []
+a[5..10]               #=&gt; []
+</pre>
+</dd>
+<dt class="method-heading"><code>self[start, length] -&gt; Array | nil</code></dt>
+<dd class="method-description">
+<p>
+start 番目から length 個の要素を含む部分配列を返します。
+length が負の時、start が自身の範囲を越えた時には nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] start:</dt>
+<dd>
+生成したい部分配列の先頭のインデックスを整数で指定します。
+start の値が負の時には末尾からのインデックスと見倣します。末尾の要素が -1 番目になります。
+</dd>
+<dt class='method-param'>[PARAM] length:</dt>
+<dd>
+生成したい部分配列の長さを整数で指定します。
+length が start 番目からの配列の長さより長い時には、越えた分の長さは無視されます。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+a = [ &quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot; ]
+a[0, 1]    #=&gt; [&quot;a&quot;]
+a[-1, 1]   #=&gt; [&quot;e&quot;]
+a[0, 10]   #=&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot;]
+a[0, 0]    #=&gt; []
+a[0, -1]   #=&gt; nil
+a[10, 1]   #=&gt; nil
+
+# 特殊なケース。start が自身の長さと同じ場合には以下のようになります。
+a[5]                   #=&gt; nil
+a[5, 1]                #=&gt; []
+a[5..10]               #=&gt; []
 </pre>
 </dd>
 

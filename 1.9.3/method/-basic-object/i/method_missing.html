@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method BasicObject#method_missing</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.3 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 1.9.3 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-basic-object.html">BasicObjectクラス</a>
+&gt; method_missing
+(private)
+</p>
+
+
+
+
+<h1>instance method BasicObject#method_missing</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>method_missing(name, *args) -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+呼びだされたメソッドが定義されていなかった時、Rubyインタプリタがこのメソッド
+を呼び出します。
+</p>
+<p>
+呼び出しに失敗したメソッドの名前 (<a href="../../../class/-symbol.html">Symbol</a>) が name に
+その時の引数が第二引数以降に渡されます。
+</p>
+<p>
+デフォルトではこのメソッドは例外 <a href="../../../class/-name-error.html">NameError</a> を発生させます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+未定義メソッドの名前（シンボル）です。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+未定義メソッドに渡された引数です。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+ユーザー定義の method_missing メソッドの返り値が未定義メソッドの返り値で
+あるかのように見えます。
+</dd>
+</dl>
+<pre>
+class Foo
+  def initialize(data)
+    @data = data
+  end
+  def method_missing(name, lang)
+    if name.to_s =~ /\Afind_(\d+)_in\z/
+      if @data[lang]
+        p @data[lang][$1.to_i]
+      else
+        raise &quot;#{lang} unknown&quot;
+      end
+    else
+      super
+    end
+  end
+end
+
+dic = Foo.new({:English =&gt; %w(zero one two), :Esperanto =&gt; %w(nulo unu du)})
+dic.find_2_in :Esperanto #=&gt; &quot;du&quot;
+</pre>
+<p>
+[注意] このメソッドを override する場合は対象のメソッド名に対して
+<a href="../../../method/-object/i/respond_to=3f.html">Object#respond_to?</a> が真を返すようにしてください。
+そのためには、<a href="../../../method/-object/i/respond_to_missing=3f.html">Object#respond_to_missing?</a> も同様に override する必
+要があります。
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-object/i/respond_to=3f.html">Object#respond_to?</a>, <a href="../../../method/-object/i/respond_to_missing=3f.html">Object#respond_to_missing?</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

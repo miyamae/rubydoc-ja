@@ -650,10 +650,6 @@ iter { p &quot;(b)&quot;; redo  }     # =&gt; (a) .. (b)(b)(b)(b) ...
 iter { p &quot;(b)&quot;; next  }     # =&gt; (a) .. (b)(c) .. (d)
 iter { p &quot;(b)&quot;; break }     # =&gt; (a)..(b)(d)
 </pre>
-<p>
-((-あらい 2002-01-13: ensure は大域脱出を捕まえるので retry が (d)
-に飛んでいるあまり良い例じゃないか-))
-</p>
 <h2 >例外処理</h2>
 <h3 id='raise'>raise</h3>
 <p>
@@ -776,6 +772,12 @@ begin式全体の評価値は、本体／rescue節／else節のうち
 最後に評価された文の値です。また各節において文が存在しなかったときの値
 はnilです。いずれにしてもensure節の値は無視されます。
 </p>
+<p>
+<a href="../doc/spec=2fdef.html#class">クラス／メソッドの定義/クラス定義</a>、<a href="../doc/spec=2fdef.html#module">クラス／メソッドの定義/モジュール定義</a>、<a href="../doc/spec=2fdef.html#method">クラス／メソッドの定義/メソッド定義</a>
+などの定義文では、それぞれ
+begin なしで rescue, ensure 節を定義でき、これにより例外を処理することが
+できます。
+</p>
 <h3 >rescue修飾子</h3>
 <p>
 例:
@@ -803,37 +805,22 @@ end
 </pre>
 <p>
 rescue修飾子を伴う式の値は例外が発生しなければ式1、例外が発生すれば式2
-です。ただし、大抵の場合、優先順位の都合により式全体を括弧で囲む必要が
-あります。
+です。
 </p>
 <pre>
 var = open(&quot;nonexistent file&quot;) rescue false
 p var
-=&gt; nil      # 値を持たない変数 var が定義されただけ
-
-var = (open(&quot;nonexistent file&quot;) rescue false)
-p var
 =&gt; false
 </pre>
 <p>
-特にメソッドの引数に渡す場合は二重に括弧が必要となります。
+ただし、優先順位の都合により式全体を括弧で囲む必要がある場合があります。
+メソッドの引数にするには二重の括弧が必要です。
 </p>
 <pre>
 p(open(&quot;nonexistent file&quot;) rescue false)
 =&gt; parse error
 
 p((open(&quot;nonexistent file&quot;) rescue false))
-=&gt; false
-</pre>
-<p>
-rescue の優先度が変更され、この心配はなくなっています。
-</p>
-<pre>
-var = open(&quot;nonexistent file&quot;) rescue false
-p var
-=&gt; false
-
-p(open(&quot;nonexistent file&quot;) rescue false)
 =&gt; false
 </pre>
 <h2 >その他</h2>
