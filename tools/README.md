@@ -40,3 +40,15 @@
         ./html/1.9.3 --catalog=../../../bitclust/data/bitclust/catalog
     $ cp ./html/1.9.3/library/_builtin.html ./html/1.9.3/library/builtin.html
     $ ruby ../../../../make_index.rb ./html/1.9.3 > ./html/1.9.3/json/index.json
+
+## 2.0.0
+
+    $ ruby -I ../../../bitclust/lib ../../../bitclust/bin/bitclust \
+        -d ./db-2.0.0 init version=2.0.0 encoding=utf-8
+    $ ruby -I ../../../bitclust/lib ../../../bitclust/bin/bitclust \
+        -d ./db-2.0.0 update --stdlibtree=src
+    $ mkdir ./html/2.0.0 ./html/2.0.0/function ./html/2.0.0/json
+    $ ruby ../../../bitclust/tools/bc-tohtmlpackage.rb -d ./db-2.0.0 -o \
+        ./html/2.0.0 --catalog=../../../bitclust/data/bitclust/catalog
+    $ cp ./html/2.0.0/library/_builtin.html ./html/2.0.0/library/builtin.html
+    $ ruby ../../../../make_index.rb ./html/2.0.0 > ./html/2.0.0/json/index.json

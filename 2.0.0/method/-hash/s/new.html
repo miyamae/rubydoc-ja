@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>singleton method Hash.new</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 2.0.0 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.0.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-hash.html">Hashクラス</a>
+&gt; new
+
+</p>
+
+
+
+
+<h1>singleton method Hash.new</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>new(ifnone = nil) -&gt; Hash</code></dt>
+<dd class="method-description">
+<p>
+空の新しいハッシュを生成します。ifnone はキーに対
+応する値が存在しない時のデフォルト値です。設定したデフォルト値は<a href="../../../method/-hash/i/default.html">Hash#default</a>で参照できます。
+</p>
+<p>
+ifnoneを省略した Hash.new は {} と同じです。
+</p>
+<p>
+デフォルト値として、毎回同一のオブジェクトifnoneを返します。
+それにより、一箇所のデフォルト値の変更が他の値のデフォルト値にも影響します。
+</p>
+<pre>
+h = Hash.new([])
+h[0] &lt;&lt; 0
+h[1] &lt;&lt; 1
+p h.default #=&gt; [0, 1]
+</pre>
+<p>
+これを避けるには、破壊的でないメソッドで再代入する必要が有ります。
+また、このようなミスを防ぐためにもifnoneは freeze して破壊的操作を禁止しておくのが無難です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] ifnone:</dt>
+<dd>
+キーに対応する値が存在しない時のデフォルト値です。
+</dd>
+</dl>
+<pre>
+h = Hash.new([])
+
+p h[1]                  #=&gt; []
+p h[1].object_id        #=&gt; 6127150
+p h[1] &lt;&lt; &quot;bar&quot;         #=&gt; [&quot;bar&quot;]
+p h[1]                  #=&gt; [&quot;bar&quot;]
+
+p h[2]                  #=&gt; [&quot;bar&quot;]
+p h[2].object_id        #=&gt; 6127150
+
+p h                     #=&gt; {}
+
+
+h = Hash.new([].freeze)
+h[0] += [0] #破壊的でないメソッドはOK
+h[1] &lt;&lt; 1
+# エラー `&lt;&lt;': can't modify frozen array (TypeError)
+</pre>
+</dd>
+<dt class="method-heading"><code>new {|hash, key| ... } -&gt; Hash</code></dt>
+<dd class="method-description">
+<p>
+空の新しいハッシュを生成します。ブロックの評価結果がデフォルト値になりま
+す。設定したデフォルト値は<a href="../../../method/-hash/i/default_proc.html">Hash#default_proc</a>で参照できます。
+</p>
+<p>
+値が設定されていないハッシュ要素を参照するとその都度ブロックを
+実行し、その結果を返します。
+ブロックにはそのハッシュとハッシュを参照したときのキーが渡されます。
+</p>
+<dl>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+ブロックと通常引数を同時に与えると発生します。
+</dd>
+</dl>
+<pre>
+# ブロックではないデフォルト値は全部同一のオブジェクトなので、
+# 破壊的変更によって他のキーに対応する値も変更されます。
+h = Hash.new(&quot;foo&quot;)
+
+p h[1]                  #=&gt; &quot;foo&quot;
+p h[1].object_id        #=&gt; 6127170
+p h[1] &lt;&lt; &quot;bar&quot;         #=&gt; &quot;foobar&quot;
+p h[1]                  #=&gt; &quot;foobar&quot;
+
+p h[2]                  #=&gt; &quot;foobar&quot;
+p h[2].object_id        #=&gt; 6127170
+
+p h                     #=&gt; {}
+
+# ブロックを与えると、対応する値がまだ無いキーが呼び出される度に
+# ブロックを評価するので、全て別のオブジェクトになります。
+h = Hash.new {|hash, key| hash[key] = &quot;foo&quot;}
+
+p h[1]                  #=&gt; &quot;foo&quot;
+p h[1].object_id        #=&gt; 6126900
+p h[1] &lt;&lt; &quot;bar&quot;         #=&gt; &quot;foobar&quot;
+p h[1]                  #=&gt; &quot;foobar&quot;
+
+p h[2]                  #=&gt; &quot;foo&quot;
+p h[2].object_id        #=&gt; 6126840
+
+p h                     #=&gt; {1=&gt;&quot;foobar&quot;, 2=&gt;&quot;foo&quot;}
+
+# 値が設定されていないときに(fetchのように)例外をあげるようにもできる
+h = Hash.new {|hash, key|
+                raise(IndexError, &quot;hash[#{key}] has no value&quot;)
+             }
+h[1]
+# エラー hash[1] has no value (IndexError)
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-hash/i/default=3d.html">Hash#default=</a>,<a href="../../../method/-hash/i/default.html">Hash#default</a>,<a href="../../../method/-hash/i/default_proc.html">Hash#default_proc</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -24,11 +24,11 @@
 <p>
 Ruby の sprintf フォーマットは基本的に C 言語の <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/sprintf.html">sprintf(3)</a>
 のものと同じです。ただし、short や long などの C 特有の型に対する修飾子が
-ないこと、2進数の指示子(%b)が存在すること、sprintf のすべての方言をサ
+ないこと、2進数の指示子(%b, %B)が存在すること、sprintf のすべての方言をサ
 ポートしていないこと(%': 3桁区切り)などの違いがあります。
 </p>
 <p>
-Ruby には整数の大きさに上限がないので、%b, %o, %x
+Ruby には整数の大きさに上限がないので、%b, %B, %o, %x, %X
 に負の数を与えると (左側に無限に1が続くとみなせるので)
 ..f のような表示をします。絶対値に符号を付けた形式
 で出力するためには %+x、% x のように指定します。
@@ -54,12 +54,14 @@ Ruby には整数の大きさに上限がないので、%b, %o, %x
 <dt>#</dt>
 <dd>
 <p>
-2進、8進、16進の指示子(b, o, x, X) ではそれぞれプレフィック
-スとして &quot;0b&quot;, &quot;0&quot;, &quot;0x&quot;, &quot;0X&quot; を付加します。
+2進、8進、16進の指示子(b, B, o, x, X) ではそれぞれプレフィック
+スとして &quot;0b&quot;, &quot;0B&quot;, &quot;0&quot;, &quot;0x&quot;, &quot;0X&quot; を付加します。
 C 言語とは異なり引数が 0 の場合にもプレフィックスが付加されます。
 </p>
 <pre>
   p sprintf(&quot;%#b&quot;, 10) #=&gt; &quot;0b1010&quot;
+  p sprintf(&quot;%#B&quot;, 10) #=&gt; &quot;0B1010&quot;
+  p sprintf(&quot;%#b&quot;, 0)  #=&gt; &quot;0b0&quot;
   p sprintf(&quot;%#o&quot;, 10) #=&gt; &quot;012&quot;
   p sprintf(&quot;%#x&quot;, 10) #=&gt; &quot;0xa&quot;
   p sprintf(&quot;%#X&quot;, 10) #=&gt; &quot;0XA&quot;
@@ -86,9 +88,9 @@ C 言語とは異なり引数が 0 の場合にもプレフィックスが付加
 <p>
 出力文字列を符号付きにします。特に正の数では`+'が付加されます。
 数値の指示子
-(d, i, b, o, x, X, u, f, e, E, g, G)
+(d, i, b, B, o, x, X, u, f, e, E, g, G)
 に対してだけ意味を持ちます。
-また、特に b, o, x, X, u に対しては、負数に対して &quot;-&quot;
+また、特に b, B, o, x, X, u に対しては、負数に対して &quot;-&quot;
 を付加することを示します。
 </p>
 <pre>
@@ -103,7 +105,7 @@ C 言語とは異なり引数が 0 の場合にもプレフィックスが付加
 <dd>
 <p>
 `+' と同じですが正の符号 `+' の代わりに空白を用います。数値の指示子
-(d, i, b, o, x, X, u, f, e, E, g, G)
+(d, i, b, B, o, x, X, u, f, e, E, g, G)
 に対してだけ意味を持ちます。
 </p>
 <pre>
@@ -129,7 +131,7 @@ C 言語とは異なり引数が 0 の場合にもプレフィックスが付加
 出力が右詰めの場合に余った部分に空白の代わりに &quot;0&quot; を詰めます。
 </p>
 <p>
-数値の指示子の一部(d, i, b, o, x, X, u, f, g, G)に対し
+数値の指示子の一部(d, i, b, B, o, x, X, u, f, g, G)に対し
 てだけ意味を持ちます(e, E には意味がない)
 </p>
 <pre>
@@ -169,7 +171,7 @@ C 言語とは異なり引数が 0 の場合にもプレフィックスが付加
 </p>
 <p>
 幅の指定はフラグで付与される &quot; &quot;, &quot;+&quot;,
-&quot;-&quot;, &quot;0b&quot;, &quot;0&quot;, &quot;0x&quot;, &quot;0X&quot; の長さも考慮されます。
+&quot;-&quot;, &quot;0b&quot;, &quot;0B&quot;, &quot;0&quot;, &quot;0x&quot;, &quot;0X&quot; の長さも考慮されます。
 </p>
 <pre>
 p sprintf(&quot;%+5d&quot;, 11)  #=&gt; &quot;  +11&quot;
@@ -191,7 +193,7 @@ p sprintf(&quot;%#0*x&quot;, 5, 10) #=&gt; &quot;0x00a&quot;
 <p>
 &quot;.&quot; の後に続く数字列は精度を表します(&quot;.&quot; のみの場合 &quot;.0&quot; と同じです)。精度は
 整数の指示子
-(d, i, b, o, x, X, u)
+(d, i, b, B, o, x, X, u)
 に対しては、数値列部分の長さを意味します。
 </p>
 <pre>
@@ -245,7 +247,7 @@ p sprintf(&quot;%.*s&quot;, 5, &quot;foobar&quot;) #=&gt; &quot;fooba&quot;
 </p>
 <ul>
 <li>文字列を表す指示子: c, s, p</li>
-<li>整数を表す指示子: d, i, u, b, o, x, X,</li>
+<li>整数を表す指示子: d, i, u, b, B, o, x, X,</li>
 <li>浮動小数点数を表す指示子: f, g, e, E, G</li>
 </ul>
 <p>
@@ -312,15 +314,16 @@ p sprintf(&quot;%.*s&quot;, 5, &quot;foobar&quot;) #=&gt; &quot;fooba&quot;
 </pre>
 </dd>
 <dt>b</dt>
+<dt>B</dt>
 <dt>o</dt>
 <dt>x</dt>
 <dt>X</dt>
 <dd>
 <p>
-整数をそれぞれ2進、8進、16進、16進(大文字)表現の文字列で出力します。
+整数をそれぞれ2進、2進(大文字)、8進、16進、16進(大文字)表現の文字列で出力します。
 </p>
 <p>
-`#' フラグを指定すれば &quot;0b&quot;, &quot;0&quot;, &quot;0x&quot;, &quot;0X&quot; を先頭に付加します。
+`#' フラグを指定すれば &quot;0b&quot;, &quot;0B&quot;, &quot;0&quot;, &quot;0x&quot;, &quot;0X&quot; を先頭に付加します。
 </p>
 <p>
 `+', ` ' フラグがない場合、負の数には &quot;..&quot; が先頭(`#' フラグがあれば
@@ -329,8 +332,10 @@ p sprintf(&quot;%.*s&quot;, 5, &quot;foobar&quot;) #=&gt; &quot;fooba&quot;
 </p>
 <pre>
    p sprintf(&quot;%#b&quot;, 10)    #=&gt; &quot;0b1010&quot;
+   p sprintf(&quot;%#B&quot;, 10)    #=&gt; &quot;0B1010&quot;
    p sprintf(&quot;%#o&quot;, 10)    #=&gt; &quot;012&quot;
    p sprintf(&quot;%#x&quot;, 10)    #=&gt; &quot;0xa&quot;
+   p sprintf(&quot;%#X&quot;, 10)    #=&gt; &quot;0XA&quot;
 
    # 負の数に対して &quot;..&quot; が付加されます
    p sprintf(&quot;%#b&quot;, -1)    #=&gt; &quot;0b..1&quot;

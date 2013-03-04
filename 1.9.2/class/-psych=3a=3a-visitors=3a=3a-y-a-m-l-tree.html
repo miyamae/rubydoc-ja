@@ -13,7 +13,7 @@
 <p>
 <a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
 &gt; <a href="../library/index.html">ライブラリ一覧</a>
-&gt; <a href="../library/psych=2fvisitors=2fyaml_tree.html">psych/visitors/yaml_treeライブラリ</a>
+&gt; <a href="../library/psych.html">psychライブラリ</a>
 &gt; Psych::Visitors::YAMLTreeクラス
 </p>
 
@@ -45,12 +45,21 @@
 
 <h2>要約</h2>
 <p>
-YAMLTree builds a YAML ast given a ruby object.  For example:
+Ruby オブジェクトから YAML の AST を構築するためのクラスです。
 </p>
+<h3 >例</h3>
 <pre>
 builder = Psych::Visitors::YAMLTree.new
 builder &lt;&lt; { :foo =&gt; 'bar' }
-builder.tree # =&gt; #&lt;Psych::Nodes::Stream .. }
+builder &lt;&lt; [&quot;baz&quot;, &quot;bazbaz&quot;]
+builder.tree # =&gt; #&lt;Psych::Nodes::Stream ... &gt; A stream containing two documents
+puts tree.to_yaml
+# =&gt;
+# ---
+# :foo: bar
+# ---
+# - baz
+# - bazbaz
 </pre>
 
 
@@ -65,12 +74,12 @@ builder.tree # =&gt; #&lt;Psych::Nodes::Stream .. }
 <tr>
 <td class="signature">
   <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/s/new.html"><code>
-  new(options = {}, emitter = Psych::TreeBuilder.new) -&gt; Psych::Visitors::YAMLTree
+  new(options = {}, emitter = Psych::TreeBuilder.new, ss = Psych::ScalarScanner.new) -&gt; Psych::Visitors::YAMLTree
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+YAMLTree オブジェクトを生成します。
 </p>
 </td>
 
@@ -87,13 +96,13 @@ builder.tree # =&gt; #&lt;Psych::Nodes::Stream .. }
 
 <tr>
 <td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/accept.html"><code>
-  accept(target)
+  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/=3c=3c.html"><code>
+  push(object)<br>self &lt;&lt; object
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+変換対象の Ruby オブジェクトを追加します。
 </p>
 </td>
 
@@ -102,12 +111,12 @@ builder.tree # =&gt; #&lt;Psych::Nodes::Stream .. }
 <tr>
 <td class="signature">
   <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/finish.html"><code>
-  finish
+  finish -&gt; Psych::Nodes::Stream|nil
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+変換を終了し、構築した AST を返します。
 </p>
 </td>
 
@@ -116,26 +125,13 @@ builder.tree # =&gt; #&lt;Psych::Nodes::Stream .. }
 <tr>
 <td class="signature">
   <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/finished.html"><code>
-  finished<br>finished?
+  finished -&gt; bool<br>finished? -&gt; bool
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/push.html"><code>
-  push(object)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/finish.html">Psych::Visitors::YAMLTree#finish</a> をすでに呼び出しているならば
+真を返します。
 </p>
 </td>
 
@@ -144,12 +140,12 @@ builder.tree # =&gt; #&lt;Psych::Nodes::Stream .. }
 <tr>
 <td class="signature">
   <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/start.html"><code>
-  start(encoding = Nodes::Stream::UTF8)
+  start(encoding = Nodes::Stream::UTF8) -&gt; Psych::Nodes::Stream
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+Ruby オブジェクトから YAML AST への変換のための準備をします。
 </p>
 </td>
 
@@ -158,12 +154,13 @@ builder.tree # =&gt; #&lt;Psych::Nodes::Stream .. }
 <tr>
 <td class="signature">
   <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/started.html"><code>
-  started<br>started?
+  started -&gt; bool<br>started? -&gt; bool
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+<a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/start.html">Psych::Visitors::YAMLTree#start</a> をすでに呼び出しているならば
+真を返します。
 </p>
 </td>
 
@@ -172,292 +169,12 @@ builder.tree # =&gt; #&lt;Psych::Nodes::Stream .. }
 <tr>
 <td class="signature">
   <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/tree.html"><code>
-  tree
+  tree -&gt; Psych::Nodes::Stream|nil
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-array.html"><code>
-  visit_Array(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-class.html"><code>
-  visit_Class(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-complex.html"><code>
-  visit_Complex(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-date-time.html"><code>
-  visit_DateTime(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-exception.html"><code>
-  visit_Exception(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-float.html"><code>
-  visit_Float(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-hash.html"><code>
-  visit_Hash(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-integer.html"><code>
-  visit_Integer(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-module.html"><code>
-  visit_Module(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-nil-class.html"><code>
-  visit_NilClass(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-object.html"><code>
-  visit_Object(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-psych_-omap.html"><code>
-  visit_Psych_Omap(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-psych_-set.html"><code>
-  visit_Psych_Set(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-range.html"><code>
-  visit_Range(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-rational.html"><code>
-  visit_Rational(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-regexp.html"><code>
-  visit_Regexp(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-string.html"><code>
-  visit_String(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-struct.html"><code>
-  visit_Struct(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-symbol.html"><code>
-  visit_Symbol(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree/i/visit_-time.html"><code>
-  visit_Time(o)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+変換を終了し、構築した AST を返します。
 </p>
 </td>
 
@@ -592,6 +309,8 @@ builder.tree # =&gt; #&lt;Psych::Nodes::Stream .. }
 
 <a href="../method/-object/i/protected_methods.html">protected_methods</a>
 
+<a href="../method/-object/i/psych_to_yaml.html">psych_to_yaml</a>
+
 <a href="../method/-object/i/public_methods.html">public_methods</a>
 
 <a href="../method/-object/i/public_send.html">public_send</a>
@@ -647,8 +366,6 @@ builder.tree # =&gt; #&lt;Psych::Nodes::Stream .. }
 <a href="../method/-object/i/untrust.html">untrust</a>
 
 <a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
-
-<a href="../method/-object/s/psych_to_yaml.html">.psych_to_yaml</a>
 
 <a href="../method/-object/s/yaml_tag.html">.yaml_tag</a>
 

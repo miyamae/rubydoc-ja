@@ -26,11 +26,65 @@
 
 <dl class="methodlist">
 
-<dt class="method-heading"><code>struct</code></dt>
+<dt class="method-heading"><code>struct(signature) -&gt; Class</code></dt>
 <dd class="method-description">
-<p class="todo">
-[TODO]
+<p>
+C の構造体型に対応する Ruby のクラスを構築して返します。
 </p>
+<p>
+構造体の各要素は C と似せた表記ができます。そしてそれを
+配列で signature に渡してデータを定義します。例えば C における
+</p>
+<pre>
+struct timeval {
+  long tv_sec;
+  long tv_usec;
+};
+</pre>
+<p>
+という構造体型に対応して
+</p>
+<pre>
+Timeval = struct([&quot;long tv_sec&quot;, &quot;long tv_usec&quot;])
+</pre>
+<p>
+として構造体に対応するクラスを生成します。
+</p>
+<p>
+このメソッドが返すクラスには以下のメソッドが定義されています
+</p>
+<ul>
+<li>クラスメソッド malloc</li>
+<li>initialize</li>
+<li>to_ptr</li>
+<li>to_i</li>
+<li>構造体の各メンバへのアクセサ</li>
+</ul>
+<p>
+返されるクラスは <a href="../../../class/-d-l=3a=3a-c-struct.html">DL::CStruct</a> を継承しています。詳しくは
+そちらを参照してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] signature:</dt>
+<dd>
+構造体の各要素を文字列で表現したものの配列
+</dd>
+</dl>
+<pre>
+require 'dl/import
+
+module M
+  extend DL::Importer
+  dlload &quot;libc.so.6&quot;
+  extern &quot;int gettimeofday(void*, void*)&quot;
+  Timeval = struct([&quot;long tv_sec&quot;, &quot;long tv_usec&quot;])
+end
+
+time = Timeval.malloc
+M.gettimeofday(time, DL::NULL)
+p time.tv_sec
+p time.tv_usec
+</pre>
 </dd>
 
 

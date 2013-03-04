@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method Numeric#coerce</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 2.0.0 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.0.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-numeric.html">Numericクラス</a>
+&gt; coerce
+
+</p>
+
+
+
+
+<h1>instance method Numeric#coerce</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>coerce(other) -&gt; [Numeric]</code></dt>
+<dd class="method-description">
+<p>
+自身と other が同じクラスになるよう、自身か other を変換し [other, self] という配列にして返します。
+</p>
+<p>
+デフォルトでは self と other を <a href="../../../class/-float.html">Float</a> に変換して [other, self] という配列にして返します。
+Numeric のサブクラスは、このメソッドを適切に再定義しなければなりません。
+以下は <a href="../../../class/-rational.html">Rational</a> の coerce のソースです。other が自身の知らない数値クラスであった場合、
+super を呼んでいることに注意して下さい。
+</p>
+<pre>
+# lib/rational.rb より
+
+def coerce(other)
+  if other.kind_of?(Float)
+    return other, self.to_f
+  elsif other.kind_of?(Integer)
+    return Rational.new!(other, 1), self
+  else
+    super
+  end
+end
+</pre>
+<p>
+数値クラスの算術演算子は通常自分と演算できないクラスをオペランドとして受け
+取ると coerce を使って自分とオペランドを変換した上で演算を行います。
+以下は <a href="../../../class/-rational.html">Rational</a> の + メソッドを一部省略したものです。
+引数が自身の知らない数値クラスである場合、引数の coerce により自身を変換してから
++ 演算子を呼んでいます。
+</p>
+<pre>
+# lib/rational.rb より
+
+def + (a)
+  if a.kind_of?(Rational)
+    # 長いので省略
+  elsif a.kind_of?(Integer)
+    # 長いので省略
+  elsif a.kind_of?(Float)
+    Float(self) + a
+  else
+    x, y = a.coerce(self)
+    x + y
+  end
+end
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+オペランドを数値で指定します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

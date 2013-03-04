@@ -1,0 +1,175 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>module function Kernel.#set_trace_func</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 2.0.0 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.0.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-kernel.html">Kernelモジュール</a>
+&gt; set_trace_func
+
+</p>
+
+
+
+
+<h1>module function Kernel.#set_trace_func</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>set_trace_func(proc) -&gt; Proc</code></dt>
+<dd class="method-description">
+<p>
+Ruby インタプリタのイベントをトレースする <a href="../../../class/-proc.html">Proc</a> オブジェクトとして
+指定された proc を登録します。 nil を指定するとトレースがオフになります。
+</p>
+<p>
+Ruby インタプリタがプログラムを実行する過程で、メソッドの呼び出しや
+式の評価などのイベントが発生する度に、以下で説明する6個の引数とともに
+登録された <a href="../../../class/-proc.html">Proc</a> オブジェクトを実行します。
+</p>
+<p>
+標準添付の <a href="../../../library/debug.html">debug</a>、<a href="../../../library/tracer.html">tracer</a>、
+<a href="../../../library/profile.html">profile</a> はこの組み込み関数を利用して実現されています。
+</p>
+<h3 >ブロックパラメータの意味</h3>
+<p>
+渡す Proc オブジェクトのパラメータは
+</p>
+<pre>
+proc{|event, file, line, id, binding, klass| ... }
+</pre>
+<p>
+で、意味は以下の通りです。
+</p>
+<dl>
+<dt>event</dt>
+<dd>
+<p>
+実行のタイプを表す、以下のいずれかの文字列。
+</p>
+<pre>
+  &quot;line&quot;:      式の評価。
+  &quot;call&quot;:      メソッドの呼び出し。
+  &quot;return&quot;:    メソッド呼び出しからのリターン。
+  &quot;c-call&quot;:    Cで記述されたメソッドの呼び出し。
+  &quot;c-return&quot;:  Cで記述されたメソッド呼び出しからのリターン。
+  &quot;class&quot;:     クラス定義、特異クラス定義、モジュール定義への突入。
+  &quot;end&quot;:       クラス定義、特異クラス定義、モジュール定義の終了。
+  &quot;raise&quot;:     例外の発生。
+</pre>
+</dd>
+<dt>file</dt>
+<dd>
+<p>
+実行中のプログラムのソースファイル名 (文字列)。
+</p>
+</dd>
+<dt>line</dt>
+<dd>
+<p>
+実行中のプログラムのソースファイル上の行番号 (整数)。
+</p>
+</dd>
+<dt>id</dt>
+<dd>
+<p>
+event に応じ、以下のものが渡されます。
+第六ブロック引数の klass と対応しています。
+</p>
+<pre>
+    line
+        最後に呼び出されたメソッドを表す Symbol オブジェクト。
+        トップレベルでは nil。
+    call/return/c-call/c-return
+        呼び出された/リターンするメソッドを表す Symbol オブジェクト。
+    class/end
+        nil。
+    raise
+        最後に呼び出されたメソッドを表す Symbol オブジェクト。
+        トップレベルでは nil。
+</pre>
+</dd>
+<dt>binding</dt>
+<dd>
+<p>
+実行中のプログラムのコンテキストを表す <a href="../../../class/-binding.html">Binding</a> オブジェクト。
+</p>
+</dd>
+<dt>klass</dt>
+<dd>
+<p>
+event に応じ、以下のものが渡されます。
+第四ブロック引数の id と対応しています。
+</p>
+<pre>
+    line
+        最後に呼び出されたメソッドが属するクラスを表す
+        Class オブジェクト。トップレベルでは false。
+    call/return/c-call/c-return
+        呼び出された/リターンするメソッドが属するクラス
+        を表す Class オブジェクト。
+    class/end
+        false。
+    raise
+        最後に呼び出されたメソッドが属するクラスを表す
+        Class オブジェクト。トップレベルでは false。
+</pre>
+</dd>
+</dl>
+<dl>
+<dt class='method-param'>[PARAM] proc:</dt>
+<dd>
+トレース用 <a href="../../../class/-proc.html">Proc</a> オブジェクトを指定します。nil を指定した場合、トレースをオフにします。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+proc を返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+set_trace_func lambda {|*arg|
+  p arg
+}
+class Foo
+end
+43.to_s
+
+#----結果----
+#[&quot;line&quot;, &quot;..&quot;, 4, nil, #&lt;Binding:0x2b69584&gt;, false]
+#  [&quot;c-call&quot;, &quot;..&quot;, 4, :inherited, #&lt;Binding:0x2b693b8&gt;, Class]
+#    [&quot;c-return&quot;, &quot;..&quot;, 4, :inherited, #&lt;Binding:0x2b6937c&gt;, Class]
+#      [&quot;class&quot;, &quot;..&quot;, 4, nil, #&lt;Binding:0x2b69098&gt;, false]
+#        [&quot;end&quot;, &quot;..&quot;, 4, nil, nil, false]
+#        [&quot;line&quot;, &quot;..&quot;, 6, nil, #&lt;Binding:0x2b68d78&gt;, false]
+#          [&quot;c-call&quot;, &quot;..&quot;, 6, :to_s, #&lt;Binding:0x2b68c88&gt;, Fixnum]
+#            [&quot;c-return&quot;, &quot;..&quot;, 6, :to_s, #&lt;Binding:0x2b68aa8&gt;, Fixnum]
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/caller.html">Kernel.#caller</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

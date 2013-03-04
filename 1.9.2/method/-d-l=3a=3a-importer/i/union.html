@@ -26,11 +26,59 @@
 
 <dl class="methodlist">
 
-<dt class="method-heading"><code>union</code></dt>
+<dt class="method-heading"><code>union(signature) -&gt; Class</code></dt>
 <dd class="method-description">
-<p class="todo">
-[TODO]
+<p>
+C の共用体型に対応する Ruby のクラスを構築して返します。
 </p>
+<p>
+共用体型を Ruby 上で定義する方法は <a href="../../../method/-d-l=3a=3a-importer/i/struct.html">DL::Importer#struct</a> と
+ほぼ同様です。C における
+</p>
+<pre>
+typedef union epoll_data
+{
+  void *ptr;
+  int fd;
+  uint32_t u32;
+  uint64_t u64;
+} epoll_data_t;
+</pre>
+<p>
+は、Ruby上では
+</p>
+<pre>
+require 'dl/import
+
+module M
+  extend DL::Importer
+  dlload &quot;libc.so.6&quot;
+  typealias(&quot;uint32_t&quot;, &quot;unsigned int&quot;)
+  typealias(&quot;uint64_t&quot;, &quot;unsigned long long&quot;)
+
+  EPollData = union([&quot;void *ptr&quot;,
+                     &quot;int fd&quot;,
+                     &quot;uint32_t u32&quot;,
+                     &quot;uint64_t u64&quot;,
+                    ])
+end
+</pre>
+<p>
+となります。
+</p>
+<p>
+返されるクラスは <a href="../../../class/-d-l=3a=3a-c-union.html">DL::CUnion</a> を継承しています。
+</p>
+<p>
+1.9.x ではこのメソッドで返されるクラスは正しく動作しません。
+2.0以降では修正されています。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] signature:</dt>
+<dd>
+共用体の各要素を文字列で表現したものの配列
+</dd>
+</dl>
 </dd>
 
 

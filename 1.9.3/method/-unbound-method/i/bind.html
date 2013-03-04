@@ -35,18 +35,15 @@ self を obj にバインドした <a href="../../../class/-method.html">Method<
 <dt class='method-param'>[PARAM] obj:</dt>
 <dd>
 自身をバインドしたいオブジェクトを指定します。ただしバインドできるのは、
-unbind したオブジェクトのクラスのインスタンスか、メソッド定義元のモジュールを
-インクルードしたクラスのインスタンスだけです。
+生成元のクラスかそのサブクラスのインスタンスのみです。
 </dd>
 <dt>[EXCEPTION] TypeError:</dt>
 <dd>
-obj のクラスが、unbind したオブジェクトのクラスのインスタンスか、
-メソッド定義元のモジュールをインクルードしたクラスでなければ、発生します。
+objがbindできないオブジェクトである場合に発生します
 </dd>
 </dl>
 <pre>
 # クラスのインスタンスメソッドの UnboundMethod の場合
-
 class Foo
   def foo
     &quot;foo&quot;
@@ -54,27 +51,18 @@ class Foo
 end
 
 # UnboundMethod `m' を生成
-p m = Foo.instance_method(:foo) # =&gt; #&lt;UnboundMethod: Foo(Foo)#foo&gt;
+p m = Foo.instance_method(:foo) # =&gt; #&lt;UnboundMethod: Foo#foo&gt;
 
 # Foo のインスタンスをレシーバとする Method オブジェクトを生成
-p m.bind(Foo.new)               # =&gt; #&lt;Method: Foo(Foo)#foo&gt;
+p m.bind(Foo.new)               # =&gt; #&lt;Method: Foo#foo&gt;
 
 # Foo のサブクラス Bar のインスタンスをレシーバとする Method
-#@#  ruby 1.8 feature: 許されるようになりました
-
 class Bar &lt; Foo
 end
-# p m.bind(Bar.new)               # =&gt; -18:in `bind': bind argument must be an instance of Foo (TypeError)
+p m.bind(Bar.new)               # =&gt; #&lt;Method: Bar(Foo)#foo&gt;
 
-# 同名の特異メソッドが定義されているとダメ
-class &lt;&lt; obj = Foo.new
-  def foo
-  end
-end
-p m.bind(obj)                   # =&gt; -:25:in `bind': method `foo' overridden (TypeError)
 
 # モジュールのインスタンスメソッドの UnboundMethod の場合
-
 module Foo
   def foo
     &quot;foo&quot;
@@ -82,7 +70,7 @@ module Foo
 end
 
 # UnboundMethod `m' を生成
-p m = Foo.instance_method(:foo) # =&gt; #&lt;UnboundMethod: Foo(Foo)#foo&gt;
+p m = Foo.instance_method(:foo) # =&gt; #&lt;UnboundMethod: Foo#foo&gt;
 
 # Foo をインクルードしたクラス Bar のインスタンスをレシーバと
 # する Method オブジェクトを生成
@@ -90,18 +78,6 @@ class Bar
   include Foo
 end
 p m.bind(Bar.new)               # =&gt; #&lt;Method: Bar(Foo)#foo&gt;
-
-# Bar のサブクラスは Foo をインクルードしているのと同等なのでよい
-class Baz &lt;Bar
-end
-p m.bind(Baz.new)               # =&gt; #&lt;Method: Baz(Foo)#foo&gt;
-
-# 同名の特異メソッドが定義されているとダメ
-class &lt;&lt; obj = Baz.new
-  def foo
-  end
-end
-p m.bind(obj)                   # =&gt; -:27:in `bind': method `foo' overridden (TypeError)
 </pre>
 </dd>
 

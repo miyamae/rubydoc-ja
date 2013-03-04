@@ -1,0 +1,170 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library open-uri</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 2.0.0 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.0.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; open-uriライブラリ
+</p>
+
+
+
+<h1>library open-uri</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+http/ftp に簡単にアクセスするためのクラスです。
+<a href="../method/-kernel/m/open.html">Kernel.#open</a> を再定義します。
+</p>
+<h2 >使用例</h2>
+<p>
+http/ftp の URL を、普通のファイルのように開けます。
+</p>
+<pre>
+require 'open-uri'
+open(&quot;http://www.ruby-lang.org/&quot;) {|f|
+  f.each_line {|line| p line}
+}
+</pre>
+<p>
+開いたファイルオブジェクトは <a href="../class/-string-i-o.html">StringIO</a> もしくは <a href="../class/-tempfile.html">Tempfile</a> で
+すが <a href="../class/-open-u-r-i=3a=3a-meta.html">OpenURI::Meta</a> モジュールで拡張されていて、メタ情報を獲得する
+メソッドが使えます。
+</p>
+<pre>
+open(&quot;http://www.ruby-lang.org/en&quot;) {|f|
+  f.each_line {|line| p line}
+  p f.base_uri         # &lt;URI::HTTP:0x40e6ef2 URL:http://www.ruby-lang.org/en/&gt;
+  p f.content_type     # &quot;text/html&quot;
+  p f.charset          # &quot;iso-8859-1&quot;
+  p f.content_encoding # []
+  p f.last_modified    # Thu Dec 05 02:45:02 UTC 2002
+}
+</pre>
+<p>
+ハッシュ引数で、追加のヘッダフィールドを指定できます。
+</p>
+<pre>
+open(&quot;http://www.ruby-lang.org/en/&quot;,
+  &quot;User-Agent&quot; =&gt; &quot;Ruby/#{RUBY_VERSION}&quot;,
+  &quot;From&quot; =&gt; &quot;foo@bar.invalid&quot;,
+  &quot;Referer&quot; =&gt; &quot;http://www.ruby-lang.org/&quot;) {|f|
+  ...
+}
+</pre>
+<p>
+http_proxy や ftp_proxy などの環境変数は、デフォルトで有効になっています。
+プロキシを無効にするには :proxy =&gt; nil とします。
+</p>
+<pre>
+open(&quot;http://www.ruby-lang.org/en/raa.html&quot;,
+  :proxy =&gt; nil) {|f|
+  ...
+}
+</pre>
+<p>
+また、open-uri を読み込むと <a href="../class/-u-r-i=3a=3a-h-t-t-p.html">URI::HTTP</a> と <a href="../class/-u-r-i=3a=3a-f-t-p.html">URI::FTP</a> が
+<a href="../class/-open-u-r-i=3a=3a-open-read.html">OpenURI::OpenRead</a> モジュールをインクルードします。ですので、
+URI オブジェクトも似たような方法で開けます。
+</p>
+<pre>
+uri = URI.parse(&quot;http://www.ruby-lang.org/en/&quot;)
+uri.open {|f|
+  ...
+}
+</pre>
+<p>
+URI オブジェクトは直接読み込むことができます。
+戻り値の文字列は、<a href="../class/-open-u-r-i=3a=3a-meta.html">OpenURI::Meta</a> で拡張されています。
+</p>
+<pre>
+str = uri.read
+p str.base_uri
+</pre>
+
+
+<h2>モジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-open-u-r-i.html">OpenURI</a>
+</td>
+<td class="description"><p>
+http/ftp に簡単にアクセスするためのモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-open-u-r-i=3a=3a-meta.html">OpenURI::Meta</a>
+</td>
+<td class="description"><p>
+サーバから取得したデータの属性を扱うために使われるモジュールです。
+データを表す文字列や <a href="../class/-string-i-o.html">StringIO</a> が extend します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-open-u-r-i=3a=3a-open-read.html">OpenURI::OpenRead</a>
+</td>
+<td class="description"><p>
+<a href="../class/-u-r-i=3a=3a-h-t-t-p.html">URI::HTTP</a> と <a href="../class/-u-r-i=3a=3a-f-t-p.html">URI::FTP</a> を拡張するために用意されたモジュールです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-open-u-r-i=3a=3a-h-t-t-p-error.html">OpenURI::HTTPError</a>
+</td>
+<td class="description"><p>
+リソースの取得に失敗した時に投げられます。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+<h2>追加・再定義されるメソッド</h2>
+<p><code>
+
+<a href="../method/-kernel/m/open.html">Kernel.#open</a>
+
+</code></p>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

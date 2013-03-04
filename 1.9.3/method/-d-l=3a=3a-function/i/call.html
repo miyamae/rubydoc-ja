@@ -33,22 +33,81 @@
 自身が表す関数を呼び、返り値を Ruby のオブジェクトに変換して返します。
 </p>
 <p>
-自身の返り値の型がポインタである場合、返り値を <a href="../../../class/-d-l=3a=3a-c-ptr.html">DL::CPtr</a> オブジェクトにして返します。
-返り値の型が double か float である場合は、返り値を Ruby の <a href="../../../class/-float.html">Float</a> オブジェクトに変換して返します。
-返り値の型が void の場合は nil を返します。それ以外の場合は整数として返します。
+返り値と引数は <a href="../../../method/-d-l=3a=3a-function/s/new.html">DL::Function.new</a> で指定したものが使われます。
+より詳しくいうと、
+</p>
+<ul>
+<li>返り値は <a href="../../../class/-d-l=3a=3a-c-func.html">DL::CFunc</a> オブジェクトに指定された型</li>
+<li>引数は new の argtypes 引数で指定した型</li>
+</ul>
+<p>
+を用います。
 </p>
 <p>
-ブロックを与えた場合、引数の中にバインドされていない <a href="../../../class/-d-l=3a=3a-function.html">DL::Function</a> オブジェクトが
+引数の変換は以下の通りです。
+</p>
+<dl>
+<dt>void* (つまり任意のポインタ型)</dt>
+<dd>
+<p>
+nil ならば C の NULL に変換されます
+<a href="../../../class/-d-l=3a=3a-c-ptr.html">DL::CPtr</a> は保持している C ポインタに変換されます。
+適当に変換してから、C のポインタに変換します。
+文字列であればその先頭ポインタになります。
+<a href="../../../class/-i-o.html">IO</a> オブジェクトであれば FILE* が渡されます。
+整数であればそれがアドレスとみなされます。
+どれでもなければ to_ptr を呼び出し DL::CPtr オブジェクトに
+変換したのが用いられます。
+
+</p>
+</dd>
+<dt>(unsigned) char/short/int/long/long long</dt>
+<dd>
+<p>
+Ruby の整数を C の整数に変換します。
+</p>
+</dd>
+<dt>double/float</dt>
+<dd>
+<p>
+Ruby の整数 or 浮動小数点数を C の浮動小数点数に変換します
+
+</p>
+</dd>
+</dl>
+<p>
+返り値の変換は以下の通りです。
+</p>
+<dl>
+<dt>void</dt>
+<dd>
+<p>
+nil を返します
+</p>
+</dd>
+<dt>(unsigned) char/short/int/long/long long</dt>
+<dd>
+<p>
+C の整数を Ruby の整数に変換します
+</p>
+</dd>
+<dt>void*(つまり任意のポインタ型)</dt>
+<dd>
+<p>
+C のポインタを保持した <a href="../../../class/-d-l=3a=3a-c-ptr.html">DL::CPtr</a> を返します。
+</p>
+</dd>
+</dl>
+<p>
+ブロックを与えた場合、引数の中に <a href="../../../class/-d-l=3a=3a-function.html">DL::Function</a> オブジェクトが
 もしあれば与えられたブロックをバインドし、その後上と同じように関数を呼びます。
+複数の DL::Function オブジェクトを引数に渡した場合は、前にある
+ほうにバインドされます。
 </p>
 <dl>
 <dt class='method-param'>[PARAM] arg:</dt>
 <dd>
-関数に与える引数を指定します。引数の型がポインタである場合は、
-<a href="../../../class/-d-l=3a=3a-c-ptr.html">DL::CPtr</a> オブジェクト、<a href="../../../class/-d-l=3a=3a-function.html">DL::Function</a> オブジェクト、IO オブジェクト、
-整数、文字列のいずれかを指定します。特に文字列を与えた場合は、
-文字列はポインタが指すメモリ領域として扱われます。
-それ以外の場合は、Integer か Float を与えます。
+関数に与える引数を指定します。
 
 </dd>
 </dl>
