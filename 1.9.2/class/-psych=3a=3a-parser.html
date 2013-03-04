@@ -41,8 +41,73 @@
 </p>
 
 <h2>要約</h2>
+<p>
+YAML のパーサ。
+</p>
+<p>
+このクラスは YAML ドキュメントをパースし、コンストラクタに渡された
+ハンドラにイベントを通知(呼び出し)します。
+このイベントを使って YAML の AST を構築したり YAML ドキュメントを
+別のフォーマット変換したりします。
+<a href="../class/-psych=3a=3a-emitter.html">Psych::Emitter</a> を使うとパースしたドキュメントを元通りに出力
+することもできます。
+</p>
+<p>
+<a href="../class/-psych=3a=3a-parser.html">Psych::Parser</a> が生成するイベントは <a href="../class/-psych=3a=3a-handler.html">Psych::Handler</a>
+を見てください。
+</p>
+<p>
+以下の例では YAML ドキュメント に含まれているスカラー値を表示します。
+</p>
+<pre>
+# Handler for detecting scalar values
+class ScalarHandler &lt; Psych::Handler
+  def scalar value, anchor, tag, plain, quoted, style
+    puts value
+  end
+end
+
+parser = Psych::Parser.new(ScalarHandler.new)
+parser.parse(yaml_document)
+</pre>
+<p>
+次の例は <a href="../class/-psych=3a=3a-emitter.html">Psych::Emitter</a> にパースの結果を戻しています。
+STDIN からの入力をパース→YAMLフォーマットで STDERR に出力
+という流れになっています。
+</p>
+<pre>
+parser = Psych::Parser.new(Psych::Emitter.new($stderr))
+parser.parse($stdin)
+</pre>
+<p>
+<a href="../class/-psych=3a=3a-parser.html">Psych::Parser</a> と <a href="../class/-psych=3a=3a-tree-builder.html">Psych::TreeBuilder</a> を組み合わせると
+YAML の AST を構築することができます。
+</p>
 
 
+
+<h2>特異メソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-psych=3a=3a-parser/s/new.html"><code>
+  new(handler = Handler.new) -&gt; Psych::Parser
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+新たなパーサオブジェクトを生成して返します。
+</p>
+</td>
+
+</tr>
+
+</table>
 
 <h2>インスタンスメソッド</h2>
 <table class="entries methods">
@@ -53,13 +118,27 @@
 
 <tr>
 <td class="signature">
-  <a href="../method/-psych=3a=3a-parser/i/external_encoding=3d.html"><code>
-  external_encoding=(encoding)
+  <a href="../method/-psych=3a=3a-parser/i/handler.html"><code>
+  handler -&gt; Psych::Handler
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+セットされているイベントハンドラを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-psych=3a=3a-parser/i/handler=3d.html"><code>
+  handler=(val)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+イベントハンドラをセットします。
 </p>
 </td>
 
@@ -73,7 +152,8 @@
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+パーサが現在読み込んでいる入力上の位置を <a href="../class/-psych=3a=3a-parser=3a=3a-mark.html">Psych::Parser::Mark</a> オブジェクト
+で返します。
 </p>
 </td>
 
@@ -82,12 +162,13 @@
 <tr>
 <td class="signature">
   <a href="../method/-psych=3a=3a-parser/i/parse.html"><code>
-  parse(yaml)
+  parse(yaml) -&gt; self
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+YAML ドキュメントをパースし、イベントハンドラに
+イベントを逐次通知します。
 </p>
 </td>
 
@@ -105,12 +186,12 @@
 <tr>
 <td class="signature">
   <a href="../method/-psych=3a=3a-parser/c/-a-n-y.html"><code>
-  ANY
+  ANY -&gt; Integer
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+「任意の」エンコーディングを意味します。
 </p>
 </td>
 
@@ -119,12 +200,12 @@
 <tr>
 <td class="signature">
   <a href="../method/-psych=3a=3a-parser/c/-u-t-f16-b-e.html"><code>
-  UTF16BE
+  UTF16BE -&gt; Integer
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+UTF-16BE エンコーディングを表します。
 </p>
 </td>
 
@@ -133,12 +214,12 @@
 <tr>
 <td class="signature">
   <a href="../method/-psych=3a=3a-parser/c/-u-t-f16-l-e.html"><code>
-  UTF16LE
+  UTF16LE -&gt; Integer
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+UTF-16LE エンコーディングを表します。
 </p>
 </td>
 
@@ -147,12 +228,12 @@
 <tr>
 <td class="signature">
   <a href="../method/-psych=3a=3a-parser/c/-u-t-f8.html"><code>
-  UTF8
+  UTF8 -&gt; Integer
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+UTF-8 エンコーディングを表します。
 </p>
 </td>
 
@@ -287,6 +368,8 @@
 
 <a href="../method/-object/i/protected_methods.html">protected_methods</a>
 
+<a href="../method/-object/i/psych_to_yaml.html">psych_to_yaml</a>
+
 <a href="../method/-object/i/public_methods.html">public_methods</a>
 
 <a href="../method/-object/i/public_send.html">public_send</a>
@@ -343,8 +426,6 @@
 
 <a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
 
-<a href="../method/-object/s/psych_to_yaml.html">.psych_to_yaml</a>
-
 <a href="../method/-object/s/yaml_tag.html">.yaml_tag</a>
 
 <a href="../method/-object/s/yaml_tag_subclasses=3f.html">.yaml_tag_subclasses?</a>
@@ -352,55 +433,6 @@
 </code></p>
 
 
-
-<h2>追加されるメソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th>説明</th>
-  <th>ライブラリ</th>
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-parser/i/handler.html"><code>
-  handler
-  </code></a>
-</td>
-<td class="description"><p>
-@todo
-</p>
-</td>
-<td class="library"><a href="../library/psych=2fparser.html">psych/parser</a></td>
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-parser/i/handler=3d.html"><code>
-  handler=(val)
-  </code></a>
-</td>
-<td class="description"><p>
-@todo
-</p>
-</td>
-<td class="library"><a href="../library/psych=2fparser.html">psych/parser</a></td>
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-psych=3a=3a-parser/s/new.html"><code>
-  new(handler = Handler.new) -&gt; Psych::Parser
-  </code></a>
-</td>
-<td class="description"><p>
-@todo
-</p>
-</td>
-<td class="library"><a href="../library/psych=2fparser.html">psych/parser</a></td>
-</tr>
-
-</table>
 
 
 

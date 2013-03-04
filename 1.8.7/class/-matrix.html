@@ -57,6 +57,7 @@ m * n 個の数a(i,j)を
 <p>
 のように、縦横の表にあらわしたものを(m,n)型の行列といいます。
 m=nの行列をm次の正方行列(square matrix)といいます。
+インデックスは 0 から始まることに注意してください。
 </p>
 <p>
 上からi番目の横の数の並びを第i行(the i-th row)、
@@ -120,13 +121,12 @@ n次の単位行列を生成します。
 <tr>
 <td class="signature">
   <a href="../method/-matrix/s/=5b=5d.html"><code>
-  self[rows] -&gt; Matrix
+  self[*rows] -&gt; Matrix
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-rowsを要素とする行列を生成します。
-配列を行列の行成分として行列を生成します。
+rows[i] を第 i 行とする行列を生成します。
 </p>
 </td>
 
@@ -163,12 +163,12 @@ rowsを要素とする行列を生成します。
 <tr>
 <td class="signature">
   <a href="../method/-matrix/s/diagonal.html"><code>
-  diagonal(values) -&gt; Matrix
+  diagonal(*values) -&gt; Matrix
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-対角要素がvalues(オブジェクトの並び)で、非対角要素が全て0であるような
+対角要素がvaluesで、非対角要素が全て0であるような
 正方行列を生成します。
 </p>
 </td>
@@ -197,8 +197,7 @@ rowsを要素とする行列を生成します。
 </td>
 
 <td class="description" colspan="2"><p>
-引数 rows を要素とする行列を生成します。
-引数 copy が偽(false)ならば、rows の複製を行いません。
+引数 rows を行ベクトルの列とする行列を生成します。
 </p>
 </td>
 
@@ -226,8 +225,10 @@ rowsを要素とする行列を生成します。
 </td>
 
 <td class="description" colspan="2"><p>
-n次の零行列を生成します。
-零行列とは、要素が全て0の行列です。
+n × n の零行列（要素が全て 0 の行列）を生成して返します。
+</p>
+<p>
+@param n 生成する正方零行列の次数
 </p>
 </td>
 
@@ -245,12 +246,26 @@ n次の零行列を生成します。
 <tr>
 <td class="signature">
   <a href="../method/-matrix/i/=2a.html"><code>
-  self * m -&gt; Matrix
+  self * m -&gt; Matrix | Vector
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-行列mを右から乗じた行列を返します。
+self に行列またはベクトル m を右から乗じた行列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/=2a.html"><code>
+  self * other -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self の各成分に数 other を掛けた行列を返します。
 </p>
 </td>
 
@@ -264,7 +279,7 @@ n次の零行列を生成します。
 </td>
 
 <td class="description" colspan="2"><p>
-self の n乗をした行列を返します。
+self の n 乗を返します。
 </p>
 </td>
 
@@ -278,7 +293,8 @@ self の n乗をした行列を返します。
 </td>
 
 <td class="description" colspan="2"><p>
-行列mを加算した行列を返します。
+self に行列 m を加算した行列を返します。
+self の column_size が 1 なら <a href="../class/-vector.html">Vector</a> オブジェクトも指定出来ます。
 </p>
 </td>
 
@@ -292,7 +308,8 @@ self の n乗をした行列を返します。
 </td>
 
 <td class="description" colspan="2"><p>
-行列mを減算した行列を返します。
+self から行列mを減算した行列を返します。
+self の column_size が 1 なら <a href="../class/-vector.html">Vector</a> オブジェクトも指定出来ます。
 </p>
 </td>
 
@@ -306,7 +323,21 @@ self の n乗をした行列を返します。
 </td>
 
 <td class="description" colspan="2"><p>
-行列mの逆行列を右から乗じた行列を返します。
+self に行列 m の逆行列を右から乗じた行列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-matrix/i/=2f.html"><code>
+  self / other -&gt; Matrix
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self の各成分を数 other で割った行列を返します。
 </p>
 </td>
 
@@ -385,12 +416,14 @@ self の n乗をした行列を返します。
 <tr>
 <td class="signature">
   <a href="../method/-matrix/i/column.html"><code>
-  column(j) -&gt; Vector<br>column(j) {|x| ... } -&gt; nil
+  column(j) -&gt; Vector<br>column(j) {|x| ... } -&gt; ()
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-第j番目の列ベクトルを返します。
+j 番目の列を <a href="../class/-vector.html">Vector</a> オブジェクトで返します。
+j 番目の列が存在しない場合は Vector[nil] を返します。
+ブロックが与えられた場合はその列の各要素についてブロックを繰り返します。
 </p>
 </td>
 
@@ -404,7 +437,7 @@ self の n乗をした行列を返します。
 </td>
 
 <td class="description" colspan="2"><p>
-列の大きさを返します。
+行列の列数を返します。
 </p>
 </td>
 
@@ -413,7 +446,7 @@ self の n乗をした行列を返します。
 <tr>
 <td class="signature">
   <a href="../method/-matrix/i/column_vectors.html"><code>
-  column_vectors -&gt; Array
+  column_vectors -&gt; [Vector]
   </code></a>
 </td>
 
@@ -446,7 +479,7 @@ self の n乗をした行列を返します。
 </td>
 
 <td class="description" colspan="2"><p>
-行列式 (determinant) を返します。
+行列式 (determinant) の値を返します。
 </p>
 </td>
 
@@ -496,20 +529,6 @@ self の n乗をした行列を返します。
 
 <tr>
 <td class="signature">
-  <a href="../method/-matrix/i/inverse_from.html"><code>
-  inverse_from(src) -&gt; Matrix
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-行列1次方程式の解(の行列)を返します。
-</p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
   <a href="../method/-matrix/i/minor.html"><code>
   minor(from_row, row_size, from_col, col_size) -&gt; Matrix<br>minor(from_row..to_row, from_col..to_col) -&gt; Matrix
   </code></a>
@@ -544,7 +563,7 @@ selfの部分行列を返します。
 </td>
 
 <td class="description" colspan="2"><p>
-正則(regular)なら真(true)を返します。
+行列が正方で正則なら真を、特異なら偽を返します。
 </p>
 </td>
 
@@ -553,12 +572,14 @@ selfの部分行列を返します。
 <tr>
 <td class="signature">
   <a href="../method/-matrix/i/row.html"><code>
-  row(i) -&gt; Vector<br>row(i) {|x| ... } -&gt; nil
+  row(i) -&gt; Vector<br>row(i) {|x| ... } -&gt; ()
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-第i番目の行ベクトルを返します。
+i 番目の行を <a href="../class/-vector.html">Vector</a> オブジェクトで返します。
+i 番目の行が存在しない場合は例外 TypeError が発生します。
+ブロックが与えられた場合はその行の各要素についてブロックを繰り返します。
 </p>
 </td>
 
@@ -572,7 +593,7 @@ selfの部分行列を返します。
 </td>
 
 <td class="description" colspan="2"><p>
-行の大きさを返します。
+行列の行数を返します。
 </p>
 </td>
 
@@ -581,7 +602,7 @@ selfの部分行列を返します。
 <tr>
 <td class="signature">
   <a href="../method/-matrix/i/row_vectors.html"><code>
-  row_vectors -&gt; Array
+  row_vectors -&gt; [Vector]
   </code></a>
 </td>
 
@@ -600,7 +621,7 @@ selfの部分行列を返します。
 </td>
 
 <td class="description" colspan="2"><p>
-特異(singular)なら真(true)を返します。
+行列が正方で特異なら真を/正則なら偽を返します。
 </p>
 </td>
 

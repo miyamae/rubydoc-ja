@@ -1,0 +1,1064 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class Hash</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 2.0.0 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.0.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Hashクラス
+</p>
+
+
+
+<h1>class Hash</h1>
+<p>
+
+
+クラスの継承リスト: Hash
+
+      &lt; <a href="../class/-enumerable.html">Enumerable</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+ハッシュテーブル(連想配列とも呼ぶ)のクラスです。ハッシュは任意の種類のオブ
+ジェクト(キー)から任意の種類のオブジェクト(値)への関連づけを行うことができます。
+</p>
+<p>
+ハッシュ生成は多くの場合以下のようなリテラル (<a href="../doc/spec=2fliteral.html#hash">リテラル/ハッシュ式</a>) で行われます。
+</p>
+<pre>
+{a =&gt; b, ... }   # aはキー、bは値となる
+{s: b , ... }    # { :s =&gt; b, ... } と同じ。キーがシンボルの場合の省略した書き方
+</pre>
+<p>
+キーには任意の種類のオブジェクトを用いることができますが、
+以下の２つのメソッドが適切に定義してある必要があります。
+</p>
+<ul>
+<li><a href="../method/-object/i/hash.html">Object#hash</a> ハッシュの格納に用いられるハッシュ値の計算</li>
+<li><a href="../method/-object/i/eql=3f.html">Object#eql?</a> キーの同一性判定</li>
+</ul>
+<p>
+破壊的操作によってキーとして与えたオブジェクトの内容が変化し、<a href="../method/-object/i/hash.html">Object#hash</a> の返す
+値が変わるとハッシュから値が取り出せなくなりますから、
+<a href="../class/-array.html">Array</a>、<a href="../class/-hash.html">Hash</a>
+などのインスタンスはキーに向きません。<a href="../method/-hash/i/rehash.html">Hash#rehash</a> を参照。
+</p>
+<p>
+ただし、文字列をキーとして与えた場合は、文字列をコピーし、コピーを更新不可に設定 (<a href="../method/-object/i/freeze.html">Object#freeze</a>) してキーとして
+使用します。キーとして使われている文字列を更新しようとすると例外
+<a href="../class/-type-error.html">TypeError</a> が発生するので rehash を呼ぶ必要性は生じません。
+</p>
+<p>
+ハッシュにはデフォルト値を設定することができます。存在しないキーを探索したときに返す値で、未設定時は nil です。
+デフォルト値には値形式とブロック形式があります。
+実際にデフォルト値がどのように扱われるかは各メソッドの説明を参照してください。
+</p>
+<p>
+ハッシュに含まれる要素の順序が保持されるようになりました。
+ハッシュにキーが追加された順序で列挙します。
+</p>
+
+
+
+<h2>特異メソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/s/=5b=5d.html"><code>
+  self[other] -&gt; Hash
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+新しいハッシュを生成します。
+引数otherと同一のキーと値を持つ新たなハッシュを生成して返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/s/=5b=5d.html"><code>
+  self[*key_and_value] -&gt; Hash
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+新しいハッシュを生成します。
+引数は必ず偶数個指定しなければなりません。奇数番目がキー、偶数番目が値になります。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/s/new.html"><code>
+  new(ifnone = nil) -&gt; Hash
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+空の新しいハッシュを生成します。ifnone はキーに対
+応する値が存在しない時のデフォルト値です。設定したデフォルト値は<a href="../method/-hash/i/default.html">Hash#default</a>で参照できます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/s/new.html"><code>
+  new {|hash, key| ... } -&gt; Hash
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+空の新しいハッシュを生成します。ブロックの評価結果がデフォルト値になりま
+す。設定したデフォルト値は<a href="../method/-hash/i/default_proc.html">Hash#default_proc</a>で参照できます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/s/try_convert.html"><code>
+  try_convert(obj) -&gt; Hash | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+to_hash メソッドを用いて obj をハッシュに変換しようとします。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>インスタンスメソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/=3d=3d.html"><code>
+  self == other -&gt; bool<br>self === other -&gt; bool<br>eql?(other) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身と other が同じ数のキーを保持し、キーが eql? メソッドで比較して全て等しく、
+値が == メソッドで比較して全て等しい場合に真を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/=5b=5d.html"><code>
+  self[key] -&gt; object | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+key に関連づけられた値を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/=5b=5d=3d.html"><code>
+  self[key] = value<br>store(key, value) -&gt; object
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+key に対して value を関連づけます。value を返し
+ます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/assoc.html"><code>
+  assoc(key) -&gt; Array | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュが key をキーとして持つとき、見つかった要素のキーと値のペア
+を配列として返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/clear.html"><code>
+  clear -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュの中身を空にします。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/clone.html"><code>
+  clone -&gt; Hash<br>dup -&gt; Hash
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+selfと同じ内容を持つ新しいハッシュを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/compare_by_identity.html"><code>
+  compare_by_identity -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュのキーの一致判定をオブジェクトの同一性で判定するように変更します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/compare_by_identity=3f.html"><code>
+  compare_by_identity? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュがキーの一致判定をオブジェクトの同一性を用いて行っているならば真を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/default.html"><code>
+  default -&gt; object | nil<br>default(key) -&gt; object | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュのデフォルト値を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/default=3d.html"><code>
+  default=(value)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュのデフォルト値を value に変更します。対応する値が存
+在しないキーで検索した時にはこの値を返すようになります。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/default_proc.html"><code>
+  default_proc -&gt; Proc | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュのデフォルト値を返す <a href="../class/-proc.html">Proc</a> オブジェクトを返します。
+ハッシュがブロック形式のデフォルト値を持たない場合 nil を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/default_proc=3d.html"><code>
+  default_proc=(pr)
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュのデフォルト値を返す <a href="../class/-proc.html">Proc</a> オブジェクトを
+変更します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/delete.html"><code>
+  delete(key) -&gt; object | nil<br>delete(key) {|key| ... } -&gt; object
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+key に対応する要素を取り除きます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/delete_if.html"><code>
+  delete_if -&gt; Enumerator<br>reject! -&gt; Enumerator<br>delete_if {|key, value| ... } -&gt; self<br>reject! {|key, value| ... } -&gt; self|nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+キーと値を引数としてブロックを評価した結果が真であ
+るような要素を self から削除します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/each.html"><code>
+  each {|key, value| ... } -&gt; self<br>each_pair {|key, value| ... } -&gt; self<br>each -&gt; Enumerator<br>each_pair -&gt; Enumerator
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュのキーと値を引数としてブロックを評価します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/each_key.html"><code>
+  each_key {|key| ... } -&gt; self<br>each_key -&gt; Enumerator
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュのキーを引数としてブロックを評価します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/each_value.html"><code>
+  each_value {|value| ... } -&gt; self<br>each_value -&gt; Enumerator
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュの値を引数としてブロックを評価します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/empty=3f.html"><code>
+  empty? -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュが空の時真を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/equal=3f.html"><code>
+  equal?(other) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+指定された other が self 自身である場合のみ真を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/fetch.html"><code>
+  fetch(key, default = nil) {|key| ... } -&gt; object
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+key に関連づけられた値を返します。該当するキーが登録されてい
+ない時には、引数 default が与えられていればその値を、ブロッ
+クが与えられていればそのブロックを評価した値を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/flatten.html"><code>
+  flatten(level = 1) -&gt; Array
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身を平滑化した配列を生成して返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/has_key=3f.html"><code>
+  has_key?(key) -&gt; bool<br>include?(key) -&gt; bool<br>key?(key) -&gt; bool<br>member?(key) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュが key をキーとして持つ時真を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/has_value=3f.html"><code>
+  has_value?(value) -&gt; bool<br>value?(value) -&gt; bool
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュが value を値として持つ時真を返します。
+値の一致判定は == で行われます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/hash.html"><code>
+  hash -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+自身が保持するキーと値のハッシュ値を元にして算出した整数を返します。
+自身が保持するキーや値が変化すればこのメソッドが返す値も変化します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/index.html"><code>
+  key(val) -&gt; object<br>index(val) -&gt; object
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+値 val に対応するキーを返します。対応する要素が存在しない時には
+nil を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/inspect.html"><code>
+  to_s -&gt; String<br>inspect -&gt; String
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュの内容を人間に読みやすい文字列にして返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/invert.html"><code>
+  invert -&gt; Hash
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+値からキーへのハッシュを作成して返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/keep_if.html"><code>
+  keep_if {|key, value| ... } -&gt; self<br>select! {|key, value| ... } -&gt; self | nil<br>keep_if -&gt; Enumerator<br>select! -&gt; Enumerator
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+キーと値を引数としてブロックを評価した結果が真であるような要素を self
+に残します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/keys.html"><code>
+  keys -&gt; [object]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+全キーの配列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/length.html"><code>
+  length -&gt; Integer<br>size -&gt; Integer
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュの要素の数を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/merge.html"><code>
+  merge(other) -&gt; Hash<br>merge(other) {|key, self_val, other_val| ... } -&gt; Hash<br>merge!(other) -&gt; self<br>merge!(other) {|key, self_val, other_val| ... } -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+selfとotherのハッシュの内容をマージ(統合)した結果を返します。デフォルト値はselfの設定のままです。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/rassoc.html"><code>
+  rassoc(value) -&gt; Array | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュ内を検索して，引数 obj と 一致する値を探します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/rehash.html"><code>
+  rehash -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+キーのハッシュ値を再計算します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/reject.html"><code>
+  reject {|key, value| ... } -&gt; Hash<br>reject -&gt; Enumerable::Enumerator
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self を複製して、ブロックを評価した値が真になる要
+素を削除したハッシュを返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/replace.html"><code>
+  replace(other) -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュの内容を other の内容で置き換えます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/select.html"><code>
+  select -&gt; Enumerator<br>select {|key, value| ... } -&gt; Hash
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+key, value のペアについてブロックを評価し，真となるペアだけを含む
+ハッシュを生成して返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/shift.html"><code>
+  shift -&gt; [object, object]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュから要素をひとつ取り除き、[key, value]という配列とし
+て返します。shiftがどの要素を返すかは不定です。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/sort.html"><code>
+  sort -&gt; Array<br>sort {|a, b| ... } -&gt; Array
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュを [key, value] を要素とする配列の配列に変換して，それをソー
+トした配列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/to_a.html"><code>
+  to_a -&gt; [Array]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+キーと値からなる 2 要素の配列を並べた配列を生成して返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/to_h.html"><code>
+  to_h -&gt; self | Hash
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self を返します。<a href="../class/-hash.html">Hash</a> クラスのサブクラスから呼び出した場合は
+self を <a href="../class/-hash.html">Hash</a> オブジェクトに変換します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/to_hash.html"><code>
+  to_hash -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+self を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/update.html"><code>
+  update(other) -&gt; self<br>update(other) {|key, self_val, other_val| ... } -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+selfとotherのハッシュの内容をマージ(統合)します。<a href="../method/-hash/i/merge=21.html">Hash#merge!</a>と同じです。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/values.html"><code>
+  values -&gt; [object]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+ハッシュの全値の配列を返します。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-hash/i/values_at.html"><code>
+  values_at(*keys) -&gt; [object]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+引数で指定されたキーに対応する値の配列を返します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+<h2>継承したメソッド</h2>
+<p><code>
+
+<a href="../method/-basic-object/i/=21=3d.html">!=</a>
+
+<a href="../method/-basic-object/i/__id__.html">__id__</a>
+
+<a href="../method/-basic-object/i/instance_eval.html">instance_eval</a>
+
+<a href="../method/-basic-object/i/instance_exec.html">instance_exec</a>
+
+<a href="../method/-basic-object/i/singleton_method_added.html">singleton_method_added</a>
+
+<a href="../method/-basic-object/i/singleton_method_removed.html">singleton_method_removed</a>
+
+<a href="../method/-basic-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
+
+<a href="../method/-enumerable/i/all=3f.html">all?</a>
+
+<a href="../method/-enumerable/i/any=3f.html">any?</a>
+
+<a href="../method/-enumerable/i/chunk.html">chunk</a>
+
+<a href="../method/-enumerable/i/collect.html">collect</a>
+
+<a href="../method/-enumerable/i/collect_concat.html">collect_concat</a>
+
+<a href="../method/-enumerable/i/count.html">count</a>
+
+<a href="../method/-enumerable/i/cycle.html">cycle</a>
+
+<a href="../method/-enumerable/i/detect.html">detect</a>
+
+<a href="../method/-enumerable/i/drop.html">drop</a>
+
+<a href="../method/-enumerable/i/drop_while.html">drop_while</a>
+
+<a href="../method/-enumerable/i/each_cons.html">each_cons</a>
+
+<a href="../method/-enumerable/i/each_entry.html">each_entry</a>
+
+<a href="../method/-enumerable/i/each_slice.html">each_slice</a>
+
+<a href="../method/-enumerable/i/each_with_index.html">each_with_index</a>
+
+<a href="../method/-enumerable/i/each_with_object.html">each_with_object</a>
+
+<a href="../method/-enumerable/i/entries.html">entries</a>
+
+<a href="../method/-enumerable/i/find_all.html">find_all</a>
+
+<a href="../method/-enumerable/i/find_index.html">find_index</a>
+
+<a href="../method/-enumerable/i/first.html">first</a>
+
+<a href="../method/-enumerable/i/grep.html">grep</a>
+
+<a href="../method/-enumerable/i/group_by.html">group_by</a>
+
+<a href="../method/-enumerable/i/inject.html">inject</a>
+
+<a href="../method/-enumerable/i/lazy.html">lazy</a>
+
+<a href="../method/-enumerable/i/max.html">max</a>
+
+<a href="../method/-enumerable/i/max_by.html">max_by</a>
+
+<a href="../method/-enumerable/i/min.html">min</a>
+
+<a href="../method/-enumerable/i/min_by.html">min_by</a>
+
+<a href="../method/-enumerable/i/minmax.html">minmax</a>
+
+<a href="../method/-enumerable/i/minmax_by.html">minmax_by</a>
+
+<a href="../method/-enumerable/i/none=3f.html">none?</a>
+
+<a href="../method/-enumerable/i/one=3f.html">one?</a>
+
+<a href="../method/-enumerable/i/partition.html">partition</a>
+
+<a href="../method/-enumerable/i/reverse_each.html">reverse_each</a>
+
+<a href="../method/-enumerable/i/slice_before.html">slice_before</a>
+
+<a href="../method/-enumerable/i/sort_by.html">sort_by</a>
+
+<a href="../method/-enumerable/i/take.html">take</a>
+
+<a href="../method/-enumerable/i/take_while.html">take_while</a>
+
+<a href="../method/-enumerable/i/to_set.html">to_set</a>
+
+<a href="../method/-enumerable/i/zip.html">zip</a>
+
+<a href="../method/-object/i/=21.html">!</a>
+
+<a href="../method/-object/i/=3d=7e.html">=~</a>
+
+<a href="../method/-object/i/__send__.html">__send__</a>
+
+<a href="../method/-object/i/_dump.html">_dump</a>
+
+<a href="../method/-object/i/class.html">class</a>
+
+<a href="../method/-object/i/dclone.html">dclone</a>
+
+<a href="../method/-object/i/display.html">display</a>
+
+<a href="../method/-object/i/enum_for.html">enum_for</a>
+
+<a href="../method/-object/i/extend.html">extend</a>
+
+<a href="../method/-object/i/freeze.html">freeze</a>
+
+<a href="../method/-object/i/frozen=3f.html">frozen?</a>
+
+<a href="../method/-object/i/initialize.html">initialize</a>
+
+<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
+
+<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
+
+<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
+
+<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
+
+<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
+
+<a href="../method/-object/i/instance_variables.html">instance_variables</a>
+
+<a href="../method/-object/i/is_a=3f.html">is_a?</a>
+
+<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
+
+<a href="../method/-object/i/marshal_load.html">marshal_load</a>
+
+<a href="../method/-object/i/method.html">method</a>
+
+<a href="../method/-object/i/method_missing.html">method_missing</a>
+
+<a href="../method/-object/i/methods.html">methods</a>
+
+<a href="../method/-object/i/must_be.html">must_be</a>
+
+<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
+
+<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
+
+<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
+
+<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
+
+<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
+
+<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
+
+<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
+
+<a href="../method/-object/i/must_equal.html">must_equal</a>
+
+<a href="../method/-object/i/must_include.html">must_include</a>
+
+<a href="../method/-object/i/must_match.html">must_match</a>
+
+<a href="../method/-object/i/must_raise.html">must_raise</a>
+
+<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
+
+<a href="../method/-object/i/must_send.html">must_send</a>
+
+<a href="../method/-object/i/must_throw.html">must_throw</a>
+
+<a href="../method/-object/i/nil=3f.html">nil?</a>
+
+<a href="../method/-object/i/object_id.html">object_id</a>
+
+<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
+
+<a href="../method/-object/i/pretty_print.html">pretty_print</a>
+
+<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
+
+<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
+
+<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
+
+<a href="../method/-object/i/private_methods.html">private_methods</a>
+
+<a href="../method/-object/i/protected_methods.html">protected_methods</a>
+
+<a href="../method/-object/i/psych_to_yaml.html">psych_to_yaml</a>
+
+<a href="../method/-object/i/public_methods.html">public_methods</a>
+
+<a href="../method/-object/i/public_send.html">public_send</a>
+
+<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
+
+<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
+
+<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
+
+<a href="../method/-object/i/singleton_class.html">singleton_class</a>
+
+<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
+
+<a href="../method/-object/i/taint.html">taint</a>
+
+<a href="../method/-object/i/tainted=3f.html">tainted?</a>
+
+<a href="../method/-object/i/tap.html">tap</a>
+
+<a href="../method/-object/i/to_ary.html">to_ary</a>
+
+<a href="../method/-object/i/to_int.html">to_int</a>
+
+<a href="../method/-object/i/to_io.html">to_io</a>
+
+<a href="../method/-object/i/to_proc.html">to_proc</a>
+
+<a href="../method/-object/i/to_regexp.html">to_regexp</a>
+
+<a href="../method/-object/i/to_str.html">to_str</a>
+
+<a href="../method/-object/i/trust.html">trust</a>
+
+<a href="../method/-object/i/untaint.html">untaint</a>
+
+<a href="../method/-object/i/untrust.html">untrust</a>
+
+<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
+
+<a href="../method/-object/s/yaml_tag.html">.yaml_tag</a>
+
+</code></p>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

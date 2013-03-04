@@ -1,0 +1,238 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>module DRb::DRbProtocol</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 2.0.0 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.0.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/drb.html">drbライブラリ</a>
+&gt; DRb::DRbProtocolモジュール
+</p>
+
+
+
+<h1>module DRb::DRbProtocol</h1>
+<p>
+
+
+クラスの継承リスト: DRb::DRbProtocol
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+drb で使われる通信プロトコルを取り扱うモジュールです。
+</p>
+<p>
+通常ユーザが使うことはないでしょうが、drb の
+ための新しい通信手段を定義したい場合には
+このモジュールを使う必要があります。
+通信手段を定義したクラスを <a href="../method/-d-rb=3a=3a-d-rb-protocol/m/add_protocol.html">DRb::DRbProtocol.#add_protocol</a> で
+drb に登録することで、追加ができます。
+</p>
+<p>
+デフォルトでは DRbTCPSocket クラスを用い、druby://... という
+URI を指定することで TCP/IP で通信します。
+</p>
+<p>
+通信プロトコルを追加する例としては、
+例としては <a href="../library/drb=2funix.html">drb/unix</a> で定義している <a href="../class/-d-rb=3a=3a-d-rb-u-n-i-x-socket.html">DRb::DRbUNIXSocket</a> や
+サンプルの sample/drb/http0.rb、 sample/drb/http0serv.rb などを見てください。
+</p>
+<p>
+これらの例を見てわかるように、通信クラスでは取り扱えない URI が open
+や open_server に渡された場合は例外 <a href="../class/-d-rb=3a=3a-d-rb-bad-scheme.html">DRb::DRbBadScheme</a> を
+raise することで、その URI が取り扱えないことを drb ライブラリに
+伝えます。
+</p>
+<h2 >通信プロトコル定義クラスについて</h2>
+<p>
+上で説明した通信プロトコル定義クラスは、以下のクラスメソッドを
+そなえている必要があります。
+</p>
+<dl>
+<dt>open(uri, config)</dt>
+<dd>
+<p>
+uri で指定したサーバへの接続を開く。
+返り値として、プロトコルクラスのインスタンスで、開いた接続を保持した
+オブジェクトを返さなければなりません。
+</p>
+</dd>
+<dt>open_server(uri, config)</dt>
+<dd>
+<p>
+サーバを起動し、 uri で指定した場所で接続を待ち受けます。
+返り値として、プロトコルクラスのインスタンスで、接続を待ち受けている
+オブジェクトを返さなければなりません。
+</p>
+</dd>
+<dt>uri_option(uri, config)</dt>
+<dd>
+<p>
+uri をパースして、そこに含まれるオプション(&quot;?param=val&quot; など)を取り出します。
+返り値として、[uri, option] という配列を返します。
+</p>
+</dd>
+</dl>
+<p>
+プロトコルクラスは <a href="../method/-d-rb=3a=3a-d-rb-protocol/m/add_protocol.html">DRb::DRbProtocol.#add_protocol</a> で登録します。
+</p>
+<p>
+DRbProtocol module は登録された各プロトコルクラスに対して順に
+open/open_server を呼び出して、接続を確立しようとします。
+各プロトコルクラスはその URI が取り扱える場合は接続を確立/待受けし、その
+通信を取り扱うオブジェクトを返します。URI が取り扱えない場合は
+<a href="../class/-d-rb=3a=3a-d-rb-bad-scheme.html">DRb::DRbBadScheme</a> を発生させなければなりません。
+DRbProtocol module に登録されたクラスでは URI を取り扱えない
+場合は <a href="../class/-d-rb=3a=3a-d-rb-bad-u-r-i.html">DRb::DRbBadURI</a> が発生します。
+URI は妥当であるが、通信に問題が発生した場合は <a href="../class/-d-rb=3a=3a-d-rb-conn-error.html">DRb::DRbConnError</a>
+を発生させる必要があります。
+</p>
+<h3 >open_server</h3>
+<p>
+プロトコルクラスの open_server で返されるオブジェクトは以下のメソッドを
+持っている必要があります。
+</p>
+<dl>
+<dt>accept</dt>
+<dd>
+<p>
+接続を受け付けます。返り値としてクライアントとの通信ができるオブジェクト
+(後で説明します)を返します。
+</p>
+</dd>
+<dt>close</dt>
+<dd>
+<p>
+接続の待受を終了します。
+</p>
+</dd>
+<dt>uri</dt>
+<dd>
+<p>
+接続を待ち受けている uri を返します。
+</p>
+</dd>
+</dl>
+<h3 >open</h3>
+<p>
+プロトコルクラスの open で返されるオブジェクトは以下のメソッドを
+持っている必要があります。
+</p>
+<dl>
+<dt>send_request (ref, msg_id, arg, b)</dt>
+<dd>
+<p>
+ref で指定されているオブジェクトの msg_id で指定されているメソッドを
+arg という引数と b というブロック付きで呼び出す、というリクエストを
+送ります。DRbMessage#send_request を呼び出して通信オブジェクトが
+保持しているストリームにデータを送る、というのが最も簡単なこのメソッドの
+実装法です。
+</p>
+</dd>
+<dt>recv_reply</dt>
+<dd>
+<p>
+サーバからリプライを受け取り、[success-boolean, reply-value] という配列を
+返します。DRb.recv_reply を呼び出し、通信オブジェクトが
+保持しているストリームからリプライを受け取る、というのが最も簡単な
+このメソッドの実装法です。
+</p>
+</dd>
+<dt>alive?</dt>
+<dd>
+<p>
+接続が生きているならば真を返し、切れていれば偽を返します。
+</p>
+</dd>
+<dt>close</dt>
+<dd>
+<p>
+接続を閉じます。
+</p>
+</dd>
+</dl>
+<h3 >open_server().accept</h3>
+<p>
+プロトコルクラスの open_server で返されるオブジェクト
+の accept メソッドで返されるオブジェクトは以下のメソッドを持っている必要
+があります。
+</p>
+<dl>
+<dt>recv_request</dt>
+<dd>
+<p>
+クライアントからのリクエストを受け取り
+[object, message, args, block] という配列を返します。
+DRbMessage#recv_request を呼び出してストリームから
+メッセージを読み取る、というのが最も簡単な
+このメソッドの実装法です。
+</p>
+</dd>
+<dt>send_reply(succ, result)</dt>
+<dd>
+<p>
+クライアントにリプライを送る。 DRbMessage#send_reply を呼び出して
+ストリームにメッセージを書き込む、というのが最も簡単な
+このメソッドの実装法です。
+</p>
+</dd>
+<dt>close</dt>
+<dd>
+<p>
+接続を閉じる
+</p>
+</dd>
+</dl>
+
+
+
+<h2>モジュール関数</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-d-rb=3a=3a-d-rb-protocol/m/add_protocol.html"><code>
+  add_protocol(prot) -&gt; ()
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+新たなプロトコルを DRbProtocol モジュールに登録します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

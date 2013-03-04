@@ -26,7 +26,7 @@
 
 <dl class="methodlist">
 
-<dt class="method-heading"><code>extend_object(module) -&gt; Module</code></dt>
+<dt class="method-heading"><code>extend_object(obj) -&gt; object</code></dt>
 <dd class="method-description">
 <p>
 <a href="../../../method/-object/i/extend.html">Object#extend</a> の実体です。オブジェクトにモジュールの機能を追加します。
@@ -36,23 +36,31 @@
 </p>
 <pre>
 def extend(*modules)
-  modules.each {|mod| mod.__send__ :extend_object, self }
+  modules.reverse_each do |mod|
+    # extend_object や extended はプライベートメソッドなので
+    # 直接 mod.extend_object(self) などとは書けない
+    mod.__send__(:extend_object, self)
+    mod.__send__(:extended, self)
+  end
 end
 </pre>
 <p>
 extend_object のデフォルトの実装では、self に定義されて
-いるメソッドを object の特異メソッドとして追加します。
+いるインスタンスメソッドを obj の特異メソッドとして追加します。
 </p>
 <dl>
-<dt class='method-param'>[PARAM] module:</dt>
+<dt class='method-param'>[PARAM] obj:</dt>
 <dd>
-<a href="../../../class/-enumerable.html">Enumerable</a> など <a href="../../../class/-module.html">Module</a> クラスのインスタンスを指定します。
+self の機能を追加するオブジェクトを指定します。
 </dd>
 <dt>[RETURN]</dt>
 <dd>
-module で指定されたモジュールを返します。
+obj で指定されたオブジェクトを返します。
 </dd>
 </dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-module/i/extended.html">Module#extended</a>
+</p>
 </dd>
 
 

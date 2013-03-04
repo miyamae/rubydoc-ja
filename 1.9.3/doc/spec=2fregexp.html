@@ -351,6 +351,78 @@ re =~ &quot;asdf111112345xxxx&quot; # =&gt; nil
         /\b(?![0-9])\w+\b/
 </pre>
 </dd>
+<dt>(?&lt;= )</dt>
+<dd>
+<p>
+戻り読み(lookbehind)。
+パターンによる位置指定(幅を持たない)。
+</p>
+<pre>
+        (?&lt;=re)
+</pre>
+<p>
+という表現は、「直前に re にマッチする文字列が存在する位置」を表します。
+</p>
+<pre>
+        re = /(?&lt;=\d)/        # 直前に数字が存在する位置、つまり数字の直後
+        p re =~ 'abc123def'   # =&gt; 4
+        p re =~ 'abc1'        # =&gt; 4
+</pre>
+<pre>
+        (?&lt;=re1)re2
+</pre>
+<p>
+という表現は、「直前に re1 にマッチする文字列が存在する位置から始まり、re2 にマッチする文字列のパターン」を表します。
+</p>
+<pre>
+        p /(?&lt;=baz)bar/ =~ &quot;foobarbazbarfoo&quot;      # =&gt; 9
+        p $&amp;    # =&gt; &quot;bar&quot;   (baz の部分の情報はない)
+</pre>
+<pre>
+        # 「a と c に挟まれた b のみを * に置換する」
+        'abcbc'.gsub(/(?&lt;=a)b(?=c)/, '*')  # =&gt; 'a*cbc'
+</pre>
+<p>
+戻り読みの式は固定文字長でなければなりません。
+</p>
+<pre>
+        /(?&lt;=\d+)/ # =&gt; invalid pattern in look-behind: /(?&lt;=\d+)/
+</pre>
+</dd>
+<dt>(?&lt;! )</dt>
+<dd>
+<p>
+否定戻り読み(negative lookbehind)。
+パターンの否定による位置指定(幅を持たない)。
+</p>
+<pre>
+        (?&lt;!re)
+</pre>
+<p>
+という表現は、「直前に re にマッチする文字列が存在しない位置」にマッチします。
+</p>
+<pre>
+        # 文字列の先頭はその直前が \d にマッチすることはないので、必ず先頭にマッチする。
+        p /(?&lt;!\d)/ =~ '123' # =&gt; 0
+        p /(?&lt;!\d)/ =~ ''    # =&gt; 0
+</pre>
+<pre>
+        (?&lt;!re1)re2
+</pre>
+<p>
+という表現は、「直前に re1 にマッチする文字列が存在しない位置から始まり、re2 にマッチする文字列のパターン」を表します。
+</p>
+<pre>
+        /(?&lt;!foo)bar/ =~ 'foobarbazbarfoo'  # =&gt; 9
+        p $&amp;    # =&gt; &quot;bar&quot;   (foo の部分の情報はない)
+</pre>
+<p>
+否定戻り読みの式は固定文字長でなければなりません。
+</p>
+<pre>
+        /(?&lt;!\d+)/ # =&gt; invalid pattern in look-behind: /(?&lt;!\d+)/
+</pre>
+</dd>
 <dt>(?&gt; )</dt>
 <dd>
 <p>

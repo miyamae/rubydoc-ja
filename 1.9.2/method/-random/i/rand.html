@@ -27,65 +27,66 @@
 <dl class="methodlist">
 
 <dt class="method-heading"><code>rand -&gt; Float</code></dt>
+<dt class="method-heading"><code>rand(max) -&gt; Integer | Float</code></dt>
+<dt class="method-heading"><code>rand(range) -&gt; Integer | Float | nil</code></dt>
 <dd class="method-description">
 <p>
-浮動小数点数を返します。
+疑似乱数を発生させます。
 </p>
 <p>
-動作例:
+最初の形式では 0.0 以上 1.0 未満の実数を返します。
 </p>
-<pre>
-p Random.new(3).rand # =&gt; 0.5507979025745755
-</pre>
-</dd>
-<dt class="method-heading"><code>rand(arg) -&gt; Integer</code></dt>
-<dd class="method-description">
 <p>
-arg が IntegerもしくはBignumの場合は、arg 未満の整数を返します。
-Rangeオブジェクトの場合はrange.member?(number) == trueになるような数値を返します。
+二番目の形式では 0 以上 max 未満の数を返します。
+max が正の整数なら整数を、正の実数なら実数を返します。
+0 や負の数を指定することは出来ません。
+</p>
+<p>
+三番目の形式では range で指定された範囲の値を返します。
+range の始端と終端が共に整数の場合は整数を、少なくとも片方が実数の場合は実数を返します。
+range に含まれる数が無い場合は nil を返します。
+</p>
+<p>
+引数が実数でも範囲でもない場合は <a href="../../../method/-object/i/to_int.html">Object#to_int</a> で変換した値が指定されたものとして扱います。
 </p>
 <dl>
-<dt class='method-param'>[PARAM] arg:</dt>
+<dt class='method-param'>[PARAM] max:</dt>
 <dd>
-整数もしくはRangeオブジェクトを指定します。
+乱数値の上限を正の整数または実数で指定します。
+max 自体は乱数値の範囲に含まれません。
 </dd>
-</dl>
-<p>
-動作例:
-</p>
-<pre>
-prng = Random.new(1234)
-</pre>
-<p>
-#[5, 6, 7, 8, 9]のどれか
-</p>
-<pre>
-p prng.rand(5..9)  # =&gt; 8
-</pre>
-<p>
-#[5, 6, 7, 8]のどれか
-</p>
-<pre>
-p prng.rand(5...9) # =&gt; 7
-</pre>
-<p>
-#5.0 からの9.0 の間の数値9.0, 9.0を含む。
-</p>
-<pre>
-p prng.rand(5.0..9.0)  # =&gt; 8.271353771386416
-</pre>
-<p>
-#5.0 からの9.0 の間の数値9.0, 9.0を含まない。
-</p>
-<pre>
-p prng.rand(5.0...9.0) # =&gt; 7.448447578709083
-</pre>
-<dl>
+<dt class='method-param'>[PARAM] range:</dt>
+<dd>
+発生させる乱数値の範囲を <a href="../../../class/-range.html">Range</a> オブジェクトで指定します。
+range の境界は数値でなければなりません。
+</dd>
 <dt>[EXCEPTION] ArgumentError:</dt>
 <dd>
-引数の数が0または1では無い時、引数に負の数値を与えた時に発生する。
+引数の数が0または1では無い時、引数に負の数値を与えた時に発生します。
 </dd>
 </dl>
+<pre>
+# Kernel.#rand とほぼ同様の使い勝手
+prng = Random.new(1234)
+prng.rand            #=&gt; 0.1915194503788923
+srand(1234)
+rand                 #=&gt; 0.1915194503788923
+
+# max に実数も指定出来る
+prng.rand(6.5)       #=&gt; 4.043707011758907
+rand(6.5)            #=&gt; 5  (rand(6) と同等)
+
+# 上と同じ種で再初期化
+prng = Random.new(1234)
+srand(1234)
+# Kernel.#rand は Array#sample などの影響を受けて値がずれることがある
+[0, 1].sample
+prng.rand            #=&gt; 0.1915194503788923
+rand                 #=&gt; 0.6221087710398319
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/rand.html">Kernel.#rand</a>
+</p>
 </dd>
 
 

@@ -13,7 +13,7 @@
 <p>
 <a href="../../../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
 &gt; <a href="../../../library/index.html">ライブラリ一覧</a>
-&gt; <a href="../../../library/psych=2fcore_ext.html">psych/core_extライブラリ</a>
+&gt; <a href="../../../library/psych.html">psychライブラリ</a>
 &gt; <a href="../../../class/-object.html">Objectクラス</a>
 &gt; yaml_tag
 
@@ -26,12 +26,55 @@
 
 <dl class="methodlist">
 
-<dt class="method-heading"><code>yaml_tag(url)</code> <span class="kindinfo">[added by <a href="../../../library/psych=2fcore_ext.html">psych/core_ext</a>]</span>
+<dt class="method-heading"><code>yaml_tag(tag) -&gt; ()</code> <span class="kindinfo">[added by <a href="../../../library/psych.html">psych</a>]</span>
 </dt>
 <dd class="method-description">
-<p class="todo">
-[TODO]
+<p>
+クラスと tag の間を関連付けます。
 </p>
+<p>
+これによって tag 付けされた YAML ドキュメントを Ruby のオブジェクトに
+変換したりその逆をしたりすることができます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] tag:</dt>
+<dd>
+対象のクラスに関連付けるタグの文字列
+</dd>
+</dl>
+<h3 >Example</h3>
+<pre>
+require 'psych'
+
+class Foo
+  def initialize(x)
+    @x = x
+  end
+
+  attr_reader :x
+end
+
+# Dumps Ruby object normally
+p Psych.dump(Foo.new(3))
+# =&gt;
+# --- !ruby/object:Foo
+# x: 3
+
+# Registers tag with class Foo
+Foo.yaml_as(&quot;tag:example.com,2013:foo&quot;)
+# ... and dumps the object of Foo class
+Psych.dump(Foo.new(3), STDOUT)
+# =&gt;
+# --- !&lt;tag:example.com,2013:foo&gt;
+# x: 3
+
+# Loads the object from the tagged YAML node
+p Psych.load(&lt;&lt;EOS)
+--- !&lt;tag:example.com,2012:foo&gt;
+x: 8
+EOS
+# =&gt; #&lt;Foo:0x0000000130f48 @x=8&gt;
+</pre>
 </dd>
 
 

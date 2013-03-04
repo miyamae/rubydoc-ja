@@ -28,6 +28,132 @@
 bigdecimal は浮動小数点数演算ライブラリです。
 任意の精度で 10 進表現された浮動小数点数を扱えます。
 </p>
+<p>
+例:
+</p>
+<pre>
+require 'bigdecimal'
+a = BigDecimal::new(&quot;0.123456789123456789&quot;)
+b = BigDecimal(&quot;123456.78912345678&quot;, 40)
+print a + b # =&gt; 0.123456912580245903456789E6
+</pre>
+<p>
+一般的な 10 進数の計算でも有用です。2 進数の浮動小数点演算には微小な誤
+差があるのに対し、<a href="../class/-big-decimal.html">BigDecimal</a> では正確な値を得る事ができます。
+</p>
+<p>
+例1: 0.0001 を 10000 回足す場合。
+</p>
+<pre>
+sum = 0
+for i in (1..10000)
+  sum = sum + 0.0001
+end
+print sum # =&gt; 0.9999999999999062
+</pre>
+<p>
+例2: 0.0001 を 10000 回足す場合。(BigDecimal)
+</p>
+<pre>
+require 'bigdecimal'
+
+sum = BigDecimal.new(&quot;0&quot;)
+for i in (1..10000)
+  sum = sum + BigDecimal.new(&quot;0.0001&quot;)
+end
+print sum # =&gt; 0.1E1
+</pre>
+<p>
+例3: 1.2 - 1.0 と 0.2 との比較
+</p>
+<pre>
+(BigDecimal.new(&quot;1.2&quot;) - BigDecimal(&quot;1.0&quot;)) == BigDecimal(&quot;0.2&quot;) # =&gt; true
+
+(1.2 - 1.0) == 0.2 # =&gt; false
+</pre>
+<h2 >特別な値</h2>
+<p>
+正確な計算結果の提供のために、<a href="../class/-big-decimal.html">BigDecimal</a> はいくつかの特別な値を持
+ちます。
+</p>
+<h3 >無限大</h3>
+<p>
+<a href="../class/-big-decimal.html">BigDecimal</a> による演算の際には無限大を表す値を返す場合があります。
+</p>
+<p>
+例:
+</p>
+<pre>
+BigDecimal(&quot;1.0&quot;) / BigDecimal(&quot;0.0&quot;)  #=&gt; infinity
+BigDecimal(&quot;-1.0&quot;) / BigDecimal(&quot;0.0&quot;)  #=&gt; -infinity
+</pre>
+<p>
+無限大を表す <a href="../class/-big-decimal.html">BigDecimal</a> オブジェクトを作成する場合、
+<a href="../method/-kernel/m/-big-decimal.html">Kernel.#BigDecimal</a> の引数に &quot;Infinity&quot; や &quot;-Infinity&quot; を指定して
+ください。(大文字小文字を区別します)
+</p>
+<pre>
+BigDecimal(&quot;Infinity&quot;)  # =&gt; #&lt;BigDecimal:f74a2ebc,'Infinity',4(4)&gt;
+BigDecimal(&quot;+Infinity&quot;) # =&gt; #&lt;BigDecimal:f74a2e6c,'Infinity',4(4)&gt;
+BigDecimal(&quot;-Infinity&quot;) # =&gt; #&lt;BigDecimal:f74a2e1c,'-Infinity',4(4)&gt;
+
+BigDecimal(&quot;infinity&quot;)  # =&gt; #&lt;BigDecimal:f74a2dcc,'0.0',4(4)&gt;
+BigDecimal(&quot;-infinity&quot;) # =&gt; #&lt;BigDecimal:f74a2d7c,'-0.0',4(4)&gt;
+</pre>
+<h3 >非数(Not a Number)</h3>
+<p>
+0 / 0 のような未定義の計算を行った場合、非数(Not a Number)を表す値を返
+します。
+</p>
+<p>
+例:
+</p>
+<pre>
+BigDecimal(&quot;0.0&quot;) / BigDecimal(&quot;0.0&quot;) # =&gt; #&lt;BigDecimal:f74490d8,'NaN',4(24)&gt;
+</pre>
+<p>
+NaN を表す <a href="../class/-big-decimal.html">BigDecimal</a> オブジェクトを作成する場合、
+<a href="../method/-kernel/m/-big-decimal.html">Kernel.#BigDecimal</a> の引数に &quot;NaN&quot; を指定してください。(大文字小文
+字を区別します)
+</p>
+<pre>
+BigDecimal(&quot;NaN&quot;)  # =&gt; #&lt;BigDecimal:a0e49e4,'NaN',4(4)&gt;
+</pre>
+<p>
+NaN はどのような値と比較しても一致しません。(NaN 自身を含みます)
+</p>
+<pre>
+BigDecimal(&quot;NaN&quot;) == 0.0               # =&gt; false
+BigDecimal(&quot;NaN&quot;) == BigDecimal(&quot;NaN&quot;) # =&gt; false
+</pre>
+<h3 >+ゼロと-ゼロ</h3>
+<p>
+計算結果が現在の有効桁数に比べて小さい値である場合、0 を返します。
+</p>
+<p>
+負の非常に小さな <a href="../class/-big-decimal.html">BigDecimal</a> の値は -0 を表す値になります。
+</p>
+<pre>
+BigDecimal.new(&quot;1.0&quot;) / BigDecimal.new(&quot;-Infinity&quot;) # =&gt; #&lt;BigDecimal:f74a9f64,'-0.0',4(20)&gt;
+</pre>
+<p>
+正の非常に小さな <a href="../class/-big-decimal.html">BigDecimal</a> の値は -0 を表す値になります。
+</p>
+<pre>
+BigDecimal.new(&quot;1.0&quot;) / BigDecimal.new(&quot;Infinity&quot;) # =&gt; #&lt;BigDecimal:f74a9e88,'0.0',4(20)&gt;
+</pre>
+<p>
+精度については <a href="../method/-big-decimal/s/mode.html">BigDecimal.mode</a> も併せて参照してください。
+</p>
+<p>
+また、0.0 と -0.0 は比較した場合に同じ値であるとみなされます。
+</p>
+<pre>
+BigDecimal(&quot;0.0&quot;) == BigDecimal(&quot;-0.0&quot;) # =&gt; true
+</pre>
+<p>
+これは数学的には特に意味がない事に注意してください。数学的な 0 は符号を持ちません。
+</p>
 <h2 >他の数値オブジェクトとの変換 (coerce)</h2>
 <p>
 BigDecimal オブジェクトが算術演算子の左にあるときは、
@@ -68,40 +194,7 @@ c = &quot;0.123456789123456789123456789&quot; * a   # エラー
 どうしてもと言う人は String オブジェクトを継承した新たなクラスを作成してから、
 そのクラスで coerce をサポートしてください。
 </p>
-<h2 >無限、非数、ゼロの扱い</h2>
-<p>
-「無限」とは表現できないくらい大きな数です。
-特別に扱うために +Infinity (正の無限大) や
--Infinity (負の無限大) と表記されます。
-無限は 1.0/0.0 のようにゼロで割るような計算をしたときに生成されます。
-</p>
-<p>
-「非数」は 0.0/0.0 や Infinity-Infinity 等の結果が定義できない計算をしたときに生成されます。非数は NaN(Not a Number)と表記されます。 NaN を含む計算は全て NaN になります。また NaN は自分も含めて、どんな数とも一致しません。
-</p>
-<p>
-ゼロは +0.0 と -0.0 が存在します。ただし、+0.0 == -0.0 は true です。
-</p>
-<p>
-Infinity、NaN、 +0.0 と -0.0 等を含んだ計算結果は組み合わせにより複雑です。興味のある人は、以下のプログラムを実行して結果を確認してください(結果について、疑問や間違いを発見された方はお知らせ願います)。
-</p>
-<pre>
-require &quot;bigdecimal&quot;
-
-aa  = %w(1 -1 +0.0 -0.0 +Infinity -Infinity NaN)
-ba  = %w(1 -1 +0.0 -0.0 +Infinity -Infinity NaN)
-opa = %w(+ - * / &lt;=&gt; &gt; &gt;=  &lt; == != &lt;=)
-
-for a in aa
-  for b in ba
-    for op in opa
-      x = BigDecimal::new(a)
-      y = BigDecimal::new(b)
-      eval(&quot;ans= x #{op} y;print a,' ',op,' ',b,' ==&gt; ',ans.to_s,\&quot;\n\&quot;&quot;)
-    end
-  end
-end
-</pre>
-<h2 >内部構造</h2>
+<h2 id='internal_structure'>内部構造</h2>
 <p>
 BigDecimal内部で浮動小数点は構造体(Real)で表現されます。
 そのうち仮数部は unsigned long の配列 (以下の構造体要素 frac) で管理されます。
@@ -216,7 +309,12 @@ BigDecimal を利用して誤差無しの計算をする場合は、
 BigDecimal はユーザ入力を誤差無しで取り込むことができます。
 デバッグのしやすさと、データ読みこみ時に誤差が入らないという 2 点が実際のメリットです。
 </p>
-<h3 >計算精度について</h3>
+<h3 id='precision'>計算精度について</h3>
+<p>
+「有効桁数」とは BigDecimal が精度を保証する桁数です。ぴったりではありません、
+若干の余裕を持って計算されます。また、例えば32ビットのシステムでは10進で4桁毎に計算します。
+従って、現状では、内部の「有効桁数」は4の倍数となっています。
+</p>
 <p>
 c = a op b という計算 (op は + - * /) をしたときの動作は以下のようになります。
 </p>
@@ -315,15 +413,7 @@ if $0 == __FILE__
   end
 end
 </pre>
-<p>
-BigDecimal は可変長浮動小数点計算機能ライブラリです。
-</p>
-<h2 >はじめに</h2>
-<p>
-「有効桁数」とは BigDecimal が精度を保証する桁数です。ぴったりではありません、
-若干の余裕を持って計算されます。また、例えば32ビットのシステムでは10進で4桁毎に計算します。
-従って、現状では、内部の「有効桁数」は4の倍数となっています。
-</p>
+<h2 >その他</h2>
 <p>
 以下のメソッド以外にも、(C ではない) Ruby ソースの形で提供されているものもあります。例えば、
 </p>
@@ -341,24 +431,20 @@ require &quot;bigdecimal/util.rb&quot;
 <p>
 のようにします。詳細は <a href="../library/bigdecimal=2futil.html">bigdecimal/util</a> を参照して下さい。
 </p>
-<h2 >例</h2>
-<pre>
-require 'bigdecimal'
-a = BigDecimal::new(&quot;0.123456789123456789&quot;)
-b = BigDecimal(&quot;123456.78912345678&quot;,40)
-c = a + b
-</pre>
-
 
 
 <h2>クラス</h2>
 <table class="entries libraries">
 
 <tr>
-
-<td class="signature" style="text-indent: 0.0em;"><span style="display:none"></span>
-<a href="../class/-big-decimal.html">BigDecimal</a></td>
-<td class="description"></td>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-big-decimal.html">BigDecimal</a>
+</td>
+<td class="description"><p>
+可変長浮動小数点計算クラスです。
+</p>
+</td>
 </tr>
 
 </table>
@@ -369,12 +455,18 @@ c = a + b
 
 <tr>
 <td class="signature"><a href="../library/bigdecimal=2fjacobian.html">bigdecimal/jacobian</a></td>
-<td class="description"></td>
+<td class="description"><p>
+ヤコビ行列を計算する機能を提供します。
+</p>
+</td>
 </tr>
 
 <tr>
 <td class="signature"><a href="../library/bigdecimal=2fludcmp.html">bigdecimal/ludcmp</a></td>
-<td class="description"></td>
+<td class="description"><p>
+LU 分解を用いて、連立1次方程式 Ax = b の解 x を求める機能を提供します。
+</p>
+</td>
 </tr>
 
 <tr>
@@ -387,7 +479,11 @@ BigDecimalを使った数学的な機能を提供します。
 
 <tr>
 <td class="signature"><a href="../library/bigdecimal=2fnewton.html">bigdecimal/newton</a></td>
-<td class="description"></td>
+<td class="description"><p>
+ニュートン法を用いて非線形方程式 f(x) = 0 の解 x を求める機能を提供しま
+す。
+</p>
+</td>
 </tr>
 
 <tr>

@@ -44,18 +44,35 @@
 
 <h2>要約</h2>
 <p>
-Class responsible for converting between an object and its id.
+オブジェクトと識別子を相互に変換するクラスです。
 </p>
 <p>
-This, the default implementation, uses an object's local ObjectSpace
-id as its id. This means that an object's identification over drb
-remains valid only while that object instance remains alive within the
-server runtime.
+リモートオブジェクトは、URIと識別子で区別されます。
+リモートメソッド呼び出しは、リモートプロセスに識別子を
+送り、それを受け取ったプロセスでオブジェクトに変換することで実現されます。
 </p>
 <p>
-For alternative mechanisms,
-see <a href="../class/-d-rb=3a=3a-timer-id-conv.html">DRb::TimerIdConv</a> in <a href="../library/drb=2ftimeridconv.html">drb/timeridconv</a>
-and DRbNameIdConv in sample/name.rb in the full drb distribution.
+このクラスはdRubyでデフォルトとして使われる
+のオブジェクト-識別子間の変換クラスです。
+この変換には <a href="../class/-object-space.html">ObjectSpace</a> の機構が使われます。特に
+<a href="../method/-object-space/m/_id2ref.html">ObjectSpace.#_id2ref</a> が使われています。
+これはリモートオブジェクト
+が有効なのはリモートプロセス内の対応オブジェクトが GC で回収されるまで
+であることを意味します。一方 GC アルゴリズムでのオブジェクトの到達性
+判定はローカルプロセス内でのみ行なわれる、という事実に注意する必要があります。
+これはリモートプロセスで参照されているオブジェクトがローカルプロセス内では
+参照が切れてしまい、GC されてしまう可能性があるということを意味します。
+つまりリモートに送るオブジェクトは適切にローカルからも参照を保持する必要がある
+ということを意味します。一方リモート側から参照されなくなった場合には
+ローカル側できちんと GC されるためには、ローカル側で適切に参照を切る
+必要もあります。
+</p>
+<p>
+別の仕組みとして、<a href="../library/drb=2ftimeridconv.html">drb/timeridconv</a> で提供されている
+<a href="../class/-d-rb=3a=3a-timer-id-conv.html">DRb::TimerIdConv</a> クラスがあります。これを使うと、リモートに
+オブジェクトの参照が送られてから一定時間の間は、ローカルプロセス側
+の DRb::TimerIdConv で参照を保持しておくので、参照管理の
+簡略化ができます。
 </p>
 
 
@@ -70,12 +87,12 @@ and DRbNameIdConv in sample/name.rb in the full drb distribution.
 <tr>
 <td class="signature">
   <a href="../method/-d-rb=3a=3a-d-rb-id-conv/i/to_id.html"><code>
-  to_id(obj)
+  to_id(obj) -&gt; Integer
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+オブジェクトを識別子に変換します。
 </p>
 </td>
 
@@ -84,12 +101,12 @@ and DRbNameIdConv in sample/name.rb in the full drb distribution.
 <tr>
 <td class="signature">
   <a href="../method/-d-rb=3a=3a-d-rb-id-conv/i/to_obj.html"><code>
-  to_obj(ref)
+  to_obj(ref) -&gt; Object
   </code></a>
 </td>
 
 <td class="description" colspan="2"><p>
-@todo
+識別子をオブジェクトに変換します。
 </p>
 </td>
 
@@ -226,6 +243,8 @@ and DRbNameIdConv in sample/name.rb in the full drb distribution.
 
 <a href="../method/-object/i/protected_methods.html">protected_methods</a>
 
+<a href="../method/-object/i/psych_to_yaml.html">psych_to_yaml</a>
+
 <a href="../method/-object/i/public_methods.html">public_methods</a>
 
 <a href="../method/-object/i/public_send.html">public_send</a>
@@ -283,8 +302,6 @@ and DRbNameIdConv in sample/name.rb in the full drb distribution.
 <a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
 
 <a href="../method/-object/s/new.html">.new</a>
-
-<a href="../method/-object/s/psych_to_yaml.html">.psych_to_yaml</a>
 
 <a href="../method/-object/s/yaml_tag.html">.yaml_tag</a>
 

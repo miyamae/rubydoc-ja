@@ -1,0 +1,452 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class ConditionVariable</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 2.0.0 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.0.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/thread.html">threadライブラリ</a>
+&gt; ConditionVariableクラス
+</p>
+
+
+
+<h1>class ConditionVariable</h1>
+<p>
+
+
+クラスの継承リスト: ConditionVariable
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+スレッドの同期機構の一つである状態変数を実現するクラスです。
+</p>
+<p>
+以下も ConditionVariable を理解するのに参考になります。
+</p>
+<p>
+<a class="external" href="http://www.ruby-doc.org/docs/ProgrammingRuby/html/tut_threads.html#UF">http://www.ruby-doc.org/docs/ProgrammingRuby/html/tut_threads.html#UF</a>
+</p>
+<h2 >Condition Variable とは</h2>
+<p>
+あるスレッド A が排他領域で動いていたとします。スレッド A は現在空いていない
+リソースが必要になったので空くまで待つことにしたとします。これはうまくいきません。
+なぜなら、スレッド A は排他領域で動いているわけですから、他のスレッドは動くことが
+できません。リソースを空けることもできません。スレッド A がリソースの空きを
+待っていても、いつまでも空くことはありません。
+</p>
+<p>
+以上のような状況を解決するのが Condition Variable です。
+</p>
+<p>
+スレッド a で条件(リソースが空いているかなど)が満たされるまで wait メソッドで
+スレッドを止めます。他のスレッド b において条件が満たされたなら signal
+メソッドでスレッド a に対して条件が成立したことを通知します。これが典型^な
+使用例です。
+</p>
+<pre>
+mutex = Mutex.new
+cv = ConditionVariable.new
+
+a = Thread.start {
+    mutex.synchronize {
+      ...
+      while (条件が満たされない)
+        cv.wait(mutex)
+      end
+      ...
+    }
+}
+
+b = Thread.start {
+    mutex.synchronize {
+      # 上の条件を満たすための操作
+      cv.signal
+    }
+}
+</pre>
+<p>
+以下は <a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-list/14445">[ruby-list:14445]</a> で紹介されている例です。@q が空になった場合、
+あるいは満たんになった場合に Condition Variable を使って wait しています。
+</p>
+<pre>
+require 'thread'
+
+class TinyQueue
+  def initialize(max=2)
+    @max = max
+    @full = ConditionVariable.new
+    @empty = ConditionVariable.new
+    @mutex = Mutex.new
+    @q = []
+  end
+
+  def count
+    @q.size
+  end
+
+  def enq(v)
+    @mutex.synchronize{
+      @full.wait(@mutex) if count == @max
+      @q.push v
+      @empty.signal if count == 1
+    }
+  end
+
+  def deq
+    @mutex.synchronize{
+      @empty.wait(@mutex) if count == 0
+      v = @q.shift
+      @full.signal if count == (@max - 1)
+      v
+    }
+  end
+
+  alias send enq
+  alias recv deq
+end
+
+if __FILE__ == $0
+  q = TinyQueue.new(1)
+  foods = 'Apple Banana Strawberry Udon Rice Milk'.split
+  l = []
+
+  th = Thread.new {
+    for obj in foods
+      q.send(obj)
+      print &quot;sent &quot;, obj, &quot;\n&quot;
+    end
+    q.send nil
+  }
+
+  l.push th
+
+  th = Thread.new {
+    while obj = q.recv
+      print &quot;recv &quot;, obj, &quot;\n&quot;
+    end
+  }
+  l.push th
+
+  l.each do |t|
+    t.join
+  end
+end
+</pre>
+<p>
+実行すると以下のように出力します。
+</p>
+<pre>
+$ ruby condvar.rb
+sent Apple
+recv Apple
+sent Banana
+recv Banana
+sent Strawberry
+recv Strawberry
+sent Udon
+recv Udon
+sent Rice
+recv Rice
+sent Milk
+recv Milk
+</pre>
+
+
+
+<h2>特異メソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-condition-variable/s/new.html"><code>
+  new -&gt; ConditionVariable
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+状態変数を生成して返します。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+<h2>インスタンスメソッド</h2>
+<table class="entries methods">
+<tr>
+  <th>定義</th>
+  <th colspan="2">説明</th>
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-condition-variable/i/broadcast.html"><code>
+  broadcast -&gt; [Thread]
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+状態変数を待っているスレッドをすべて再開します。再開された
+スレッドは <a href="../method/-condition-variable/i/wait.html">ConditionVariable#wait</a>
+で指定した mutex のロックを試みます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-condition-variable/i/signal.html"><code>
+  signal -&gt; Thread | nil
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+状態変数を待っているスレッドを1つ再開します。再開された
+スレッドは <a href="../method/-condition-variable/i/wait.html">ConditionVariable#wait</a>
+で指定した mutex のロックを試みます。
+</p>
+</td>
+
+</tr>
+
+<tr>
+<td class="signature">
+  <a href="../method/-condition-variable/i/wait.html"><code>
+  wait(mutex) -&gt; self
+  </code></a>
+</td>
+
+<td class="description" colspan="2"><p>
+mutex のロックを解放し、カレントスレッドを停止します。
+<a href="../method/-condition-variable/i/signal.html">ConditionVariable#signal</a>または、
+<a href="../method/-condition-variable/i/broadcast.html">ConditionVariable#broadcast</a>で送られたシグナルを
+受け取ると、mutexのロックを取得し、実行状態となります。
+</p>
+</td>
+
+</tr>
+
+</table>
+
+
+
+<h2>継承したメソッド</h2>
+<p><code>
+
+<a href="../method/-basic-object/i/=21=3d.html">!=</a>
+
+<a href="../method/-basic-object/i/__id__.html">__id__</a>
+
+<a href="../method/-basic-object/i/instance_eval.html">instance_eval</a>
+
+<a href="../method/-basic-object/i/instance_exec.html">instance_exec</a>
+
+<a href="../method/-basic-object/i/singleton_method_added.html">singleton_method_added</a>
+
+<a href="../method/-basic-object/i/singleton_method_removed.html">singleton_method_removed</a>
+
+<a href="../method/-basic-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
+
+<a href="../method/-object/i/=21.html">!</a>
+
+<a href="../method/-object/i/=3d=3d.html">==</a>
+
+<a href="../method/-object/i/=3d=3d=3d.html">===</a>
+
+<a href="../method/-object/i/=3d=7e.html">=~</a>
+
+<a href="../method/-object/i/__send__.html">__send__</a>
+
+<a href="../method/-object/i/_dump.html">_dump</a>
+
+<a href="../method/-object/i/class.html">class</a>
+
+<a href="../method/-object/i/clone.html">clone</a>
+
+<a href="../method/-object/i/dclone.html">dclone</a>
+
+<a href="../method/-object/i/display.html">display</a>
+
+<a href="../method/-object/i/enum_for.html">enum_for</a>
+
+<a href="../method/-object/i/eql=3f.html">eql?</a>
+
+<a href="../method/-object/i/equal=3f.html">equal?</a>
+
+<a href="../method/-object/i/extend.html">extend</a>
+
+<a href="../method/-object/i/freeze.html">freeze</a>
+
+<a href="../method/-object/i/frozen=3f.html">frozen?</a>
+
+<a href="../method/-object/i/hash.html">hash</a>
+
+<a href="../method/-object/i/initialize.html">initialize</a>
+
+<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
+
+<a href="../method/-object/i/inspect.html">inspect</a>
+
+<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
+
+<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
+
+<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
+
+<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
+
+<a href="../method/-object/i/instance_variables.html">instance_variables</a>
+
+<a href="../method/-object/i/is_a=3f.html">is_a?</a>
+
+<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
+
+<a href="../method/-object/i/marshal_load.html">marshal_load</a>
+
+<a href="../method/-object/i/method.html">method</a>
+
+<a href="../method/-object/i/method_missing.html">method_missing</a>
+
+<a href="../method/-object/i/methods.html">methods</a>
+
+<a href="../method/-object/i/must_be.html">must_be</a>
+
+<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
+
+<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
+
+<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
+
+<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
+
+<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
+
+<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
+
+<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
+
+<a href="../method/-object/i/must_equal.html">must_equal</a>
+
+<a href="../method/-object/i/must_include.html">must_include</a>
+
+<a href="../method/-object/i/must_match.html">must_match</a>
+
+<a href="../method/-object/i/must_raise.html">must_raise</a>
+
+<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
+
+<a href="../method/-object/i/must_send.html">must_send</a>
+
+<a href="../method/-object/i/must_throw.html">must_throw</a>
+
+<a href="../method/-object/i/nil=3f.html">nil?</a>
+
+<a href="../method/-object/i/object_id.html">object_id</a>
+
+<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
+
+<a href="../method/-object/i/pretty_print.html">pretty_print</a>
+
+<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
+
+<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
+
+<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
+
+<a href="../method/-object/i/private_methods.html">private_methods</a>
+
+<a href="../method/-object/i/protected_methods.html">protected_methods</a>
+
+<a href="../method/-object/i/psych_to_yaml.html">psych_to_yaml</a>
+
+<a href="../method/-object/i/public_methods.html">public_methods</a>
+
+<a href="../method/-object/i/public_send.html">public_send</a>
+
+<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
+
+<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
+
+<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
+
+<a href="../method/-object/i/singleton_class.html">singleton_class</a>
+
+<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
+
+<a href="../method/-object/i/taint.html">taint</a>
+
+<a href="../method/-object/i/tainted=3f.html">tainted?</a>
+
+<a href="../method/-object/i/tap.html">tap</a>
+
+<a href="../method/-object/i/to_a.html">to_a</a>
+
+<a href="../method/-object/i/to_ary.html">to_ary</a>
+
+<a href="../method/-object/i/to_hash.html">to_hash</a>
+
+<a href="../method/-object/i/to_int.html">to_int</a>
+
+<a href="../method/-object/i/to_io.html">to_io</a>
+
+<a href="../method/-object/i/to_proc.html">to_proc</a>
+
+<a href="../method/-object/i/to_regexp.html">to_regexp</a>
+
+<a href="../method/-object/i/to_s.html">to_s</a>
+
+<a href="../method/-object/i/to_str.html">to_str</a>
+
+<a href="../method/-object/i/trust.html">trust</a>
+
+<a href="../method/-object/i/untaint.html">untaint</a>
+
+<a href="../method/-object/i/untrust.html">untrust</a>
+
+<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
+
+<a href="../method/-object/s/yaml_tag.html">.yaml_tag</a>
+
+</code></p>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

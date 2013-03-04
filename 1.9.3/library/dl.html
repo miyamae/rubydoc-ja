@@ -143,16 +143,83 @@ s = ' ' * 8
 p M2.modf(1.25, s)  #=&gt; 0.25
 p s.unpack('d')[0]  #=&gt; 1.0
 </pre>
+<h3 >関数の引数と返り値</h3>
+<p>
+dl でインポートした C の関数を呼び出すとき、
+その引数と返り値はインポートする際に指定した型と
+Ruby のオブジェクトの種類によって変換されます。
+</p>
+<p>
+引数の変換は以下の通りです。
+</p>
+<dl>
+<dt>void* (つまり任意のポインタ型)</dt>
+<dd>
+<p>
+nil ならば C の NULL に変換されます
+<a href="../class/-d-l=3a=3a-c-ptr.html">DL::CPtr</a> は保持している C ポインタに変換されます。
+適当に変換してから、C のポインタに変換します。
+文字列であればその先頭ポインタになります。
+<a href="../class/-i-o.html">IO</a> オブジェクトであれば FILE* が渡されます。
+整数であればそれがアドレスとみなされます。
+どれでもなければ to_ptr を呼び出し DL::CPtr オブジェクトに
+変換したのが用いられます。
 
+</p>
+</dd>
+<dt>(unsigned) char/short/int/long/long long</dt>
+<dd>
+<p>
+Ruby の整数を C の整数に変換します。
+</p>
+</dd>
+<dt>double/float</dt>
+<dd>
+<p>
+Ruby の整数 or 浮動小数点数を C の浮動小数点数に変換します
+
+</p>
+</dd>
+</dl>
+<p>
+返り値の変換は以下の通りです。
+</p>
+<dl>
+<dt>void</dt>
+<dd>
+<p>
+nil を返します
+</p>
+</dd>
+<dt>(unsigned) char/short/int/long/long long</dt>
+<dd>
+<p>
+C の整数を Ruby の整数に変換します
+</p>
+</dd>
+<dt>void*(つまり任意のポインタ型)</dt>
+<dd>
+<p>
+C のポインタを保持した <a href="../class/-d-l=3a=3a-c-ptr.html">DL::CPtr</a> を返します。
+</p>
+</dd>
+</dl>
+<h3 >fiddle との関係</h3>
+<p>
+<a href="../library/fiddle.html">fiddle</a> が利用可能な環境では、DL 内部的に fiddle を利用し、
+関数呼び出しを実現します。DL 単体では例えば x86_64 のような環境では
+正しく動作しませんが、fiddle によってうまく動きます。
+</p>
 
 
 <h2>クラス</h2>
 <table class="entries libraries">
 
 <tr>
-
-<td class="signature" style="text-indent: 0.0em;"><span style="display:none"></span>
-<a href="../class/-d-l=3a=3a-c-func.html">DL::CFunc</a></td>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-l=3a=3a-c-func.html">DL::CFunc</a>
+</td>
 <td class="description"><p>
 ダイナミックライブラリの関数を表すクラスです。通常、このクラスを直接使わずに
 ラッパークラスである <a href="../class/-d-l=3a=3a-function.html">DL::Function</a> を使います。
@@ -160,16 +227,22 @@ p s.unpack('d')[0]  #=&gt; 1.0
 </td>
 </tr>
 
-<td class="signature" style="text-indent: 0.0em;"><span style="display:none"></span>
-<a href="../class/-d-l=3a=3a-c-ptr.html">DL::CPtr</a></td>
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-l=3a=3a-c-ptr.html">DL::CPtr</a>
+</td>
 <td class="description"><p>
 メモリ領域を表すクラスです。C 言語のポインタに相当します。
 </p>
 </td>
 </tr>
 
-<td class="signature" style="text-indent: 0.0em;"><span style="display:none"></span>
-<a href="../class/-d-l=3a=3a-handle.html">DL::Handle</a></td>
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-l=3a=3a-handle.html">DL::Handle</a>
+</td>
 <td class="description"><p>
 オープンされたダイナミックライブラリを表すクラスです。
 <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/dlopen.html">dlopen(3)</a> が返すハンドラーのラッパーです。
@@ -183,9 +256,10 @@ p s.unpack('d')[0]  #=&gt; 1.0
 <table class="entries libraries">
 
 <tr>
-
-<td class="signature" style="text-indent: 0.0em;"><span style="display:none"></span>
-<a href="../class/-d-l.html">DL</a></td>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-l.html">DL</a>
+</td>
 <td class="description"><p>
 UNIX の <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/dlopen.html">dlopen(3)</a> や Windows の LoadLibrary()
 などのダイナミックリンカへの低レベルなインターフェースを提供するモジュールです。
@@ -199,15 +273,25 @@ UNIX の <a class="external" href="http://www.opengroup.org/onlinepubs/009695399
 <table class="entries libraries">
 
 <tr>
-
-<td class="signature" style="text-indent: 0.0em;"><span style="display:none"></span>
-<a href="../class/-d-l=3a=3a-d-l-error.html">DL::DLError</a></td>
-<td class="description"></td>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-l=3a=3a-d-l-error.html">DL::DLError</a>
+</td>
+<td class="description"><p>
+DL のエラー全般を表すクラス。
+</p>
+</td>
 </tr>
 
-<td class="signature" style="text-indent: 0.0em;"><span style="display:none"></span>
-<a href="../class/-d-l=3a=3a-d-l-type-error.html">DL::DLTypeError</a></td>
-<td class="description"></td>
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-l=3a=3a-d-l-type-error.html">DL::DLTypeError</a>
+</td>
+<td class="description"><p>
+DL の型変換エラーを表すクラス。
+</p>
+</td>
 </tr>
 
 </table>
@@ -220,6 +304,14 @@ UNIX の <a class="external" href="http://www.opengroup.org/onlinepubs/009695399
 <td class="signature"><a href="../library/dl=2fimport.html">dl/import</a></td>
 <td class="description"><p>
 dl ライブラリのための高レベルインターフェースを提供するライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/dl=2ftypes.html">dl/types</a></td>
+<td class="description"><p>
+C の型の別名を定義するライブラリです。
 </p>
 </td>
 </tr>

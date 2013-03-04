@@ -1,0 +1,434 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>module function Kernel.#spawn</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 2.0.0 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.0.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-kernel.html">Kernelモジュール</a>
+&gt; spawn
+
+</p>
+
+
+
+
+<h1>module function Kernel.#spawn</h1>
+
+<dl class="methodlist">
+
+<dt class="method-heading"><code>spawn(command, options={}) -&gt; Integer</code></dt>
+<dt class="method-heading"><code>spawn(env, command, options={}) -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+引数を外部コマンドとして実行しますが、生成した
+子プロセスの終了を待ち合わせません。生成した子プロセスのプロセスIDを返します。
+</p>
+<h3 >引数の解釈</h3>
+<p>
+この形式では command が shell のメタ文字
+</p>
+<pre>
+  * ? {} [] &lt;&gt; () ~ &amp; | \ $ ; ' ` &quot; \n
+</pre>
+<p>
+を含む場合、shell 経由で実行されます。
+そうでなければインタプリタから直接実行されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] command:</dt>
+<dd>
+コマンドを文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+更新する環境変数を表す Hash
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+オプションパラメータ Hash
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+起動に失敗し、ruby インタプリタに制御が戻った場合に発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+コマンドが実行できなかった場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/system.html">Kernel.#system</a>,<a href="../../../method/-kernel/m/exec.html">Kernel.#exec</a>
+</p>
+</dd>
+<dt class="method-heading"><code>spawn(program, *args) -&gt; Integer</code></dt>
+<dt class="method-heading"><code>spawn(env, program, *args, options={}) -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+引数を外部コマンドとして実行しますが、生成した
+子プロセスの終了を待ち合わせません。生成した子プロセスのプロセスIDを返します。
+</p>
+<p>
+env に Hash を渡すことで、<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/exec.html">exec(2)</a> で子プロセス内で
+ファイルを実行する前に環境変数を変更することができます。
+Hash のキーは環境変数名文字列、Hash の値に設定する値とします。
+nil とすることで環境変数が削除(<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/unsetenv.html">unsetenv(3)</a>)されます。
+</p>
+<pre>
+# FOO を BAR にして BAZ を削除する
+pid = spawn({&quot;FOO&quot;=&gt;&quot;BAR&quot;, &quot;BAZ&quot;=&gt;nil}, command)
+</pre>
+<p>
+親プロセスは <a href="../../../method/-process/m/waitpid.html">Process.#waitpid</a> で子プロセスの終了を待ち合わせるか
+もしくは <a href="../../../method/-process/m/detach.html">Process.#detach</a> で子プロセスを切り離すかしてください。
+そうでないとゾンビプロセスが残る場合があります。
+</p>
+<h3 >引数の解釈</h3>
+<p>
+この形式で呼び出した場合、空白や shell のメタキャラクタも
+そのまま program の引数に渡されます。
+先頭の引数が2要素の配列であった場合、第1要素の文字列が実際に
+起動するプログラムのパスであり、第2要素が「みせかけ」のプロ
+グラム名になります。
+また、第1要素はフルパスで指定しなくても環境変数 PATH から探します。
+</p>
+<h3 >option引数の概要</h3>
+<p>
+Hash を options として渡すことで、起動される子プロセスの
+</p>
+<ul>
+<li>プロセスグループ</li>
+<li>resource limit</li>
+<li>カレントディレクトリ</li>
+<li>umask</li>
+<li>子プロセスでのリダイレクト</li>
+</ul>
+<p>
+などを変更できます。環境変数のクリアなども指定できます。
+</p>
+<p>
+以下のオプションが指定できます。
+</p>
+<dl>
+<dt>:unsetenv_others</dt>
+<dd>
+<p>
+これを true にすると、envで指定した環境変数以外をすべてクリアします。
+false だとクリアしません。false がデフォルトです。
+</p>
+</dd>
+<dt>:pgroup</dt>
+<dd>
+<p>
+引数に true or 0 を渡すと新しいプロセスグループを作成し、そこで動きます。
+整数を渡すと、指定したプロセスグループに属します
+nil を渡すとプロセスグループを変更しません。デフォルトは nil です。
+</p>
+</dd>
+<dt>:rlimit_core, :rlimit_cpu, etc</dt>
+<dd>
+<p>
+resource limit を設定します。詳しくは <a href="../../../method/-process/m/setrlimit.html">Process.#setrlimit</a> を見て
+ください。引数には整数、もしくは整数2つの配列を渡します。
+</p>
+</dd>
+<dt>:chdir</dt>
+<dd>
+<p>
+指定した文字列をカレントディレクトリにします。
+</p>
+</dd>
+<dt>:umask</dt>
+<dd>
+<p>
+指定した整数を umask に設定します。
+</p>
+</dd>
+<dt>リダイレクト関連</dt>
+<dd>
+<p>
+Hash のキーに子プロセス側のファイルデスクリプタを、
+対応する値に親プロセス側のファイルデスクリプタや
+ファイル名を指定することでリダイレクトを実現できます。
+</p>
+</dd>
+<dt>:close_others</dt>
+<dd>
+<p>
+これを true に設定すると
+リダイレクトされていない、0(stdin), 1(stdout), 2(stderr) 以外の
+ファイルデスクリプタをすべて閉じます。
+true がデフォルトです。
+</p>
+</dd>
+</dl>
+<h3 >option引数によるリダイレクトの概要</h3>
+<p>
+Hash のキー(子プロセス側)には以下のいずれかが指定できます。
+</p>
+<ul>
+<li>単一のファイルデスクリプタ</li>
+<li>ファイルデスクリプタの配列</li>
+</ul>
+<p>
+配列を渡すことで複数のファイルデスクリプタを同時にリダイレクトできます。
+</p>
+<p>
+Hash の値(親プロセス側)には以下のいずれかが指定できます。
+</p>
+<ul>
+<li>単一のファイルデスクリプタ</li>
+<li>リダイレクト先のファイル名文字列</li>
+<li>[リダイレクト先のファイル名文字列]、配列の要素にすることで
+<a href="../../../method/-file/c/-r-d-o-n-l-y.html">File::RDONLY</a> でファイルを開いてリダイレクトします。</li>
+<li>[リダイレクト先のファイル名文字列, モード文字列]
+open(ファイル名, モード, 0644) でファイルを開いてリダイレクト
+します。</li>
+<li>[リダイレクト先のファイル名文字列, モード文字列, パーミション(整数)]
+open(ファイル名, モード, パーミッション) でファイルを
+開いてリダイレクトします。</li>
+<li>[:child, ファイルデスクリプタ]
+子プロセス側のファイルデスクリプタを指定できます。</li>
+<li>:close キーで指定したファイルデスクリプタを子プロセス側で閉じます</li>
+</ul>
+<p>
+ファイルデスクリプタを表すためには、以下が利用できます。
+</p>
+<ul>
+<li>:in  標準入力, ファイルデスクリプタ0</li>
+<li>:out 標準出力, ファイルデスクリプタ1</li>
+<li>:err 標準エラー出力, ファイルデスクリプタ2</li>
+<li>整数 指定した整数が表すファイルデスクリプタ</li>
+<li><a href="../../../class/-i-o.html">IO</a> <a href="../../../method/-i-o/i/fileno.html">IO#fileno</a> で表されるファイルデスクリプタ</li>
+</ul>
+<h3 >option引数の詳細および例</h3>
+<p>
+「:unsetenv_others」を使うと、envで指定したもの以外の環境変数を
+クリアします。
+</p>
+<pre>
+# すべての環境変数をクリア
+pid = spawn(command, :unsetenv_others=&gt;true)
+# FOO だけ
+pid = spawn({&quot;FOO&quot;=&gt;&quot;BAR&quot;}, command, :unsetenv_others=&gt;true)
+</pre>
+<p>
+「:pgroup」でプロセスグループを指定できます。
+</p>
+<pre>
+# true, 0 で新しいプロセスグループを作りそのリーダーになります。
+pid = spawn(command, :pgroup =&gt; true)
+# 整数を渡すとそのグループに所属します。
+pid = spawn(command, :pgroup =&gt; 10)
+</pre>
+<p>
+「:rlimit_core」「:rlimit_cpu」などで、resource limit を指定します。
+詳しくは <a href="../../../method/-process/m/setrlimit.html">Process.#setrlimit</a> を見てください。
+このオプションには 整数 or 整数2つの配列、を渡すことができます。
+それぞれ <a href="../../../method/-process/m/setrlimit.html">Process.#setrlimit</a> の引数が2個、3個の場合に対応します。
+</p>
+<pre>
+# 現プロセスの core の resource limit を取得
+cur, max = Process.getrlimit(:CORE)
+# 一時的に子プロセスの core dump を止める
+pid = spawn(command, :rlimit_core=&gt;[0,max]) # disable core temporary.
+# 子プロセスで core dump を出せるようにする
+pid = spawn(command, :rlimit_core=&gt;max) # enable core dump
+# 子プロセスで core dump を出せなくする
+pid = spawn(command, :rlimit_core=&gt;0) # never dump core.
+</pre>
+<p>
+「:chdir」で子プロセスのカレントディレクトリを変更できます。
+</p>
+<pre>
+pid = spawn(command, :chdir=&gt;&quot;/var/tmp&quot;)
+</pre>
+<p>
+「:umask」で子プロセスの umask を指定できます。
+</p>
+<pre>
+pid = spawn(command, :umask=&gt;077)
+</pre>
+<p>
+リダイレクトは様々なやりかたが使えます。
+Hash のキーが子プロセス側、値が親プロセス側です。
+</p>
+<pre>
+# 以下の例はすべて stderr を stdout にリダイレクトします
+pid = spawn(command, :err=&gt;:out)
+pid = spawn(command, 2=&gt;1)
+pid = spawn(command, STDERR=&gt;:out)
+pid = spawn(command, STDERR=&gt;STDOUT)
+</pre>
+<p>
+この例では子プロセス側の stdout には触れていないので、
+親プロセスから引き継がれます。
+</p>
+<p>
+Hash の値にはファイル名も指定できます。
+</p>
+<pre>
+pid = spawn(command, :in=&gt;&quot;/dev/null&quot;) # read mode
+pid = spawn(command, :out=&gt;&quot;/dev/null&quot;) # write mode
+pid = spawn(command, :err=&gt;&quot;log&quot;) # write mode
+pid = spawn(command, 3=&gt;&quot;/dev/null&quot;) # read mode
+</pre>
+<p>
+stdout と stderr をリダイレクトした場合は、
+ファイルは write mode で open されます。それ以外の場合は
+read mode で open されます。
+</p>
+<p>
+ファイルのフラグ(write/read mode)やパーミッションを明示したい
+場合は、配列を用います。
+</p>
+<pre>
+# なにも指定がなければデフォルトで read mode が使われる。
+pid = spawn(command, :in=&gt;[&quot;file&quot;])
+# read mode で file を open し、リダイレクトする。
+pid = spawn(command, :in=&gt;[&quot;file&quot;, &quot;r&quot;])
+# write mode で file を open し、リダイレクトする。
+# パーミッションはデフォルトで 644。
+pid = spawn(command, :out=&gt;[&quot;log&quot;, &quot;w&quot;]) # 0644 assumed
+# write mode、パーミッション 0600 でファイルをオープンし、リダイレクトする。
+pid = spawn(command, :out=&gt;[&quot;log&quot;, &quot;w&quot;, 0600])
+# flagを文字列でなくビットで指定する
+pid = spawn(command, :out=&gt;[&quot;log&quot;, File::WRONLY|File::EXCL|File::CREAT, 0600])
+</pre>
+<p>
+配列で複数のファイルデスクリプタを同時にリダイレクトできます。
+</p>
+<pre>
+# stdout と stderr を &quot;log&quot; ファイルにリダイレクト
+pid = spawn(command, [:out, :err]=&gt;[&quot;log&quot;, &quot;w&quot;])
+</pre>
+<p>
+複数のファイルデスクリプタを合わせてリダイレクトするには、
+[ :child, FileDescriptor ] を使うこともできます。
+これは子プロセス側で FileDescriptor にリダイレクトすることを意味します。
+これはファイルデスクリプタを直接指定するのと異なるということに
+注意してください。
+例えば、
+</p>
+<pre>
+:err =&gt; :out
+</pre>
+<p>
+とすると、子プロセスの stderr を親プロセスの stdout にリダイレクトします。
+</p>
+<pre>
+:err =&gt; [:child, :out]
+</pre>
+<p>
+とすると、子プロセスの stderr を子プロセスの stdout にリダイレクトします。
+これを用いて、<a href="../../../method/-i-o/s/popen.html">IO.popen</a> で、子プロセスの
+stderr と stdout を混ぜる例を以下に示します。
+</p>
+<pre>
+io = IO.popen([&quot;sh&quot;, &quot;-c&quot;, &quot;echo out; echo err &gt;&amp;2&quot;, :err=&gt;[:child, :out]])
+p io.read #=&gt; &quot;out\nerr\n
+</pre>
+<p>
+spawn と IO.popen では
+デフォルトでは非標準的なファイルデスクリプタ(3以降)をすべて閉じます。
+「:close_others」オプションでこの挙動を制御できます。
+標準的ファイルデスクリプタ(0,1,2)は :close で明示的に閉じない
+限り、このオプションの影響を受けません。
+</p>
+<pre>
+pid = spawn(command, :close_others=&gt;true)  # close 3,4,5,... (default)
+pid = spawn(command, :close_others=&gt;false) # don't close 3,4,5,...
+</pre>
+<p>
+これを利用して spawn を <a href="../../../method/-i-o/s/popen.html">IO.popen</a> のように使うことができます。
+</p>
+<pre>
+# similar to r = IO.popen(command)
+r, w = IO.pipe
+pid = spawn(command, :out=&gt;w)   # r は子プロセスで閉じられる
+w.close
+</pre>
+<p>
+「:close」を使ってファイルデスクリプタを明示的に閉じることもできます。
+</p>
+<pre>
+f = open(foo)
+# f は継承されない
+# system は :close_others=&gt;false がデフォルトなのでそれ以外は継承される
+system(command, f=&gt;:close)        # don't inherit f.
+</pre>
+<p>
+spawn で特定のファイルデスクリプタだけを継承したい場合は、
+io =&gt; io という形のオプションを指定します。
+</p>
+<pre>
+# valgrind は --log-fd というオプションでログの出力先を指定できます。
+# これで指定したファイルデスクリプタは親プロセスから
+# 子プロセスに継承されなければならないため、 log_w=&gt;log_w とします。
+log_r, log_w = IO.pipe
+pid = spawn(&quot;valgrind&quot;, &quot;--log-fd=#{log_w.fileno}&quot;, &quot;echo&quot;, &quot;a&quot;, log_w=&gt;log_w)
+log_w.close
+p log_r.read
+</pre>
+<p>
+ファイルデスクリプタを入れ替えることもできます。
+</p>
+<pre>
+# stdout と stderr を入れ替えリダイレクト
+pid = spawn(command, :out=&gt;:err, :err=&gt;:out)
+</pre>
+<p>
+このような相互参照を解決するため、spawnの内部で新しい
+ファイルデスクリプタを作り、利用します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+更新する環境変数を表す Hash
+</dd>
+<dt class='method-param'>[PARAM] program:</dt>
+<dd>
+文字列か2要素の配列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+渡される引数です。0 個以上の文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+オプションパラメータ Hash
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+第一引数が配列かつ要素数が 2 でない場合に発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+コマンドが実行できなかった場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/system.html">Kernel.#system</a>,<a href="../../../method/-kernel/m/exec.html">Kernel.#exec</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

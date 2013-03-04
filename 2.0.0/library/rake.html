@@ -1,0 +1,540 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library rake</title>
+  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 2.0.0 リファレンスマニュアル" href="/opensearchdescription">
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.0.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; rakeライブラリ
+</p>
+
+
+
+<h1>library rake</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+Rake というコマンドラインツールを扱うライブラリです。
+</p>
+<h2 >Rake とは</h2>
+<p>
+Rake は Make によく似た機能を持つ Ruby で書かれたシンプルなビルドツールです。
+</p>
+<p>
+Rake は以下のような特徴を持っています。
+</p>
+<ul>
+<li>Rakefile (Rake における Makefile) は標準的な Ruby の文法で書くことができます。
+XML ファイルを編集する必要はありませんし、Makefile の風変わりな文法 (タブだっけ？スペースだっけ？) に頭を悩ませる必要もありません。</li>
+<li>ユーザは必須条件をタスクに指定できます。</li>
+<li>Rake は暗黙のタスクを合成することをサポートしています。</li>
+<li>配列のように振る舞うフレキシブルな FileList メソッドがあります。
+FileList はファイル名やパス名を扱うのに便利です。</li>
+<li>Rakefile をより簡単に作成するためにこのライブラリにはいくつかのタスクが同梱されています。</li>
+</ul>
+<p>
+@see <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/utilities/make.html">make(1)</a>
+</p>
+<h2 >Rake コマンドの使い方</h2>
+<pre>
+$ rake --help
+rake [-f rakefile] {options} targets...
+Options are ...
+    -C, --classic-namespace       トップレベルに Task, FileTask を定義します。
+                                  過去との互換性のためのオプションです。
+    -D, --describe [PATTERN]      パターンにマッチしたタスクの詳細を表示して終了します。
+                                  パターンは省略可能です。
+    -n, --dry-run                 アクションを実行せずにタスクを実行します。
+    -e, --execute CODE            Ruby のコードを実行して終了します。
+    -p, --execute-print CODE      Ruby のコードを実行して結果を表示して終了します。
+    -E, --execute-continue CODE   Ruby のコードを実行してから、タスクを実行します。
+    -I, --libdir LIBDIR           ロードパスに LIBDIR を含めます。
+    -P, --prereqs                 タスクの依存関係を表示して終了します。
+    -q, --quiet                   標準出力にログメッセージを表示しません。
+    -f, --rakefile [FILE]         FILE を Rakefile として使用します。
+    -R, --rakelibdir RAKELIBDIR   RAKELIBDIR にある *.rake ファイルを自動的にインポートします。
+        --rakelib                 デフォルトは rakelib です。
+    -r, --require MODULE          Rakefile を実行する前に MODULE を require します。
+        --rules                   ルールの解決を追跡します。
+    -N, --no-search, --nosearch   親ディレクトリの Rakefile を検索しません。
+    -s, --silent                  --quiet に似ていますが、ディレクトリも表示しません。
+    -g, --system                  システム全体の Rakefile を使用します。('~/.rake/*.rake')
+    -G, --no-system, --nosystem   システム全体の Rakefile を使用しません。
+    -T, --tasks [PATTERN]         パターンにマッチしたタスクの短い説明を表示して終了します。
+                                  パターンは省略可能です。
+    -t, --trace                   全てのバックトレースを表示します。
+    -v, --verbose                 標準出力にログメッセージを表示します (デフォルト)。
+    -V, --version                 このプログラムのバージョンを表示します。
+    -h, -H, --help                このメッセージを表示します。
+</pre>
+<h2 >Rake ファイルの書き方</h2>
+<p>
+一から全て自分で書くことも出来ますが、あらかじめ定義されているタスクを
+使用すると比較的複雑なタスクも簡単に定義することができます。
+また、ルールやファイルタスクをうまく使うとタスクを簡潔に書くことが
+出来る場合があります。Rakefile は普通の Ruby スクリプトと同じ文法で
+書くことができるので工夫次第で Ruby にできることなら何でもできます。
+</p>
+<p>
+簡単な例:
+</p>
+<pre>
+# coding: utf-8
+task :hello do
+  puts 'do task hello!'
+end
+</pre>
+<p>
+動的にタスクを定義する例:
+</p>
+<pre>
+# coding: utf-8
+require 'rake/testtask'
+require 'rake/clean'    # clean, clobber の二つのタスクを定義
+task :default =&gt; [:test]
+
+1.upto(8) do |n|
+  Rake::TestTask.new(&quot;test_step#{n}&quot;) do |t|
+    t.libs &lt;&lt; &quot;step#{n}&quot;
+    t.test_files = FileList[&quot;step#{n}/test_*.rb&quot;]
+    t.verbose = false
+  end
+end
+
+desc 'execute all test'
+task 'test_all' =&gt; (1..8).to_a.map{|n| &quot;test_step#{n}&quot;}
+</pre>
+<h2 >用語集</h2>
+<dl>
+<dt>action / アクション</dt>
+<dd>
+<p>
+タスクを機能させるためのコードです。
+Rakefile 内のアクションはコードブロックで指定されます。(たいていは do/end ブロックで区切られます)
+</p>
+</dd>
+<dt>execute / 実行</dt>
+<dd>
+<p>
+あるタスクが実行されると、それに含まれるアクションは定義された順番通りに全て評価されます。
+invoke と違うのは execute はアクションを常に実行する点です (事前タスクを呼び出したり実行したりしません)。
+</p>
+</dd>
+<dt>file task (FileTask) / ファイルタスク (FileTask)</dt>
+<dd>
+<p>
+ファイルとはファイルを作成するためのものです。(同じ名前のタスクもあります)
+ファイルタスクは呼び出されると以下の条件のいずれかを満たす場合のみタスクを実行します。
+(1) 関連するファイルが存在しない場合
+(2) 事前タスクで作成したファイルの方が新しい場合
+普通のタスクを事前タスクに持つファイルタスクが常に実行されるのは、
+普通のタスクが現在時刻をタイムスタンプとしているためです。
+</p>
+</dd>
+<dt>invoke / 呼び出し</dt>
+<dd>
+<p>
+あるタスクが呼び出されると、最初にそのタスクが以前呼び出されたことがあるかチェックします。
+呼び出されたことがあれば何もしません。そのタスクが初めて呼び出された場合は、そのタスクの
+事前タスクを一つずつ呼び出します。最終的に、このタスクのアクションを実行する必要があるかどうか
+チェックします。このタスクを実行する必要があれば、アクションを実行します。
+NOTE: このタスクを実行する必要が無い場合も事前タスクは呼び出されています。この振る舞いは将来変更予定です。
+</p>
+</dd>
+<dt>prerequisites / 事前タスク</dt>
+<dd>
+<p>
+全てのタスクはゼロ個以上の事前タスクを持ちます。
+タスク T に対する事前タスク P は必ずタスク T よりも前に呼び出されます。
+</p>
+</dd>
+<dt>rule / ルール</dt>
+<dd>
+<p>
+タスクが明確に定義されていない場合に、ルールはタスクを合成するレシピになります。
+ルールはふつうファイルタスクを合成します。
+</p>
+</dd>
+<dt>task (Task) / タスク (Task)</dt>
+<dd>
+<p>
+Rake ファイルにおける基本単位です。
+タスクは名前と、事前タスクと、実行するアクションのリストを持ちます。
+</p>
+</dd>
+</dl>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-file-list.html">FileList</a>
+</td>
+<td class="description"><p>
+Alias of <a href="../class/-rake=3a=3a-file-list.html">Rake::FileList</a>
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rake=3a=3a-application.html">Rake::Application</a>
+</td>
+<td class="description"><p>
+Rake で使用するメインのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rake=3a=3a-default-loader.html">Rake::DefaultLoader</a>
+</td>
+<td class="description"><p>
+<a href="../method/-kernel/i/import.html">Kernel#import</a> で使用するデフォルトのローダーです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rake=3a=3a-early-time.html">Rake::EarlyTime</a>
+</td>
+<td class="description"><p>
+このクラスは全てのタイムスタンプより前の時刻をあらわします。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rake=3a=3a-file-list.html">Rake::FileList</a>
+</td>
+<td class="description"><p>
+このクラスは <a href="../class/-array.html">Array</a> と基本的には同じです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rake=3a=3a-invocation-chain.html">Rake::InvocationChain</a>
+</td>
+<td class="description"><p>
+循環したタスクの呼び出しを検出するためのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rake=3a=3a-invocation-chain=3a=3a-empty-invocation-chain.html">Rake::InvocationChain::EmptyInvocationChain</a>
+</td>
+<td class="description"><p>
+呼び出し関係のトップレベルを表します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rake=3a=3a-name-space.html">Rake::NameSpace</a>
+</td>
+<td class="description"><p>
+タスクの名前空間を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rake=3a=3a-task.html">Rake::Task</a>
+</td>
+<td class="description"><p>
+タスクは Rakefile における基本単位です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-rake=3a=3a-file-task.html">Rake::FileTask</a>
+</td>
+<td class="description"><p>
+ファイルタスクは時間に基づいた依存関係を解決することができるタスクです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-rake=3a=3a-file-creation-task.html">Rake::FileCreationTask</a>
+</td>
+<td class="description"><p>
+このタスクはファイルが存在しない場合にファイルを作成するタスクです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-rake=3a=3a-multi-task.html">Rake::MultiTask</a>
+</td>
+<td class="description"><p>
+通常のタスクと同じですが、<a href="../library/thread.html">thread</a> を用いて事前タスクを並列実行します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rake=3a=3a-task-arguments.html">Rake::TaskArguments</a>
+</td>
+<td class="description"><p>
+タスクに渡されるパラメータの管理をするクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>モジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rake.html">Rake</a>
+</td>
+<td class="description"><p>
+Rake の主要なモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rake=3a=3a-cloneable.html">Rake::Cloneable</a>
+</td>
+<td class="description"><p>
+簡単に複製したオブジェクトを作成することができるようにするための
+Mixin モジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rake=3a=3a-task-manager.html">Rake::TaskManager</a>
+</td>
+<td class="description"><p>
+タスクを管理するためのモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rake-file-utils.html">RakeFileUtils</a>
+</td>
+<td class="description"><p>
+カスタムバージョンの <a href="../class/-file-utils.html">FileUtils</a> のメソッドを提供します。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rake=3a=3a-rule-recursion-overflow-error.html">Rake::RuleRecursionOverflowError</a>
+</td>
+<td class="description"><p>
+ルールのネストが多すぎる場合に発生する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rake=3a=3a-task-argument-error.html">Rake::TaskArgumentError</a>
+</td>
+<td class="description"><p>
+間違ったタスクの定義を行った場合に発生する例外です。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>サブライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/rake=2fclassic_namespace.html">rake/classic_namespace</a></td>
+<td class="description"><p>
+このライブラリは古い Rakefile を使用する場合のみ使用してください。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rake=2fclean.html">rake/clean</a></td>
+<td class="description"><p>
+このライブラリは Rake タスクを定義しています。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rake=2fgempackagetask.html">rake/gempackagetask</a></td>
+<td class="description"><p>
+Gem Spec ファイルを元にして Gem パッケージを作成するタスクを定義するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rake=2floaders=2fmakefile.html">rake/loaders/makefile</a></td>
+<td class="description"><p>
+Makefile をロードするためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rake=2fpackagetask.html">rake/packagetask</a></td>
+<td class="description"><p>
+配布するパッケージ (zip, tar, etc...) を作成するためのタスクを定義します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rake=2frake_test_loader.html">rake/rake_test_loader</a></td>
+<td class="description"><p>
+このライブラリを require すると、
+コマンドラインからテスト対象のファイルをロードします。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rake=2frdoctask.html">rake/rdoctask</a></td>
+<td class="description"><p>
+ドキュメントを作成するためのタスクを定義します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rake=2fruntest.html">rake/runtest</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rake=2ftasklib.html">rake/tasklib</a></td>
+<td class="description"><p>
+タスクのライブラリを作成するためのベースとなるクラスを扱うライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rake=2ftesttask.html">rake/testtask</a></td>
+<td class="description"><p>
+ユニットテストを実行するためのタスクを定義するライブラリです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>追加・再定義されるメソッド</h2>
+<p><code>
+
+<a href="../method/-file-utils/i/ruby.html">FileUtils#ruby</a>
+
+<a href="../method/-file-utils/i/safe_ln.html">FileUtils#safe_ln</a>
+
+<a href="../method/-file-utils/i/sh.html">FileUtils#sh</a>
+
+<a href="../method/-file-utils/i/split_all.html">FileUtils#split_all</a>
+
+<a href="../method/-kernel/i/desc.html">Kernel#desc</a>
+
+<a href="../method/-kernel/i/directory.html">Kernel#directory</a>
+
+<a href="../method/-kernel/i/file.html">Kernel#file</a>
+
+<a href="../method/-kernel/i/file_create.html">Kernel#file_create</a>
+
+<a href="../method/-kernel/i/import.html">Kernel#import</a>
+
+<a href="../method/-kernel/i/multitask.html">Kernel#multitask</a>
+
+<a href="../method/-kernel/i/namespace.html">Kernel#namespace</a>
+
+<a href="../method/-kernel/i/rule.html">Kernel#rule</a>
+
+<a href="../method/-kernel/i/task.html">Kernel#task</a>
+
+<a href="../method/-module/i/rake_extension.html">Module#rake_extension</a>
+
+<a href="../method/-string/i/ext.html">String#ext</a>
+
+<a href="../method/-string/i/pathmap.html">String#pathmap</a>
+
+<a href="../method/-string/i/pathmap_explode.html">String#pathmap_explode</a>
+
+<a href="../method/-string/i/pathmap_partial.html">String#pathmap_partial</a>
+
+<a href="../method/-string/i/pathmap_replace.html">String#pathmap_replace</a>
+
+</code></p>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>
