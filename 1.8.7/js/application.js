@@ -123,7 +123,7 @@ function suggest() {
     var key = $('#search-box').val();
     if (key != _key) {
         _key = key;
-        var re = new RegExp(key.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1').replace(/[ #\.]+/g, '.*'), 'i');
+        var re = new RegExp(key.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1').replace(/[ #\\.]+/g, '.*'), 'i');
         var ul = $('#index');
         ul.empty();
         $('#navi a').removeClass('current');
