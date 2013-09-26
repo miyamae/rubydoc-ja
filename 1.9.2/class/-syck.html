@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>module Syck</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -18,12 +17,13 @@
 </p>
 
 
-
 <h1>module Syck</h1>
 <p>
 
 
 クラスの継承リスト: Syck
+
+
 
 
 
@@ -38,543 +38,898 @@
 
 
 
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_ADD_BUILTIN_TYPE">add_builtin_type</a>
+
+<a href="#S_ADD_DOMAIN_TYPE">add_domain_type</a>
+
+<a href="#S_ADD_PRIVATE_TYPE">add_private_type</a>
+
+<a href="#S_ADD_RUBY_TYPE">add_ruby_type</a>
+
+<a href="#S_DETECT_IMPLICIT">detect_implicit</a>
+
+<a href="#S_DUMP">dump</a>
+
+<a href="#S_DUMP_STREAM">dump_stream</a>
+
+<a href="#S_EACH_DOCUMENT">each_document</a>
+
+<a href="#S_EACH_DOCUMENT">load_documents</a>
+
+<a href="#S_EACH_NODE">each_node</a>
+
+<a href="#S_EMITTER">emitter</a>
+
+<a href="#S_GENERIC_PARSER">generic_parser</a>
+
+<a href="#S_LOAD">load</a>
+
+<a href="#S_LOAD_FILE">load_file</a>
+
+<a href="#S_LOAD_STREAM">load_stream</a>
+
+<a href="#S_OBJECT_MAKER">object_maker</a>
+
+<a href="#S_PARSE">parse</a>
+
+<a href="#S_PARSE_DOCUMENTS">parse_documents</a>
+
+<a href="#S_PARSE_FILE">parse_file</a>
+
+<a href="#S_PARSER">parser</a>
+
+<a href="#S_QUICK_EMIT">quick_emit</a>
+
+<a href="#S_READ_TYPE_CLASS">read_type_class</a>
+
+<a href="#S_RESOLVER">resolver</a>
+
+<a href="#S_TAGURIZE">tagurize</a>
+
+<a href="#S_TRANSFER">transfer</a>
+
+<a href="#S_TRY_IMPLICIT">try_implicit</a>
+
+</dd>
+
+<dt>モジュール関数</dt>
+<dd>
+
+<a href="#M_COMPILE">compile</a>
+
+</dd>
+
+<dt>定数</dt>
+<dd>
+
+<a href="#C_-DEFAULT-RESOLVER">DefaultResolver</a>
+
+<a href="#C_-GENERIC-RESOLVER">GenericResolver</a>
+
+</dd>
+
+</dl>
+
+
 <h2>特異メソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/add_builtin_type.html"><code>
-  add_builtin_type(type_tag) {|type, val| ...} -&gt; nil
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_ADD_BUILTIN_TYPE"><code>add_builtin_type(type_tag) {|type, val| ...} -&gt; nil</code><span class="permalink">[<a href="../method/-syck/s/add_builtin_type.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-add_builtin_type">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 yaml.org,2002ドメインに属しているクラスをYAMLに追加し
 そのクラスを見つけたときの操作を指定します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] type_tag:</dt>
+<dd>
+加えるクラスを指定する。
+</dd>
+<dt class='method-param'>[PARAM] type:</dt>
+<dd>
+YAMLドメインとクラスの文字列
+</dd>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+YAMLデータ構造
+</dd>
+</dl>
+<pre>
+require 'yaml'
 
-</tr>
+str1=&lt;&lt;EOT
+--- !ruby.yaml.org,2002/Rational 5/6
+EOT
+str2=&lt;&lt;EOT
+--- !yaml.org,2002/Rational 3/4
+EOT
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/add_domain_type.html"><code>
-  add_domain_type(domain, type_tag) {|type, val| ...} -&gt; nil
-  </code></a>
-</td>
+p YAML.load(str1)
+#=&gt; #&lt;YAML::DomainType:0x2b07528 @type_id=&quot;Rational&quot;, @domain=&quot;ruby.yaml.org,2002&quot;, @value=&quot;5/6&quot;&gt;
 
-<td class="description" colspan="2"><p>
+p YAML.load(str2)
+#=&gt; #&lt;YAML::DomainType:0x2b0767c @type_id=&quot;Rational&quot;, @domain=&quot;yaml.org,2002&quot;, @value=&quot;3/4&quot;&gt;
+
+YAML.add_builtin_type(&quot;Rational&quot;){|type, val|
+  md = val.split(/\//)
+  Rational.new!(md[0].to_i, md[1].to_i)
+}
+
+p YAML.load(str1)
+#=&gt; #&lt;YAML::DomainType:0x2b06fec @type_id=&quot;Rational&quot;, @domain=&quot;ruby.yaml.org,2002&quot;, @value=&quot;5/6&quot;&gt;
+## 前回と変化なし
+
+rt = YAML.load(str2)
+p rt        # =&gt; Rational(3, 4)
+p rt + 0.25 # =&gt; 1.0
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_ADD_DOMAIN_TYPE"><code>add_domain_type(domain, type_tag) {|type, val| ...} -&gt; nil</code><span class="permalink">[<a href="../method/-syck/s/add_domain_type.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-add_domain_type">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 YAMLドメインに属しているクラスをYAMLに追加し、
 そのクラスを見つけたときの操作を指定します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] domain:</dt>
+<dd>
+YAMLのドメインを文字列で指定する。
+</dd>
+<dt class='method-param'>[PARAM] type_tag:</dt>
+<dd>
+加えるクラスを指定する。
+</dd>
+<dt class='method-param'>[PARAM] type:</dt>
+<dd>
+YAMLドメインとクラスの文字列
+</dd>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+YAMLデータ構造
+</dd>
+</dl>
+<pre>
+require 'yaml'
 
-</tr>
+class Person
+  attr_accessor :name, :age
+end
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/add_private_type.html"><code>
-  add_private_type(type_re) {|type, val| ...} -&gt; nil
-  </code></a>
-</td>
+str=&lt;&lt;EOT
+--- !Qjitsu.com,2007-05-04/Person
+name: eiji
+age: 33
+EOT
 
-<td class="description" colspan="2"><p>
+YAML.each_document(str){|obj|
+  p obj
+}
+#=&gt; #&lt;YAML::DomainType:0x2b07974 @type_id=&quot;Person&quot;, @domain=&quot;Qjitsu.com,2007-05-04&quot;, @value={&quot;name&quot;=&gt;&quot;eiji&quot;, &quot;age&quot;=&gt;33}&gt;
+#
+YAML.add_domain_type( &quot;Qjitsu.com,2007-05-04&quot;, &quot;Person&quot; ) { |type, val|
+  YAML.object_maker( Person, val )
+}
+YAML.each_document(str){|obj|
+  p obj
+}
+#=&gt; #&lt;Person:0x2b0762c @age=33, @name=&quot;eiji&quot;&gt;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_ADD_PRIVATE_TYPE"><code>add_private_type(type_re) {|type, val| ...} -&gt; nil</code><span class="permalink">[<a href="../method/-syck/s/add_private_type.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-add_private_type">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 プライベートタイプのクラスをYAMLに追加し、
 そのクラスを見つけたときの操作を指定します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] type_re:</dt>
+<dd>
+プライベートタイプのクラスを文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] type:</dt>
+<dd>
+YAMLドメインとクラスの文字列
+</dd>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+YAMLデータ構造
+</dd>
+</dl>
+<pre>
+require 'yaml'
 
-</tr>
+class Person ; end
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/add_ruby_type.html"><code>
-  add_ruby_type(type_tag) {|type, val| ...} -&gt; nil
-  </code></a>
-</td>
+str1=&lt;&lt;EOT
+--- !!Person
+name: taro
+country: Japan
+capital: Tokyo
+EOT
 
-<td class="description" colspan="2"><p>
+YAML.each_document(str1){|obj|
+  p obj
+}
+#=&gt; #&lt;YAML::PrivateType:0x2b07a14 @type_id=&quot;Person&quot;, @value={&quot;name&quot;=&gt;&quot;taro&quot;, &quot;country&quot;=&gt;&quot;Japan&quot;, &quot;capital&quot;=&gt;&quot;Tokyo&quot;}&gt;
+YAML.add_private_type(&quot;Person&quot;){|type, val|
+  YAML.object_maker(Person, val)
+}
+YAML.each_document(str1){|obj|
+  p obj
+}
+#=&gt; #&lt;Person:0x2b07640 @country=&quot;Japan&quot;, @capital=&quot;Tokyo&quot;, @name=&quot;taro&quot;&gt;
+
+str2=&lt;&lt;EOT
+--- !Qjitsu.com,2007-05-04/Person
+name: eiji
+age: 33
+--- !!Person
+name: ichiro
+country: Japan
+capital: Tokyo
+EOT
+
+YAML.each_document(str2){|obj|
+  p obj
+}
+#=&gt; #&lt;YAML::DomainType:0x2b071a4 @type_id=&quot;Person&quot;, @domain=&quot;Qjitsu.com,2007-05-04&quot;, @value={&quot;name&quot;=&gt;&quot;eiji&quot;, &quot;age&quot;=&gt;33}&gt;
+#=&gt; #&lt;Person:0x2b06eac @country=&quot;Japan&quot;, @capital=&quot;Tokyo&quot;, @name=&quot;ichiro&quot;&gt;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_ADD_RUBY_TYPE"><code>add_ruby_type(type_tag) {|type, val| ...} -&gt; nil</code><span class="permalink">[<a href="../method/-syck/s/add_ruby_type.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-add_ruby_type">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 rubyタイプのクラスをYAMLに追加し、
 そのクラスを見つけたときの操作を指定します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] type_tag:</dt>
+<dd>
+rubyタイプのクラスを文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] type:</dt>
+<dd>
+YAMLドメインとクラスの文字列
+</dd>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+YAMLデータ構造
+</dd>
+</dl>
+<pre>
+require 'yaml'
 
-</tr>
+class Dog
+  attr_accessor :name
+  def initialize(name)
+    @name = name
+  end
+end
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/detect_implicit.html"><code>
-  detect_implicit(val) -&gt; String
-  </code></a>
-</td>
+str1=&lt;&lt;EOT
+--- !ruby/Dog
+name: pochi
+--- !!Dog
+age: 0.5
+--- !Qjitsu.com,2007-05-06/Dog
+preference: apple
+EOT
 
-<td class="description" colspan="2"><p>
+
+YAML.add_ruby_type(&quot;Dog&quot;) do |type, val|
+  YAML.object_maker(Dog, val)
+end
+
+YAML.each_document(str1){|dog|
+  p dog.class
+  p dog.respond_to?(:name)
+}
+#=&gt; Dog
+#=&gt; true
+#=&gt; YAML::PrivateType
+#=&gt; false
+#=&gt; YAML::DomainType
+#=&gt; false
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_DETECT_IMPLICIT"><code>detect_implicit(val) -&gt; String</code><span class="permalink">[<a href="../method/-syck/s/detect_implicit.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-detect_implicit">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 タグを省略した値の型を判定します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+判定される文字列を指定します。
+</dd>
+</dl>
+<pre>
+require 'yaml'
 
-</tr>
+p YAML.detect_implicit(&quot;&quot;)
+# =&gt; &quot;null&quot;
+p YAML.detect_implicit(&quot;Cat&quot;)
+# =&gt; &quot;str&quot;
+p YAML.detect_implicit(&quot;true&quot;)
+# =&gt; &quot;bool#yes&quot;
+p YAML.detect_implicit(&quot;10&quot;)
+# =&gt; &quot;int&quot;
+p YAML.detect_implicit(&quot;0x10&quot;)
+# =&gt; &quot;int#hex&quot;
+</pre>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/dump.html"><code>
-  dump(obj, io = nil) -&gt; String | IO
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_DUMP"><code>dump(obj, io = nil) -&gt; String | IO</code><span class="permalink">[<a href="../method/-syck/s/dump.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-dump">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 与えられた obj を YAML フォーマットに変換し、io に書き込みます。io を返
 します。io が与えられていない場合は、YAML フォーマットの文字列を返しま
 す。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+YAMLフォーマットに変換されるオブジェクト
+</dd>
+<dt class='method-param'>[PARAM] io:</dt>
+<dd>
+出力先のIOオブジェクト
+</dd>
+</dl>
+<pre>
+YAML.dump( ['badger', 'elephant', 'tiger'],
+           File.open('sample.yml', 'w')    )
+</pre>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/dump_stream.html"><code>
-  dump_stream(*objs) -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_DUMP_STREAM"><code>dump_stream(*objs) -&gt; String</code><span class="permalink">[<a href="../method/-syck/s/dump_stream.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-dump_stream">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 与えられた objs を順に YAML フォーマットに変換していき、一つの文字列にまとめたものを返します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] objs:</dt>
+<dd>
+YAMLフォーマットに変換されるオブジェクト
+</dd>
+</dl>
+<pre>
+require &quot;yaml&quot;
+puts YAML.dump_stream( &quot;hoge\nfoo&quot;, [1,2], {&quot;foo&quot; =&gt; &quot;bar&quot;} )
+--- |-
+hoge
+foo
+---
+- 1
+- 2
+---
+foo: bar
+</pre>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/each_document.html"><code>
-  each_document(io) {|obj| ...} -&gt; nil<br>load_documents(io) {|obj| ...} -&gt; nil
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_EACH_DOCUMENT"><code>each_document(io) {|obj| ...} -&gt; nil</code><span class="permalink">[<a href="../method/-syck/s/each_document.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-each_document">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>load_documents(io) {|obj| ...} -&gt; nil</code></dt>
+<dd class="method-description">
+<p>
 与えられた io から YAML フォーマットの文書をすべて順に読み込み
 Ruby のオブジェクトに変換し、
 生成したオブジェクトを引数としてブロックを評価していきます。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] io:</dt>
+<dd>
+YAMLフォーマットの文書の読み込み先のIOオブジェクト
+</dd>
+</dl>
+<pre>
+# sample.yml
+- apple
+- banana
+- carrot
+---
+foo: bar
 
-</tr>
+#!/usr/bin/env ruby
+require &quot;yaml&quot;
+File.open( 'sample.yml' ) do |io|
+  YAML.load_documents(io){|y|
+    p y
+  }
+end
+#=&gt;   [&quot;apple&quot;, &quot;banana&quot;, &quot;carrot&quot;]
+#=&gt;   {&quot;foo&quot;=&gt;&quot;bar&quot;}
+</pre>
+<p>
+[注意] ブロックを指定しないと NoMethodError が発生する事に注意してください。
+</p>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/each_node.html"><code>
-  each_node(io) {|obj| ...} -&gt; nil
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_EACH_NODE"><code>each_node(io) {|obj| ...} -&gt; nil</code><span class="permalink">[<a href="../method/-syck/s/each_node.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-each_node">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 与えられた io から YAML フォーマットの文書をすべて順に読み込み
 <a href="../class/-syck=3a=3a-map.html">Syck::Map</a> オブジェクトに変換し、
 生成したオブジェクトを引数としてブロックを評価していきます。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] io:</dt>
+<dd>
+YAML フォーマットの文書の IO オブジェクト
+</dd>
+</dl>
+<pre>
+food:
+ - apple
+ - banana
+ - carrot
+---
+foo: bar
+# end of test.yml
 
-</tr>
+require 'yaml'
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/emitter.html"><code>
-  emitter -&gt; Syck::Emitter
-  </code></a>
-</td>
+File.open( 'test.yml' ) do |io|
+  YAML.each_node(io) do |y|
+    p y.transform
+  end
+end
+#=&gt; {&quot;food&quot;=&gt;[&quot;apple&quot;, &quot;banana&quot;, &quot;carrot&quot;]}
+#=&gt; {&quot;foo&quot;=&gt;&quot;bar&quot;}
+</pre>
+</dd>
 
-<td class="description" colspan="2"><p>
+
+<dt class="method-heading" id="S_EMITTER"><code>emitter -&gt; Syck::Emitter</code><span class="permalink">[<a href="../method/-syck/s/emitter.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-emitter">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 YAML を出力するためのオブジェクトを返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/generic_parser.html"><code>
-  generic_parser -&gt; Syck::Parser
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_GENERIC_PARSER"><code>generic_parser -&gt; Syck::Parser</code><span class="permalink">[<a href="../method/-syck/s/generic_parser.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-generic_parser">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 YAML パーサを返します。ただし、<a href="../method/-y-a-m-l/s/parser.html">YAML.parser</a> とは異なり、リゾルバに
 <a href="../method/-syck/c/-generic-resolver.html">Syck::GenericResolver</a> が指定されています。
 </p>
-</td>
+<p>
+[SEE_ALSO] <a href="../method/-y-a-m-l/s/parser.html">YAML.parser</a>
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/load.html"><code>
-  load(io) -&gt; object<br>load(str) -&gt; object
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_LOAD"><code>load(io) -&gt; object</code><span class="permalink">[<a href="../method/-syck/s/load.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-load">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>load(str) -&gt; object</code></dt>
+<dd class="method-description">
+<p>
 YAML フォーマットの文書を読み込み Ruby のオブジェクトを生成して返します。
 引数として IO オブジェクトと文字列を受け付けます。
 io や 文字列が複数の YAML ドキュメントを含んでいても、最初のものしか
 Ruby のオブジェクトに変換しません。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] io:</dt>
+<dd>
+YAMLフォーマットの文書の読み込み先のIOオブジェクト
+</dd>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+YAMLフォーマットの文書の読み込み先の文字列
+</dd>
+</dl>
+<pre>
+$ ruby-1.8 -ryaml -e '
+p YAML.load(&lt;&lt;HERE)
+- apple
+- banana
+- carrot
+---
+foo: bar
+HERE
+'
+[&quot;apple&quot;, &quot;banana&quot;, &quot;carrot&quot;]
+</pre>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/load_file.html"><code>
-  load_file(file) -&gt; object
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_LOAD_FILE"><code>load_file(file) -&gt; object</code><span class="permalink">[<a href="../method/-syck/s/load_file.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-load_file">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 与えられた名前のファイルから YAML フォーマットの文書を読み込み
 Ruby のオブジェクトを生成して返します。
 ファイルが複数の YAML ドキュメントを含んでいても、
 最初のものしか Ruby のオブジェクトに変換しません。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+YAMLフォーマットのファイル
+</dd>
+</dl>
+<pre>
+---
+- Monday
+-
+ - 国語
+ - 算数
+ - 理科
+ - 社会
+ - 体育
+---
+- Friday
+-
+ - 体育
+ - 算数
+ - 理科
+ - 国語
+ - 社会
+#end of jikanwari.yaml
 
-</tr>
+require 'yaml'
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/load_stream.html"><code>
-  load_stream(io) -&gt; object
-  </code></a>
-</td>
+puts YAML.load_file('jikanwari.yaml').join(&quot;,&quot;)
 
-<td class="description" colspan="2"><p>
+#=&gt; Monday,国語,算数,理科,社会,体育
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_LOAD_STREAM"><code>load_stream(io) -&gt; object</code><span class="permalink">[<a href="../method/-syck/s/load_stream.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-load_stream">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 与えられた io から YAML フォーマットの文書を
 すべて順に読み込んで Ruby のオブジェクトに変換していき、
 それらオブジェクトを含んだ <a href="../class/-syck=3a=3a-stream.html">Syck::Stream</a> を返します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] io:</dt>
+<dd>
+YAML フォーマットの文書のIOオブジェクトもしくは文字列
+</dd>
+</dl>
+<pre>
+require 'yaml'
 
-</tr>
+class Dog
+  attr_accessor :name
+  def initialize(name)
+    @name = name
+  end
+end
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/object_maker.html"><code>
-  object_maker(obj_class, val) -&gt; object
-  </code></a>
-</td>
+str1=&lt;&lt;EOT
+--- !ruby/Dog
+name: pochi
+--- !!Dog
+age: 0.5
+EOT
 
-<td class="description" colspan="2"><p>
+YAML.add_ruby_type(&quot;Dog&quot;) do |type, val|
+  Dog.new(val[&quot;name&quot;])
+end
+
+ys = YAML.load_stream(str1)
+p ys
+#=&gt; #&lt;YAML::Stream:0x2b079d8 @options={}, @documents=[#&lt;Dog:0x2b079c4 @name=&quot;pochi&quot;&gt;, #&lt;YAML::PrivateType:0x2b07780 @value={&quot;age&quot;=&gt;0.5}, @type_id=&quot;Dog&quot;&gt;]&gt;
+ys.edit(1, Dog.new(&quot;tama&quot;))
+p ys.documents
+#=&gt; [#&lt;Dog:0x2b079b0 @name=&quot;pochi&quot;&gt;, #&lt;Dog:0x2b0762c @name=&quot;tama&quot;&gt;]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_OBJECT_MAKER"><code>object_maker(obj_class, val) -&gt; object</code><span class="permalink">[<a href="../method/-syck/s/object_maker.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-object_maker">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 与えられたobj_class クラスに、valハッシュをインスタンス変数として追加し
 obj_classクラスのインスタンスを生成して返します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] obj_class:</dt>
+<dd>
+クラスを指定します。
+</dd>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+<a href="../class/-hash.html">Hash</a> を指定します。obj_classのインスタンス変数作成に使
+用されます。
+</dd>
+<dt>[EXCEPTION] YAML::Error:</dt>
+<dd>
+val に <a href="../class/-hash.html">Hash</a> を指定しなかった場合に発生します。
+</dd>
+</dl>
+<pre>
+require 'yaml'
 
-</tr>
+class Cat; end
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/parse.html"><code>
-  parse(io) -&gt; Syck::Node
-  </code></a>
-</td>
+YAML.load_documents(DATA){|y|
+  p YAML.object_maker(Cat, y)
+}
 
-<td class="description" colspan="2"><p>
+__END__
+name: taro
+age: 13
+---
+name: jiro
+age: 23
+---
+name: saburo
+age: 8
+# end of sample
+
+結果
+#=&gt; #&lt;Cat:0xb7ccb174 @name=&quot;taro&quot;, @age=13&gt;
+#=&gt; #&lt;Cat:0xb7ccafa8 @name=&quot;jiro&quot;, @age=23&gt;
+#=&gt; #&lt;Cat:0xb7ccaad0 @name=&quot;saburo&quot;, @age=8&gt;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_PARSE"><code>parse(io) -&gt; Syck::Node</code><span class="permalink">[<a href="../method/-syck/s/parse.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-parse">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 与えられた io から YAML フォーマットの文書をパースし
 <a href="../class/-syck=3a=3a-node.html">Syck::Node</a> かそのサブクラスのオブジェクトに変換します。
 複数のドキュメントを読み込む場合は、YAML.parse_documents(実体は
 <a href="../method/-syck/s/parse_documents.html">Syck.parse_documents</a>) を使用します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] io:</dt>
+<dd>
+YAMLフォーマットのIOオブジェクトもしくは文字列
+</dd>
+</dl>
+<pre>
+#!/usr/bin/env ruby
 
-</tr>
+require 'yaml'
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/parse_documents.html"><code>
-  parse_documents(io) {|obj| ...} -&gt; nil
-  </code></a>
-</td>
+doc = YAML.parse(DATA)
+doc.search(&quot;//name&quot;).each {|node|
+  p node
+}
 
-<td class="description" colspan="2"><p>
+__END__
+cat:
+ - name: taro
+   age: 7
+ - name: jiro
+   age: 23
+---
+dog:
+ shiba:
+  - name: goro
+    age: 3
+  - name: rokuro
+    age: 1
+# end of sample
+#=&gt; &quot;/cat/0/name&quot;
+#=&gt; &quot;/cat/1/name&quot;
+# dog は読み込まない
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_PARSE_DOCUMENTS"><code>parse_documents(io) {|obj| ...} -&gt; nil</code><span class="permalink">[<a href="../method/-syck/s/parse_documents.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-parse_documents">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 与えられた io から YAML フォーマットの文書をパースし
 <a href="../class/-syck=3a=3a-node.html">Syck::Node</a>オブジェクトに変換し、
 生成したオブジェクトを引数としてブロックを評価していきます。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] io:</dt>
+<dd>
+YAML フォーマットの文書の IO オブジェクトもしくは文字列
+</dd>
+</dl>
+<pre>
+require 'yaml'
 
-</tr>
+YAML.parse_documents(DATA){|doc|
+  doc.search('/dog//name').each {|node|
+    p node
+  }
+  p &quot;--&gt;&quot;
+}
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/parse_file.html"><code>
-  parse_file(file_path) -&gt; Syck::Node
-  </code></a>
-</td>
+__END__
+cat:
+ - name: taro
+   age: 7
+ - name: jiro
+   age: 23
+---
+dog:
+ shiba:
+  - name: goro
+    age: 3
+  - name: rokuro
+    age: 1
+# end of sample
 
-<td class="description" colspan="2"><p>
+#=&gt; &quot;--&gt;&quot;
+#=&gt; &quot;/dog/shiba/0/name&quot;
+#=&gt; &quot;/dog/shiba/1/name&quot;
+#=&gt; &quot;--&gt;&quot;
+</pre>
+<p>
+[注意] ブロックを指定しないと NoMethodError が発生する事に注意してください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_PARSE_FILE"><code>parse_file(file_path) -&gt; Syck::Node</code><span class="permalink">[<a href="../method/-syck/s/parse_file.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-parse_file">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 file_pathのファイルから一つのYAMLドキュメントをパースし、
 <a href="../class/-syck=3a=3a-node.html">Syck::Node</a>オブジェクトを返します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] file_path:</dt>
+<dd>
+YAMLドキュメントが書かれたファイルへのパスを文字列で指定する
+</dd>
+</dl>
+<pre>
+cat:
+ - name: taro
+   age: 7
+ - name: jiro
+   age: 23
+---
+dog:
+ shiba:
+  - name: goro
+    age: 3
+  - name: rokuro
+    age: 1
+# end of sample.yaml
 
-</tr>
+require 'yaml'
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/parser.html"><code>
-  parser -&gt; Syck::Parser
-  </code></a>
-</td>
+tree = YAML.parse_file(&quot;sample.yaml&quot;)
+p tree.transform
 
-<td class="description" colspan="2"><p>
+#=&gt; {&quot;cat&quot;=&gt;[{&quot;name&quot;=&gt;&quot;taro&quot;, &quot;age&quot;=&gt;7}, {&quot;name&quot;=&gt;&quot;jiro&quot;, &quot;age&quot;=&gt;23}]}
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_PARSER"><code>parser -&gt; Syck::Parser</code><span class="permalink">[<a href="../method/-syck/s/parser.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-parser">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 YAML パーサを返します。
 </p>
-</td>
+<p>
+[SEE_ALSO] <a href="../method/-y-a-m-l/s/generic_parser.html">YAML.generic_parser</a>
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/quick_emit.html"><code>
-  quick_emit(oid, opts={}) {|obj| ...} -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_QUICK_EMIT"><code>quick_emit(oid, opts={}) {|obj| ...} -&gt; String</code><span class="permalink">[<a href="../method/-syck/s/quick_emit.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-quick_emit">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 ライブラリ内部で使用します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/read_type_class.html"><code>
-  read_type_class(type, obj_class) -&gt; [String, Class]
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_READ_TYPE_CLASS"><code>read_type_class(type, obj_class) -&gt; [String, Class]</code><span class="permalink">[<a href="../method/-syck/s/read_type_class.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-read_type_class">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 ライブラリ内部で使用します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/resolver.html"><code>
-  resolver -&gt; Syck::DefaultResolver
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_RESOLVER"><code>resolver -&gt; Syck::DefaultResolver</code><span class="permalink">[<a href="../method/-syck/s/resolver.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-resolver">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 タグ URI との関連付けを解決するリゾルバを返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/tagurize.html"><code>
-  tagurize(val) -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_TAGURIZE"><code>tagurize(val) -&gt; String</code><span class="permalink">[<a href="../method/-syck/s/tagurize.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-tagurize">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 val で指定したタグを元にタグ URI を作成します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+タグを文字列で指定します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'yaml'
+YAML.tagurize(&quot;str&quot;)      # =&gt; &quot;tag:yaml.org,2002:str&quot;
+YAML.tagurize(&quot;ruby/sym&quot;) # =&gt; &quot;tag:ruby.yaml.org,2002:sym&quot;
+YAML.tagurize(&quot;tag:ruby.yaml.org,2002:sym&quot;)
+# =&gt; &quot;tag:ruby.yaml.org,2002:sym&quot;
+</pre>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/transfer.html"><code>
-  transfer(type_id, obj) -&gt; object
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_TRANSFER"><code>transfer(type_id, obj) -&gt; object</code><span class="permalink">[<a href="../method/-syck/s/transfer.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-transfer">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 ライブラリ内部で使用します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/try_implicit.html"><code>
-  try_implicit(obj) -&gt; object
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_TRY_IMPLICIT"><code>try_implicit(obj) -&gt; object</code><span class="permalink">[<a href="../method/-syck/s/try_implicit.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-try_implicit">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 ライブラリ内部で使用します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-</table>
+</dl>
 
 <h2>モジュール関数</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/m/compile.html"><code>
-  compile(io)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="M_COMPILE"><code>compile(io)</code><span class="permalink">[<a href="../method/-syck/m/compile.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-compile">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
 </p>
-</td>
+<p>
+Convert YAML to bytecode
+</p>
+</dd>
 
-</tr>
 
-</table>
+</dl>
 
 <h2>定数</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/c/-default-resolver.html"><code>
-  DefaultResolver -&gt; YAML::Syck::Resolver
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="C_-DEFAULT-RESOLVER"><code>DefaultResolver -&gt; YAML::Syck::Resolver</code><span class="permalink">[<a href="../method/-syck/c/-default-resolver.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-DefaultResolver">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-syck/c/-generic-resolver.html"><code>
-  GenericResolver -&gt; YAML::Syck::Resolver
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="C_-GENERIC-RESOLVER"><code>GenericResolver -&gt; YAML::Syck::Resolver</code><span class="permalink">[<a href="../method/-syck/c/-generic-resolver.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/syck/rdoc/Syck.html#method-c-GenericResolver">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
 </p>
-</td>
-
-</tr>
-
-</table>
+</dd>
 
 
-
-
-
-<h2>追加されるメソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th>説明</th>
-  <th>ライブラリ</th>
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-syck/c/-d-e-f-a-u-l-t-s.html"><code>
-  DEFAULTS -&gt; Hash
-  </code></a>
-</td>
-<td class="description"><p>
-YAMLのデフォルトの設定のハッシュです。
-Ruby 1.8.3 以降では変更できません。
-</p>
-</td>
-<td class="library"><a href="../library/syck=2fconstants.html">syck/constants</a></td>
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-syck/c/-s-u-p-p-o-r-t-e-d_-y-a-m-l_-v-e-r-s-i-o-n-s.html"><code>
-  SUPPORTED_YAML_VERSIONS -&gt; [&quot;1.0&quot;]
-  </code></a>
-</td>
-<td class="description"><p>
-サポートする YAML のバージョンを文字列の配列で返します。
-</p>
-</td>
-<td class="library"><a href="../library/syck=2fconstants.html">syck/constants</a></td>
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-syck/c/-v-e-r-s-i-o-n.html"><code>
-  VERSION -&gt; &quot;0.60&quot;
-  </code></a>
-</td>
-<td class="description"><p>
-このライブラリのバージョンを文字列で返します。
-</p>
-</td>
-<td class="library"><a href="../library/syck=2fconstants.html">syck/constants</a></td>
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/make_stream.html"><code>
-  make_stream(io) -&gt; StringIO | IO
-  </code></a>
-</td>
-<td class="description"><p>
-引数を元にストリームオブジェクトを作成します。
-</p>
-</td>
-<td class="library"><a href="../library/syck=2fstringio.html">syck/stringio</a></td>
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/tag_class.html"><code>
-  tag_class(tag, cls) -&gt; ()
-  </code></a>
-</td>
-<td class="description"><p>
-tag で指定したタグ URI に　cls で指定したクラスを関連付けます。
-</p>
-</td>
-<td class="library"><a href="../library/syck=2ftag.html">syck/tag</a></td>
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-syck/s/tagged_classes.html"><code>
-  tagged_classes -&gt; {String =&gt; Class}
-  </code></a>
-</td>
-<td class="description"><p>
-タグ URI と、それが対応するクラスの一覧を返します。
-</p>
-</td>
-<td class="library"><a href="../library/syck=2ftag.html">syck/tag</a></td>
-</tr>
-
-</table>
+</dl>
 
 
 

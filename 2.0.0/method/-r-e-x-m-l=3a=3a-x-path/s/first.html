@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../../../style.css">
   <link rel="icon" type="image/png" href="../../../rurema.png">
   <title>singleton method REXML::XPath.first</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 2.0.0 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -20,17 +19,78 @@
 </p>
 
 
-
-
 <h1>singleton method REXML::XPath.first</h1>
-
 <dl class="methodlist">
 
-<dt class="method-heading"><code>first(element, path = nil, namespaces = {}, variables = {})</code></dt>
+<dt class="method-heading" id="S_FIRST"><code>first(element, path = nil, namespaces = {}, variables = {}) -&gt; Node | nil</code><span class="permalink">[<a href="../../../method/-r-e-x-m-l=3a=3a-x-path/s/first.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/rexml/rdoc/REXML/XPath.html#method-c-first">rdoc</a>]</span></dt>
 <dd class="method-description">
-<p class="todo">
-[TODO]
+<p>
+element の path で指定した XPath 文字列にマッチする最初のノードを
+返します。
 </p>
+<p>
+path に相対パスを指定した場合は element からの相対位置で
+マッチするノードを探します。
+絶対パスを指定した場合は element が属する文書のルート要素からの
+位置でマッチするノードを探します。
+path を省略すると &quot;*&quot; を指定したことになります。
+</p>
+<p>
+namespace で名前空間の対応付けを指定します。
+</p>
+<p>
+variable で XPath 内の変数に対応する値を指定できます。
+XPathインジェクション攻撃を避けるため、適切な
+エスケープを付加するため、に用います。
+</p>
+<p>
+マッチするノードがない場合には nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] element:</dt>
+<dd>
+要素(<a href="../../../class/-r-e-x-m-l=3a=3a-element.html">REXML::Element</a>)
+</dd>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+XPath文字列
+</dd>
+<dt class='method-param'>[PARAM] namespace:</dt>
+<dd>
+名前空間とURLの対応付け
+</dd>
+<dt class='method-param'>[PARAM] variables:</dt>
+<dd>
+変数名とその値の対応付け
+</dd>
+</dl>
+<h2 >例</h2>
+<pre>
+require 'rexml/document'
+doc = REXML::Document.new(&lt;&lt;EOS)
+&lt;root xmlns:x='1'&gt;
+  &lt;a&gt;
+    &lt;b&gt;b1&lt;/b&gt;
+    &lt;x:c /&gt;
+    &lt;b&gt;b2&lt;/b&gt;
+    &lt;d /&gt;
+  &lt;/a&gt;
+  &lt;b&gt; b3 &lt;/b&gt;
+&lt;/root&gt;
+EOS
+
+a = doc.root.elements[1] # =&gt; &lt;a&gt; ... &lt;/&gt;
+b1 = REXML::XPath.first(a, &quot;b&quot;)
+b1.text # =&gt; &quot;b1&quot;
+
+REXML::XPath.first(doc, &quot;/root/a/x:c&quot;) # =&gt; &lt;x:c/&gt;
+REXML::XPath.first(a, &quot;x:c&quot;) # =&gt; &lt;x:c/&gt;
+REXML::XPath.first(a, &quot;y:c&quot;) # =&gt; nil
+REXML::XPath.first(a, &quot;y:c&quot;, {&quot;y&quot; =&gt; &quot;1&quot;}) # =&gt; &lt;x:c/&gt;
+b2 = REXML::XPath.first(doc, &quot;/root/a/b[text()=$v]&quot;, {}, {&quot;v&quot; =&gt; &quot;b2&quot;})
+b2 # =&gt; &lt;b&gt; ... &lt;/&gt;
+b2.text # =&gt; &quot;b2&quot;
+</pre>
 </dd>
 
 

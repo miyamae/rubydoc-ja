@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>class REXML::Parsers::SAX2Parser</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -16,7 +15,6 @@
 &gt; <a href="../library/rexml.html">rexmlライブラリ</a>
 &gt; REXML::Parsers::SAX2Parserクラス
 </p>
-
 
 
 <h1>class REXML::Parsers::SAX2Parser</h1>
@@ -35,256 +33,329 @@
 
 
 
+
+
 </p>
 
 <h2>要約</h2>
+<p>
+SAX2 と同等の API を持つストリーム式の XML パーサです。
+</p>
+<p>
+<a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-stream-parser.html">REXML::Parsers::StreamParser</a> のパーサよりは
+高機能です。
+</p>
+<h3 >例</h3>
+<pre>
+require 'rexml/parsers/sax2parser'
+require 'rexml/sax2listener'
 
+parser = REXML::Parsers::SAX2Parser.new(&lt;&lt;XML)
+&lt;root n=&quot;0&quot;&gt;
+  &lt;a n=&quot;1&quot;&gt;111&lt;/a&gt;
+  &lt;b n=&quot;2&quot;&gt;222&lt;/b&gt;
+  &lt;a n=&quot;3&quot;&gt;333&lt;/a&gt;
+&lt;/root&gt;
+XML
+
+elements = []
+parser.listen(:start_element){|uri, localname, qname, attrs|
+  elements &lt;&lt; [qname, attrs]
+}
+as = []
+parser.listen(:start_element, [&quot;a&quot;]){|uri, localname, qname, attrs|
+  as &lt;&lt; [qname, attrs]
+}
+texts = []
+parser.listen(:characters, [&quot;a&quot;]){|c| texts &lt;&lt; c }
+parser.parse
+elements # =&gt; [[&quot;root&quot;, {&quot;n&quot;=&gt;&quot;0&quot;}], [&quot;a&quot;, {&quot;n&quot;=&gt;&quot;1&quot;}], [&quot;b&quot;, {&quot;n&quot;=&gt;&quot;2&quot;}], [&quot;a&quot;, {&quot;n&quot;=&gt;&quot;3&quot;}]]
+as # =&gt; [[&quot;a&quot;, {&quot;n&quot;=&gt;&quot;1&quot;}], [&quot;a&quot;, {&quot;n&quot;=&gt;&quot;3&quot;}]]
+texts # =&gt; [&quot;111&quot;, &quot;333&quot;]
+</pre>
+<h3 >仕様確認サンプル</h3>
+<pre>
+require 'rexml/parsers/sax2parser'
+require 'rexml/sax2listener'
+
+xml = &lt;&lt;EOS
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;?xml-stylesheet type=&quot;text/css&quot; href=&quot;style.css&quot;?&gt;
+&lt;!DOCTYPE root SYSTEM &quot;foo&quot; [
+  &lt;!ELEMENT root (a+)&gt;
+  &lt;!ELEMENT a&gt;
+  &lt;!ENTITY bar &quot;barbarbarbar&quot;&gt;
+  &lt;!ATTLIST a att CDATA #REQUIRED xyz CDATA &quot;foobar&quot;&gt;
+  &lt;!NOTATION foobar SYSTEM &quot;http://example.org/foobar.dtd&quot;&gt;
+  &lt;!ENTITY % HTMLsymbol PUBLIC
+     &quot;-//W3C//ENTITIES Symbols for XHTML//EN&quot;
+     &quot;xhtml-symbol.ent&quot;&gt;
+  %HTMLsymbol;
+]&gt;
+&lt;root xmlns=&quot;http://example.org/default&quot;
+      xmlns:foo=&quot;http://example.org/foo&quot;
+      xmlns:bar=&quot;http://example.org/bar&quot;&gt;&lt;![CDATA[cdata is here]]&gt;
+  &lt;a foo:att='1' bar:att='2' att='&amp;lt;'&gt;
+  &lt;bar:b /&gt;
+  &lt;/a&gt;
+  &amp;amp;&amp;amp; &lt;!-- comment here--&gt; &amp;bar;
+&lt;/root&gt;
+EOS
+
+class Listener
+  #include REXML::SAX2Listener
+  def method_missing(name, *args)
+    p [name, *args]
+  end
+  def respond_to_missing?(name, include_private)
+    name != :call
+  end
+end
+
+parser = REXML::Parsers::SAX2Parser.new(xml)
+parser.listen(Listener.new)
+parser.parse
+# &gt;&gt; [:start_document]
+# &gt;&gt; [:xmldecl, &quot;1.0&quot;, &quot;UTF-8&quot;, nil]
+# &gt;&gt; [:progress, 39]
+# &gt;&gt; [:characters, &quot;\n&quot;]
+# &gt;&gt; [:progress, 91]
+# &gt;&gt; [:processing_instruction, &quot;xml-stylesheet&quot;, &quot; type=\&quot;text/css\&quot; href=\&quot;style.css\&quot;&quot;]
+# &gt;&gt; [:progress, 91]
+# &gt;&gt; [:characters, &quot;\n&quot;]
+# &gt;&gt; [:progress, 144]
+# &gt;&gt; [:doctype, &quot;root&quot;, &quot;SYSTEM&quot;, &quot;foo&quot;, nil]
+# &gt;&gt; [:progress, 144]
+# &gt;&gt; [:elementdecl, &quot;&lt;!ELEMENT root (a+)&quot;]
+# &gt;&gt; [:progress, 144]
+# &gt;&gt; [:elementdecl, &quot;&lt;!ELEMENT a&quot;]
+# &gt;&gt; [:progress, 159]
+# &gt;&gt; [:entitydecl, &quot;bar&quot;, &quot;barbarbarbar&quot;]
+# &gt;&gt; [:progress, 190]
+# &gt;&gt; [:attlistdecl, &quot;a&quot;, {&quot;att&quot;=&gt;nil, &quot;xyz&quot;=&gt;&quot;foobar&quot;}, &quot; \n  &lt;!ATTLIST a att CDATA #REQUIRED xyz CDATA \&quot;foobar\&quot;&gt;&quot;]
+# &gt;&gt; [:progress, 245]
+# &gt;&gt; [:notationdecl, &quot;foobar&quot;, &quot;SYSTEM&quot;, nil, &quot;http://example.org/foobar.dtd&quot;]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:entitydecl, &quot;HTMLsymbol&quot;, &quot;PUBLIC&quot;, &quot;-//W3C//ENTITIES Symbols for XHTML//EN&quot;, &quot;xhtml-symbol.ent&quot;, &quot;%&quot;]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:characters, &quot;\n&quot;]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:start_prefix_mapping, nil, &quot;http://example.org/default&quot;]
+# &gt;&gt; [:start_prefix_mapping, &quot;foo&quot;, &quot;http://example.org/foo&quot;]
+# &gt;&gt; [:start_prefix_mapping, &quot;bar&quot;, &quot;http://example.org/bar&quot;]
+# &gt;&gt; [:start_element, &quot;http://example.org/default&quot;, &quot;root&quot;, &quot;root&quot;, {&quot;xmlns&quot;=&gt;&quot;http://example.org/default&quot;, &quot;xmlns:foo&quot;=&gt;&quot;http://example.org/foo&quot;, &quot;xmlns:bar&quot;=&gt;&quot;http://example.org/bar&quot;}]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:cdata, &quot;cdata is here&quot;]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:characters, &quot;\n  &quot;]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:start_element, &quot;http://example.org/default&quot;, &quot;a&quot;, &quot;a&quot;, {&quot;foo:att&quot;=&gt;&quot;1&quot;, &quot;bar:att&quot;=&gt;&quot;2&quot;, &quot;att&quot;=&gt;&quot;&amp;lt;&quot;}]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:characters, &quot;\n  &quot;]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:start_element, &quot;http://example.org/bar&quot;, &quot;b&quot;, &quot;bar:b&quot;, {}]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:end_element, &quot;http://example.org/bar&quot;, &quot;b&quot;, &quot;bar:b&quot;]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:characters, &quot;\n  &quot;]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:end_element, &quot;http://example.org/default&quot;, &quot;a&quot;, &quot;a&quot;]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:characters, &quot;\n  &amp;amp;&amp;amp; &quot;]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:comment, &quot; comment here&quot;]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:characters, &quot; barbarbarbar\n&quot;]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:end_element, &quot;http://example.org/default&quot;, &quot;root&quot;, &quot;root&quot;]
+# &gt;&gt; [:end_prefix_mapping, nil]
+# &gt;&gt; [:end_prefix_mapping, &quot;foo&quot;]
+# &gt;&gt; [:end_prefix_mapping, &quot;bar&quot;]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:characters, &quot;\n&quot;]
+# &gt;&gt; [:progress, 683]
+# &gt;&gt; [:end_document]
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_DEAFEN">deafen</a>
+
+<a href="#I_LISTEN">listen</a>
+
+<a href="#I_PARSE">parse</a>
+
+</dd>
+
+</dl>
 
 
 <h2>特異メソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser/s/new.html"><code>
-  new(source)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="S_NEW"><code>new(source) -&gt; REXML::Parsers::SAX2Parser</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.8.7/libdoc/rexml/rdoc/REXML/Parsers/SAX2Parser.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+SAX2 パーサオブジェクトを生成します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] source:</dt>
+<dd>
+入力(文字列、IO、IO互換オブジェクト(StringIOなど))
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-</table>
+</dl>
 
 <h2>インスタンスメソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser/i/add_listener.html"><code>
-  add_listener(listener)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="I_DEAFEN"><code>deafen(listener) -&gt; ()</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser/i/deafen.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.8.7/libdoc/rexml/rdoc/REXML/Parsers/SAX2Parser.html#method-i-deafen">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser/i/listen.html">REXML::Parsers::SAX2Parser#listen</a> で指定した listener を
+取り除きます。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] listener:</dt>
+<dd>
+取り除く listener
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser/i/deafen.html"><code>
-  deafen(listener)<br>deafen { ... }
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="I_LISTEN"><code>listen(sym, ary) { ... } -&gt; ()</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser/i/listen.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.8.7/libdoc/rexml/rdoc/REXML/Parsers/SAX2Parser.html#method-i-listen">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>listen(sym) { ... } -&gt; ()</code></dt>
+<dt class="method-heading"><code>listen(ary, listener) -&gt; ()</code></dt>
+<dt class="method-heading"><code>listen(ary) { ... } -&gt; ()</code></dt>
+<dt class="method-heading"><code>listen(listener) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+コールバックをパーサに登録します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser/i/listen.html"><code>
-  listen(sym, ary) { ... }<br>listen(sym) { ... }<br>listen(ary, listener)<br>listen(ary) { ... }<br>listen(listener)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+引数の種類やブロックの有無でどのような場合に何がコールバックされかが
+変わります。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser/i/parse.html"><code>
-  parse
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+ブロックを指定した場合はそのブロックがコールバックされます。
+ブロックを指定しない場合は <a href="../class/-r-e-x-m-l=3a=3a-s-a-x2-listener.html">REXML::SAX2Listener</a> を include した
+クラスのオブジェクトを指定します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser/i/source.html"><code>
-  source
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+sym は以下のシンボルが指定でき、どの場合にコールバックが呼び出されるかを
+指定します。どのような場合にどのような引数でコールバックが呼び出されるか
+については、
+<a href="../class/-r-e-x-m-l=3a=3a-s-a-x2-listener.html">REXML::SAX2Listener</a> の対応するメソッドで詳しく説明されていますので
+そちらを参照してください。
 </p>
-</td>
-
-</tr>
-
-</table>
-
-
-
-<h2>継承したメソッド</h2>
-<p><code>
-
-<a href="../method/-object/i/=3d=3d.html">==</a>
-
-<a href="../method/-object/i/=3d=3d=3d.html">===</a>
-
-<a href="../method/-object/i/=3d=7e.html">=~</a>
-
-<a href="../method/-object/i/__id__.html">__id__</a>
-
-<a href="../method/-object/i/__send__.html">__send__</a>
-
-<a href="../method/-object/i/_dump.html">_dump</a>
-
-<a href="../method/-object/i/class.html">class</a>
-
-<a href="../method/-object/i/clone.html">clone</a>
-
-<a href="../method/-object/i/dclone.html">dclone</a>
-
-<a href="../method/-object/i/display.html">display</a>
-
-<a href="../method/-object/i/enum_for.html">enum_for</a>
-
-<a href="../method/-object/i/eql=3f.html">eql?</a>
-
-<a href="../method/-object/i/equal=3f.html">equal?</a>
-
-<a href="../method/-object/i/extend.html">extend</a>
-
-<a href="../method/-object/i/freeze.html">freeze</a>
-
-<a href="../method/-object/i/frozen=3f.html">frozen?</a>
-
-<a href="../method/-object/i/hash.html">hash</a>
-
-<a href="../method/-object/i/initialize.html">initialize</a>
-
-<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
-
-<a href="../method/-object/i/inspect.html">inspect</a>
-
-<a href="../method/-object/i/instance_eval.html">instance_eval</a>
-
-<a href="../method/-object/i/instance_exec.html">instance_exec</a>
-
-<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
-
-<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
-
-<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
-
-<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
-
-<a href="../method/-object/i/instance_variables.html">instance_variables</a>
-
-<a href="../method/-object/i/is_a=3f.html">is_a?</a>
-
-<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
-
-<a href="../method/-object/i/marshal_load.html">marshal_load</a>
-
-<a href="../method/-object/i/method.html">method</a>
-
-<a href="../method/-object/i/method_missing.html">method_missing</a>
-
-<a href="../method/-object/i/methods.html">methods</a>
-
-<a href="../method/-object/i/nil=3f.html">nil?</a>
-
-<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
-
-<a href="../method/-object/i/pretty_print.html">pretty_print</a>
-
-<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
-
-<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
-
-<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
-
-<a href="../method/-object/i/private_methods.html">private_methods</a>
-
-<a href="../method/-object/i/protected_methods.html">protected_methods</a>
-
-<a href="../method/-object/i/public_methods.html">public_methods</a>
-
-<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
-
-<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
-
-<a href="../method/-object/i/singleton_method_added.html">singleton_method_added</a>
-
-<a href="../method/-object/i/singleton_method_removed.html">singleton_method_removed</a>
-
-<a href="../method/-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
-
-<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
-
-<a href="../method/-object/i/taguri.html">taguri</a>
-
-<a href="../method/-object/i/taguri=3d.html">taguri=</a>
-
-<a href="../method/-object/i/taint.html">taint</a>
-
-<a href="../method/-object/i/tainted=3f.html">tainted?</a>
-
-<a href="../method/-object/i/tap.html">tap</a>
-
-<a href="../method/-object/i/to_a.html">to_a</a>
-
-<a href="../method/-object/i/to_ary.html">to_ary</a>
-
-<a href="../method/-object/i/to_hash.html">to_hash</a>
-
-<a href="../method/-object/i/to_int.html">to_int</a>
-
-<a href="../method/-object/i/to_io.html">to_io</a>
-
-<a href="../method/-object/i/to_proc.html">to_proc</a>
-
-<a href="../method/-object/i/to_regexp.html">to_regexp</a>
-
-<a href="../method/-object/i/to_s.html">to_s</a>
-
-<a href="../method/-object/i/to_str.html">to_str</a>
-
-<a href="../method/-object/i/to_yaml.html">to_yaml</a>
-
-<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
-
-<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
-
-<a href="../method/-object/i/untaint.html">untaint</a>
-
-<a href="../method/-object/s/yaml_tag_subclasses=3f.html">.yaml_tag_subclasses?</a>
-
-</code></p>
-
-
+<ul>
+<li>:start_document
+(XML文書開始, <a href="../method/-r-e-x-m-l=3a=3a-s-a-x2-listener/i/start_document.html">REXML::SAX2Listener#start_document</a>)</li>
+<li>:end_document
+(XML文書終了, <a href="../method/-r-e-x-m-l=3a=3a-s-a-x2-listener/i/end_document.html">REXML::SAX2Listener#end_document</a>)</li>
+<li>:start_element
+(要素開始, <a href="../method/-r-e-x-m-l=3a=3a-s-a-x2-listener/i/start_element.html">REXML::SAX2Listener#start_element</a>)</li>
+<li>:end_element
+(要素終了, <a href="../method/-r-e-x-m-l=3a=3a-s-a-x2-listener/i/end_element.html">REXML::SAX2Listener#end_element</a>)</li>
+<li>:start_prefix_mapping
+(名前空間接頭辞導入, <a href="../method/-r-e-x-m-l=3a=3a-s-a-x2-listener/i/start_prefix_mapping.html">REXML::SAX2Listener#start_prefix_mapping</a>)</li>
+<li>:end_prefix_mapping
+(名前空間接頭辞適用終了, <a href="../method/-r-e-x-m-l=3a=3a-s-a-x2-listener/i/end_prefix_mapping.html">REXML::SAX2Listener#end_prefix_mapping</a>)</li>
+<li>:characters (文字データ, <a href="../method/-r-e-x-m-l=3a=3a-s-a-x2-listener/i/characters.html">REXML::SAX2Listener#characters</a>)</li>
+<li>:processing_instruction
+(XML 処理命令 <a href="../method/-r-e-x-m-l=3a=3a-s-a-x2-listener/i/processing_instruction.html">REXML::SAX2Listener#processing_instruction</a>)</li>
+<li>:doctype
+(DTD, <a href="../method/-r-e-x-m-l=3a=3a-s-a-x2-listener/i/doctype.html">REXML::SAX2Listener#doctype</a>)</li>
+<li>:attlistdecl
+(DTDの属性リスト宣言, <a href="../method/-r-e-x-m-l=3a=3a-s-a-x2-listener/i/attlistdecl.html">REXML::SAX2Listener#attlistdecl</a>)</li>
+<li>:entitydecl
+(DTDの実体宣言, <a href="../method/-r-e-x-m-l=3a=3a-s-a-x2-listener/i/entitydecl.html">REXML::SAX2Listener#entitydecl</a>)</li>
+<li>:notationdecl
+(DTDの記法宣言, <a href="../method/-r-e-x-m-l=3a=3a-s-a-x2-listener/i/notationdecl.html">REXML::SAX2Listener#notationdecl</a>)</li>
+<li>:cdata
+(CDATA セクション, <a href="../method/-r-e-x-m-l=3a=3a-s-a-x2-listener/i/cdata.html">REXML::SAX2Listener#cdata</a>)</li>
+<li>:xmldecl
+(XML 宣言, <a href="../method/-r-e-x-m-l=3a=3a-s-a-x2-listener/i/xmldecl.html">REXML::SAX2Listener#xmldecl</a>)</li>
+<li>:comment
+(コメント, <a href="../method/-r-e-x-m-l=3a=3a-s-a-x2-listener/i/comment.html">REXML::SAX2Listener#comment</a>)</li>
+<li>:progress
+(入力を読み進める, <a href="../method/-r-e-x-m-l=3a=3a-s-a-x2-listener/i/progress.html">REXML::SAX2Listener#progress</a>)</li>
+</ul>
+<p>
+ary には配列を指定し、要素名によるコールバック呼び出し条件を指定します。
+配列の要素としては、文字列か正規表現が指定できます。
+start_element, end_element に関しては、指定した名前を持つ
+要素の開始時と終了時にのみコールバックが呼び出されるようになります。
+start_prefix_mapping, end_prefix_mapping では、その名前空間が導入された
+要素の要素名、つまり xmlns:foo=&quot;bar&quot; という属性を持つ
+要素の名前でフィルタリングされるようになります。
+それ以外(character, cdataなど)では、指定した名前を要素として持つ要素の直下のみ
+コールバックが呼び出されます。
+フィルタリングに使われる名前は QName、つまり prefix を含む文字列です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] sym:</dt>
+<dd>
+イベント名(シンボル)
+</dd>
+<dt class='method-param'>[PARAM] ary:</dt>
+<dd>
+要素名によるコールバック呼び出し条件の指定(文字列もしくは正規表現の配列)
+</dd>
+<dt class='method-param'>[PARAM] listener:</dt>
+<dd>
+コールバックオブジェクト
+</dd>
+</dl>
+<h4 >例</h4>
+<pre>
+# CDATAセクションに出会った場合にブロックが呼び出される。
+parser.listen(:cdata){|data| ... }
+
+# h1, h2 という要素名を持つ要素が開始した場合にブロックが呼び出される
+parser.listen(:start_element, [&quot;h1&quot;, &quot;h2&quot;]){|uri, localname, qname, attrs|
+  ...
+}
+
+# /\Ah[1234]\z/ という正規表現にマッチする要素(h1, .. h4)の直下の
+# 文字データに出会った場合に呼び出される
+parser.listen(:characters, [/\Ah[1234]\z/]){|data|
+  ...
+}
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_PARSE"><code>parse -&gt; ()</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser/i/parse.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.8.7/libdoc/rexml/rdoc/REXML/Parsers/SAX2Parser.html#method-i-parse">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser/s/new.html">REXML::Parsers::SAX2Parser.new</a> で指定した XML を
+パースし、その結果によって <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser/i/listen.html">REXML::Parsers::SAX2Parser#listen</a> で
+指定したコールバックを呼び出します。
+</p>
+</dd>
+
+
+</dl>
 
 
 

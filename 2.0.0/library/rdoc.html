@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>library rdoc</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 2.0.0 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -15,8 +14,6 @@
 &gt; <a href="../library/index.html">ライブラリ一覧</a>
 &gt; rdocライブラリ
 </p>
-
-
 
 <h1>library rdoc</h1>
 
@@ -302,7 +299,7 @@ ri の出力を生成するとき、出力ディレクトリにすでにファ�
 出力の名前をnameにします(HTML を出力する場合には何の効果もありません)
 </p>
 </dd>
-<dt>--pipe</dt>
+<dt>--pipe, -p</dt>
 <dd>
 <p>
 標準入力を読み込んで HTML に変換し、標準出力に出力します。ファイルへ
@@ -376,6 +373,46 @@ ri で読める出力を生成します。デフォルトでは --ri を指定�
 指定しなかった場合は protected です。
 </p>
 </dd>
+<dt>--markup markup</dt>
+<dd>
+<p>
+マークアップのフォーマットを指定します。デフォルトは rdoc です。
+markdown、rd、rdoc、tomdoc のいずれかから選択できます。
+</p>
+</dd>
+<dt>--root root</dt>
+<dd>
+<p>
+Root of the source tree documentation will be generated for.  Set this
+when building documentation outside the source directory.  Default is
+the current directory.
+</p>
+</dd>
+<dt>--page-dir dir</dt>
+<dd>
+<p>
+Directory where guides, your FAQ or other pages not associated with
+a class live.  Set this when you don't store such files at your
+project root. NOTE: Do not use the same file name in the page dir
+and the root of your project
+</p>
+</dd>
+<dt>--copy-files path</dt>
+<dd>
+<p>
+path で指定したファイルかディレクトリを出力先のディレクトリにコピーし
+ます。ディレクトリを指定した場合はディレクトリの内容全てをコピーしま
+す。
+このオプションは複数回指定する事ができます。
+</p>
+</dd>
+<dt>--write-options</dt>
+<dd>
+<p>
+カレントディレクトリの .rdoc_options ファイルに指定した設定を YAML 形
+式で保存します。
+</p>
+</dd>
 <dt>--verbose</dt>
 <dd>
 <p>
@@ -397,6 +434,34 @@ CVS のウェブフロントエンドへのリンクの URL を指定する。UR
 </p>
 </dd>
 </dl>
+<h2 id='saved_options'>オプションの保存</h2>
+<p>
+.rdoc_options ファイルを gem に含める事で、rdoc のオプションを保存する
+事ができます。また、以下のように --write-options を指定するのが最も簡単
+です。
+</p>
+<pre>
+rdoc --markup tomdoc --write-options
+</pre>
+<p>
+この場合、自動的に .rdoc_options ファイルが作成されて指定したオプション
+が保存されます。
+</p>
+<p>
+ただし、以下のオプションはユーザの指定するオプションや <a href="../class/-r-doc.html">RDoc</a> の通
+常の動作と干渉するため、保存する事ができません。
+</p>
+<ul>
+<li>--coverage-report</li>
+<li>--dry-run</li>
+<li>--encoding</li>
+<li>--force-update</li>
+<li>--format</li>
+<li>--pipe</li>
+<li>--quiet</li>
+<li>--template</li>
+<li>--verbose</li>
+</ul>
 <h2 id='markup'>Markup</h2>
 <p>
 コメント部はかなり自然に書くことができます。'#' で始まるコメントも使え
@@ -783,6 +848,45 @@ title を省略した場合は、:section: を指定しなかった場合と同�
 力をそこに書かれたように変更します。
 </p>
 </dd>
+<dt>:markup: type</dt>
+<dd>
+<p>
+現在のマークアップの指定を type で指定したフォーマットで上書きします。
+ファイルの先頭で :markup: を記述した場合、ファイル全体に適用されます。
+</p>
+<pre>
+    # coding: UTF-8
+    # :markup: tomdoc
+
+    # tomdoc 形式のコメントを記述 ...
+    class MyClass
+      # ...
+</pre>
+<p>
+それ以外では適用が限定されます(以下の例では some_method のみ):
+</p>
+<pre>
+      # ...
+    end
+
+    # :markup: rdoc
+    #
+    # rdoc 形式のコメントを記述 ...
+    def some_method
+      # ...
+</pre>
+<p>
+ただし、異なるマークアップのフォーマット同士を変換するのでもない限
+り、.rdoc_options ファイルでマークアップのフォーマットを指定してプロ
+ジェクト全体を設定してください
+(<a href="../library/rdoc.html#saved_options">rdoc/オプションの保存</a> 参照)。
+</p>
+<p>
+マークアップの形式を追加したい場合は
+<a class="external" href="http://docs.seattlerb.org/rdoc/DEVELOPERS_rdoc.html">http://docs.seattlerb.org/rdoc/DEVELOPERS_rdoc.html</a> を参照し
+てください。
+</p>
+</dd>
 </dl>
 <p>
 また、他にも Ruby スクリプト、Ruby から使用するために書かれた C 言語の
@@ -902,6 +1006,48 @@ Ruby のソースコード中にあるクラス、モジュール、メソッド
 </tr>
 
 <tr>
+<td class="signature"><a href="../library/rdoc=2fgenerator.html">rdoc/generator</a></td>
+<td class="description"><p>
+<a href="../class/-r-doc.html">RDoc</a> が解析したソースコードを <a href="../class/-r-doc=3a=3a-code-object.html">RDoc::CodeObject</a> のツリーから
+その他の形式に出力するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fgenerator=2fdarkfish.html">rdoc/generator/darkfish</a></td>
+<td class="description"><p>
+HTML を生成するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fgenerator=2fjson_index.html">rdoc/generator/json_index</a></td>
+<td class="description"><p>
+他のジェネレータが生成する HTML で検索が行えるように、JSON の検索インデッ
+クスを生成するサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fgenerator=2fmarkup.html">rdoc/generator/markup</a></td>
+<td class="description"><p>
+ライブラリ内部で使用します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fgenerator=2fri.html">rdoc/generator/ri</a></td>
+<td class="description"><p>
+ri のためのファイルを生成するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
 <td class="signature"><a href="../library/rdoc=2fghost_method.html">rdoc/ghost_method</a></td>
 <td class="description"><p>
 <a href="../class/-r-doc=3a=3a-ghost-method.html">RDoc::GhostMethod</a> を定義するサブライブラリです。
@@ -921,6 +1067,23 @@ Ruby のソースコード中にあるクラス、モジュール、メソッド
 <td class="signature"><a href="../library/rdoc=2fknown_classes.html">rdoc/known_classes</a></td>
 <td class="description"><p>
 Ruby の組み込みクラスに関する定数を定義するサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fmarkdown.html">rdoc/markdown</a></td>
+<td class="description"><p>
+Markdown 形式で記述されたドキュメントを <a href="../library/rdoc.html">rdoc</a> 上で解析するための
+サブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fmarkdown=2fentities.html">rdoc/markdown/entities</a></td>
+<td class="description"><p>
+HTML の実体参照のマッピングを表す情報を定義するサブライブラリです。
 </p>
 </td>
 </tr>
@@ -1034,6 +1197,30 @@ C 言語で記述されたソースコードから組み込みクラス/モジ�
 </tr>
 
 <tr>
+<td class="signature"><a href="../library/rdoc=2fparser=2fchangelog.html">rdoc/parser/changelog</a></td>
+<td class="description"><p>
+ChangeLog ファイルを解析するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fparser=2fmarkdown.html">rdoc/parser/markdown</a></td>
+<td class="description"><p>
+Markdown 形式で記述されたファイルを解析するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fparser=2frd.html">rdoc/parser/rd</a></td>
+<td class="description"><p>
+RD 形式で記述されたファイルを解析するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
 <td class="signature"><a href="../library/rdoc=2fparser=2fruby.html">rdoc/parser/ruby</a></td>
 <td class="description"><p>
 Ruby のソースコードを解析するためのサブライブラリです。
@@ -1059,6 +1246,14 @@ Ruby のソースコードを解析するためのサブライブラリです。
 </tr>
 
 <tr>
+<td class="signature"><a href="../library/rdoc=2fparser=2ftext.html">rdoc/parser/text</a></td>
+<td class="description"><p>
+プログラムを含まないテキストを解析するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
 <td class="signature"><a href="../library/rdoc=2frdoc.html">rdoc/rdoc</a></td>
 <td class="description"><p>
 rdoc コマンドのためのサブライブラリです。
@@ -1070,6 +1265,14 @@ rdoc コマンドのためのサブライブラリです。
 <td class="signature"><a href="../library/rdoc=2frequire.html">rdoc/require</a></td>
 <td class="description"><p>
 <a href="../class/-r-doc=3a=3a-require.html">RDoc::Require</a> を定義するサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rdoc=2fruby_token.html">rdoc/ruby_token</a></td>
+<td class="description"><p>
+(uninitialized)
 </p>
 </td>
 </tr>

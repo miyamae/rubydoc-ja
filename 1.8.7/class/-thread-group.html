@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>class ThreadGroup</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -16,7 +15,6 @@
 &gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
 &gt; ThreadGroupクラス
 </p>
-
 
 
 <h1>class ThreadGroup</h1>
@@ -30,6 +28,8 @@
 
       &lt; <a href="../class/-kernel.html">Kernel</a>
       
+
+
 
 
 
@@ -83,263 +83,160 @@ Thread.new{ ... } はエラーになりません。生成されたスレッド�
 
 
 
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_ADD">add</a>
+
+<a href="#I_ENCLOSE">enclose</a>
+
+<a href="#I_ENCLOSED--3F">enclosed?</a>
+
+<a href="#I_LIST">list</a>
+
+</dd>
+
+<dt>定数</dt>
+<dd>
+
+<a href="#C_-DEFAULT">Default</a>
+
+</dd>
+
+</dl>
+
+
 <h2>特異メソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-thread-group/s/new.html"><code>
-  new -&gt; ThreadGroup
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_NEW"><code>new -&gt; ThreadGroup</code><span class="permalink">[<a href="../method/-thread-group/s/new.html">permalink</a>][<a href="http://ruby-doc.org/core-1.8.7/ThreadGroup.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 新たな ThreadGroup を生成して返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-</table>
+</dl>
 
 <h2>インスタンスメソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-thread-group/i/add.html"><code>
-  add(thread) -&gt; self
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_ADD"><code>add(thread) -&gt; self</code><span class="permalink">[<a href="../method/-thread-group/i/add.html">permalink</a>][<a href="http://ruby-doc.org/core-1.8.7/ThreadGroup.html#method-i-add">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 スレッド thread が属するグループを自身に変更します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] thread:</dt>
+<dd>
+自身に加えたいスレッドを指定します。
+</dd>
+<dt>[EXCEPTION] ThreadError:</dt>
+<dd>
+自身が freeze されているか enclose されている場合に、発生します。また引数 thread が属する ThreadGroup が freeze されているか enclose されている場合にも発生します。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-thread-group/i/enclose.html"><code>
-  enclose -&gt; self
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_ENCLOSE"><code>enclose -&gt; self</code><span class="permalink">[<a href="../method/-thread-group/i/enclose.html">permalink</a>][<a href="http://ruby-doc.org/core-1.8.7/ThreadGroup.html#method-i-enclose">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身への <a href="../method/-thread-group/i/add.html">ThreadGroup#add</a> によるスレッドの追加・削除を禁止します。
 enclose された ThreadGroup に追加や削除を行うと例外 <a href="../class/-thread-error.html">ThreadError</a> が発生します。
 </p>
-</td>
+<p>
+ただし、<a href="../method/-thread/s/new.html">Thread.new</a> によるスレッドの追加は禁止されません。enclose されたスレッドグループ A に
+属するスレッドが新たにスレッドを生成した場合、生成されたスレッドはスレッドグループ A に属します。
+</p>
+<p>
+追加の例:
+</p>
+<pre>
+thg = ThreadGroup.new.enclose
+thg.add Thread.new {}
 
-</tr>
+=&gt; -:2:in `add': can't move to the enclosed thread group (ThreadError)
+</pre>
+<p>
+削除の例:
+</p>
+<pre>
+thg1 = ThreadGroup.new
+thg2 = ThreadGroup.new
 
-<tr>
-<td class="signature">
-  <a href="../method/-thread-group/i/enclosed=3f.html"><code>
-  enclosed? -&gt; bool
-  </code></a>
-</td>
+th = Thread.new {sleep 1}
 
-<td class="description" colspan="2"><p>
+thg1.add th
+thg1.enclose
+thg2.add th
+
+=&gt; -:8:in `add': can't move from the enclosed thread group (ThreadError)
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ENCLOSED--3F"><code>enclosed? -&gt; bool</code><span class="permalink">[<a href="../method/-thread-group/i/enclosed=3f.html">permalink</a>][<a href="http://ruby-doc.org/core-1.8.7/ThreadGroup.html#method-i-enclosed-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身が enclose されているなら true を返します。そうでないなら false を返します。デフォルトは false です。
 </p>
-</td>
+<p>
+freeze された ThreadGroup には Thread の追加/削除ができませんが、enclosed? は false を返します。
+</p>
+<pre>
+thg = ThreadGroup.new
+p thg.enclosed?         # =&gt; false
+thg.enclose
+p thg.enclosed?         # =&gt; true
 
-</tr>
+thg = ThreadGroup.new
+p thg.enclosed?         # =&gt; false
+thg.freeze
+p thg.enclosed?         # =&gt; false
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-thread-group/i/enclose.html">ThreadGroup#enclose</a>
+</p>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-thread-group/i/list.html"><code>
-  list -&gt; [Thread]
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_LIST"><code>list -&gt; [Thread]</code><span class="permalink">[<a href="../method/-thread-group/i/list.html">permalink</a>][<a href="http://ruby-doc.org/core-1.8.7/ThreadGroup.html#method-i-list">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 self に属するスレッドの配列を返します。
 version 1.8 では、aborting 状態であるスレッド
 も要素に含まれます。つまり「生きている」スレッドの配列を返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-</table>
+</dl>
 
 <h2>定数</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-thread-group/c/-default.html"><code>
-  Default -&gt; ThreadGroup
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="C_-DEFAULT"><code>Default -&gt; ThreadGroup</code><span class="permalink">[<a href="../method/-thread-group/c/-default.html">permalink</a>][<a href="http://ruby-doc.org/core-1.8.7/ThreadGroup.html#method-c-Default">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 デフォルトで定義されている <a href="../class/-thread-group.html">ThreadGroup</a> です。メインスレッド
 は最初このグループに属します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-</table>
-
-
-
-<h2>継承したメソッド</h2>
-<p><code>
-
-<a href="../method/-object/i/=3d=3d.html">==</a>
-
-<a href="../method/-object/i/=3d=3d=3d.html">===</a>
-
-<a href="../method/-object/i/=3d=7e.html">=~</a>
-
-<a href="../method/-object/i/__id__.html">__id__</a>
-
-<a href="../method/-object/i/__send__.html">__send__</a>
-
-<a href="../method/-object/i/_dump.html">_dump</a>
-
-<a href="../method/-object/i/class.html">class</a>
-
-<a href="../method/-object/i/clone.html">clone</a>
-
-<a href="../method/-object/i/dclone.html">dclone</a>
-
-<a href="../method/-object/i/display.html">display</a>
-
-<a href="../method/-object/i/enum_for.html">enum_for</a>
-
-<a href="../method/-object/i/eql=3f.html">eql?</a>
-
-<a href="../method/-object/i/equal=3f.html">equal?</a>
-
-<a href="../method/-object/i/extend.html">extend</a>
-
-<a href="../method/-object/i/freeze.html">freeze</a>
-
-<a href="../method/-object/i/frozen=3f.html">frozen?</a>
-
-<a href="../method/-object/i/hash.html">hash</a>
-
-<a href="../method/-object/i/initialize.html">initialize</a>
-
-<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
-
-<a href="../method/-object/i/inspect.html">inspect</a>
-
-<a href="../method/-object/i/instance_eval.html">instance_eval</a>
-
-<a href="../method/-object/i/instance_exec.html">instance_exec</a>
-
-<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
-
-<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
-
-<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
-
-<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
-
-<a href="../method/-object/i/instance_variables.html">instance_variables</a>
-
-<a href="../method/-object/i/is_a=3f.html">is_a?</a>
-
-<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
-
-<a href="../method/-object/i/marshal_load.html">marshal_load</a>
-
-<a href="../method/-object/i/method.html">method</a>
-
-<a href="../method/-object/i/method_missing.html">method_missing</a>
-
-<a href="../method/-object/i/methods.html">methods</a>
-
-<a href="../method/-object/i/nil=3f.html">nil?</a>
-
-<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
-
-<a href="../method/-object/i/pretty_print.html">pretty_print</a>
-
-<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
-
-<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
-
-<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
-
-<a href="../method/-object/i/private_methods.html">private_methods</a>
-
-<a href="../method/-object/i/protected_methods.html">protected_methods</a>
-
-<a href="../method/-object/i/public_methods.html">public_methods</a>
-
-<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
-
-<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
-
-<a href="../method/-object/i/singleton_method_added.html">singleton_method_added</a>
-
-<a href="../method/-object/i/singleton_method_removed.html">singleton_method_removed</a>
-
-<a href="../method/-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
-
-<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
-
-<a href="../method/-object/i/taguri.html">taguri</a>
-
-<a href="../method/-object/i/taguri=3d.html">taguri=</a>
-
-<a href="../method/-object/i/taint.html">taint</a>
-
-<a href="../method/-object/i/tainted=3f.html">tainted?</a>
-
-<a href="../method/-object/i/tap.html">tap</a>
-
-<a href="../method/-object/i/to_a.html">to_a</a>
-
-<a href="../method/-object/i/to_ary.html">to_ary</a>
-
-<a href="../method/-object/i/to_hash.html">to_hash</a>
-
-<a href="../method/-object/i/to_int.html">to_int</a>
-
-<a href="../method/-object/i/to_io.html">to_io</a>
-
-<a href="../method/-object/i/to_proc.html">to_proc</a>
-
-<a href="../method/-object/i/to_regexp.html">to_regexp</a>
-
-<a href="../method/-object/i/to_s.html">to_s</a>
-
-<a href="../method/-object/i/to_str.html">to_str</a>
-
-<a href="../method/-object/i/to_yaml.html">to_yaml</a>
-
-<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
-
-<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
-
-<a href="../method/-object/i/untaint.html">untaint</a>
-
-<a href="../method/-object/s/yaml_tag_subclasses=3f.html">.yaml_tag_subclasses?</a>
-
-</code></p>
-
-
+</dl>
 
 
 

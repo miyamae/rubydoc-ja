@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>class PrettyPrint</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.3 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -16,7 +15,6 @@
 &gt; <a href="../library/prettyprint.html">prettyprintライブラリ</a>
 &gt; PrettyPrintクラス
 </p>
-
 
 
 <h1>class PrettyPrint</h1>
@@ -33,6 +31,8 @@
 
       &lt; <a href="../class/-basic-object.html">BasicObject</a>
       
+
+
 
 
 
@@ -67,36 +67,97 @@ pretty printing アルゴリズムのためのクラスです。
 
 
 
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_FORMAT">format</a>
+
+<a href="#S_NEW">new</a>
+
+<a href="#S_SINGLELINE_FORMAT">singleline_format</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_BREAKABLE">breakable</a>
+
+<a href="#I_FIRST--3F">first?</a>
+
+<a href="#I_FLUSH">flush</a>
+
+<a href="#I_GENSPACE">genspace</a>
+
+<a href="#I_GROUP">group</a>
+
+<a href="#I_INDENT">indent</a>
+
+<a href="#I_MAXWIDTH">maxwidth</a>
+
+<a href="#I_NEST">nest</a>
+
+<a href="#I_NEWLINE">newline</a>
+
+<a href="#I_OUTPUT">output</a>
+
+<a href="#I_TEXT">text</a>
+
+</dd>
+
+</dl>
+
+
 <h2>特異メソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-pretty-print/s/format.html"><code>
-  format(output = '', maxwidth = 79, newline = &quot;\n&quot;, genspace = lambda{|n| ' ' * n}) {|pp| ...} -&gt; object
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_FORMAT"><code>format(output = '', maxwidth = 79, newline = &quot;\n&quot;, genspace = lambda{|n| ' ' * n}) {|pp| ...} -&gt; object</code><span class="permalink">[<a href="../method/-pretty-print/s/format.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/prettyprint/rdoc/PrettyPrint.html#method-c-format">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 PrettyPrint オブジェクトを生成し、それを引数としてブロックを実行します。
 与えられた output を返します。
 </p>
-</td>
+<p>
+以下と同じ働きをするもので簡便のために用意されています。
+</p>
+<pre>
+begin
+  pp = PrettyPrint.new(output, maxwidth, newline, &amp;genspace)
+  ...
+  pp.flush
+  output
+end
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] output:</dt>
+<dd>
+出力先を指定します。output は &lt;&lt; メソッドを持っていなければなりません。
+</dd>
+<dt class='method-param'>[PARAM] maxwidth:</dt>
+<dd>
+行の最大幅を指定します。ただし、改行できないものが渡された場合は、
+実際の出力幅は maxwidth を越えることがあります。
+</dd>
+<dt class='method-param'>[PARAM] newline:</dt>
+<dd>
+改行に使われます。
+</dd>
+<dt class='method-param'>[PARAM] genspace:</dt>
+<dd>
+空白の生成に使われる <a href="../class/-proc.html">Proc</a> オブジェクトを指定します。
+生成したい空白の幅を表す整数を引数として呼ばれます。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-pretty-print/s/new.html"><code>
-  new(output = '', maxwidth = 79, newline = &quot;\n&quot;) -&gt; PrettyPrint<br>new(output = '', maxwidth = 79, newline = &quot;\n&quot;) {|width| ...} -&gt; PrettyPrint
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_NEW"><code>new(output = '', maxwidth = 79, newline = &quot;\n&quot;) -&gt; PrettyPrint</code><span class="permalink">[<a href="../method/-pretty-print/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/prettyprint/rdoc/PrettyPrint.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>new(output = '', maxwidth = 79, newline = &quot;\n&quot;) {|width| ...} -&gt; PrettyPrint</code></dt>
+<dd class="method-description">
+<p>
 pretty printing のためのバッファを生成します。
 output は出力先です。output は &lt;&lt; メソッドを持っていなければなりません。
 &lt;&lt; メソッドには
@@ -110,387 +171,230 @@ output は出力先です。output は &lt;&lt; メソッドを持っていな�
 <p>
 のどれかひとつが引数として与えられます。
 </p>
-</td>
+<p>
+ブロックが指定された場合は、空白を生成するために使われます。ブロックは、生成したい空白の幅を表す整数を引数として呼ばれます。ブロックが指定されない場合は、空白を生成するために {|width| ' ' * width} が使われます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] output:</dt>
+<dd>
+出力先を指定します。output は &lt;&lt; メソッドを持っていなければなりません。
+</dd>
+<dt class='method-param'>[PARAM] maxwidth:</dt>
+<dd>
+行の最大幅を指定します。ただし、改行できないものが渡された場合は、実際の出力幅は maxwidth を越えることがあります。
+</dd>
+<dt class='method-param'>[PARAM] newline:</dt>
+<dd>
+改行に使われます。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-pretty-print/s/singleline_format.html"><code>
-  singleline_format(output = '', maxwidth = 79, newline = &quot;\n&quot;, genspace = lambda{|n| ' ' * n}) {|pp| ...} -&gt; object
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_SINGLELINE_FORMAT"><code>singleline_format(output = '', maxwidth = 79, newline = &quot;\n&quot;, genspace = lambda{|n| ' ' * n}) {|pp| ...} -&gt; object</code><span class="permalink">[<a href="../method/-pretty-print/s/singleline_format.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/prettyprint/rdoc/PrettyPrint.html#method-c-singleline_format">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 PrettyPrint オブジェクトを生成し、それを引数としてブロックを実行します。
 <a href="../method/-pretty-print/s/format.html">PrettyPrint.format</a> に似ていますが、改行しません。
 </p>
-</td>
+<p>
+引数 maxwidth, newline と genspace は無視されます。ブロック中の breakable の実行は、
+改行せずに text の実行であるかのように扱います。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] output:</dt>
+<dd>
+出力先を指定します。output は &lt;&lt; メソッドを持っていなければなりません。
+</dd>
+<dt class='method-param'>[PARAM] maxwidth:</dt>
+<dd>
+無視されます。
+</dd>
+<dt class='method-param'>[PARAM] newline:</dt>
+<dd>
+無視されます。
+</dd>
+<dt class='method-param'>[PARAM] genspace:</dt>
+<dd>
+無視されます。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-</table>
+</dl>
 
 <h2>インスタンスメソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-pretty-print/i/breakable.html"><code>
-  breakable(sep = ' ') -&gt; ()<br>breakable(sep, width = sep.length) -&gt; ()
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_BREAKABLE"><code>breakable(sep = ' ') -&gt; ()</code><span class="permalink">[<a href="../method/-pretty-print/i/breakable.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/prettyprint/rdoc/PrettyPrint.html#method-i-breakable">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>breakable(sep, width = sep.length) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
 「必要ならここで改行出来る」ということを自身に通知します。
 もしその位置で改行されなければ、width カラムのテキスト sep が出力の際にそこに挿入されます。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] sep:</dt>
+<dd>
+改行が起きなかった場合に挿入されるテキストを文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] width:</dt>
+<dd>
+テキスト sep は width カラムであると仮定されます。指定されなければ、
+sep.length が利用されます。例えば sep が多バイト文字の際に指定する必要があるかも知れません。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-pretty-print/i/first=3f.html"><code>
-  first? -&gt; bool
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_FIRST--3F"><code>first? -&gt; bool</code><span class="permalink">[<a href="../method/-pretty-print/i/first=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/prettyprint/rdoc/PrettyPrint.html#method-i-first-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 このメソッドは obsolete です。
 </p>
-</td>
+<p>
+現在のグループで first? に対する最初の呼び出しかどうかを判定する
+述語です。これはカンマで区切られた値を整形するのに有用です。
+</p>
+<pre>
+pp.group(1, '[', ']') {
+  xxx.each {|yyy|
+    unless pp.first?
+      pp.text ','
+      pp.breakable
+    end
+    ... pretty printing yyy ...
+  }
+}
+</pre>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-pretty-print/i/flush.html"><code>
-  flush -&gt; ()
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_FLUSH"><code>flush -&gt; ()</code><span class="permalink">[<a href="../method/-pretty-print/i/flush.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/prettyprint/rdoc/PrettyPrint.html#method-i-flush">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 バッファされたデータを出力します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-pretty-print/i/genspace.html"><code>
-  genspace -&gt; Proc
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_GENSPACE"><code>genspace -&gt; Proc</code><span class="permalink">[<a href="../method/-pretty-print/i/genspace.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/prettyprint/rdoc/PrettyPrint.html#method-i-genspace">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 空白を生成する Proc を返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-pretty-print/i/group.html"><code>
-  group(indent = 0, open_obj = '', close_obj = '', open_width = open_obj.length, close_width = close_obj.length) {...} -&gt; ()
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_GROUP"><code>group(indent = 0, open_obj = '', close_obj = '', open_width = open_obj.length, close_width = close_obj.length) {...} -&gt; ()</code><span class="permalink">[<a href="../method/-pretty-print/i/group.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/prettyprint/rdoc/PrettyPrint.html#method-i-group">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 与えられたブロックを実行します。
 ブロック内で自身に追加される文字列やオブジェクトは、1行にまとめて表示しても
 よい同じグループに属すると仮定されます。
 </p>
-</td>
+<p>
+もう少し詳しく説明します。pretty printing アルゴリズムはインデントと改行を、
+ツリー構造を作ることによって決定します。そして、group メソッドは子ノードの作成と
+子ノードのインデントの深さの決定を担当します。
+</p>
+<p>
+同じノード内で呼ばれた breakable は、改行するならば全て同時に改行します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] indent:</dt>
+<dd>
+グループのインデントの深さを指定します。
+</dd>
+<dt class='method-param'>[PARAM] open_obj:</dt>
+<dd>
+指定された場合、self.text(open_obj, open_width) がブロックが
+実行される前に呼ばれます。開き括弧などを出力するのに使用されます。
+</dd>
+<dt class='method-param'>[PARAM] close_obj:</dt>
+<dd>
+指定された場合、self.text(close_obj, close_width) がブロックが
+実行された後に呼ばれます。閉じ括弧などを出力するのに使用されます。
+</dd>
+<dt class='method-param'>[PARAM] open_width:</dt>
+<dd>
+open_obj のカラムを指定します。
+</dd>
+<dt class='method-param'>[PARAM] close_width:</dt>
+<dd>
+close_obj のカラムを指定します。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-pretty-print/i/indent.html"><code>
-  indent -&gt; Integer
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_INDENT"><code>indent -&gt; Integer</code><span class="permalink">[<a href="../method/-pretty-print/i/indent.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/prettyprint/rdoc/PrettyPrint.html#method-i-indent">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 現在のインデントの深さを返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-pretty-print/i/maxwidth.html"><code>
-  maxwidth -&gt; Integer
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_MAXWIDTH"><code>maxwidth -&gt; Integer</code><span class="permalink">[<a href="../method/-pretty-print/i/maxwidth.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/prettyprint/rdoc/PrettyPrint.html#method-i-maxwidth">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身の幅を返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-pretty-print/i/nest.html"><code>
-  nest(indent) {...} -&gt; ()
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_NEST"><code>nest(indent) {...} -&gt; ()</code><span class="permalink">[<a href="../method/-pretty-print/i/nest.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/prettyprint/rdoc/PrettyPrint.html#method-i-nest">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身の現在のインデントを indent だけ増加させてから、ブロックを実行し、元に戻します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] indent:</dt>
+<dd>
+インデントの増加分を整数で指定します。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-pretty-print/i/newline.html"><code>
-  newline -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_NEWLINE"><code>newline -&gt; String</code><span class="permalink">[<a href="../method/-pretty-print/i/newline.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/prettyprint/rdoc/PrettyPrint.html#method-i-newline">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身の改行文字を返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-pretty-print/i/output.html"><code>
-  output -&gt; object
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_OUTPUT"><code>output -&gt; object</code><span class="permalink">[<a href="../method/-pretty-print/i/output.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/prettyprint/rdoc/PrettyPrint.html#method-i-output">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身の output を返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-pretty-print/i/text.html"><code>
-  text(obj) -&gt; ()<br>text(obj, width = obj.length) -&gt; ()
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_TEXT"><code>text(obj) -&gt; ()</code><span class="permalink">[<a href="../method/-pretty-print/i/text.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/prettyprint/rdoc/PrettyPrint.html#method-i-text">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>text(obj, width = obj.length) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
 obj を width カラムのテキストとして自身に追加します。
 </p>
-</td>
-
-</tr>
-
-</table>
-
-
-
-<h2>継承したメソッド</h2>
-<p><code>
-
-<a href="../method/-basic-object/i/=21=3d.html">!=</a>
-
-<a href="../method/-basic-object/i/__id__.html">__id__</a>
-
-<a href="../method/-basic-object/i/instance_eval.html">instance_eval</a>
-
-<a href="../method/-basic-object/i/instance_exec.html">instance_exec</a>
-
-<a href="../method/-basic-object/i/singleton_method_added.html">singleton_method_added</a>
-
-<a href="../method/-basic-object/i/singleton_method_removed.html">singleton_method_removed</a>
-
-<a href="../method/-basic-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
-
-<a href="../method/-object/i/=21.html">!</a>
-
-<a href="../method/-object/i/=3d=3d.html">==</a>
-
-<a href="../method/-object/i/=3d=3d=3d.html">===</a>
-
-<a href="../method/-object/i/=3d=7e.html">=~</a>
-
-<a href="../method/-object/i/__send__.html">__send__</a>
-
-<a href="../method/-object/i/_dump.html">_dump</a>
-
-<a href="../method/-object/i/class.html">class</a>
-
-<a href="../method/-object/i/clone.html">clone</a>
-
-<a href="../method/-object/i/dclone.html">dclone</a>
-
-<a href="../method/-object/i/display.html">display</a>
-
-<a href="../method/-object/i/enum_for.html">enum_for</a>
-
-<a href="../method/-object/i/eql=3f.html">eql?</a>
-
-<a href="../method/-object/i/equal=3f.html">equal?</a>
-
-<a href="../method/-object/i/extend.html">extend</a>
-
-<a href="../method/-object/i/freeze.html">freeze</a>
-
-<a href="../method/-object/i/frozen=3f.html">frozen?</a>
-
-<a href="../method/-object/i/hash.html">hash</a>
-
-<a href="../method/-object/i/initialize.html">initialize</a>
-
-<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
-
-<a href="../method/-object/i/inspect.html">inspect</a>
-
-<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
-
-<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
-
-<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
-
-<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
-
-<a href="../method/-object/i/instance_variables.html">instance_variables</a>
-
-<a href="../method/-object/i/is_a=3f.html">is_a?</a>
-
-<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
-
-<a href="../method/-object/i/marshal_load.html">marshal_load</a>
-
-<a href="../method/-object/i/method.html">method</a>
-
-<a href="../method/-object/i/method_missing.html">method_missing</a>
-
-<a href="../method/-object/i/methods.html">methods</a>
-
-<a href="../method/-object/i/must_be.html">must_be</a>
-
-<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
-
-<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
-
-<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
-
-<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
-
-<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
-
-<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
-
-<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
-
-<a href="../method/-object/i/must_equal.html">must_equal</a>
-
-<a href="../method/-object/i/must_include.html">must_include</a>
-
-<a href="../method/-object/i/must_match.html">must_match</a>
-
-<a href="../method/-object/i/must_raise.html">must_raise</a>
-
-<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
-
-<a href="../method/-object/i/must_send.html">must_send</a>
-
-<a href="../method/-object/i/must_throw.html">must_throw</a>
-
-<a href="../method/-object/i/nil=3f.html">nil?</a>
-
-<a href="../method/-object/i/object_id.html">object_id</a>
-
-<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
-
-<a href="../method/-object/i/pretty_print.html">pretty_print</a>
-
-<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
-
-<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
-
-<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
-
-<a href="../method/-object/i/private_methods.html">private_methods</a>
-
-<a href="../method/-object/i/protected_methods.html">protected_methods</a>
-
-<a href="../method/-object/i/psych_to_yaml.html">psych_to_yaml</a>
-
-<a href="../method/-object/i/public_methods.html">public_methods</a>
-
-<a href="../method/-object/i/public_send.html">public_send</a>
-
-<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
-
-<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
-
-<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
-
-<a href="../method/-object/i/singleton_class.html">singleton_class</a>
-
-<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
-
-<a href="../method/-object/i/taguri.html">taguri</a>
-
-<a href="../method/-object/i/taguri=3d.html">taguri=</a>
-
-<a href="../method/-object/i/taint.html">taint</a>
-
-<a href="../method/-object/i/tainted=3f.html">tainted?</a>
-
-<a href="../method/-object/i/tap.html">tap</a>
-
-<a href="../method/-object/i/to_a.html">to_a</a>
-
-<a href="../method/-object/i/to_ary.html">to_ary</a>
-
-<a href="../method/-object/i/to_hash.html">to_hash</a>
-
-<a href="../method/-object/i/to_int.html">to_int</a>
-
-<a href="../method/-object/i/to_io.html">to_io</a>
-
-<a href="../method/-object/i/to_proc.html">to_proc</a>
-
-<a href="../method/-object/i/to_regexp.html">to_regexp</a>
-
-<a href="../method/-object/i/to_s.html">to_s</a>
-
-<a href="../method/-object/i/to_str.html">to_str</a>
-
-<a href="../method/-object/i/to_yaml.html">to_yaml</a>
-
-<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
-
-<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
-
-<a href="../method/-object/i/trust.html">trust</a>
-
-<a href="../method/-object/i/untaint.html">untaint</a>
-
-<a href="../method/-object/i/untrust.html">untrust</a>
-
-<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
-
-<a href="../method/-object/s/yaml_tag.html">.yaml_tag</a>
-
-<a href="../method/-object/s/yaml_tag_subclasses=3f.html">.yaml_tag_subclasses?</a>
-
-</code></p>
-
-
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+自身に追加するテキストを文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] width:</dt>
+<dd>
+obj のカラムを指定します。指定されなかった場合、obj.length が利用されます。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
 
 
 

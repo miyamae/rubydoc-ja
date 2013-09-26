@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>class DL::CPtr</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.3 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -16,7 +15,6 @@
 &gt; <a href="../library/dl.html">dlライブラリ</a>
 &gt; DL::CPtrクラス
 </p>
-
 
 
 <h1>class DL::CPtr</h1>
@@ -38,6 +36,8 @@
 
 
 
+
+
 </p>
 
 <h2>要約</h2>
@@ -47,522 +47,582 @@
 
 
 
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_--5B--5D">[]</a>
+
+<a href="#S_--5B--5D">to_ptr</a>
+
+<a href="#S_MALLOC">malloc</a>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--2B">+</a>
+
+<a href="#I_--2B--40">+@</a>
+
+<a href="#I_--2B--40">ptr</a>
+
+<a href="#I_--2D">-</a>
+
+<a href="#I_--2D--40">-@</a>
+
+<a href="#I_--2D--40">ref</a>
+
+<a href="#I_--3C--3D--3E"><=></a>
+
+<a href="#I_--3D--3D">==</a>
+
+<a href="#I_--3D--3D">eql?</a>
+
+<a href="#I_--5B--5D">[]</a>
+
+<a href="#I_--5B--5D--3D">[]=</a>
+
+<a href="#I_FREE">free</a>
+
+<a href="#I_FREE--3D">free=</a>
+
+<a href="#I_NULL--3F">null?</a>
+
+<a href="#I_SIZE">size</a>
+
+<a href="#I_SIZE--3D">size=</a>
+
+<a href="#I_TO_I">to_i</a>
+
+<a href="#I_TO_I">to_int</a>
+
+<a href="#I_TO_S">to_s</a>
+
+<a href="#I_TO_STR">to_str</a>
+
+<a href="#I_TO_VALUE">to_value</a>
+
+</dd>
+
+</dl>
+
+
 <h2>特異メソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/s/=5b=5d.html"><code>
-  self[val] -&gt; DL::CPtr<br>to_ptr(val) -&gt; DL::CPtr
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_--5B--5D"><code>self[val] -&gt; DL::CPtr</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/s/=5b=5d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-c-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_ptr(val) -&gt; DL::CPtr</code></dt>
+<dd class="method-description">
+<p>
 与えられた val と関連した CPtr オブジェクトを生成して返します。
 </p>
-</td>
+<p>
+val が文字列の場合は文字列が格納されているメモリ領域を指す CPtr オブジェクトを返します。
+IO オブジェクトの場合は FILE ポインタを表す CPtr オブジェクトを返します。
+val に to_ptr メソッドが定義されている場合は、val.to_ptr を呼びます。
+上以外の場合は、整数に変換しそれをアドレスとする CPtr オブジェクトを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+Ruby オブジェクトを指定します。
+</dd>
+<dt>[EXCEPTION] DL::DLError:</dt>
+<dd>
+to_ptr の返り値が CPtr オブジェクトでない場合に発生します
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+上記のいずれの変換も不可能であった場合に発生します
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'dl'
+s = &quot;abc&quot;
+p DL::CPtr[s].to_i                 #=&gt; 136186388
+p [s].pack('p*').unpack('l!*')[0]  #=&gt; 136186388
+</pre>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/s/malloc.html"><code>
-  malloc(size, free = nil) -&gt; DL::CPtr
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_MALLOC"><code>malloc(size, free = nil) -&gt; DL::CPtr</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/s/malloc.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-c-malloc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 与えられた長さ size のメモリ領域を確保し、それを表す CPtr オブジェクトを生成して返します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] size:</dt>
+<dd>
+確保したいメモリ領域のサイズを整数で指定します。
+</dd>
+<dt class='method-param'>[PARAM] free:</dt>
+<dd>
+GC 時に呼ばれる CPtr オブジェクトの free 関数を <a href="../class/-d-l=3a=3a-c-func.html">DL::CFunc</a> オブジェクトか整数で指定します。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/s/new.html"><code>
-  new(addr, size = 0, free = nil) -&gt; DL::CPtr
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_NEW"><code>new(addr, size = 0, free = nil) -&gt; DL::CPtr</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 与えられた addr が指すメモリ領域を表す CPtr オブジェクトを生成して返します。
 </p>
-</td>
+<p>
+size を指定した場合、アドレス addr に確保されているメモリ領域のサイズは
+size であると仮定されます。GC は free 関数を使用してメモリを解放します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] addr:</dt>
+<dd>
+生成する CPtr オブジェクトが指すアドレスを整数で指定します。
+</dd>
+<dt class='method-param'>[PARAM] size:</dt>
+<dd>
+生成する CPtr オブジェクトが指すメモリ領域のサイズを整数で指定します。
+</dd>
+<dt class='method-param'>[PARAM] free:</dt>
+<dd>
+GC 時に呼ばれる free 関数を <a href="../class/-d-l=3a=3a-c-func.html">DL::CFunc</a> オブジェクトか整数で指定します。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-</table>
+</dl>
 
 <h2>インスタンスメソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/=2b.html"><code>
-  self + n -&gt; DL::CPtr
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_--2B"><code>self + n -&gt; DL::CPtr</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/=2b.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-2B">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身のアドレスに n バイトを足した新しい CPtr オブジェクトを返します。
 </p>
-</td>
+<p>
+この返り値には、free 関数がセットされていません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] n:</dt>
+<dd>
+アドレスの増分を整数で指定します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'dl'
 
-</tr>
+s = 'abc'
+cptr = DL::CPtr[s]
+p cptr[0,1]         #=&gt; &quot;a&quot;
+cptr += 1
+p cptr[0,1]         #=&gt; &quot;b&quot;
+</pre>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/=2b=40.html"><code>
-  ptr -&gt; DL::CPtr<br>+ -&gt; DL::CPtr
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_--2B--40"><code>ptr -&gt; DL::CPtr</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/=2b=40.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-2B-40">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>+ self -&gt; DL::CPtr</code></dt>
+<dd class="method-description">
+<p>
 自身の指す値を CPtr にして返します。
 自身の指す値はポインタであると仮定します。
 C 言語におけるポインタのポインタに対する間接参照 *p と同じです。
 </p>
-</td>
+<p>
+この返り値には、free 関数がセットされていません。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'dl/import'
 
-</tr>
+s = 'abc'
+cptr = DL::CPtr[s]
+cref = cptr.ref
+p cref.to_s(4).unpack('l*')[0]  #=&gt; 136121648
+p cptr.to_i                     #=&gt; 136121648
+p cref.ptr.to_s                 #=&gt; &quot;abc&quot;
+</pre>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/=2d.html"><code>
-  self - n -&gt; DL::CPtr
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_--2D"><code>self - n -&gt; DL::CPtr</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/=2d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-2D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身のアドレスから n バイトを引いた新しい CPtr オブジェクトを返します。
 </p>
-</td>
+<p>
+この返り値には、free 関数がセットされていません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] n:</dt>
+<dd>
+アドレスの差分を整数で指定します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'dl'
 
-</tr>
+s = 'abc'
+cptr = DL::CPtr[s]
+cptr += 1
+p cptr[0,1]         #=&gt; &quot;b&quot;
+cptr -= 1
+p cptr[0,1]         #=&gt; &quot;a&quot;
+</pre>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/=2d=40.html"><code>
-  ref -&gt; DL::CPtr<br>- -&gt; DL::CPtr
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_--2D--40"><code>ref -&gt; DL::CPtr</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/=2d=40.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-2D-40">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>- self -&gt; DL::CPtr</code></dt>
+<dd class="method-description">
+<p>
 自身を指す CPtr オブジェクトを返します。
 C 言語におけるポインタへのアドレス演算子の適用 &amp;p と同じです。
 </p>
-</td>
+<p>
+この返り値には、free 関数がセットされていません。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'dl/import'
 
-</tr>
+s = 'abc'
+cptr = DL::CPtr[s]
+cref = cptr.ref
+p cref.to_s(4).unpack('l*')[0]  #=&gt; 136121648
+p cptr.to_i                     #=&gt; 136121648
+p cref.ptr.to_s                 #=&gt; &quot;abc&quot;
+</pre>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/=3c=3d=3e.html"><code>
-  self &lt;=&gt; other -&gt; Integer
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_--3C--3D--3E"><code>self &lt;=&gt; other -&gt; Integer</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/=3c=3d=3e.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-3C-3D-3E">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 ポインタの指すアドレスの大小を比較します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+比較対象の CPtr オブジェクト
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/=3d=3d.html"><code>
-  eql?(other) -&gt; bool<br>self == other -&gt; bool
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_--3D--3D"><code>eql?(other) -&gt; bool</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/=3d=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-3D-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>self == other -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
 ポインタの指すアドレスが同一かどうかを判定します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+比較対象の CPtr オブジェクト
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'dl'
 
-</tr>
+s = 'abc'
+cptr  = DL::CPtr[s]
+cptr0 = DL::CPtr[s]
+cptr1 = cptr + 1
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/=5b=5d.html"><code>
-  self[offset] -&gt; Integer
-  </code></a>
-</td>
+p cptr == cptr1     #=&gt; false
+p cptr == cptr0     #=&gt; true
+</pre>
+</dd>
 
-<td class="description" colspan="2"><p>
+
+<dt class="method-heading" id="I_--5B--5D"><code>self[offset] -&gt; Integer</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/=5b=5d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身の指すアドレスに offset バイトを足したメモリ領域の先頭を整数として返します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] offset:</dt>
+<dd>
+値を得たい領域のアドレスまでのオフセット
+</dd>
+<dt>[EXCEPTION] DL::DLError:</dt>
+<dd>
+self の保持するポインタが NULL である場合に発生します
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'dl'
 
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/=5b=5d.html"><code>
-  self[offset, len] -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+s = 'abc'
+cptr  = DL::CPtr[s]
+p cptr[0]            #=&gt; 97
+p cptr[1]            #=&gt; 98
+</pre>
+</dd>
+<dt class="method-heading" id="I_--5B--5D"><code>self[offset, len] -&gt; String</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/=5b=5d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身の指すアドレスに offset バイトを足したメモリ領域の先頭 len バイトを複製し、
 文字列として返します。
 </p>
-</td>
+<p>
+(self + offset).to_s(len) と同等です。
+offset + len が自身のサイズより小さいかを検証しません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] offset:</dt>
+<dd>
+値を得たい領域の先頭のアドレスまでのオフセットを整数で与えます。
+</dd>
+<dt class='method-param'>[PARAM] len:</dt>
+<dd>
+値を得たい領域のサイズを指定します。
+</dd>
+<dt>[EXCEPTION] DL::DLError:</dt>
+<dd>
+self の保持するポインタが NULL である場合に発生します
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'dl'
 
-</tr>
+s = 'abc'
+cptr  = DL::CPtr[s]
+p cptr[0, 1]            #=&gt; &quot;a&quot;
+p cptr[1, 2]            #=&gt; &quot;bc&quot;
+</pre>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/=5b=5d=3d.html"><code>
-  self[offset] = n
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_--5B--5D--3D"><code>self[offset] = n</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/=5b=5d=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-5B-5D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身の指すアドレスに offset バイトを足したメモリ領域を指定された n に書き換えます。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] n:</dt>
+<dd>
+整数を指定します。
+</dd>
+<dt>[EXCEPTION] DL::DLError:</dt>
+<dd>
+self の保持するポインタが NULL である場合に発生します
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'dl'
 
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/=5b=5d=3d.html"><code>
-  self[offset, len] = v
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+s = 'abc'
+cptr  = DL::CPtr[s]
+cptr[0] = 65
+p cptr.to_s         #=&gt; &quot;Bbc&quot;
+</pre>
+</dd>
+<dt class="method-heading" id="I_--5B--5D--3D"><code>self[offset, len] = v</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/=5b=5d=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-5B-5D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身の指すアドレスに offset バイトを足したメモリ領域の先頭 len バイトに
 文字列 str をコピーします。
 </p>
-</td>
+<p>
+str のサイズが len より小さい場合は、残りの領域を 0 で埋めます。
+コピー先の領域が len より大きいか検証しません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] offset:</dt>
+<dd>
+書き換えたいメモリ領域のオフセットを整数で与えます。
+</dd>
+<dt class='method-param'>[PARAM] len:</dt>
+<dd>
+書き換えたいメモリ領域のサイズを整数で指定します。
+</dd>
+<dt class='method-param'>[PARAM] v:</dt>
+<dd>
+メモリ領域にセットしたいバイト列を文字列で指定します。
+</dd>
+<dt>[EXCEPTION] DL::DLError:</dt>
+<dd>
+self の保持するポインタが NULL である場合に発生します
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'dl'
 
-</tr>
+s = 'abc'
+cptr  = DL::CPtr[s]
+p cptr[1,2] = &quot;AA&quot;
+p cptr.to_s         #=&gt; &quot;aAA&quot;
+</pre>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/free.html"><code>
-  free -&gt; DL::CFunc
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_FREE"><code>free -&gt; DL::CFunc</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/free.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-free">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 GC がメモリを解放するのに使用する <a href="../class/-d-l=3a=3a-c-func.html">DL::CFunc</a> オブジェクトを返します。
 </p>
-</td>
+<p>
+これは普通 <a href="../method/-d-l=3a=3a-c-ptr/i/free=3d.html">DL::CPtr#free=</a> や <a href="../method/-d-l=3a=3a-c-ptr/s/new.html">DL::CPtr.new</a> によって設定されます。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/free=3d.html"><code>
-  free=(cfunc)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_FREE--3D"><code>free=(cfunc)</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/free=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-free-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 GC が自身を解放するのに使う関数を <a href="../class/-d-l=3a=3a-c-func.html">DL::CFunc</a> で指定します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] cfunc:</dt>
+<dd>
+自身を解放するのに使われる関数を <a href="../class/-d-l=3a=3a-c-func.html">DL::CFunc</a> か整数で指定します。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/null=3f.html"><code>
-  null? -&gt; bool
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_NULL--3F"><code>null? -&gt; bool</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/null=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-null-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身が NULL なら true を返します。そうでないなら false を返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/size.html"><code>
-  size -&gt; Integer
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_SIZE"><code>size -&gt; Integer</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/size.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-size">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身の指す領域のサイズを返します。
 </p>
-</td>
+<p>
+基本的には <a href="../method/-d-l=3a=3a-c-ptr/s/new.html">DL::CPtr.new</a> で指定したサイズが返されます。
+<a href="../method/-d-l=3a=3a-c-ptr/s/to_ptr.html">DL::CPtr.to_ptr</a> で文字列を変換したときは、そのバイト数が返されます。
+<a href="../method/-d-l=3a=3a-c-ptr/i/size=3d.html">DL::CPtr#size=</a> でこの値を変更することができます。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/size=3d.html"><code>
-  size=(s)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_SIZE--3D"><code>size=(s)</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/size=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-size-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身の指す領域のサイズを変えます。
 </p>
-</td>
+<p>
+変更してもメモリの再割り当てはしません。単にオブジェクトが記録している
+size の情報が変更されるだけです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] s:</dt>
+<dd>
+自身が指すメモリのサイズを整数で指定します。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/to_i.html"><code>
-  to_i -&gt; Integer<br>to_int -&gt; Integer
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_TO_I"><code>to_i -&gt; Integer</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/to_i.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-to_i">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_int -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
 自身が指すアドレスを整数で返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/to_s.html"><code>
-  to_s -&gt; String<br>to_s(len) -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_TO_S"><code>to_s -&gt; String</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/to_s.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-to_s">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_s(len) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
 自身が指す領域から長さ len の文字列を複製して返します。
 </p>
-</td>
+<p>
+len を省略した場合は、文字列の終りは '\0' であると仮定して、
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/strlen.html">strlen(3)</a> を使って長さを算出します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] len:</dt>
+<dd>
+文字列の長さを整数で指定します。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/to_str.html"><code>
-  to_str -&gt; String<br>to_str(len) -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_TO_STR"><code>to_str -&gt; String</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/to_str.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-to_str">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_str(len) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
 自身が指す領域から長さ len の文字列を複製して返します。
 </p>
-</td>
+<p>
+len を省略した場合は、self.size をその代わりに使います。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] len:</dt>
+<dd>
+文字列の長さを整数で指定します。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-d-l=3a=3a-c-ptr/i/to_value.html"><code>
-  to_value -&gt; object
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_TO_VALUE"><code>to_value -&gt; object</code><span class="permalink">[<a href="../method/-d-l=3a=3a-c-ptr/i/to_value.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/dl/rdoc/DL/CPtr.html#method-i-to_value">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身はヒープに確保された Ruby のオブジェクトを指すポインタであると仮定して、
 自身が指すオブジェクトを返します。
 </p>
-</td>
-
-</tr>
-
-</table>
-
-
-
-<h2>継承したメソッド</h2>
-<p><code>
-
-<a href="../method/-basic-object/i/=21=3d.html">!=</a>
-
-<a href="../method/-basic-object/i/__id__.html">__id__</a>
-
-<a href="../method/-basic-object/i/instance_eval.html">instance_eval</a>
-
-<a href="../method/-basic-object/i/instance_exec.html">instance_exec</a>
-
-<a href="../method/-basic-object/i/singleton_method_added.html">singleton_method_added</a>
-
-<a href="../method/-basic-object/i/singleton_method_removed.html">singleton_method_removed</a>
-
-<a href="../method/-basic-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
-
-<a href="../method/-object/i/=21.html">!</a>
-
-<a href="../method/-object/i/=3d=3d=3d.html">===</a>
-
-<a href="../method/-object/i/=3d=7e.html">=~</a>
-
-<a href="../method/-object/i/__send__.html">__send__</a>
-
-<a href="../method/-object/i/_dump.html">_dump</a>
-
-<a href="../method/-object/i/class.html">class</a>
-
-<a href="../method/-object/i/clone.html">clone</a>
-
-<a href="../method/-object/i/dclone.html">dclone</a>
-
-<a href="../method/-object/i/display.html">display</a>
-
-<a href="../method/-object/i/enum_for.html">enum_for</a>
-
-<a href="../method/-object/i/equal=3f.html">equal?</a>
-
-<a href="../method/-object/i/extend.html">extend</a>
-
-<a href="../method/-object/i/freeze.html">freeze</a>
-
-<a href="../method/-object/i/frozen=3f.html">frozen?</a>
-
-<a href="../method/-object/i/hash.html">hash</a>
-
-<a href="../method/-object/i/initialize.html">initialize</a>
-
-<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
-
-<a href="../method/-object/i/inspect.html">inspect</a>
-
-<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
-
-<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
-
-<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
-
-<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
-
-<a href="../method/-object/i/instance_variables.html">instance_variables</a>
-
-<a href="../method/-object/i/is_a=3f.html">is_a?</a>
-
-<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
-
-<a href="../method/-object/i/marshal_load.html">marshal_load</a>
-
-<a href="../method/-object/i/method.html">method</a>
-
-<a href="../method/-object/i/method_missing.html">method_missing</a>
-
-<a href="../method/-object/i/methods.html">methods</a>
-
-<a href="../method/-object/i/must_be.html">must_be</a>
-
-<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
-
-<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
-
-<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
-
-<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
-
-<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
-
-<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
-
-<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
-
-<a href="../method/-object/i/must_equal.html">must_equal</a>
-
-<a href="../method/-object/i/must_include.html">must_include</a>
-
-<a href="../method/-object/i/must_match.html">must_match</a>
-
-<a href="../method/-object/i/must_raise.html">must_raise</a>
-
-<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
-
-<a href="../method/-object/i/must_send.html">must_send</a>
-
-<a href="../method/-object/i/must_throw.html">must_throw</a>
-
-<a href="../method/-object/i/nil=3f.html">nil?</a>
-
-<a href="../method/-object/i/object_id.html">object_id</a>
-
-<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
-
-<a href="../method/-object/i/pretty_print.html">pretty_print</a>
-
-<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
-
-<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
-
-<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
-
-<a href="../method/-object/i/private_methods.html">private_methods</a>
-
-<a href="../method/-object/i/protected_methods.html">protected_methods</a>
-
-<a href="../method/-object/i/psych_to_yaml.html">psych_to_yaml</a>
-
-<a href="../method/-object/i/public_methods.html">public_methods</a>
-
-<a href="../method/-object/i/public_send.html">public_send</a>
-
-<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
-
-<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
-
-<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
-
-<a href="../method/-object/i/singleton_class.html">singleton_class</a>
-
-<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
-
-<a href="../method/-object/i/taguri.html">taguri</a>
-
-<a href="../method/-object/i/taguri=3d.html">taguri=</a>
-
-<a href="../method/-object/i/taint.html">taint</a>
-
-<a href="../method/-object/i/tainted=3f.html">tainted?</a>
-
-<a href="../method/-object/i/tap.html">tap</a>
-
-<a href="../method/-object/i/to_a.html">to_a</a>
-
-<a href="../method/-object/i/to_ary.html">to_ary</a>
-
-<a href="../method/-object/i/to_hash.html">to_hash</a>
-
-<a href="../method/-object/i/to_io.html">to_io</a>
-
-<a href="../method/-object/i/to_proc.html">to_proc</a>
-
-<a href="../method/-object/i/to_regexp.html">to_regexp</a>
-
-<a href="../method/-object/i/to_yaml.html">to_yaml</a>
-
-<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
-
-<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
-
-<a href="../method/-object/i/trust.html">trust</a>
-
-<a href="../method/-object/i/untaint.html">untaint</a>
-
-<a href="../method/-object/i/untrust.html">untrust</a>
-
-<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
-
-<a href="../method/-object/s/yaml_tag.html">.yaml_tag</a>
-
-<a href="../method/-object/s/yaml_tag_subclasses=3f.html">.yaml_tag_subclasses?</a>
-
-</code></p>
-
-
+<p>
+例:
+</p>
+<pre>
+require 'dl'
+
+s = 'abc'
+i = DL.dlwrap(s)
+cptr = DL::CPtr.new(i)
+p cptr.to_value   #=&gt; &quot;abc&quot;
+</pre>
+</dd>
+
+
+</dl>
 
 
 

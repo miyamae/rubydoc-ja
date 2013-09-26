@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../../../style.css">
   <link rel="icon" type="image/png" href="../../../rurema.png">
   <title>singleton method Fiddle::Function.new</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 2.0.0 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -20,21 +19,19 @@
 </p>
 
 
-
-
 <h1>singleton method Fiddle::Function.new</h1>
-
 <dl class="methodlist">
 
-<dt class="method-heading"><code>new(ptr, args, ret_type, abi=Fiddle::Function::DEFAULT) -&gt; Fiddle::Function</code></dt>
+<dt class="method-heading" id="S_NEW"><code>new(ptr, args, ret_type, abi=Fiddle::Function::DEFAULT, name: nil) -&gt; Fiddle::Function</code><span class="permalink">[<a href="../../../method/-fiddle=3a=3a-function/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/fiddle/rdoc/Fiddle/Function.html#method-c-new">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
-ptr (関数ポインタを表す整数)から Fiddle::Function オブジェクトを
+ptr (関数ポインタ)から Fiddle::Function オブジェクトを
 生成します。
 </p>
 <p>
-ptr には <a href="../../../class/-d-l=3a=3a-handle.html">DL::Handle</a> から <a href="../../../method/-d-l=3a=3a-handle/i/ptr.html">DL::Handle#ptr</a> で取りだした
-関数ポインタ(を表す整数)を渡します。
+ptr には <a href="../../../class/-fiddle=3a=3a-handle.html">Fiddle::Handle</a> から <a href="../../../method/-fiddle=3a=3a-handle/i/ptr.html">Fiddle::Handle#ptr</a> などで取りだした
+関数ポインタ(を表す整数)、もしくは関数を指している
+<a href="../../../class/-fiddle=3a=3a-pointer.html">Fiddle::Pointer</a> を渡します。
 </p>
 <p>
 args、ret_type で関数の引数と返り値の型を指定します。これには以下の
@@ -51,6 +48,11 @@ args、ret_type で関数の引数と返り値の型を指定します。これ�
 <li><a href="../../../method/-fiddle/c/-t-y-p-e_-l-o-n-g_-l-o-n-g.html">Fiddle::TYPE_LONG_LONG</a></li>
 <li><a href="../../../method/-fiddle/c/-t-y-p-e_-f-l-o-a-t.html">Fiddle::TYPE_FLOAT</a></li>
 <li><a href="../../../method/-fiddle/c/-t-y-p-e_-d-o-u-b-l-e.html">Fiddle::TYPE_DOUBLE</a></li>
+<li><a href="../../../method/-fiddle/c/-t-y-p-e_-i-n-t-p-t-r_-t.html">Fiddle::TYPE_INTPTR_T</a></li>
+<li><a href="../../../method/-fiddle/c/-t-y-p-e_-u-i-n-t-p-t-r_-t.html">Fiddle::TYPE_UINTPTR_T</a></li>
+<li><a href="../../../method/-fiddle/c/-t-y-p-e_-p-t-r-d-i-f-f_-t.html">Fiddle::TYPE_PTRDIFF_T</a></li>
+<li><a href="../../../method/-fiddle/c/-t-y-p-e_-s-i-z-e_-t.html">Fiddle::TYPE_SIZE_T</a></li>
+<li><a href="../../../method/-fiddle/c/-t-y-p-e_-s-s-i-z-e_-t.html">Fiddle::TYPE_SSIZE_T</a></li>
 </ul>
 <p>
 abi で呼出規約を指定します。
@@ -63,18 +65,20 @@ abi で呼出規約を指定します。
 のどちらかを指定します。
 </p>
 <pre>
-require 'dl'
 require 'fiddle'
 
-include Fiddle
-
-libc = DL.dlopen(&quot;/lib/libc.so.6&quot;)
-f = Fiddle::Function.new(libc[&quot;strcpy&quot;], [TYPE_VOIDP, TYPE_VOIDP], TYPE_VOIDP)
+h = Fiddle::Handle.new('libc.so.6')
+func = Fiddle::Function.new(h.sym(&quot;strlen&quot;), [Fiddle::TYPE_VOIDP],
+                            Fiddle::TYPE_INT, name: &quot;strlen&quot;)
+p func.ptr == h.sym(&quot;strlen&quot;) # =&gt; true
+p func.call(&quot;abc&quot;) # =&gt; 3
+p func.name # =&gt; &quot;strlen&quot;
 </pre>
 <dl>
 <dt class='method-param'>[PARAM] ptr:</dt>
 <dd>
-C の関数を指す <a href="../../../class/-d-l=3a=3a-handle.html">DL::Handle</a> オブジェクト
+C の関数を指す <a href="../../../class/-fiddle=3a=3a-pointer.html">Fiddle::Pointer</a> オブジェクトもしくは
+アドレスを表す整数
 </dd>
 <dt class='method-param'>[PARAM] args:</dt>
 <dd>
@@ -87,6 +91,10 @@ C の関数を指す <a href="../../../class/-d-l=3a=3a-handle.html">DL::Handle<
 <dt class='method-param'>[PARAM] abi:</dt>
 <dd>
 呼出規約
+</dd>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+関数の名前(文字列)
 </dd>
 </dl>
 </dd>

@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>class OpenSSL::PKCS7</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.3 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -16,7 +15,6 @@
 &gt; <a href="../library/openssl.html">opensslライブラリ</a>
 &gt; OpenSSL::PKCS7クラス
 </p>
-
 
 
 <h1>class OpenSSL::PKCS7</h1>
@@ -33,6 +31,8 @@
 
       &lt; <a href="../class/-basic-object.html">BasicObject</a>
       
+
+
 
 
 
@@ -58,769 +58,920 @@ S/MIME には以下の種類のメッセージがあります
 </p>
 <ul>
 <li>enveloped-only</li>
-<li>signed-only</li>
+<li>signed-only<ul>
 <li>signedData フォーマット</li>
 <li>multipart/signed フォーマット</li>
+</ul>
+</li>
 <li>Certificate-only</li>
 </ul>
 
 
 
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_ENCRYPT">encrypt</a>
+
+<a href="#S_NEW">new</a>
+
+<a href="#S_READ_SMIME">read_smime</a>
+
+<a href="#S_SIGN">sign</a>
+
+<a href="#S_WRITE_SMIME">write_smime</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_ADD_CERTIFICATE">add_certificate</a>
+
+<a href="#I_ADD_CRL">add_crl</a>
+
+<a href="#I_ADD_DATA">add_data</a>
+
+<a href="#I_ADD_DATA">data=</a>
+
+<a href="#I_ADD_RECIPIENT">add_recipient</a>
+
+<a href="#I_ADD_SIGNER">add_signer</a>
+
+<a href="#I_CERTIFICATES">certificates</a>
+
+<a href="#I_CERTIFICATES--3D">certificates=</a>
+
+<a href="#I_CIPHER--3D">cipher=</a>
+
+<a href="#I_CRLS">crls</a>
+
+<a href="#I_CRLS--3D">crls=</a>
+
+<a href="#I_DATA">data</a>
+
+<a href="#I_DECRYPT">decrypt</a>
+
+<a href="#I_DETACHED">detached</a>
+
+<a href="#I_DETACHED">detached?</a>
+
+<a href="#I_DETACHED--3D">detached=</a>
+
+<a href="#I_ERROR_STRING">error_string</a>
+
+<a href="#I_ERROR_STRING--3D">error_string=</a>
+
+<a href="#I_RECIPIENTS">recipients</a>
+
+<a href="#I_SIGNERS">signers</a>
+
+<a href="#I_TO_DER">to_der</a>
+
+<a href="#I_TO_PEM">to_pem</a>
+
+<a href="#I_TO_PEM">to_s</a>
+
+<a href="#I_TYPE">type</a>
+
+<a href="#I_TYPE--3D">type=</a>
+
+<a href="#I_VERIFY">verify</a>
+
+</dd>
+
+<dt>定数</dt>
+<dd>
+
+<a href="#C_-B-I-N-A-R-Y">BINARY</a>
+
+<a href="#C_-D-E-T-A-C-H-E-D">DETACHED</a>
+
+<a href="#C_-N-O-A-T-T-R">NOATTR</a>
+
+<a href="#C_-N-O-C-E-R-T-S">NOCERTS</a>
+
+<a href="#C_-N-O-C-H-A-I-N">NOCHAIN</a>
+
+<a href="#C_-N-O-I-N-T-E-R-N">NOINTERN</a>
+
+<a href="#C_-N-O-S-I-G-S">NOSIGS</a>
+
+<a href="#C_-N-O-S-M-I-M-E-C-A-P">NOSMIMECAP</a>
+
+<a href="#C_-N-O-V-E-R-I-F-Y">NOVERIFY</a>
+
+<a href="#C_-T-E-X-T">TEXT</a>
+
+</dd>
+
+</dl>
+
+
 <h2>特異メソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/encrypt.html"><code>
-  encrypt(certs, data, cipher=nil, flags=0) -&gt; OpenSSL::PKCS7
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_ENCRYPT"><code>encrypt(certs, data, cipher=nil, flags=0) -&gt; OpenSSL::PKCS7</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/encrypt.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-c-encrypt">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 data を証明書の公開鍵で暗号化します。
 </p>
-</td>
+<p>
+暗号化は複数の公開鍵を用いてすることが可能です。そのためには
+複数の証明書を配列で渡します。
+</p>
+<p>
+data には任意の文字列を渡せますが、一般的には MIME 形式の文字列を渡します。
+署名と暗号化の両方をしたい場合は、
+署名(<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/sign.html">OpenSSL::PKCS7.sign</a>)された S/MIME 形式の文字列を
+渡すことが一般的です。
+</p>
+<p>
+cipher は共通鍵暗号の方式を <a href="../class/-open-s-s-l=3a=3a-cipher.html">OpenSSL::Cipher</a> オブジェクトで指定します。
+nil を渡すと適当な方式が選ばれます。互換性を気にするのであれば
+triple DES を使うとよいでしょう。多くのクライアントで利用可能なはずです。
+</p>
+<p>
+flags には以下のフラグを渡すことができます。
+</p>
+<ul>
+<li><a href="../class/-open-s-s-l=3a=3a-p-k-c-s7=3a=3a-t-e-x-t.html">OpenSSL::PKCS7::TEXT</a>
+暗号化するデータに text/plain タイプの MIME ヘッダを追加します。
+MIME形式のデータを渡すときにはこれを使ってはいけません。</li>
+<li><a href="../class/-open-s-s-l=3a=3a-p-k-c-s7=3a=3a-b-i-n-a-r-y.html">OpenSSL::PKCS7::BINARY</a>
+data に MIME 正規化をほどこしません。</li>
+</ul>
+<dl>
+<dt class='method-param'>[PARAM] certs:</dt>
+<dd>
+公開鍵を含む証明書(<a href="../class/-open-s-s-l=3a=3a-x509=3a=3a-certificate.html">OpenSSL::X509::Certificate</a> オブジェクト)の配列
+</dd>
+<dt class='method-param'>[PARAM] data:</dt>
+<dd>
+暗号化対象の文字列
+</dd>
+<dt class='method-param'>[PARAM] cipher:</dt>
+<dd>
+共通鍵暗号の方式(<a href="../class/-open-s-s-l=3a=3a-cipher.html">OpenSSL::Cipher</a> オブジェクト)
+</dd>
+<dt class='method-param'>[PARAM] flags:</dt>
+<dd>
+フラグ
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/new.html"><code>
-  new -&gt; OpenSSL::PKCS7<br>new(obj) -&gt; OpenSSL::PKCS7
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_NEW"><code>new -&gt; OpenSSL::PKCS7</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>new(obj) -&gt; OpenSSL::PKCS7</code></dt>
+<dd class="method-description">
+<p>
 PKCS7 オブジェクトを生成します。
 </p>
-</td>
+<p>
+引数を渡さなかった場合は空のオブジェクトを作ります。
+</p>
+<p>
+引数を渡した場合は、文字列もしくは <a href="../class/-i-o.html">IO</a> オブジェクトから
+PEM 形式もしくは DER 形式の文字列を読み込み
+PKCS7 オブジェクトを生成します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+データを読みこむ文字列もしくは IO オブジェクト
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/read_smime.html"><code>
-  read_smime(obj) -&gt; OpenSSL::PKCS7
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_READ_SMIME"><code>read_smime(obj) -&gt; OpenSSL::PKCS7</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/read_smime.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-c-read_smime">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 S/MIME 形式のデータを読み込み、PKCS7 オブジェクトを返します。
 </p>
-</td>
+<p>
+引数 obj からデータを読み込みます。文字列もしくは
+<a href="../class/-i-o.html">IO</a> オブジェクトから読み出すことができます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+データを読み出すオブジェクト
+</dd>
+<dt>[EXCEPTION] OpenSSL::PKCS7::PKCS7Error:</dt>
+<dd>
+読み込みに失敗した場合に発生します
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/sign.html"><code>
-  sign(cert, key, data, certs = [], flags = 0) -&gt; OpenSSL::PKCS7
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_SIGN"><code>sign(cert, key, data, certs = [], flags = 0) -&gt; OpenSSL::PKCS7</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/sign.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-c-sign">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 data に証明書と秘密鍵で署名します。
 </p>
-</td>
+<p>
+cert に署名に使う証明書を、key にその証明書に対応する秘密鍵を
+渡します。certs に <a href="../class/-open-s-s-l=3a=3a-x509=3a=3a-certificate.html">OpenSSL::X509::Certificate</a> オブジェクトの配列 を
+渡すと <a href="../class/-open-s-s-l=3a=3a-p-k-c-s7.html">OpenSSL::PKCS7</a> オブジェクトにそれらの証明書が追加で保持されます。
+例えば中間 CA 証明書などを渡します。
+flags は以下の値の OR を渡します。
+</p>
+<ul>
+<li><a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-t-e-x-t.html">OpenSSL::PKCS7::TEXT</a>
+text/plain 用の MIME ヘッダをデータに付け加える。</li>
+<li><a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-c-e-r-t-s.html">OpenSSL::PKCS7::NOCERTS</a>
+署名者の証明書を署名に含めません。送り先がすでに証明書をもっている場合
+など、他の方法で証明書を手に入れることができる場合に
+データ量を減らすために用います。</li>
+<li><a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-d-e-t-a-c-h-e-d.html">OpenSSL::PKCS7::DETACHED</a>
+クリア署名(multipart/signed)をする。</li>
+<li><a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-b-i-n-a-r-y.html">OpenSSL::PKCS7::BINARY</a>
+data に MIME 正規化を施さない。</li>
+<li><a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-a-t-t-r.html">OpenSSL::PKCS7::NOATTR</a>
+PKCS#7 autenticatedAttributes (署名時刻など)をオブジェクトに含めない。</li>
+<li><a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-s-m-i-m-e-c-a-p.html">OpenSSL::PKCS7::NOSMIMECAP</a>
+署名者が使用可能な暗号アルゴリズムの情報など(SMIMECapabilities)を省略する。</li>
+</ul>
+<p>
+返り値は署名結果を含む <a href="../class/-open-s-s-l=3a=3a-p-k-c-s7.html">OpenSSL::PKCS7</a> オブジェクトを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] cert:</dt>
+<dd>
+署名に用いる証明書(<a href="../class/-open-s-s-l=3a=3a-x509=3a=3a-certificate.html">OpenSSL::X509::Certificate</a> オブジェクト)
+</dd>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+署名に用いる秘密鍵(<a href="../class/-open-s-s-l=3a=3a-p-key=3a=3a-p-key.html">OpenSSL::PKey::PKey</a> のサブクラスのオブジェクト)
+</dd>
+<dt class='method-param'>[PARAM] data:</dt>
+<dd>
+署名対象のデータ文字列
+</dd>
+<dt class='method-param'>[PARAM] certs:</dt>
+<dd>
+添付する証明書群(<a href="../class/-open-s-s-l=3a=3a-x509=3a=3a-certificate.html">OpenSSL::X509::Certificate</a> オブジェクトの配列)
+</dd>
+<dt class='method-param'>[PARAM] flags:</dt>
+<dd>
+フラグ(整数値)
+</dd>
+<dt>[EXCEPTION] OpenSSL::PKCS7::PKCS7Error:</dt>
+<dd>
+署名に失敗した場合に発生します
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/write_smime.html"><code>
-  write_smime(p7sig, data=nil, flags = 0) -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_WRITE_SMIME"><code>write_smime(p7sig, data=nil, flags = 0) -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/write_smime.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-c-write_smime">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 PKCS7 オブジェクトから S/MIME 形式の文字列を返します。
 </p>
-</td>
+<p>
+data には署名対象のデータを渡します。
+data に nil を渡すと <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/data.html">OpenSSL::PKCS7#data</a> で得られる
+文字列を用います。通常は nil を渡してください。
+</p>
+<p>
+flags には以下の定数の or を渡します。
+</p>
+<ul>
+<li><a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-d-e-t-a-c-h-e-d.html">OpenSSL::PKCS7::DETACHED</a>
+クリア署名をします。これは <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/sign.html">OpenSSL::PKCS7.sign</a> で
+<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-d-e-t-a-c-h-e-d.html">OpenSSL::PKCS7::DETACHED</a> を渡した場合にのみ意味を持ちます。</li>
+<li><a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-t-e-x-t.html">OpenSSL::PKCS7::TEXT</a>
+MIME ヘッダに text/plain を付加します。
+これは <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/sign.html">OpenSSL::PKCS7.sign</a> で
+<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-d-e-t-a-c-h-e-d.html">OpenSSL::PKCS7::DETACHED</a> を渡した場合にのみ意味を持ちます。</li>
+</ul>
+<p>
+例:
+</p>
+<pre>
+data = &quot;foobar&quot;
+p7 = PKCS7.sign( X509::Certificate.new(File.read('cert.pem')),
+                 PKey::RSA.new(File.read('privkey.pem')),
+                 data)
+smime = PKCS7.write_smime(p7)
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] p7sig:</dt>
+<dd>
+PKCS#7 オブジェクト
+</dd>
+<dt class='method-param'>[PARAM] data:</dt>
+<dd>
+署名されたデータ文字列
+</dd>
+<dt class='method-param'>[PARAM] flags:</dt>
+<dd>
+フラグ(整数値)
+</dd>
+<dt>[EXCEPTION] OpenSSL::PKCS::PKCS7Error:</dt>
+<dd>
+S/MIME形式への変換に失敗した場合に発生します
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-</table>
+</dl>
 
 <h2>インスタンスメソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/add_certificate.html"><code>
-  add_certificate(cert) -&gt; self
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_ADD_CERTIFICATE"><code>add_certificate(cert) -&gt; self</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/add_certificate.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-add_certificate">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 署名に添付する証明書を追加します。
 </p>
-</td>
+<p>
+通常は <a href="../class/-open-s-s-l=3a=3a-p-k-c-s7=2esign.html">OpenSSL::PKCS7.sign</a> の引数で添付する証明書を指定した
+ほうがよいでしょう。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] cert:</dt>
+<dd>
+追加する証明書(<a href="../class/-open-s-s-l=3a=3a-x509=3a=3a-certificate.html">OpenSSL::X509::Certificate</a> オブジェクト)
+</dd>
+<dt>[EXCEPTION] OpenSSL::PKCS7::PKCS7Error:</dt>
+<dd>
+追加に失敗した場合に発生します。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/add_crl.html"><code>
-  add_crl(crl) -&gt; self
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_ADD_CRL"><code>add_crl(crl) -&gt; self</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/add_crl.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-add_crl">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 署名に添付する CRL を追加します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] crl:</dt>
+<dd>
+追加する CLR (<a href="../class/-open-s-s-l=3a=3a-x509=3a=3a-c-r-l.html">OpenSSL::X509::CRL</a> オブジェクト)
+</dd>
+<dt>[EXCEPTION] OpenSSL::PKCS7::PKCS7Error:</dt>
+<dd>
+追加に失敗した場合に発生します。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/add_data.html"><code>
-  data=(data)<br>add_data(data) -&gt; data
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_ADD_DATA"><code>data=(data)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/add_data.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-add_data">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>add_data(data) -&gt; data</code></dt>
+<dd class="method-description">
+<p>
 署名対象のデータを設定します。
 </p>
-</td>
+<p>
+このメソッドは使わないでください。
+このメソッドは PKCS#7 の低レベル API であり、正しく使うのは
+難しいでしょう。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] data:</dt>
+<dd>
+文字列
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/add_recipient.html"><code>
-  add_recipient(recipient) -&gt; self
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_ADD_RECIPIENT"><code>add_recipient(recipient) -&gt; self</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/add_recipient.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-add_recipient">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 送信者を追加します。
 </p>
-</td>
+<p>
+このメソッドは使わないでください。
+このメソッドは PKCS#7 の低レベル API であり、正しく使うのは
+難しいでしょう。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] recipient:</dt>
+<dd>
+追加する送信者(<a href="../class/-open-s-s-l=3a=3a-p-k-c-s7=3a=3a-recipient-info.html">OpenSSL::PKCS7::RecipientInfo</a>)
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/add_signer.html"><code>
-  add_signer(singer) -&gt; self
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_ADD_SIGNER"><code>add_signer(singer) -&gt; self</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/add_signer.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-add_signer">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 署名者を追加します。
 </p>
-</td>
+<p>
+このメソッドは使わないでください。
+このメソッドは PKCS#7 の低レベル API であり、正しく使うのは
+難しいでしょう。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] signer:</dt>
+<dd>
+追加する署名者(<a href="../class/-open-s-s-l=3a=3a-p-k-c-s7=3a=3a-signer-info.html">OpenSSL::PKCS7::SignerInfo</a> オブジェクト)
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/certificates.html"><code>
-  certificates -&gt; [OpenSSL::X509::Certificate] | nil
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_CERTIFICATES"><code>certificates -&gt; [OpenSSL::X509::Certificate] | nil</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/certificates.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-certificates">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 署名に添付される証明書を配列で返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/certificates=3d.html"><code>
-  certificates=(certificates)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_CERTIFICATES--3D"><code>certificates=(certificates)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/certificates=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-certificates-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 署名に付ける証明書を指定します。
 </p>
-</td>
+<p>
+PKCS7 オブジェクトに元々つけられていた証明書はクリアされます。
+通常は <a href="../class/-open-s-s-l=3a=3a-p-k-c-s7=2esign.html">OpenSSL::PKCS7.sign</a> の引数で添付する証明書を指定した
+ほうがよいでしょう。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] certificates:</dt>
+<dd>
+証明書(<a href="../class/-open-s-s-l=3a=3a-x509=3a=3a-certificate.html">OpenSSL::X509::Certificate</a> オブジェクト)の配列
+</dd>
+<dt>[EXCEPTION] OpenSSL::PKCS7::PKCS7Error:</dt>
+<dd>
+変更に失敗した場合に発生します。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/cipher=3d.html"><code>
-  cipher=(cipher)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_CIPHER--3D"><code>cipher=(cipher)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/cipher=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-cipher-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 使用する共通鍵暗号アルゴリズムを指定します。
 </p>
-</td>
+<p>
+このメソッドは使わないでください。
+このメソッドは PKCS#7 の低レベル API であり、正しく使うのは
+難しいでしょう。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] cipher:</dt>
+<dd>
+共通鍵暗号アルゴリズム(<a href="../class/-open-s-s-l=3a=3a-cipher.html">OpenSSL::Cipher</a> オブジェクト)
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/crls.html"><code>
-  crls -&gt; [OpenSSL::X509::CRL]
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_CRLS"><code>crls -&gt; [OpenSSL::X509::CRL]</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/crls.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-crls">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 署名に添付されている CRL を配列で返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/crls=3d.html"><code>
-  crls=(crls)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_CRLS--3D"><code>crls=(crls)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/crls=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-crls-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 署名に添付される CRL を配列で設定します。
 </p>
-</td>
+<p>
+元々付けられていた CRL はクリアされます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] crls:</dt>
+<dd>
+更新する CRL(<a href="../class/-open-s-s-l=3a=3a-x509=3a=3a-c-r-l.html">OpenSSL::X509::CRL</a> オブジェクト) の配列
+</dd>
+<dt>[EXCEPTION] OpenSSL::PKCS7::PKCS7Error:</dt>
+<dd>
+変更に失敗した場合に発生します。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/data.html"><code>
-  data -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_DATA"><code>data -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/data.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-data">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 署名対象のデータを文字列で返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/decrypt.html"><code>
-  decrypt(pkey, cert, flags = 0) -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_DECRYPT"><code>decrypt(pkey, cert, flags = 0) -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/decrypt.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-decrypt">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 暗号化されたデータを復号化し、復号化されたデータを返します。
 </p>
-</td>
+<p>
+復号には暗号化に使った公開鍵に対応する秘密鍵と、その公開鍵を
+含む証明書が必要です。
+</p>
+<p>
+flags には以下のいずれかを指定できます。
+</p>
+<ul>
+<li><a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-t-e-x-t.html">OpenSSL::PKCS7::TEXT</a>
+暗号化されたデータに付けられた text/plain タイプの MIME ヘッダ
+を取り除きます。もしヘッダがなければエラーとなります。</li>
+</ul>
+<dl>
+<dt class='method-param'>[PARAM] pkey:</dt>
+<dd>
+復号化に使う秘密鍵(<a href="../class/-open-s-s-l=3a=3a-p-key=3a=3a-p-key.html">OpenSSL::PKey::PKey</a> オブジェクト)
+</dd>
+<dt class='method-param'>[PARAM] cert:</dt>
+<dd>
+対応する証明書(<a href="../class/-open-s-s-l=3a=3a-x509=3a=3a-certificate.html">OpenSSL::X509::Certificate</a> オブジェクト)
+</dd>
+<dt class='method-param'>[PARAM] flags:</dt>
+<dd>
+フラグ
+</dd>
+<dt>[EXCEPTION] OpenSSL::PKCS7::PKCS7Error:</dt>
+<dd>
+復号に失敗した場合に発生します
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/detached.html"><code>
-  detached? -&gt; bool<br>detached -&gt; bool
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_DETACHED"><code>detached? -&gt; bool</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/detached.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-detached">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>detached -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
 平文に署名を付ける形式(multipart/signed)かどうかを返します。
 </p>
-</td>
+<p>
+<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/sign.html">OpenSSL::PKCS7.sign</a> で flags に <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-d-e-t-a-c-h-e-d.html">OpenSSL::PKCS7::DETACHED</a>
+を渡した場合に真になります。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/detached=3d.html"><code>
-  detached=(b)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_DETACHED--3D"><code>detached=(b)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/detached=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-detached-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 平文に署名を付ける形式(multipart/signed)かどうかを設定します。
 </p>
-</td>
+<p>
+このメソッドは使わないでください。
+このメソッドは PKCS#7 の低レベル API であり、正しく使うのは
+難しいでしょう。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] b:</dt>
+<dd>
+設定する真偽値
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/error_string.html"><code>
-  error_string -&gt; String | nil
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_ERROR_STRING"><code>error_string -&gt; String | nil</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/error_string.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-error_string">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 検証エラーの理由を表す文字列を返します。
 </p>
-</td>
+<p>
+<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/verify.html">OpenSSL::PKCS7#verify</a> で検証を
+した場合のみ更新されます。
+</p>
+<p>
+<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/verify.html">OpenSSL::PKCS7#verify</a> で検証をする前は nil を返します。
+</p>
+<p>
+検証に成功した場合は nil を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/error_string=3d.html">OpenSSL::PKCS7#error_string=</a>
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/error_string=3d.html"><code>
-  error_string=(str)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_ERROR_STRING--3D"><code>error_string=(str)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/error_string=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-error_string-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 検証エラーの理由を表す文字列を設定します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+設定するエラー文字列
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/error_string.html">OpenSSL::PKCS7#error_string</a>
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/recipients.html"><code>
-  recipients -&gt; [OpenSSL::PKCS7::RecipientInfo]
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_RECIPIENTS"><code>recipients -&gt; [OpenSSL::PKCS7::RecipientInfo]</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/recipients.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-recipients">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 メッセージの送信先の情報を配列で返します。
 </p>
-</td>
+<p>
+これは暗号化した場合のみ意味があります。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/signers.html"><code>
-  signers -&gt; [OpenSSL::PKCS7::SignerInfo]
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_SIGNERS"><code>signers -&gt; [OpenSSL::PKCS7::SignerInfo]</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/signers.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-signers">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 メッセージの署名者を表す <a href="../class/-open-s-s-l=3a=3a-p-k-c-s7=3a=3a-signer-info.html">OpenSSL::PKCS7::SignerInfo</a> オブジェクトの
 配列を返します。
 </p>
-</td>
+<p>
+これはメッセージを署名した場合にのみ意味があります。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/to_der.html"><code>
-  to_der -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_TO_DER"><code>to_der -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/to_der.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-to_der">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 DER 形式のバイナリ列に変換します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/to_pem.html"><code>
-  to_pem -&gt; String<br>to_s -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_TO_PEM"><code>to_pem -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/to_pem.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-to_pem">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_s -&gt; String</code></dt>
+<dd class="method-description">
+<p>
 PEM 形式の文字列に変換します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/type.html"><code>
-  type -&gt; Symbol
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_TYPE"><code>type -&gt; Symbol</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/type.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-type">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 PKCS7 オブジェクトのタイプを <a href="../class/-symbol.html">Symbol</a> オブジェクトで返します。
 </p>
-</td>
+<p>
+次のうちのいずれかの値をとります。
+</p>
+<ul>
+<li>:signed</li>
+<li>:encrypted</li>
+<li>:enveloped</li>
+<li>:signedAndEnveloped</li>
+<li>:data</li>
+</ul>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/type=3d.html"><code>
-  type=(type)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_TYPE--3D"><code>type=(type)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/type=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-type-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 PKCS7 オブジェクトのタイプを <a href="../class/-symbol.html">Symbol</a> オブジェクトで設定します。
 </p>
-</td>
+<p>
+このメソッドは使わないでください。
+このメソッドは PKCS#7 の低レベル API であり、正しく使うのは
+難しいでしょう。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] type:</dt>
+<dd>
+設定するタイプ(シンボル)
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/verify.html"><code>
-  verify(certs, store, indata = nil, flags = 0) -&gt; bool
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_VERIFY"><code>verify(certs, store, indata = nil, flags = 0) -&gt; bool</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/verify.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-i-verify">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 署名を検証します。
 </p>
-</td>
+<p>
+検証に成功した場合は真を、失敗した場合は偽を返します。
+</p>
+<p>
+certs には署名者の証明書を含む配列を渡します。
+通常 S/MIME 署名には証明者の証明書が含まれていますが、
+<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/sign.html">OpenSSL::PKCS7.sign</a> で <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-c-e-r-t-s.html">OpenSSL::PKCS7::NOCERTS</a> を渡した
+場合には含まれていないので、明示的に渡す必要があります。
+このメソッドは配列から適切な証明書を自動的に選択します。
+</p>
+<p>
+store には検証に用いる証明書ストアを渡します。
+検証に必要な信頼できる CA 証明書をあらかじめ証明書ストアに含めておく
+必要があります。
+</p>
+<p>
+indata は署名の対象となった文字列を渡します。
+nil を渡すと <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/data.html">OpenSSL::PKCS7#data</a> で得られる文字列
+を用います。通常は nil を渡すべきです。
+</p>
+<p>
+flags には以下の値の OR を渡します。
+</p>
+<ul>
+<li><a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-i-n-t-e-r-n.html">OpenSSL::PKCS7::NOINTERN</a>
+メッセージに添付された証明書を探索しません。
+これを指定した場合は、必要な証明書をすべて certs から渡す必要が
+あります。ある特定の証明書による署名のみを検証したい場合などに
+用います。</li>
+<li><a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-t-e-x-t.html">OpenSSL::PKCS7::TEXT</a>
+署名対象のデータに含まれる text/plain タイプの MIME ヘッダを取り除きます。
+もしヘッダがない場合はエラーとなります。</li>
+<li><a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-v-e-r-i-f-y.html">OpenSSL::PKCS7::NOVERIFY</a>
+署名者の証明書を検証しません。</li>
+<li><a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-c-h-a-i-n.html">OpenSSL::PKCS7::NOCHAIN</a>
+メッセージに含まれる証明書を中間 CA として利用しません。</li>
+<li><a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-s-i-g-s.html">OpenSSL::PKCS7::NOSIGS</a>
+署名を検証しません。</li>
+</ul>
+<p>
+通常、これらのフラグを渡さなかった場合、
+</p>
+<ul>
+<li>(もし存在するならば)メッセージに含まれる中間 CA 証明書の検証を行う</li>
+<li>その中間 CA 証明書を用いて、署名者の証明書の検証を行う</li>
+<li>署名者の証明書を用いて署名の検証を行う</li>
+</ul>
+<p>
+という順で検証が行われます。
+</p>
+<p>
+この検証は署名者証明書の持ち主が署名したという事実のみを検証します。
+署名者証明書の持ち主が本当に意図した相手であるかどうかは保証されません。
+証明書の内容から(ユーザに確認を取るなど)適切に判断する必要があります。
+</p>
+<p>
+検証に失敗した場合は <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/error_string.html">OpenSSL::PKCS7#error_string</a> に
+失敗した理由を表す文字列がセットされます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] certs:</dt>
+<dd>
+証明書(<a href="../class/-open-s-s-l=3a=3a-x509=3a=3a-certificate.html">OpenSSL::X509::Certificate</a> オブジェクト)の配列
+</dd>
+<dt class='method-param'>[PARAM] store:</dt>
+<dd>
+証明書ストア(<a href="../class/-open-s-s-l=3a=3a-x509=3a=3a-store.html">OpenSSL::X509::Store</a> オブジェクト)
+</dd>
+<dt class='method-param'>[PARAM] indata:</dt>
+<dd>
+署名対象の文字列
+</dd>
+<dt class='method-param'>[PARAM] flags:</dt>
+<dd>
+フラグ
+</dd>
+<dt>[EXCEPTION] OpenSSL::PKCS7::PKCS7Error:</dt>
+<dd>
+検証に失敗した場合に発生します
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-</table>
+</dl>
 
 <h2>定数</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-b-i-n-a-r-y.html"><code>
-  BINARY -&gt; Integer
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="C_-B-I-N-A-R-Y"><code>BINARY -&gt; Integer</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-b-i-n-a-r-y.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-c-BINARY">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 MIME canonical format への変換を行いません。
 </p>
-</td>
+<p>
+<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/sign.html">OpenSSL::PKCS7.sign</a>、<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/encrypt.html">OpenSSL::PKCS7.encrypt</a>
+で利用可能なフラグです。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-d-e-t-a-c-h-e-d.html"><code>
-  DETACHED -&gt; Integer
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="C_-D-E-T-A-C-H-E-D"><code>DETACHED -&gt; Integer</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-d-e-t-a-c-h-e-d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-c-DETACHED">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 平文に署名を付ける形式 (multipart/signed) で行います。
 </p>
-</td>
+<p>
+<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/sign.html">OpenSSL::PKCS7.sign</a>、<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/write_smime.html">OpenSSL::PKCS7.write_smime</a>
+で利用可能なフラグです。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-a-t-t-r.html"><code>
-  NOATTR -&gt; Integer
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="C_-N-O-A-T-T-R"><code>NOATTR -&gt; Integer</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-a-t-t-r.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-c-NOATTR">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 PKCS#7 autenticatedAttributes(署名した時間などの情報)
 を省略します。
 </p>
-</td>
+<p>
+<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/sign.html">OpenSSL::PKCS7.sign</a> で利用可能なフラグです。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-c-e-r-t-s.html"><code>
-  NOCERTS -&gt; Integer
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="C_-N-O-C-E-R-T-S"><code>NOCERTS -&gt; Integer</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-c-e-r-t-s.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-c-NOCERTS">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 署名者の証明書を署名に含めません。送り先がすでに証明書をもっている場合
 など、他の方法で証明書を手に入れることができる場合に
 データ量を減らすために用います。
 </p>
-</td>
+<p>
+<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/sign.html">OpenSSL::PKCS7.sign</a> で利用可能なフラグです。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-c-h-a-i-n.html"><code>
-  NOCHAIN -&gt; Integer
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="C_-N-O-C-H-A-I-N"><code>NOCHAIN -&gt; Integer</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-c-h-a-i-n.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-c-NOCHAIN">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 署名検証時に、メッセージに含まれる証明書を中間 CA として利用しません。
 </p>
-</td>
+<p>
+<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/verify.html">OpenSSL::PKCS7#verify</a> で利用可能なフラグです。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-i-n-t-e-r-n.html"><code>
-  NOINTERN -&gt; Integer
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="C_-N-O-I-N-T-E-R-N"><code>NOINTERN -&gt; Integer</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-i-n-t-e-r-n.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-c-NOINTERN">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 署名検証時に、署名者の証明書をメッセージに添付された証明書から探索しません。
 </p>
-</td>
+<p>
+<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/verify.html">OpenSSL::PKCS7#verify</a> でのみ利用可能なフラグです。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-s-i-g-s.html"><code>
-  NOSIGS -&gt; Integer
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="C_-N-O-S-I-G-S"><code>NOSIGS -&gt; Integer</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-s-i-g-s.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-c-NOSIGS">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 署名の検証を行いません。
 </p>
-</td>
+<p>
+<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/verify.html">OpenSSL::PKCS7#verify</a> で利用可能なフラグです。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-s-m-i-m-e-c-a-p.html"><code>
-  NOSMIMECAP -&gt; Integer
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="C_-N-O-S-M-I-M-E-C-A-P"><code>NOSMIMECAP -&gt; Integer</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-s-m-i-m-e-c-a-p.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-c-NOSMIMECAP">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 署名者が使用可能な暗号アルゴリズムの情報など(SMIMECapabilities)を省略します。
 </p>
-</td>
+<p>
+<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/sign.html">OpenSSL::PKCS7.sign</a> で利用可能なフラグです。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-v-e-r-i-f-y.html"><code>
-  NOVERIFY -&gt; Integer
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="C_-N-O-V-E-R-I-F-Y"><code>NOVERIFY -&gt; Integer</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-v-e-r-i-f-y.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-c-NOVERIFY">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 署名検証時に署名者の証明書の検証を行いません。
 </p>
-</td>
+<p>
+<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/verify.html">OpenSSL::PKCS7#verify</a> で利用可能なフラグです。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-t-e-x-t.html"><code>
-  TEXT -&gt; Integer
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="C_-T-E-X-T"><code>TEXT -&gt; Integer</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-t-e-x-t.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKCS7.html#method-c-TEXT">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 text/plain タイプの MIME ヘッダーを取り扱います。
 </p>
-</td>
-
-</tr>
-
-</table>
-
-
-
-<h2>継承したメソッド</h2>
-<p><code>
-
-<a href="../method/-basic-object/i/=21=3d.html">!=</a>
-
-<a href="../method/-basic-object/i/__id__.html">__id__</a>
-
-<a href="../method/-basic-object/i/instance_eval.html">instance_eval</a>
-
-<a href="../method/-basic-object/i/instance_exec.html">instance_exec</a>
-
-<a href="../method/-basic-object/i/singleton_method_added.html">singleton_method_added</a>
-
-<a href="../method/-basic-object/i/singleton_method_removed.html">singleton_method_removed</a>
-
-<a href="../method/-basic-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
-
-<a href="../method/-object/i/=21.html">!</a>
-
-<a href="../method/-object/i/=3d=3d.html">==</a>
-
-<a href="../method/-object/i/=3d=3d=3d.html">===</a>
-
-<a href="../method/-object/i/=3d=7e.html">=~</a>
-
-<a href="../method/-object/i/__send__.html">__send__</a>
-
-<a href="../method/-object/i/_dump.html">_dump</a>
-
-<a href="../method/-object/i/class.html">class</a>
-
-<a href="../method/-object/i/clone.html">clone</a>
-
-<a href="../method/-object/i/dclone.html">dclone</a>
-
-<a href="../method/-object/i/display.html">display</a>
-
-<a href="../method/-object/i/enum_for.html">enum_for</a>
-
-<a href="../method/-object/i/eql=3f.html">eql?</a>
-
-<a href="../method/-object/i/equal=3f.html">equal?</a>
-
-<a href="../method/-object/i/extend.html">extend</a>
-
-<a href="../method/-object/i/freeze.html">freeze</a>
-
-<a href="../method/-object/i/frozen=3f.html">frozen?</a>
-
-<a href="../method/-object/i/hash.html">hash</a>
-
-<a href="../method/-object/i/initialize.html">initialize</a>
-
-<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
-
-<a href="../method/-object/i/inspect.html">inspect</a>
-
-<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
-
-<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
-
-<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
-
-<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
-
-<a href="../method/-object/i/instance_variables.html">instance_variables</a>
-
-<a href="../method/-object/i/is_a=3f.html">is_a?</a>
-
-<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
-
-<a href="../method/-object/i/marshal_load.html">marshal_load</a>
-
-<a href="../method/-object/i/method.html">method</a>
-
-<a href="../method/-object/i/method_missing.html">method_missing</a>
-
-<a href="../method/-object/i/methods.html">methods</a>
-
-<a href="../method/-object/i/must_be.html">must_be</a>
-
-<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
-
-<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
-
-<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
-
-<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
-
-<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
-
-<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
-
-<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
-
-<a href="../method/-object/i/must_equal.html">must_equal</a>
-
-<a href="../method/-object/i/must_include.html">must_include</a>
-
-<a href="../method/-object/i/must_match.html">must_match</a>
-
-<a href="../method/-object/i/must_raise.html">must_raise</a>
-
-<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
-
-<a href="../method/-object/i/must_send.html">must_send</a>
-
-<a href="../method/-object/i/must_throw.html">must_throw</a>
-
-<a href="../method/-object/i/nil=3f.html">nil?</a>
-
-<a href="../method/-object/i/object_id.html">object_id</a>
-
-<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
-
-<a href="../method/-object/i/pretty_print.html">pretty_print</a>
-
-<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
-
-<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
-
-<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
-
-<a href="../method/-object/i/private_methods.html">private_methods</a>
-
-<a href="../method/-object/i/protected_methods.html">protected_methods</a>
-
-<a href="../method/-object/i/psych_to_yaml.html">psych_to_yaml</a>
-
-<a href="../method/-object/i/public_methods.html">public_methods</a>
-
-<a href="../method/-object/i/public_send.html">public_send</a>
-
-<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
-
-<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
-
-<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
-
-<a href="../method/-object/i/singleton_class.html">singleton_class</a>
-
-<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
-
-<a href="../method/-object/i/taguri.html">taguri</a>
-
-<a href="../method/-object/i/taguri=3d.html">taguri=</a>
-
-<a href="../method/-object/i/taint.html">taint</a>
-
-<a href="../method/-object/i/tainted=3f.html">tainted?</a>
-
-<a href="../method/-object/i/tap.html">tap</a>
-
-<a href="../method/-object/i/to_a.html">to_a</a>
-
-<a href="../method/-object/i/to_ary.html">to_ary</a>
-
-<a href="../method/-object/i/to_hash.html">to_hash</a>
-
-<a href="../method/-object/i/to_int.html">to_int</a>
-
-<a href="../method/-object/i/to_io.html">to_io</a>
-
-<a href="../method/-object/i/to_proc.html">to_proc</a>
-
-<a href="../method/-object/i/to_regexp.html">to_regexp</a>
-
-<a href="../method/-object/i/to_str.html">to_str</a>
-
-<a href="../method/-object/i/to_yaml.html">to_yaml</a>
-
-<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
-
-<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
-
-<a href="../method/-object/i/trust.html">trust</a>
-
-<a href="../method/-object/i/untaint.html">untaint</a>
-
-<a href="../method/-object/i/untrust.html">untrust</a>
-
-<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
-
-<a href="../method/-object/s/yaml_tag.html">.yaml_tag</a>
-
-<a href="../method/-object/s/yaml_tag_subclasses=3f.html">.yaml_tag_subclasses?</a>
-
-</code></p>
-
-
+<p>
+<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/sign.html">OpenSSL::PKCS7.sign</a>, <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/write_smime.html">OpenSSL::PKCS7.write_smime</a>,
+<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/verify.html">OpenSSL::PKCS7#verify</a>,
+<a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/s/encrypt.html">OpenSSL::PKCS7.encrypt</a>, <a href="../method/-open-s-s-l=3a=3a-p-k-c-s7/i/decrypt.html">OpenSSL::PKCS7#decrypt</a>
+で利用可能なフラグです。
+</p>
+</dd>
+
+
+</dl>
 
 
 

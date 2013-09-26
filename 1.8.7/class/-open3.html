@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>module Open3</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -18,12 +17,13 @@
 </p>
 
 
-
 <h1>module Open3</h1>
 <p>
 
 
 クラスの継承リスト: Open3
+
+
 
 
 
@@ -60,34 +60,76 @@ end
 
 
 
+<h2>目次</h2>
+<dl>
+
+<dt>モジュール関数</dt>
+<dd>
+
+<a href="#M_POPEN3">popen3</a>
+
+</dd>
+
+</dl>
+
+
 <h2>モジュール関数</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open3/m/popen3.html"><code>
-  popen3(*cmd) -&gt; [IO, IO, IO]<br>popen3(*cmd) {|stdin, stdout, stderr| ... } -&gt; ()
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="M_POPEN3"><code>popen3(*cmd) -&gt; [IO, IO, IO]</code><span class="permalink">[<a href="../method/-open3/m/popen3.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.8.7/libdoc/open3/rdoc/Open3.html#method-c-popen3">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>popen3(*cmd) {|stdin, stdout, stderr| ... } -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
 外部プログラム cmd を実行し、そのプロセスの標準入力、
 標準出力、標準エラー出力に接続されたパイプを 3 要素の配列で返します。
 cmd は組み込み関数 <a href="../method/-kernel/m/exec.html">Kernel.#exec</a> と同じ規則で解釈されます。
 </p>
-</td>
+<pre>
+stdin, stdout, stderr = *Open3.popen3(&quot;/usr/bin/nroff -man&quot;)
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] cmd:</dt>
+<dd>
+実行するコマンドを指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+ブロックを指定した場合はブロックの最後に評価された値を返します。
+ブロックを指定しなかった場合は標準入力、標準出力、標準エラー
+を返します。
+</dd>
+</dl>
+<p>
+ブロックを指定するとパイプの配列を引数にブロックを実行し、最後にパイプ
+を close します。この場合はブロックの最後の式の結果を返します。
+</p>
+<pre>
+require 'open3'
 
-</tr>
+Open3.popen3(&quot;read stdin; echo stdout; echo stderr &gt;&amp;2&quot;) {|stdin, stdout, stderr|
+  stdin.puts &quot;stdin&quot;
+  stdin.close     # または close_write
+  p stdout.read
+  p stderr.read
+}
+#=&gt; &quot;stdout\n&quot;
+    &quot;stderr\n&quot;
+</pre>
+<p>
+stdin への入力が終わったらできる限り早く close か close_write
+で閉じるべきです。
+</p>
+<p>
+[UNIX系OS固有の注意] Open3 で作成した子プロセスは
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/wait.html">wait(2)</a> しなくてもゾンビになりません。
+</p>
+<p>
+コマンドは実際には孫プロセスとして動作するため、組み込み変数 <a href="../method/-kernel/v/=3f.html">$?</a> でコマンドの終了ステータスを得ることはできません。
+</p>
+</dd>
 
-</table>
 
-
-
-
+</dl>
 
 
 

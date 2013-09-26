@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../../../style.css">
   <link rel="icon" type="image/png" href="../../../rurema.png">
   <title>singleton method Enumerator::Lazy.new</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 2.0.0 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -20,23 +19,48 @@
 </p>
 
 
-
-
 <h1>singleton method Enumerator::Lazy.new</h1>
-
 <dl class="methodlist">
 
-<dt class="method-heading"><code>new</code></dt>
+<dt class="method-heading" id="S_NEW"><code>new(obj, size=nil) {|yielder, *values| ... } -&gt; Enumerator::Lazy</code><span class="permalink">[<a href="../../../method/-enumerator=3a=3a-lazy/s/new.html">permalink</a>][<a href="http://ruby-doc.org/core-2.0.0/Enumerator/Lazy.html#method-c-new">rdoc</a>]</span></dt>
 <dd class="method-description">
-<p class="todo">
-[TODO]
+<p>
+Lazy Enumerator を作成します。<a href="../../../method/-enumerator=3a=3a-lazy/i/force.html">Enumerator::Lazy#force</a> メソッドなどに
+よって列挙が実行されたとき、objのeachメソッドが実行され、値が一つずつ
+ブロックに渡されます。ブロックは、yielder を使って最終的に yield される値を
+指定できます。
 </p>
+<p>
+Enumerable#filter_map と、その遅延評価版を定義する例:
+</p>
+<pre>
+module Enumerable
+  def filter_map(&amp;block)
+    map(&amp;block).compact
+  end
+end
+
+class Enumerator::Lazy
+  def filter_map
+    Lazy.new(self) do |yielder, *values|
+      result = yield *values
+      yielder &lt;&lt; result if result
+    end
+  end
+end
+
+(1..Float::INFINITY).lazy.filter_map{|i| i*i if i.even?}.first(5)
+    # =&gt; [4, 16, 36, 64, 100]
+</pre>
 <dl>
 <dt>[EXCEPTION] ArgumentError:</dt>
 <dd>
-引数を指定しなかった場合に発生します。
+引数を指定しなかった場合、ブロックを指定しなかった場合に発生します。
 </dd>
 </dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-enumerator/s/new.html">Enumerator.new</a>
+</p>
 </dd>
 
 

@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>class REXML::Entity</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 2.0.0 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -16,7 +15,6 @@
 &gt; <a href="../library/rexml.html">rexmlライブラリ</a>
 &gt; REXML::Entityクラス
 </p>
-
 
 
 <h1>class REXML::Entity</h1>
@@ -47,603 +45,330 @@
 
 
 
+
+
 </p>
 
 <h2>要約</h2>
+<p>
+XML における実体(エンティティ、entity)の宣言(declaration)を表わすクラス。
+</p>
+<p>
+DTD(<a href="../class/-r-e-x-m-l=3a=3a-doc-type.html">REXML::DocType</a>)内の実体宣言に対応するものです。
+</p>
+<h3 >例</h3>
+<pre>
+require 'rexml/document'
 
+doc = REXML::Document.new(&lt;&lt;EOS)
+&lt;!DOCTYPE document [
+&lt;!ENTITY f &quot;foo bar baz&quot;&gt;
+&lt;!ENTITY x SYSTEM &quot;x.txt&quot;&gt;
+&lt;!ENTITY y SYSTEM &quot;y.png&quot; NDATA PNG&gt;
+&lt;!ENTITY % z &quot;zzz&quot;&gt;
+&lt;!ENTITY zz &quot;%z;%z;&amp;f;&quot;&gt;
+]&gt;
+EOS
+
+entities = doc.doctype.entities
+# f は 内部実体名なので、external や ref は nil である
+p entities[&quot;f&quot;].name # =&gt; &quot;f&quot;
+p entities[&quot;f&quot;].value # =&gt; &quot;foo bar baz&quot;
+p entities[&quot;f&quot;].external # =&gt; nil
+p entities[&quot;f&quot;].ref # =&gt; nil
+
+# x は 外部実体名なので value が nil で、
+# external や ref が文字列を返してくる。
+# しかし解析対象実体(parsed entity)なので ndata は nil を返す
+p entities[&quot;x&quot;].name # =&gt; &quot;x&quot;
+p entities[&quot;x&quot;].value # =&gt; nil
+p entities[&quot;x&quot;].external # =&gt; &quot;SYSTEM&quot;
+p entities[&quot;x&quot;].ref # =&gt; &quot;x.txt&quot;
+p entities[&quot;x&quot;].ndata # =&gt; nil
+
+# y は解析対象外実体(unparsed entity)なので ndata が記法名を返す
+p entities[&quot;y&quot;].ndata # =&gt; &quot;PNG&quot;
+
+# zz は中にパラメータ実体参照と内部実体参照を含むので、
+# value, unnormalized, normalized がすべて異なる値を返す
+p entities[&quot;zz&quot;].value # =&gt; &quot;zzzzzz&amp;f;&quot;
+p entities[&quot;zz&quot;].unnormalized # =&gt; &quot;zzzzzzfoo bar baz&quot;
+p entities[&quot;zz&quot;].normalized # =&gt; &quot;%z;%z;&amp;f;&quot;
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_MATCHES--3F">matches?</a>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_EXTERNAL">external</a>
+
+<a href="#I_NAME">name</a>
+
+<a href="#I_NDATA">ndata</a>
+
+<a href="#I_NORMALIZED">normalized</a>
+
+<a href="#I_PUBID">pubid</a>
+
+<a href="#I_REF">ref</a>
+
+<a href="#I_TO_S">to_s</a>
+
+<a href="#I_UNNORMALIZED">unnormalized</a>
+
+<a href="#I_VALUE">value</a>
+
+<a href="#I_WRITE">write</a>
+
+</dd>
+
+</dl>
 
 
 <h2>特異メソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/s/matches=3f.html"><code>
-  matches?(string)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="S_MATCHES--3F"><code>matches?(string) -&gt; bool</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-entity/s/matches=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/rexml/rdoc/REXML/Entity.html#method-c-matches-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+string が実体宣言の文法に従う文字列であれば真を返します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+判定対象の文字列
+</dd>
+</dl>
+<h4 >例</h4>
+<pre>
+require 'rexml/document'
 
-</tr>
+p REXML::Entity.matches?('&lt;!ENTITY s &quot;seal&quot;&gt;') # =&gt; true
+p REXML::Entity.matches?('&lt;!ENTITY % s &quot;seal&quot;&gt;') # =&gt; true
+p REXML::Entity.matches?('&lt;!ELEMENT br EMPTY &gt;') # =&gt; false
+</pre>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/s/new.html"><code>
-  new(stream, value = nil, parent = nil, reference = false)
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="S_NEW"><code>new(name, value, parent=nil, reference=false) -&gt; REXML::Entity</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-entity/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/rexml/rdoc/REXML/Entity.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>new(array) -&gt; REXML::Entity</code></dt>
+<dd class="method-description">
+<p>
+新たな Entity オブジェクトを生成して返します。
 </p>
-</td>
+<p>
+name, value で実体の名前とその値を定義します。
+parent はその entity オブジェクトが属するノードを渡します。
+reference でその実体宣言がパラメータ実体(parameter entity)かどうかを指定します。
+</p>
+<p>
+このコンストラクタでは単純な内部実体(internal entity)宣言のみを実現できます。
+</p>
+<p>
+それ以外の内容を保持する Entity オブジェクトが欲しい場合は、
+文書に適切な DTD を含めておいてそれを <a href="../method/-r-e-x-m-l=3a=3a-document/s/new.html">REXML::Document.new</a> で
+パースするようにしてください。
+</p>
+<p>
+配列を使うほうは rexml のパーサが内部的に利用するため通常は利用しません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+実体参照の名前
+</dd>
+<dt class='method-param'>[PARAM] value:</dt>
+<dd>
+参照の値
+</dd>
+<dt class='method-param'>[PARAM] parent:</dt>
+<dd>
+親ノード
+</dd>
+<dt class='method-param'>[PARAM] reference:</dt>
+<dd>
+パラメータ実体であるかどうかの真偽値
+</dd>
+<dt class='method-param'>[PARAM] array:</dt>
+<dd>
+初期化のための配列
+</dd>
+</dl>
+<h4 >例</h4>
+<p>
+「&amp;gt;」「&gt;」 の対応は以下のように実現されます。
+</p>
+<pre>
+REXML::Entity.new(&quot;gt&quot;, &quot;&gt;&quot;)
+</pre>
+</dd>
 
-</tr>
 
-</table>
+</dl>
 
 <h2>インスタンスメソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/i/external.html"><code>
-  external
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="I_EXTERNAL"><code>external -&gt; String | nil</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-entity/i/external.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/rexml/rdoc/REXML/Entity.html#method-i-external">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+実体が外部実体(external entity)宣言である場合は
+&quot;SYSTEM&quot; もしくは &quot;PUBLIC&quot; という文字列を返します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/i/name.html"><code>
-  name
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+内部実体(internal entity)宣言である場合には nil を返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/i/ndata.html"><code>
-  ndata
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="I_NAME"><code>name -&gt; String</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-entity/i/name.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/rexml/rdoc/REXML/Entity.html#method-i-name">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+実体の名前を返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/i/normalized.html"><code>
-  normalized
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="I_NDATA"><code>ndata -&gt; String | nil</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-entity/i/ndata.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/rexml/rdoc/REXML/Entity.html#method-i-ndata">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+解析対象外実体(unparsed entity)宣言である場合には
+その記法名(notation name)を返します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/i/pubid.html"><code>
-  pubid
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+それ以外の場合は nil を返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/i/ref.html"><code>
-  ref
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="I_NORMALIZED"><code>normalized -&gt; String | nil</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-entity/i/normalized.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/rexml/rdoc/REXML/Entity.html#method-i-normalized">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+正規化された(normalized)実体の値を返します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/i/to_s.html"><code>
-  to_s
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+すなわち、一切の実体参照を展開していない値を返します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/i/unnormalized.html"><code>
-  unnormalized
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+外部実体(external enitity)宣言の場合は nil を返します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/i/value.html"><code>
-  value
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+[SEE_ALSO] <a href="../method/-r-e-x-m-l=3a=3a-entity/i/value.html">REXML::Entity#value</a>, <a href="../method/-r-e-x-m-l=3a=3a-entity/i/unnormalized.html">REXML::Entity#unnormalized</a>
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/i/write.html"><code>
-  write(out, indent = -1)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="I_PUBID"><code>pubid -&gt; String | nil</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-entity/i/pubid.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/rexml/rdoc/REXML/Entity.html#method-i-pubid">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+公開識別子(public identifier)を用いた外部実体宣言の場合は、その公開識別子を
+返します。
 </p>
-</td>
-
-</tr>
-
-</table>
-
-<h2>定数</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/c/-e-n-t-i-t-y-d-e-c-l.html"><code>
-  ENTITYDECL
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+それ以外の場合は nil を返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/c/-e-n-t-i-t-y-d-e-f.html"><code>
-  ENTITYDEF
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="I_REF"><code>ref -&gt; String | nil</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-entity/i/ref.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/rexml/rdoc/REXML/Entity.html#method-i-ref">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+外部実体(external entity)宣言の URI を返します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/c/-e-n-t-i-t-y-v-a-l-u-e.html"><code>
-  ENTITYVALUE
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+内部実体宣言の場合は nil を返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/c/-e-x-t-e-r-n-a-l-i-d.html"><code>
-  EXTERNALID
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="I_TO_S"><code>to_s -&gt; String</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-entity/i/to_s.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/rexml/rdoc/REXML/Entity.html#method-i-to_s">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+実体宣言を文字列化したものを返します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/c/-g-e-d-e-c-l.html"><code>
-  GEDECL
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+[SEE_ALSO] <a href="../method/-r-e-x-m-l=3a=3a-entity/i/write.html">REXML::Entity#write</a>
 </p>
-</td>
+<h4 >例</h4>
+<pre>
+e = REXML::ENTITY.new(&quot;w&quot;, &quot;wee&quot;);
+p e.to_s # =&gt; &quot;&lt;!ENTITY w \&quot;wee\&quot;&gt;&quot;
+</pre>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/c/-n-d-a-t-a-d-e-c-l.html"><code>
-  NDATADECL
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="I_UNNORMALIZED"><code>unnormalized -&gt; String | nil</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-entity/i/unnormalized.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/rexml/rdoc/REXML/Entity.html#method-i-unnormalized">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+非正規化された(unnormalized)実体の値を返します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/c/-p-e-d-e-c-l.html"><code>
-  PEDECL
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+すなわち、self が属する DTD によってすべての実体参照(&amp;ent; と %ent; の両方)
+を展開した文字列を返します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/c/-p-e-d-e-f.html"><code>
-  PEDEF
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+外部実体(external enitity)宣言の場合は nil を返します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/c/-p-e-r-e-f-e-r-e-n-c-e.html"><code>
-  PEREFERENCE
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+[SEE_ALSO] <a href="../method/-r-e-x-m-l=3a=3a-entity/i/value.html">REXML::Entity#value</a>, <a href="../method/-r-e-x-m-l=3a=3a-entity/i/normalized.html">REXML::Entity#normalized</a>
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/c/-p-e-r-e-f-e-r-e-n-c-e_-r-e.html"><code>
-  PEREFERENCE_RE
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="I_VALUE"><code>value -&gt; String | nil</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-entity/i/value.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/rexml/rdoc/REXML/Entity.html#method-i-value">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+実体の値を返します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/c/-p-u-b-i-d-c-h-a-r.html"><code>
-  PUBIDCHAR
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+パラメータ実体参照(parameter entity)のみが展開され、
+そうでない実体参照(general entity)は展開されて
+いないような値が返されます。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/c/-p-u-b-i-d-l-i-t-e-r-a-l.html"><code>
-  PUBIDLITERAL
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+外部実体(external enitity)宣言の場合は nil を返します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-entity/c/-s-y-s-t-e-m-l-i-t-e-r-a-l.html"><code>
-  SYSTEMLITERAL
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+[SEE_ALSO] <a href="../method/-r-e-x-m-l=3a=3a-entity/i/unnormalized.html">REXML::Entity#unnormalized</a>, <a href="../method/-r-e-x-m-l=3a=3a-entity/i/normalized.html">REXML::Entity#normalized</a>
 </p>
-</td>
-
-</tr>
-
-</table>
-
-
-
-<h2>継承したメソッド</h2>
-<p><code>
-
-<a href="../method/-basic-object/i/=21=3d.html">!=</a>
-
-<a href="../method/-basic-object/i/__id__.html">__id__</a>
-
-<a href="../method/-basic-object/i/instance_eval.html">instance_eval</a>
-
-<a href="../method/-basic-object/i/instance_exec.html">instance_exec</a>
-
-<a href="../method/-basic-object/i/singleton_method_added.html">singleton_method_added</a>
-
-<a href="../method/-basic-object/i/singleton_method_removed.html">singleton_method_removed</a>
-
-<a href="../method/-basic-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
-
-<a href="../method/-object/i/=21.html">!</a>
-
-<a href="../method/-object/i/=3d=3d.html">==</a>
-
-<a href="../method/-object/i/=3d=3d=3d.html">===</a>
-
-<a href="../method/-object/i/=3d=7e.html">=~</a>
-
-<a href="../method/-object/i/__send__.html">__send__</a>
-
-<a href="../method/-object/i/_dump.html">_dump</a>
-
-<a href="../method/-object/i/class.html">class</a>
-
-<a href="../method/-object/i/clone.html">clone</a>
-
-<a href="../method/-object/i/dclone.html">dclone</a>
-
-<a href="../method/-object/i/display.html">display</a>
-
-<a href="../method/-object/i/enum_for.html">enum_for</a>
-
-<a href="../method/-object/i/eql=3f.html">eql?</a>
-
-<a href="../method/-object/i/equal=3f.html">equal?</a>
-
-<a href="../method/-object/i/extend.html">extend</a>
-
-<a href="../method/-object/i/freeze.html">freeze</a>
-
-<a href="../method/-object/i/frozen=3f.html">frozen?</a>
-
-<a href="../method/-object/i/hash.html">hash</a>
-
-<a href="../method/-object/i/initialize.html">initialize</a>
-
-<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
-
-<a href="../method/-object/i/inspect.html">inspect</a>
-
-<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
-
-<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
-
-<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
-
-<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
-
-<a href="../method/-object/i/instance_variables.html">instance_variables</a>
-
-<a href="../method/-object/i/is_a=3f.html">is_a?</a>
-
-<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
-
-<a href="../method/-object/i/marshal_load.html">marshal_load</a>
-
-<a href="../method/-object/i/method.html">method</a>
-
-<a href="../method/-object/i/method_missing.html">method_missing</a>
-
-<a href="../method/-object/i/methods.html">methods</a>
-
-<a href="../method/-object/i/must_be.html">must_be</a>
-
-<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
-
-<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
-
-<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
-
-<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
-
-<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
-
-<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
-
-<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
-
-<a href="../method/-object/i/must_equal.html">must_equal</a>
-
-<a href="../method/-object/i/must_include.html">must_include</a>
-
-<a href="../method/-object/i/must_match.html">must_match</a>
-
-<a href="../method/-object/i/must_raise.html">must_raise</a>
-
-<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
-
-<a href="../method/-object/i/must_send.html">must_send</a>
-
-<a href="../method/-object/i/must_throw.html">must_throw</a>
-
-<a href="../method/-object/i/nil=3f.html">nil?</a>
-
-<a href="../method/-object/i/object_id.html">object_id</a>
-
-<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
-
-<a href="../method/-object/i/pretty_print.html">pretty_print</a>
-
-<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
-
-<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
-
-<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
-
-<a href="../method/-object/i/private_methods.html">private_methods</a>
-
-<a href="../method/-object/i/protected_methods.html">protected_methods</a>
-
-<a href="../method/-object/i/psych_to_yaml.html">psych_to_yaml</a>
-
-<a href="../method/-object/i/public_methods.html">public_methods</a>
-
-<a href="../method/-object/i/public_send.html">public_send</a>
-
-<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
-
-<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
-
-<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
-
-<a href="../method/-object/i/singleton_class.html">singleton_class</a>
-
-<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
-
-<a href="../method/-object/i/taint.html">taint</a>
-
-<a href="../method/-object/i/tainted=3f.html">tainted?</a>
-
-<a href="../method/-object/i/tap.html">tap</a>
-
-<a href="../method/-object/i/to_a.html">to_a</a>
-
-<a href="../method/-object/i/to_ary.html">to_ary</a>
-
-<a href="../method/-object/i/to_hash.html">to_hash</a>
-
-<a href="../method/-object/i/to_int.html">to_int</a>
-
-<a href="../method/-object/i/to_io.html">to_io</a>
-
-<a href="../method/-object/i/to_proc.html">to_proc</a>
-
-<a href="../method/-object/i/to_regexp.html">to_regexp</a>
-
-<a href="../method/-object/i/to_str.html">to_str</a>
-
-<a href="../method/-object/i/trust.html">trust</a>
-
-<a href="../method/-object/i/untaint.html">untaint</a>
-
-<a href="../method/-object/i/untrust.html">untrust</a>
-
-<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
-
-<a href="../method/-object/s/yaml_tag.html">.yaml_tag</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-child/i/bytes.html">bytes</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-child/i/document.html">document</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-child/i/next_sibling.html">next_sibling</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-child/i/next_sibling=3d.html">next_sibling=</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-child/i/parent.html">parent</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-child/i/parent=3d.html">parent=</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-child/i/previous_sibling.html">previous_sibling</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-child/i/previous_sibling=3d.html">previous_sibling=</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-child/i/remove.html">remove</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-child/i/replace_with.html">replace_with</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-x-m-l-tokens/c/-n-a-m-e.html">::NAME</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-x-m-l-tokens/c/-n-a-m-e-c-h-a-r.html">::NAMECHAR</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-x-m-l-tokens/c/-n-a-m-e_-s-t-r.html">::NAME_STR</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-x-m-l-tokens/c/-n-c-n-a-m-e_-s-t-r.html">::NCNAME_STR</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-x-m-l-tokens/c/-n-m-t-o-k-e-n.html">::NMTOKEN</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-x-m-l-tokens/c/-n-m-t-o-k-e-n-s.html">::NMTOKENS</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-x-m-l-tokens/c/-r-e-f-e-r-e-n-c-e.html">::REFERENCE</a>
-
-</code></p>
-
-
+</dd>
+
+
+<dt class="method-heading" id="I_WRITE"><code>write(out, indent = -1) -&gt; ()</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-entity/i/write.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/rexml/rdoc/REXML/Entity.html#method-i-write">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+実体宣言を文字列化したものを out に書き込みます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] out:</dt>
+<dd>
+出力先の IO オブジェクト
+</dd>
+<dt class='method-param'>[PARAM] indent:</dt>
+<dd>
+利用されません。deprecated なパラメータです
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-r-e-x-m-l=3a=3a-entity/i/to_s.html">REXML::Entity#to_s</a>
+</p>
+</dd>
+
+
+</dl>
 
 
 

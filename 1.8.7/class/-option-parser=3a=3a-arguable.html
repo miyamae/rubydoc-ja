@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>module OptionParser::Arguable</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -16,7 +15,6 @@
 &gt; <a href="../library/optparse.html">optparseライブラリ</a>
 &gt; OptionParser::Arguableモジュール
 </p>
-
 
 
 <h1>module OptionParser::Arguable</h1>
@@ -29,11 +27,13 @@
 
 
 
+
+
 </p>
 
 <h2>要約</h2>
 <p>
-主に <a href="../method/-kernel/c/-a-r-g-v.html">Kernel::ARGV</a> を拡張するために用意されたモジュールです。
+主に <a href="../method/-object/c/-a-r-g-v.html">Object::ARGV</a> を拡張するために用意されたモジュールです。
 <a href="../library/optparse.html">optparse</a> を require することにより、ARGV は
 OptionParser::Arguable を <a href="../method/-object/i/extend.html">Object#extend</a> します。
 </p>
@@ -43,107 +43,210 @@ OptionParser::Arguable を <a href="../method/-object/i/extend.html">Object#exte
 
 
 
+<h2>目次</h2>
+<dl>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_GETOPTS">getopts</a>
+
+<a href="#I_OPTIONS">options</a>
+
+<a href="#I_OPTIONS--3D">options=</a>
+
+<a href="#I_ORDER--21">order!</a>
+
+<a href="#I_PARSE--21">parse!</a>
+
+<a href="#I_PERMUTE--21">permute!</a>
+
+</dd>
+
+</dl>
+
+
 <h2>インスタンスメソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-option-parser=3a=3a-arguable/i/getopts.html"><code>
-  getopts(short_opt, *long_opt) -&gt; Hash
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_GETOPTS"><code>getopts(short_opt, *long_opt) -&gt; Hash</code><span class="permalink">[<a href="../method/-option-parser=3a=3a-arguable/i/getopts.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.8.7/libdoc/optparse/rdoc/OptionParser/Arguable.html#method-i-getopts">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 指定された short_opt や long_opt に応じて自身をパースし、結果を Hash として返します。
 </p>
-</td>
+<p>
+コマンドラインに - もしくは -- を指定した場合、それ以降の解析を行ないません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] short_opt:</dt>
+<dd>
+ショートネームのオプション(-f や -fx)を文字列で指定します。オプションが -f と -x の
+2つの場合は &quot;fx&quot; の様に指定します。ここでオプションがないときは空文字列を指定します。
+オプションが引数をとる場合は直後に &quot;:&quot; を付けます。
+</dd>
+<dt class='method-param'>[PARAM] long_opt:</dt>
+<dd>
+ロングネームのオプション(--version や --bufsize=512)を文字列で指定をします。
+オプションが引数をとる場合は後ろに &quot;:&quot; を付けます。
+オプションの引数のデフォルト値を &quot;:&quot; の直後に指定することができます。
+例えば、&quot;bufsize:1024&quot; となります。
+</dd>
+<dt>[EXCEPTION] OptionParser::ParseError:</dt>
+<dd>
+自身のパースに失敗した場合、発生します。
+実際は OptionParser::ParseError のサブク
+ラスの例外になります。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+# t.rb の内容
+require 'optparse'
+params = ARGV.getopts(&quot;ab:&quot;, &quot;foo&quot;, &quot;bar:&quot;, &quot;bufsize:1024&quot;)
+p params
 
-</tr>
+# 実行結果
+$ ruby t.rb -b 1 --foo  --bar xxx -- -a
+{&quot;bufsize&quot;=&gt;&quot;1024&quot;, &quot;a&quot;=&gt;false, &quot;b&quot;=&gt;&quot;1&quot;, &quot;foo&quot;=&gt;true, &quot;bar&quot;=&gt;&quot;xxx&quot;}  # &quot;a&quot;=&gt;false であることに注意。
+</pre>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-option-parser=3a=3a-arguable/i/options.html"><code>
-  options -&gt; OptionParser<br>options {|opt| ... } -&gt; object | nil
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_OPTIONS"><code>options -&gt; OptionParser</code><span class="permalink">[<a href="../method/-option-parser=3a=3a-arguable/i/options.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.8.7/libdoc/optparse/rdoc/OptionParser/Arguable.html#method-i-options">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>options {|opt| ... } -&gt; object | nil</code></dt>
+<dd class="method-description">
+<p>
 自身をパースするための <a href="../class/-option-parser.html">OptionParser</a> オブジェクトを返します。
 初回呼び出し時に自動的に生成されます。
 この <a href="../method/-option-parser/i/default_argv.html">OptionParser#default_argv</a> には self がセットされています。
 </p>
-</td>
+<p>
+ブロックを与えた場合は、<a href="../class/-option-parser.html">OptionParser</a> を引数としてブロックを実行します。
+ブロックの実行結果を返します。
+ブロックの実行途中で <a href="../class/-option-parser=3a=3a-parse-error.html">OptionParser::ParseError</a>
+が発生した場合は、全て rescue し、エラーメッセージを出力し、
+nil を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'optparse'
 
-</tr>
+o = nil
+ARGV.options{|opt|
+  opt.on('-a'){ o = true }
+  opt.parse!
+}
+p o                         #=&gt; true
+</pre>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-option-parser=3a=3a-arguable/i/options=3d.html"><code>
-  options=(opt)
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_OPTIONS--3D"><code>options=(opt)</code><span class="permalink">[<a href="../method/-option-parser=3a=3a-arguable/i/options=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.8.7/libdoc/optparse/rdoc/OptionParser/Arguable.html#method-i-options-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身をパースするための <a href="../class/-option-parser.html">OptionParser</a> オブジェクトをセットします。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] opt:</dt>
+<dd>
+自身をパースする <a href="../class/-option-parser.html">OptionParser</a> 、あるいは nil か false を指定します。
+nil か false である場合、自身の options= メソッドと options メソッドを
+undef します。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-option-parser=3a=3a-arguable/i/order=21.html"><code>
-  order! -&gt; [String]<br>order! {|s| ... } -&gt; [String]
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_ORDER--21"><code>order! -&gt; [String]</code><span class="permalink">[<a href="../method/-option-parser=3a=3a-arguable/i/order=21.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.8.7/libdoc/optparse/rdoc/OptionParser/Arguable.html#method-i-order-21">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>order! {|s| ... } -&gt; [String]</code></dt>
+<dd class="method-description">
+<p>
 自身を破壊的にパースし、パースされずに残った引数を文字列の配列として返します。
 <a href="../method/-option-parser/i/order=21.html">OptionParser#order!</a> を参照して下さい。
 </p>
-</td>
+<dl>
+<dt>[EXCEPTION] OptionParser::ParseError:</dt>
+<dd>
+自身のパースに失敗した場合、発生します。
+実際は OptionParser::ParseError のサブク
+ラスの例外になります。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'optparse'
 
-</tr>
+o = nil
+ARGV.options.on('-a'){ o = true }
+ARGV.order!
+p o                                #=&gt; true
+</pre>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-option-parser=3a=3a-arguable/i/parse=21.html"><code>
-  parse! -&gt; [String]
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_PARSE--21"><code>parse! -&gt; [String]</code><span class="permalink">[<a href="../method/-option-parser=3a=3a-arguable/i/parse=21.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.8.7/libdoc/optparse/rdoc/OptionParser/Arguable.html#method-i-parse-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身を破壊的にパースし、パースされずに残った引数を文字列の配列として返します。
 <a href="../method/-option-parser/i/parse=21.html">OptionParser#parse!</a> を参照して下さい。
 </p>
-</td>
+<dl>
+<dt>[EXCEPTION] OptionParser::ParseError:</dt>
+<dd>
+自身のパースに失敗した場合、発生します。
+実際は OptionParser::ParseError のサブク
+ラスの例外になります。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'optparse'
 
-</tr>
+o = nil
+ARGV.options.on('-a'){ o = true }
+ARGV.parse!
+p o                                #=&gt; true
+</pre>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-option-parser=3a=3a-arguable/i/permute=21.html"><code>
-  permute! -&gt; [String]
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_PERMUTE--21"><code>permute! -&gt; [String]</code><span class="permalink">[<a href="../method/-option-parser=3a=3a-arguable/i/permute=21.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.8.7/libdoc/optparse/rdoc/OptionParser/Arguable.html#method-i-permute-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身を破壊的にパースし、パースされずに残った引数を文字列の配列として返します。
 <a href="../method/-option-parser/i/permute=21.html">OptionParser#permute!</a> を参照して下さい。
 </p>
-</td>
+<dl>
+<dt>[EXCEPTION] OptionParser::ParseError:</dt>
+<dd>
+自身のパースに失敗した場合、発生します。
+実際は OptionParser::ParseError のサブク
+ラスの例外になります。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'optparse'
 
-</tr>
+o = nil
+ARGV.options.on('-a'){ o = true }
+ARGV.permute!
+p o                                #=&gt; true
+</pre>
+</dd>
 
-</table>
 
-
-
-
+</dl>
 
 
 

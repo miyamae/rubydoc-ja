@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>class Struct</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -16,7 +15,6 @@
 &gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
 &gt; Structクラス
 </p>
-
 
 
 <h1>class Struct</h1>
@@ -41,6 +39,8 @@
 
 
 
+
+
 </p>
 
 <h2>要約</h2>
@@ -55,658 +55,498 @@
 
 
 
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_--5B--5D">[]</a>
+
+<a href="#S_--5B--5D">new</a>
+
+<a href="#S_MEMBERS">members</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--3D--3D">==</a>
+
+<a href="#I_--5B--5D">[]</a>
+
+<a href="#I_--5B--5D--3D">[]=</a>
+
+<a href="#I_EACH">each</a>
+
+<a href="#I_EACH_PAIR">each_pair</a>
+
+<a href="#I_EQL--3F">eql?</a>
+
+<a href="#I_EQUAL--3F">equal?</a>
+
+<a href="#I_HASH">hash</a>
+
+<a href="#I_INSPECT">inspect</a>
+
+<a href="#I_INSPECT">to_s</a>
+
+<a href="#I_LENGTH">length</a>
+
+<a href="#I_LENGTH">size</a>
+
+<a href="#I_MEMBERS">members</a>
+
+<a href="#I_SELECT">select</a>
+
+<a href="#I_TO_A">to_a</a>
+
+<a href="#I_TO_A">values</a>
+
+<a href="#I_VALUES_AT">values_at</a>
+
+</dd>
+
+</dl>
+
+
 <h2>特異メソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-struct/s/=5b=5d.html"><code>
-  new(*args) -&gt; Class
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_--5B--5D"><code>new(*args) -&gt; Class</code><span class="permalink">[<a href="../method/-struct/s/=5b=5d.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.2/Struct.html#method-c-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 <a href="../class/-struct.html">Struct</a> クラスに新しいサブクラスを作って、それを返します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-struct/s/=5b=5d.html"><code>
-  new(*args) -&gt; Struct<br>self[*args] -&gt; Struct
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<p>
+サブクラスでは構造体のメンバに対するアクセスメソッドが定義されています。
+</p>
+<pre>
+dog = Struct.new(&quot;Dog&quot;, :name, :age)
+fred = dog.new(&quot;fred&quot;, 5)
+fred.age = 6
+printf &quot;name:%s age:%d&quot;, fred.name, fred.age
+#=&gt; &quot;name:fred age:6&quot; を出力します
+</pre>
+<p>
+実装の都合により、クラス名の省略は後づけの機能でした。
+メンバ名に <a href="../class/-string.html">String</a> を指定できるのは後方互換性のためだと考えた方が良いでしょう。
+したがって、メンバ名は <a href="../class/-symbol.html">Symbol</a> で指定するのが無難です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+構造体を定義するための可変長引数。<a href="../class/-string.html">String</a> または <a href="../class/-symbol.html">Symbol</a> を指定します。
+</dd>
+</dl>
+<h4 >第一引数が String の場合</h4>
+<p>
+args[0] が <a href="../class/-string.html">String</a> の場合、クラス名になるので、大文字で始まる必要
+があります。つまり、以下のような指定はエラーになります。
+</p>
+<pre>
+p Struct.new('foo', 'bar')
+# =&gt; -:1:in `new': identifier foo needs to be constant (NameError)
+</pre>
+<p>
+また args[1..-1] は、<a href="../class/-symbol.html">Symbol</a> か <a href="../class/-string.html">String</a> で指定します。
+</p>
+<pre>
+p Struct.new(&quot;Foo&quot;, :foo, :bar)   # =&gt; Struct::Foo
+</pre>
+<h4 >第一引数が Symbol の場合</h4>
+<p>
+args[0] が <a href="../class/-symbol.html">Symbol</a> の場合、生成した構造体クラスは名前の無い
+クラスになります。名前の無いクラスは最初に名前を求める際に代入され
+ている定数名を検索し、見つかった定数名をクラス名とします。
+</p>
+<pre>
+Foo = Struct.new(:foo, :bar)
+p Foo                             # =&gt; Foo
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-class/s/new.html">Class.new</a>
+</p>
+</dd>
+<dt class="method-heading" id="S_--5B--5D"><code>new(*args) -&gt; Struct</code><span class="permalink">[<a href="../method/-struct/s/=5b=5d.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.2/Struct.html#method-c-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>self[*args] -&gt; Struct</code></dt>
+<dd class="method-description">
+<p>
 (このメソッドは Struct の下位クラスにのみ定義されています)
 構造体オブジェクトを生成して返します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+構造体の初期値を指定します。メンバの初期値は指定されなければ nil です。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+構造体クラスのインスタンス。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+構造体のメンバの数よりも多くの引数を指定した場合に発生します。
+</dd>
+</dl>
+<pre>
+Foo = Struct.new(:foo, :bar)
+foo = Foo.new(1)
+p foo.values      # =&gt; [1, nil]
+</pre>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-struct/s/members.html"><code>
-  members -&gt; [Symbol]
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_MEMBERS"><code>members -&gt; [Symbol]</code><span class="permalink">[<a href="../method/-struct/s/members.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.2/Struct.html#method-c-members">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 (このメソッドは Struct の下位クラスにのみ定義されています)
 構造体のメンバの名前(<a href="../class/-symbol.html">Symbol</a>)の配列を返します。
 </p>
-</td>
+<pre>
+Foo = Struct.new(:foo, :bar)
+p Foo.members      # =&gt; [:foo, :bar]
+</pre>
+</dd>
 
-</tr>
 
-</table>
+</dl>
 
 <h2>インスタンスメソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-struct/i/=3d=3d.html"><code>
-  self == other -&gt; bool
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_--3D--3D"><code>self == other -&gt; bool</code><span class="permalink">[<a href="../method/-struct/i/=3d=3d.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.2/Struct.html#method-i-3D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 self と other のクラスが同じであり、各メンバが == メソッドで比較して等しい場合に
 true を返します。そうでない場合に false を返します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+self と比較したいオブジェクトを指定します。
+</dd>
+</dl>
+<pre>
+Dog = Struct.new(:name, :age)
+dog1 = Dog.new(&quot;fred&quot;, 5)
+dog2 = Dog.new(&quot;fred&quot;, 5)
 
-</tr>
+p dog1 == dog2                #=&gt; true
+p dog1.eql?(dog2)             #=&gt; true
+p dog1.equal?(dog2)           #=&gt; false
+</pre>
+<p>
+[注意] 本メソッドの記述は Struct の下位クラスのインスタンスに対して呼び
+出す事を想定しています。Struct.new は Struct の下位クラスを作成する点に
+注意してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-struct/i/eql=3f.html">Struct#eql?</a>
+</p>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-struct/i/=5b=5d.html"><code>
-  self[member] -&gt; object
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
-(このメソッドは Struct の下位クラスにのみ定義されています)
+<dt class="method-heading" id="I_--5B--5D"><code>self[member] -&gt; object</code><span class="permalink">[<a href="../method/-struct/i/=5b=5d.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.2/Struct.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 構造体のメンバの値を返します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] member:</dt>
+<dd>
+<a href="../class/-fixnum.html">Fixnum</a> でメンバのインデックスを指定します。
+<a href="../class/-symbol.html">Symbol</a>, <a href="../class/-string.html">String</a> でメンバの名前を指定します。
+</dd>
+<dt>[EXCEPTION] IndexError:</dt>
+<dd>
+member が整数で存在しないメンバを指定した場合に発生します。
+</dd>
+<dt>[EXCEPTION] NameError:</dt>
+<dd>
+member が <a href="../class/-string.html">String</a>, <a href="../class/-symbol.html">Symbol</a> で存在しないメンバを指定した場合に発生します。
+</dd>
+</dl>
+<pre>
+Foo = Struct.new(:foo, :bar)
+obj = Foo.new('FOO', 'BAR')
+p obj[:foo]     # =&gt; &quot;FOO&quot;
+p obj['bar']    # =&gt; &quot;BAR&quot;
+# p obj[:baz]     # =&gt; in `[]': no member 'baz' in struct (NameError)
+p obj[0]        # =&gt; &quot;FOO&quot;
+p obj[1]        # =&gt; &quot;BAR&quot;
+p obj[-1]       # =&gt; &quot;BAR&quot;    # Array のように負のインデックスも指定できます。
+p obj[2]        # =&gt; in `[]': offset 2 too large for struct(size:2) (IndexError)
+</pre>
+<p>
+[注意] 本メソッドの記述は Struct の下位クラスのインスタンスに対して呼び
+出す事を想定しています。Struct.new は Struct の下位クラスを作成する点に
+注意してください。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-struct/i/=5b=5d=3d.html"><code>
-  self[member] = value
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-(このメソッドは Struct の下位クラスにのみ定義されています)
+<dt class="method-heading" id="I_--5B--5D--3D"><code>self[member] = value</code><span class="permalink">[<a href="../method/-struct/i/=5b=5d=3d.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.2/Struct.html#method-i-5B-5D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 構造体の member で指定されたメンバの値を value にして value を返します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] member:</dt>
+<dd>
+<a href="../class/-fixnum.html">Fixnum</a> でメンバのインデックスを指定します。
+<a href="../class/-symbol.html">Symbol</a>, <a href="../class/-string.html">String</a> でメンバの名前を指定します。
+</dd>
+<dt class='method-param'>[PARAM] value:</dt>
+<dd>
+メンバに設定する値を指定します。
+</dd>
+<dt>[EXCEPTION] IndexError:</dt>
+<dd>
+member が整数で存在しないメンバを指定した場合に発生します。
+</dd>
+<dt>[EXCEPTION] NameError:</dt>
+<dd>
+member が <a href="../class/-string.html">String</a>, <a href="../class/-symbol.html">Symbol</a> で存在しないメンバを指定した場合に発生します。
+</dd>
+</dl>
+<p>
+[注意] 本メソッドの記述は Struct の下位クラスのインスタンスに対して呼び
+出す事を想定しています。Struct.new は Struct の下位クラスを作成する点に
+注意してください。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-struct/i/each.html"><code>
-  each {|value| ... } -&gt; self<br>each -&gt; Enumerator
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-(このメソッドは Struct の下位クラスにのみ定義されています)
+<dt class="method-heading" id="I_EACH"><code>each {|value| ... } -&gt; self</code><span class="permalink">[<a href="../method/-struct/i/each.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.2/Struct.html#method-i-each">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
 構造体の各メンバに対して繰り返します。
 </p>
-</td>
+<p>
+[注意] 本メソッドの記述は Struct の下位クラスのインスタンスに対して呼び
+出す事を想定しています。Struct.new は Struct の下位クラスを作成する点に
+注意してください。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-struct/i/each_pair.html"><code>
-  each_pair {|member, value| ... } -&gt; self<br>each_pair -&gt; Enumerator
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-(このメソッドは Struct の下位クラスにのみ定義されています)
+<dt class="method-heading" id="I_EACH_PAIR"><code>each_pair {|member, value| ... } -&gt; self</code><span class="permalink">[<a href="../method/-struct/i/each_pair.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.2/Struct.html#method-i-each_pair">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_pair -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
 構造体のメンバ名(<a href="../class/-symbol.html">Symbol</a>)と値の組を引数にブロックを繰り返し実行します。
 </p>
-</td>
+<pre>
+Foo = Struct.new(:foo, :bar)
+Foo.new('FOO', 'BAR').each_pair {|m, v| p [m,v]}
+# =&gt; [:foo, &quot;FOO&quot;]
+     [:bar, &quot;BAR&quot;]
+</pre>
+<p>
+[注意] 本メソッドの記述は Struct の下位クラスのインスタンスに対して呼び
+出す事を想定しています。Struct.new は Struct の下位クラスを作成する点に
+注意してください。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-struct/i/eql=3f.html"><code>
-  eql?(other) -&gt; bool
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_EQL--3F"><code>eql?(other) -&gt; bool</code><span class="permalink">[<a href="../method/-struct/i/eql=3f.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.2/Struct.html#method-i-eql-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 self と other のクラスが同じであり、各メンバが eql? メソッドで比較して等しい場合に
 true を返します。そうでない場合に false を返します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+self と比較したいオブジェクトを指定します。
+</dd>
+</dl>
+<pre>
+Dog = Struct.new(:name, :age)
+dog1 = Dog.new(&quot;fred&quot;, 5)
+dog2 = Dog.new(&quot;fred&quot;, 5)
 
-</tr>
+p dog1 == dog2                #=&gt; true
+p dog1.eql?(dog2)             #=&gt; true
+p dog1.equal?(dog2)           #=&gt; false
+</pre>
+<p>
+[注意] 本メソッドの記述は Struct の下位クラスのインスタンスに対して呼び
+出す事を想定しています。Struct.new は Struct の下位クラスを作成する点に
+注意してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-struct/i/=3d=3d.html">Struct#==</a>
+</p>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-struct/i/equal=3f.html"><code>
-  equal?(other) -&gt; bool
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_EQUAL--3F"><code>equal?(other) -&gt; bool</code><span class="permalink">[<a href="../method/-struct/i/equal=3f.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.2/Struct.html#method-i-equal-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 指定された other が self 自身である場合のみ真を返します。
 これは <a href="../class/-object.html">Object</a> クラスで定義されたデフォルトの動作で
 す。
 </p>
-</td>
+<p>
+[注意] 本メソッドの記述は Struct の下位クラスのインスタンスに対して呼び
+出す事を想定しています。Struct.new は Struct の下位クラスを作成する点に
+注意してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-struct/i/eql=3f.html">Struct#eql?</a>, <a href="../method/-struct/i/=3d=3d.html">Struct#==</a>
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-struct/i/hash.html"><code>
-  hash -&gt; Integer
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_HASH"><code>hash -&gt; Integer</code><span class="permalink">[<a href="../method/-struct/i/hash.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.2/Struct.html#method-i-hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 self が保持するメンバのハッシュ値を元にして算出した整数を返します。
 self が保持するメンバの値が変化すればこのメソッドが返す値も変化します。
 </p>
-</td>
+<pre>
+Dog = Struct.new(:name, :age)
+dog = Dog.new(&quot;fred&quot;, 5)
+p dog.hash                    #=&gt; 7917421
+dog.name = &quot;john&quot;
+p dog.hash                    #=&gt; -38913223
+</pre>
+<p>
+[注意] 本メソッドの記述は Struct の下位クラスのインスタンスに対して呼び
+出す事を想定しています。Struct.new は Struct の下位クラスを作成する点に
+注意してください。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-struct/i/inspect.html"><code>
-  inspect -&gt; String<br>to_s -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-struct/i/inspect.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.2/Struct.html#method-i-inspect">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_s -&gt; String</code></dt>
+<dd class="method-description">
+<p>
 self の内容を人間に読みやすい文字列にして返します。
 </p>
-</td>
+<p>
+[注意] 本メソッドの記述は Struct の下位クラスのインスタンスに対して呼び
+出す事を想定しています。Struct.new は Struct の下位クラスを作成する点に
+注意してください。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-struct/i/length.html"><code>
-  length -&gt; Fixnum<br>size -&gt; Fixnum
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-(このメソッドは Struct の下位クラスにのみ定義されています)
+<dt class="method-heading" id="I_LENGTH"><code>length -&gt; Fixnum</code><span class="permalink">[<a href="../method/-struct/i/length.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.2/Struct.html#method-i-length">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>size -&gt; Fixnum</code></dt>
+<dd class="method-description">
+<p>
 構造体のメンバの数を返します。
 </p>
-</td>
+<p>
+[注意] 本メソッドの記述は Struct の下位クラスのインスタンスに対して呼び
+出す事を想定しています。Struct.new は Struct の下位クラスを作成する点に
+注意してください。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-struct/i/members.html"><code>
-  members -&gt; [String]
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-(このメソッドは Struct の下位クラスにのみ定義されています)
+<dt class="method-heading" id="I_MEMBERS"><code>members -&gt; [String]</code><span class="permalink">[<a href="../method/-struct/i/members.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.2/Struct.html#method-i-members">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 構造体のメンバの名前(文字列)の配列を返します。
 </p>
-</td>
+<pre>
+Foo = Struct.new(:foo, :bar)
+p Foo.new.members  # =&gt; [&quot;foo&quot;, &quot;bar&quot;]
+</pre>
+<p>
+[注意] 本メソッドの記述は Struct の下位クラスのインスタンスに対して呼び
+出す事を想定しています。Struct.new は Struct の下位クラスを作成する点に
+注意してください。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-struct/i/select.html"><code>
-  select {|i| ... } -&gt; [object]<br>select -&gt; Enumerator
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_SELECT"><code>select {|i| ... } -&gt; [object]</code><span class="permalink">[<a href="../method/-struct/i/select.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.2/Struct.html#method-i-select">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>select -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
 構造体のメンバの値に対してブロックを評価した値が真であった要素を全て含
 む配列を返します。真になる要素がひとつもなかった場合は空の配列を返しま
 す。
 </p>
-</td>
+<p>
+ブロックを省略した場合は、各要素に対しブロックを評価し 真になった値の配
+列を返すような <a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<pre>
+Lots = Struct.new(:a, :b, :c, :d, :e, :f)
+l = Lots.new(11, 22, 33, 44, 55, 66)
+l.select {|v| (v % 2).zero? }   #=&gt; [22, 44, 66]
+</pre>
+<p>
+[注意] 本メソッドの記述は Struct の下位クラスのインスタンスに対して呼び
+出す事を想定しています。Struct.new は Struct の下位クラスを作成する点に
+注意してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-enumerable/i/select.html">Enumerable#select</a>
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-struct/i/to_a.html"><code>
-  values -&gt; [object]<br>to_a -&gt; [object]
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-(このメソッドは Struct の下位クラスにのみ定義されています)
+<dt class="method-heading" id="I_TO_A"><code>values -&gt; [object]</code><span class="permalink">[<a href="../method/-struct/i/to_a.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.2/Struct.html#method-i-to_a">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_a -&gt; [object]</code></dt>
+<dd class="method-description">
+<p>
 構造体のメンバの値を配列にいれて返します。
 </p>
-</td>
+<p>
+例えば以下のようにして passwd のエントリを出力できます。
+</p>
+<pre>
+require 'etc'
+print Etc.getpwuid.values.join(&quot;:&quot;), &quot;\n&quot;
+</pre>
+<p>
+[注意] 本メソッドの記述は Struct の下位クラスのインスタンスに対して呼び
+出す事を想定しています。Struct.new は Struct の下位クラスを作成する点に
+注意してください。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-struct/i/values_at.html"><code>
-  values_at(*members) -&gt; [object]
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-(このメソッドは Struct の下位クラスにのみ定義されています)
+<dt class="method-heading" id="I_VALUES_AT"><code>values_at(*members) -&gt; [object]</code><span class="permalink">[<a href="../method/-struct/i/values_at.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.2/Struct.html#method-i-values_at">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 引数で指定されたメンバの値の配列を返します。
 </p>
-</td>
-
-</tr>
-
-</table>
-
-
-
-<h2>継承したメソッド</h2>
-<p><code>
-
-<a href="../method/-basic-object/i/=21=3d.html">!=</a>
-
-<a href="../method/-basic-object/i/instance_eval.html">instance_eval</a>
-
-<a href="../method/-basic-object/i/instance_exec.html">instance_exec</a>
-
-<a href="../method/-basic-object/i/singleton_method_added.html">singleton_method_added</a>
-
-<a href="../method/-basic-object/i/singleton_method_removed.html">singleton_method_removed</a>
-
-<a href="../method/-basic-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
-
-<a href="../method/-enumerable/i/all=3f.html">all?</a>
-
-<a href="../method/-enumerable/i/any=3f.html">any?</a>
-
-<a href="../method/-enumerable/i/chunk.html">chunk</a>
-
-<a href="../method/-enumerable/i/collect.html">collect</a>
-
-<a href="../method/-enumerable/i/collect_concat.html">collect_concat</a>
-
-<a href="../method/-enumerable/i/count.html">count</a>
-
-<a href="../method/-enumerable/i/cycle.html">cycle</a>
-
-<a href="../method/-enumerable/i/detect.html">detect</a>
-
-<a href="../method/-enumerable/i/drop.html">drop</a>
-
-<a href="../method/-enumerable/i/drop_while.html">drop_while</a>
-
-<a href="../method/-enumerable/i/each_cons.html">each_cons</a>
-
-<a href="../method/-enumerable/i/each_entry.html">each_entry</a>
-
-<a href="../method/-enumerable/i/each_slice.html">each_slice</a>
-
-<a href="../method/-enumerable/i/each_with_index.html">each_with_index</a>
-
-<a href="../method/-enumerable/i/each_with_object.html">each_with_object</a>
-
-<a href="../method/-enumerable/i/entries.html">entries</a>
-
-<a href="../method/-enumerable/i/find_all.html">find_all</a>
-
-<a href="../method/-enumerable/i/find_index.html">find_index</a>
-
-<a href="../method/-enumerable/i/first.html">first</a>
-
-<a href="../method/-enumerable/i/grep.html">grep</a>
-
-<a href="../method/-enumerable/i/group_by.html">group_by</a>
-
-<a href="../method/-enumerable/i/include=3f.html">include?</a>
-
-<a href="../method/-enumerable/i/inject.html">inject</a>
-
-<a href="../method/-enumerable/i/max.html">max</a>
-
-<a href="../method/-enumerable/i/max_by.html">max_by</a>
-
-<a href="../method/-enumerable/i/min.html">min</a>
-
-<a href="../method/-enumerable/i/min_by.html">min_by</a>
-
-<a href="../method/-enumerable/i/minmax.html">minmax</a>
-
-<a href="../method/-enumerable/i/minmax_by.html">minmax_by</a>
-
-<a href="../method/-enumerable/i/none=3f.html">none?</a>
-
-<a href="../method/-enumerable/i/one=3f.html">one?</a>
-
-<a href="../method/-enumerable/i/partition.html">partition</a>
-
-<a href="../method/-enumerable/i/reject.html">reject</a>
-
-<a href="../method/-enumerable/i/reverse_each.html">reverse_each</a>
-
-<a href="../method/-enumerable/i/slice_before.html">slice_before</a>
-
-<a href="../method/-enumerable/i/sort.html">sort</a>
-
-<a href="../method/-enumerable/i/sort_by.html">sort_by</a>
-
-<a href="../method/-enumerable/i/take.html">take</a>
-
-<a href="../method/-enumerable/i/take_while.html">take_while</a>
-
-<a href="../method/-enumerable/i/to_set.html">to_set</a>
-
-<a href="../method/-enumerable/i/zip.html">zip</a>
-
-<a href="../method/-object/i/=21.html">!</a>
-
-<a href="../method/-object/i/=3d=3d=3d.html">===</a>
-
-<a href="../method/-object/i/=3d=7e.html">=~</a>
-
-<a href="../method/-object/i/__id__.html">__id__</a>
-
-<a href="../method/-object/i/__send__.html">__send__</a>
-
-<a href="../method/-object/i/_dump.html">_dump</a>
-
-<a href="../method/-object/i/class.html">class</a>
-
-<a href="../method/-object/i/clone.html">clone</a>
-
-<a href="../method/-object/i/dclone.html">dclone</a>
-
-<a href="../method/-object/i/display.html">display</a>
-
-<a href="../method/-object/i/enum_for.html">enum_for</a>
-
-<a href="../method/-object/i/extend.html">extend</a>
-
-<a href="../method/-object/i/freeze.html">freeze</a>
-
-<a href="../method/-object/i/frozen=3f.html">frozen?</a>
-
-<a href="../method/-object/i/initialize.html">initialize</a>
-
-<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
-
-<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
-
-<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
-
-<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
-
-<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
-
-<a href="../method/-object/i/instance_variables.html">instance_variables</a>
-
-<a href="../method/-object/i/is_a=3f.html">is_a?</a>
-
-<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
-
-<a href="../method/-object/i/marshal_load.html">marshal_load</a>
-
-<a href="../method/-object/i/method.html">method</a>
-
-<a href="../method/-object/i/method_missing.html">method_missing</a>
-
-<a href="../method/-object/i/methods.html">methods</a>
-
-<a href="../method/-object/i/must_be.html">must_be</a>
-
-<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
-
-<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
-
-<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
-
-<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
-
-<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
-
-<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
-
-<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
-
-<a href="../method/-object/i/must_equal.html">must_equal</a>
-
-<a href="../method/-object/i/must_include.html">must_include</a>
-
-<a href="../method/-object/i/must_match.html">must_match</a>
-
-<a href="../method/-object/i/must_raise.html">must_raise</a>
-
-<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
-
-<a href="../method/-object/i/must_send.html">must_send</a>
-
-<a href="../method/-object/i/must_throw.html">must_throw</a>
-
-<a href="../method/-object/i/nil=3f.html">nil?</a>
-
-<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
-
-<a href="../method/-object/i/pretty_print.html">pretty_print</a>
-
-<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
-
-<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
-
-<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
-
-<a href="../method/-object/i/private_methods.html">private_methods</a>
-
-<a href="../method/-object/i/protected_methods.html">protected_methods</a>
-
-<a href="../method/-object/i/psych_to_yaml.html">psych_to_yaml</a>
-
-<a href="../method/-object/i/public_methods.html">public_methods</a>
-
-<a href="../method/-object/i/public_send.html">public_send</a>
-
-<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
-
-<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
-
-<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
-
-<a href="../method/-object/i/singleton_class.html">singleton_class</a>
-
-<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
-
-<a href="../method/-object/i/taint.html">taint</a>
-
-<a href="../method/-object/i/tainted=3f.html">tainted?</a>
-
-<a href="../method/-object/i/tap.html">tap</a>
-
-<a href="../method/-object/i/to_ary.html">to_ary</a>
-
-<a href="../method/-object/i/to_hash.html">to_hash</a>
-
-<a href="../method/-object/i/to_int.html">to_int</a>
-
-<a href="../method/-object/i/to_io.html">to_io</a>
-
-<a href="../method/-object/i/to_proc.html">to_proc</a>
-
-<a href="../method/-object/i/to_regexp.html">to_regexp</a>
-
-<a href="../method/-object/i/to_str.html">to_str</a>
-
-<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
-
-<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
-
-<a href="../method/-object/i/trust.html">trust</a>
-
-<a href="../method/-object/i/untaint.html">untaint</a>
-
-<a href="../method/-object/i/untrust.html">untrust</a>
-
-<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
-
-<a href="../method/-object/s/yaml_tag.html">.yaml_tag</a>
-
-</code></p>
-
-
-
-<h2>追加されるメソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th>説明</th>
-  <th>ライブラリ</th>
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-struct/s/json_create.html"><code>
-  json_create(hash) -&gt; Struct
-  </code></a>
-</td>
-<td class="description"><p>
-JSON のオブジェクトから Ruby のオブジェクトを生成して返します。
+<dl>
+<dt class='method-param'>[PARAM] members:</dt>
+<dd>
+<a href="../class/-fixnum.html">Fixnum</a> か <a href="../class/-range.html">Range</a> でメンバのインデックスを指定します。
+</dd>
+<dt>[EXCEPTION] IndexError:</dt>
+<dd>
+member が整数で存在しないメンバを指定した場合に発生します。
+</dd>
+</dl>
+<pre>
+Foo = Struct.new(:foo, :bar, :baz)
+obj = Foo.new('FOO', 'BAR', 'BAZ')
+p obj.values_at(0, 1, 2)    # =&gt; [&quot;FOO&quot;, &quot;BAR&quot;, &quot;BAZ&quot;]
+</pre>
+<p>
+[注意] 本メソッドの記述は Struct の下位クラスのインスタンスに対して呼び
+出す事を想定しています。Struct.new は Struct の下位クラスを作成する点に
+注意してください。
 </p>
-</td>
-<td class="library"><a href="../library/json=2fadd=2fcore.html">json/add/core</a></td>
-</tr>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-struct/i/taguri.html"><code>
-  taguri -&gt; String
-  </code></a>
-</td>
-<td class="description"><p>
-自身のタグ URI を返します。
-</p>
-</td>
-<td class="library"><a href="../library/syck=2frubytypes.html">syck/rubytypes</a></td>
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-struct/i/taguri=3d.html"><code>
-  taguri=(val)
-  </code></a>
-</td>
-<td class="description"><p>
-自身のタグ URI を val に設定します。
-</p>
-</td>
-<td class="library"><a href="../library/syck=2frubytypes.html">syck/rubytypes</a></td>
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-struct/i/to_json.html"><code>
-  to_json(*args) -&gt; String
-  </code></a>
-</td>
-<td class="description"><p>
-自身を JSON 形式の文字列に変換して返します。
-</p>
-</td>
-<td class="library"><a href="../library/json=2fadd=2fcore.html">json/add/core</a></td>
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-struct/i/to_yaml.html"><code>
-  to_yaml(opts = {}) -&gt; String
-  </code></a>
-</td>
-<td class="description"><p>
-自身を YAML ドキュメントに変換します。
-</p>
-</td>
-<td class="library"><a href="../library/syck=2frubytypes.html">syck/rubytypes</a></td>
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-struct/s/yaml_new.html"><code>
-  yaml_new(klass, tag, val)
-  </code></a>
-</td>
-<td class="description"><p>
-ライブラリ内部で使用します。
-</p>
-</td>
-<td class="library"><a href="../library/syck=2frubytypes.html">syck/rubytypes</a></td>
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-struct/s/yaml_tag_class_name.html"><code>
-  yaml_tag_class_name -&gt; String
-  </code></a>
-</td>
-<td class="description"><p>
-自身のクラス名から Struct:: をのぞいた文字列を返します。
-</p>
-</td>
-<td class="library"><a href="../library/syck=2frubytypes.html">syck/rubytypes</a></td>
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-struct/s/yaml_tag_read_class.html"><code>
-  yaml_tag_read_class(name) -&gt; String
-  </code></a>
-</td>
-<td class="description"><p>
-引数 name に Struct:: を加えた文字列を返します。
-</p>
-</td>
-<td class="library"><a href="../library/syck=2frubytypes.html">syck/rubytypes</a></td>
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-struct/s/yaml_tag_subclasses=3f.html"><code>
-  yaml_tag_subclasses? -&gt; true
-  </code></a>
-</td>
-<td class="description"><p>
-常に true を返します。
-</p>
-</td>
-<td class="library"><a href="../library/syck=2frubytypes.html">syck/rubytypes</a></td>
-</tr>
-
-</table>
+</dl>
 
 
 

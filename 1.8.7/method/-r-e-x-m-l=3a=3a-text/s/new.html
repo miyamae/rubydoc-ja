@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../../../style.css">
   <link rel="icon" type="image/png" href="../../../rurema.png">
   <title>singleton method REXML::Text.new</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -20,17 +19,114 @@
 </p>
 
 
-
-
 <h1>singleton method REXML::Text.new</h1>
-
 <dl class="methodlist">
 
-<dt class="method-heading"><code>new(arg, respect_whitespace = false, parent = nil, raw = nil, entity_filter = nil, illegal = REXML::Text::ILLEGAL)</code></dt>
+<dt class="method-heading" id="S_NEW"><code>new(arg, respect_whitespace = false, parent = nil, raw = nil, entity_filter = nil, illegal = REXML::Text::NEEDS_A_SECOND_CHECK)</code><span class="permalink">[<a href="../../../method/-r-e-x-m-l=3a=3a-text/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.8.7/libdoc/rexml/rdoc/REXML/Text.html#method-c-new">rdoc</a>]</span></dt>
 <dd class="method-description">
-<p class="todo">
-[TODO]
+<p>
+テキストノードオブジェクトを生成します。
 </p>
+<p>
+arg でノードの内容を指定します。
+文字列の場合はそれが内容として使われます。
+<a href="../../../class/-r-e-x-m-l=3a=3a-text.html">REXML::Text</a> オブジェクトの場合はその内容が複製されます。
+</p>
+<p>
+respect_whitespace に真を指定すると、arg に含まれる空白文字は保存されます。
+偽の場合は空白はまとめられます。
+</p>
+<p>
+raw は true, false, nil のいずれかを指定し、生成されるテキストノードが
+raw モードであるかどうかを決めます。
+true の場合、そのノードは raw モードであると解釈され、
+テキストにはエスケープされていないXMLマークアップは
+含まれていないと仮定し、テキストの内容は変更されません。
+falseの場合、そのノードは raw モードであると解釈され、
+rexml はテキストに含まれているすべての(定義済み)実体を
+エスケープします
+nilの場合、親ノードが raw モードであるかどうかで
+self が raw モードになるかどうかが決まります。
+arg に REXML::Text オブジェクトを渡した場合は、この値は無視され
+arg が raw モードであるかどうかが使われます。
+</p>
+<p>
+entity_filter は置き換えたい実体のリストを文字列の配列で指定します。
+これは raw が false のときのみ意味を持ちます。
+entity_filter が nil の場合(デフォルトの場合)、
+テキストがどのようにエスケープされるかは、そのノードが属する
+文書(<a href="../../../class/-r-e-x-m-l=3a=3a-document.html">REXML::Document</a>)の
+DTD(<a href="../../../class/-r-e-x-m-l=3a=3a-doc-type.html">REXML::DocType</a>, <a href="../../../method/-r-e-x-m-l=3a=3a-document/i/doctype.html">REXML::Document#doctype</a>)
+で定義されます。DTD が与えられていない場合は、XMLの規格上
+以下の実体参照/対応文字がデフォルトで使われます。
+</p>
+<ul>
+<li>&amp;amp; &amp;</li>
+<li>&amp;lt; &lt;</li>
+<li>&amp;gt; &gt;</li>
+<li>&amp;quot; &quot;</li>
+<li>&amp;apos; '</li>
+</ul>
+<p>
+illegal は内部用なので使わないでください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] arg:</dt>
+<dd>
+テキストデータ(文字列)もしくは元データの <a href="../../../class/-r-e-x-m-l=3a=3a-text.html">REXML::Text</a> オブジェクト
+</dd>
+<dt class='method-param'>[PARAM] respect_whitespace:</dt>
+<dd>
+空白を保存するかどうかを決める真偽値
+</dd>
+<dt class='method-param'>[PARAM] parent:</dt>
+<dd>
+親ノード
+</dd>
+<dt class='method-param'>[PARAM] raw:</dt>
+<dd>
+テキストのエスケープの挙動を決める値
+</dd>
+<dt class='method-param'>[PARAM] entity_filter:</dt>
+<dd>
+置換したい実体の名前の配列
+</dd>
+<dt class='method-param'>[PARAM] illegal:</dt>
+<dd>
+ライブラリ内部用
+</dd>
+<dt>[EXCEPTION] RuntimeError:</dt>
+<dd>
+テキストがXMLのテキストとして不正な
+文字を含んでいる場合に発生します。
+</dd>
+</dl>
+<h2 >例</h2>
+<p>
+doctype なしの場合
+</p>
+<pre>
+p REXML::Text.new(&quot;&lt;&amp;&quot;, false, nil, false).to_s  # =&gt; &quot;&amp;lt;&amp;amp;&quot;
+p REXML::Text.new(&quot;&amp;lt;&amp;amp;&quot;, false, nil, false).to_s # =&gt; &quot;&amp;amp;lt;&amp;amp;amp;&quot;
+p REXML::Text.new(&quot;&amp;lt;&amp;amp;&quot;, false, nil, true).to_s # =&gt; &quot;&amp;lt;&amp;amp;&quot;
+p REXML::Text.new(&quot;&lt;&amp;&quot;, false, nil, true).to_s # parse error
+</pre>
+<p>
+doctype があり、実体が宣言されている場合
+</p>
+<pre>
+require 'rexml/document'
+doc = REXML::Document.new(&lt;&lt;EOS)
+doctype = REXML::Document.new(&lt;&lt;EOS).doctype
+&lt;!DOCTYPE root [
+&lt;!ENTITY p &quot;foobar publisher&quot;&gt;
+&lt;!ENTITY % q &quot;quzz&quot;&gt;
+]&gt;
+&lt;root /&gt;
+EOS
+REXML::Text.new(&quot;&amp;quzz&quot;, false, doc.root, false).to_s # =&gt; &quot;&amp;amp;&amp;q;&quot;
+REXML::Text.new(&quot;quzz&quot;, false, doc.root, true).to_s # =&gt; &quot;quzz&quot;
+</pre>
 </dd>
 
 

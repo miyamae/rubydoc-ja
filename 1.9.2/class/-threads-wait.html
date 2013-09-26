@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>class ThreadsWait</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -16,7 +15,6 @@
 &gt; <a href="../library/thwait.html">thwaitライブラリ</a>
 &gt; ThreadsWaitクラス
 </p>
-
 
 
 <h1>class ThreadsWait</h1>
@@ -42,6 +40,8 @@
 
 <br>aliases: ThWait
 
+
+
 </p>
 
 <h2>要約</h2>
@@ -51,355 +51,334 @@
 
 
 
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_ALL_WAITS">all_waits</a>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_ALL_WAITS">all_waits</a>
+
+<a href="#I_EMPTY--3F">empty?</a>
+
+<a href="#I_FINISHED--3F">finished?</a>
+
+<a href="#I_JOIN">join</a>
+
+<a href="#I_JOIN_NOWAIT">join_nowait</a>
+
+<a href="#I_NEXT_WAIT">next_wait</a>
+
+<a href="#I_THREADS">threads</a>
+
+</dd>
+
+</dl>
+
+
 <h2>特異メソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-threads-wait/s/all_waits.html"><code>
-  all_waits(*threads) -&gt; ()<br>all_waits(*threads) {|thread| ...} -&gt; ()
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_ALL_WAITS"><code>all_waits(*threads) -&gt; ()</code><span class="permalink">[<a href="../method/-threads-wait/s/all_waits.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/thwait/rdoc/ThreadsWait.html#method-c-all_waits">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>all_waits(*threads) {|thread| ...} -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
 指定されたスレッドすべてが終了するまで待ちます。
 ブロックが与えられた場合、スレッド終了時にブロックを評価します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] threads:</dt>
+<dd>
+終了するまでまつスレッドを一つもしくは複数指定します。
+</dd>
+</dl>
+<pre>
+require 'thwait'
 
-</tr>
+threads = []
+5.times {|i|
+  threads &lt;&lt; Thread.new { sleep 1; p Thread.current }
+}
+ThreadsWait.all_waits(*threads) {|th| printf(&quot;end %s\n&quot;, th.inspect) }
 
-<tr>
-<td class="signature">
-  <a href="../method/-threads-wait/s/new.html"><code>
-  new(*threads) -&gt; ThreadsWait
-  </code></a>
-</td>
+# 出力例
+#=&gt; #&lt;Thread:0x21584 run&gt;
+#=&gt; #&lt;Thread:0x21610 run&gt;
+#=&gt; #&lt;Thread:0x2169c run&gt;
+#=&gt; #&lt;Thread:0x21728 run&gt;
+#=&gt; #&lt;Thread:0x214f8 run&gt;
+#=&gt; end #&lt;Thread:0x21584 dead&gt;
+#=&gt; end #&lt;Thread:0x21610 dead&gt;
+#=&gt; end #&lt;Thread:0x2169c dead&gt;
+#=&gt; end #&lt;Thread:0x21728 dead&gt;
+#=&gt; end #&lt;Thread:0x214f8 dead&gt;
+</pre>
+</dd>
 
-<td class="description" colspan="2"><p>
+
+<dt class="method-heading" id="S_NEW"><code>new(*threads) -&gt; ThreadsWait</code><span class="permalink">[<a href="../method/-threads-wait/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/thwait/rdoc/ThreadsWait.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 指定されたスレッドの終了をまつための、スレッド同期オブジェクトをつくります。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] threads:</dt>
+<dd>
+終了を待つスレッドを一つもしくは複数指定します。
+</dd>
+</dl>
+<p>
+使用例
+</p>
+<pre>
+require 'thwait'
 
-</tr>
+threads = []
+5.times {|i|
+  threads &lt;&lt; Thread.new { sleep 1; p Thread.current }
+}
 
-</table>
+thall = ThreadsWait.new(*threads)
+thall.all_waits{|th|
+  printf(&quot;end %s\n&quot;, th.inspect)
+}
+
+# 出力例
+#=&gt; #&lt;Thread:0x214bc run&gt;
+#=&gt; #&lt;Thread:0x21548 run&gt;
+#=&gt; #&lt;Thread:0x215d4 run&gt;
+#=&gt; #&lt;Thread:0x21660 run&gt;
+#=&gt; #&lt;Thread:0x21430 run&gt;
+#=&gt; end #&lt;Thread:0x214bc dead&gt;
+#=&gt; end #&lt;Thread:0x21548 dead&gt;
+#=&gt; end #&lt;Thread:0x215d4 dead&gt;
+#=&gt; end #&lt;Thread:0x21660 dead&gt;
+#=&gt; end #&lt;Thread:0x21430 dead&gt;
+</pre>
+</dd>
+
+
+</dl>
 
 <h2>インスタンスメソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-threads-wait/i/all_waits.html"><code>
-  all_waits -&gt; ()
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_ALL_WAITS"><code>all_waits -&gt; ()</code><span class="permalink">[<a href="../method/-threads-wait/i/all_waits.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/thwait/rdoc/ThreadsWait.html#method-i-all_waits">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 指定されたスレッドすべてが終了するまで待ちます。
 ブロックが与えられた場合、スレッド終了時にブロックを評価します。
 </p>
-</td>
+<p>
+使用例
+</p>
+<pre>
+require 'thwait'
 
-</tr>
+threads = []
+5.times {|i|
+  threads &lt;&lt; Thread.new { sleep 1; p Thread.current }
+}
 
-<tr>
-<td class="signature">
-  <a href="../method/-threads-wait/i/empty=3f.html"><code>
-  empty? -&gt; bool
-  </code></a>
-</td>
+thall = ThreadsWait.new(*threads)
+thall.all_waits{|th|
+  printf(&quot;end %s\n&quot;, th.inspect)
+}
 
-<td class="description" colspan="2"><p>
+# 出力例
+#=&gt; #&lt;Thread:0x214bc run&gt;
+#=&gt; #&lt;Thread:0x21548 run&gt;
+#=&gt; #&lt;Thread:0x215d4 run&gt;
+#=&gt; #&lt;Thread:0x21660 run&gt;
+#=&gt; #&lt;Thread:0x21430 run&gt;
+#=&gt; end #&lt;Thread:0x214bc dead&gt;
+#=&gt; end #&lt;Thread:0x21548 dead&gt;
+#=&gt; end #&lt;Thread:0x215d4 dead&gt;
+#=&gt; end #&lt;Thread:0x21660 dead&gt;
+#=&gt; end #&lt;Thread:0x21430 dead&gt;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_EMPTY--3F"><code>empty? -&gt; bool</code><span class="permalink">[<a href="../method/-threads-wait/i/empty=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/thwait/rdoc/ThreadsWait.html#method-i-empty-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 同期されるスレッドが存在するならば true をかえします。
 </p>
-</td>
+<p>
+使用例
+</p>
+<pre>
+require 'thwait'
 
-</tr>
+threads = []
+3.times {|i|
+  threads &lt;&lt; Thread.new { sleep 1; p Thread.current }
+}
 
-<tr>
-<td class="signature">
-  <a href="../method/-threads-wait/i/finished=3f.html"><code>
-  finished? -&gt; bool
-  </code></a>
-</td>
+thall = ThreadsWait.new
+p thall.threads.empty? #=&gt; true
+thall.join(*threads)
+p thall.threads.empty? #=&gt; false
+</pre>
+</dd>
 
-<td class="description" colspan="2"><p>
+
+<dt class="method-heading" id="I_FINISHED--3F"><code>finished? -&gt; bool</code><span class="permalink">[<a href="../method/-threads-wait/i/finished=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/thwait/rdoc/ThreadsWait.html#method-i-finished-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 すでに終了したスレッドが存在すれば true を返します。
 </p>
-</td>
+<p>
+使用例
+</p>
+<pre>
+require 'thwait'
 
-</tr>
+threads = []
+3.times {|i|
+  threads &lt;&lt; Thread.new { sleep 1; p Thread.current }
+}
 
-<tr>
-<td class="signature">
-  <a href="../method/-threads-wait/i/join.html"><code>
-  join(*threads) -&gt; ()
-  </code></a>
-</td>
+thall = ThreadsWait.new(*threads)
+p thall.finished? #=&gt; false
+sleep 3
+p thall.finished? #=&gt; true
+</pre>
+</dd>
 
-<td class="description" colspan="2"><p>
+
+<dt class="method-heading" id="I_JOIN"><code>join(*threads) -&gt; ()</code><span class="permalink">[<a href="../method/-threads-wait/i/join.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/thwait/rdoc/ThreadsWait.html#method-i-join">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 終了を待つスレッドの対象として、threads で指定されたスレッドを指定します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] threads:</dt>
+<dd>
+複数スレッドの終了を待つスレッドに指定されたthreadsを加えます。
+</dd>
+</dl>
+<pre>
+require 'thwait'
 
-</tr>
+threads = []
+5.times {|i|
+  threads &lt;&lt; Thread.new { sleep 1; p Thread.current }
+}
 
-<tr>
-<td class="signature">
-  <a href="../method/-threads-wait/i/join_nowait.html"><code>
-  join_nowait(*threads) -&gt; ()
-  </code></a>
-</td>
+thall = ThreadsWait.new
+p thall.threads #=&gt; []
+thall.join(*threads)
+p thall.threads
+#=&gt; [#&lt;Thread:0x216ec dead&gt;, #&lt;Thread:0x21660 dead&gt;, #&lt;Thread:0x215d4 dead&gt;, #&lt;Thread:0x214bc dead&gt;]
+</pre>
+</dd>
 
-<td class="description" colspan="2"><p>
+
+<dt class="method-heading" id="I_JOIN_NOWAIT"><code>join_nowait(*threads) -&gt; ()</code><span class="permalink">[<a href="../method/-threads-wait/i/join_nowait.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/thwait/rdoc/ThreadsWait.html#method-i-join_nowait">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 終了を待つスレッドの対象として、threads で指定されたスレッドを指定します。
 しかし、実際には終了をまちません。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] threads:</dt>
+<dd>
+複数スレッドの終了を待つスレッドに指定されたthreadsを加えます。
+</dd>
+</dl>
+<pre>
+require 'thwait'
 
-</tr>
+threads = []
+5.times {|i|
+  threads &lt;&lt; Thread.new { sleep 1; p Thread.current }
+}
 
-<tr>
-<td class="signature">
-  <a href="../method/-threads-wait/i/next_wait.html"><code>
-  next_wait(nonblock = nil) -&gt; Thread
-  </code></a>
-</td>
+thall = ThreadsWait.new
+p thall.threads #=&gt; []
+thall.join_nowait(*threads)
+p thall.threads #=&gt; [#&lt;Thread:0x21638 sleep&gt;, #&lt;Thread:0x215ac sleep&gt;, #&lt;Thread:0x21520 sleep&gt;, #&lt;Thread:0x21494 sleep&gt;, #&lt;Thread:0x21408 sleep&gt;]
+# 実際には終了を待っていない。sleep している。
+</pre>
+</dd>
 
-<td class="description" colspan="2"><p>
+
+<dt class="method-heading" id="I_NEXT_WAIT"><code>next_wait(nonblock = nil) -&gt; Thread</code><span class="permalink">[<a href="../method/-threads-wait/i/next_wait.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/thwait/rdoc/ThreadsWait.html#method-i-next_wait">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 指定したスレッドのどれかが終了するまで待ちます。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] nonblock:</dt>
+<dd>
+true を与えると、キューが空の時、例外 <a href="../class/-threads-wait=3a=3a-err-no-finished-thread.html">ThreadsWait::ErrNoFinishedThread</a> が発生します。
+</dd>
+<dt>[EXCEPTION] ErrNoWaitingThread:</dt>
+<dd>
+終了をまつスレッドが存在しない時、発生します。
+</dd>
+<dt>[EXCEPTION] ErrNoFinishedThread:</dt>
+<dd>
+nonblock がtrue でかつ、キューが空の時、発生します。
+</dd>
+</dl>
+<pre>
+#使用例
+require 'thwait'
 
-</tr>
+threads = []
+2.times {|i|
+  threads &lt;&lt; Thread.new { sleep i }
+}
 
-<tr>
-<td class="signature">
-  <a href="../method/-threads-wait/i/threads.html"><code>
-  threads -&gt; Array
-  </code></a>
-</td>
+thall = ThreadsWait.new
+thall.join_nowait(*threads)
+until thall.empty?
+  th = thall.next_wait
+  p th
+end
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-queue/i/pop.html">Queue#pop</a>
+</p>
+</dd>
 
-<td class="description" colspan="2"><p>
+
+<dt class="method-heading" id="I_THREADS"><code>threads -&gt; Array</code><span class="permalink">[<a href="../method/-threads-wait/i/threads.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/thwait/rdoc/ThreadsWait.html#method-i-threads">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 同期されるスレッドの一覧を配列で返します。
 </p>
-</td>
-
-</tr>
-
-</table>
-
-
-
-<h2>継承したメソッド</h2>
-<p><code>
-
-<a href="../method/-basic-object/i/=21=3d.html">!=</a>
-
-<a href="../method/-basic-object/i/instance_eval.html">instance_eval</a>
-
-<a href="../method/-basic-object/i/instance_exec.html">instance_exec</a>
-
-<a href="../method/-basic-object/i/singleton_method_added.html">singleton_method_added</a>
-
-<a href="../method/-basic-object/i/singleton_method_removed.html">singleton_method_removed</a>
-
-<a href="../method/-basic-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
-
-<a href="../method/-exception2-message-mapper/i/-fail.html">Fail</a>
-
-<a href="../method/-exception2-message-mapper/i/bind.html">bind</a>
-
-<a href="../method/-exception2-message-mapper/i/def_e2message.html">def_e2message</a>
-
-<a href="../method/-exception2-message-mapper/i/def_exception.html">def_exception</a>
-
-<a href="../method/-exception2-message-mapper/i/fail.html">fail</a>
-
-<a href="../method/-object/i/=21.html">!</a>
-
-<a href="../method/-object/i/=3d=3d.html">==</a>
-
-<a href="../method/-object/i/=3d=3d=3d.html">===</a>
-
-<a href="../method/-object/i/=3d=7e.html">=~</a>
-
-<a href="../method/-object/i/__id__.html">__id__</a>
-
-<a href="../method/-object/i/__send__.html">__send__</a>
-
-<a href="../method/-object/i/_dump.html">_dump</a>
-
-<a href="../method/-object/i/class.html">class</a>
-
-<a href="../method/-object/i/clone.html">clone</a>
-
-<a href="../method/-object/i/dclone.html">dclone</a>
-
-<a href="../method/-object/i/display.html">display</a>
-
-<a href="../method/-object/i/enum_for.html">enum_for</a>
-
-<a href="../method/-object/i/eql=3f.html">eql?</a>
-
-<a href="../method/-object/i/equal=3f.html">equal?</a>
-
-<a href="../method/-object/i/extend.html">extend</a>
-
-<a href="../method/-object/i/freeze.html">freeze</a>
-
-<a href="../method/-object/i/frozen=3f.html">frozen?</a>
-
-<a href="../method/-object/i/hash.html">hash</a>
-
-<a href="../method/-object/i/initialize.html">initialize</a>
-
-<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
-
-<a href="../method/-object/i/inspect.html">inspect</a>
-
-<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
-
-<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
-
-<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
-
-<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
-
-<a href="../method/-object/i/instance_variables.html">instance_variables</a>
-
-<a href="../method/-object/i/is_a=3f.html">is_a?</a>
-
-<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
-
-<a href="../method/-object/i/marshal_load.html">marshal_load</a>
-
-<a href="../method/-object/i/method.html">method</a>
-
-<a href="../method/-object/i/method_missing.html">method_missing</a>
-
-<a href="../method/-object/i/methods.html">methods</a>
-
-<a href="../method/-object/i/must_be.html">must_be</a>
-
-<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
-
-<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
-
-<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
-
-<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
-
-<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
-
-<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
-
-<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
-
-<a href="../method/-object/i/must_equal.html">must_equal</a>
-
-<a href="../method/-object/i/must_include.html">must_include</a>
-
-<a href="../method/-object/i/must_match.html">must_match</a>
-
-<a href="../method/-object/i/must_raise.html">must_raise</a>
-
-<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
-
-<a href="../method/-object/i/must_send.html">must_send</a>
-
-<a href="../method/-object/i/must_throw.html">must_throw</a>
-
-<a href="../method/-object/i/nil=3f.html">nil?</a>
-
-<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
-
-<a href="../method/-object/i/pretty_print.html">pretty_print</a>
-
-<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
-
-<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
-
-<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
-
-<a href="../method/-object/i/private_methods.html">private_methods</a>
-
-<a href="../method/-object/i/protected_methods.html">protected_methods</a>
-
-<a href="../method/-object/i/psych_to_yaml.html">psych_to_yaml</a>
-
-<a href="../method/-object/i/public_methods.html">public_methods</a>
-
-<a href="../method/-object/i/public_send.html">public_send</a>
-
-<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
-
-<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
-
-<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
-
-<a href="../method/-object/i/singleton_class.html">singleton_class</a>
-
-<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
-
-<a href="../method/-object/i/taguri.html">taguri</a>
-
-<a href="../method/-object/i/taguri=3d.html">taguri=</a>
-
-<a href="../method/-object/i/taint.html">taint</a>
-
-<a href="../method/-object/i/tainted=3f.html">tainted?</a>
-
-<a href="../method/-object/i/tap.html">tap</a>
-
-<a href="../method/-object/i/to_a.html">to_a</a>
-
-<a href="../method/-object/i/to_ary.html">to_ary</a>
-
-<a href="../method/-object/i/to_hash.html">to_hash</a>
-
-<a href="../method/-object/i/to_int.html">to_int</a>
-
-<a href="../method/-object/i/to_io.html">to_io</a>
-
-<a href="../method/-object/i/to_proc.html">to_proc</a>
-
-<a href="../method/-object/i/to_regexp.html">to_regexp</a>
-
-<a href="../method/-object/i/to_s.html">to_s</a>
-
-<a href="../method/-object/i/to_str.html">to_str</a>
-
-<a href="../method/-object/i/to_yaml.html">to_yaml</a>
-
-<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
-
-<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
-
-<a href="../method/-object/i/trust.html">trust</a>
-
-<a href="../method/-object/i/untaint.html">untaint</a>
-
-<a href="../method/-object/i/untrust.html">untrust</a>
-
-<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
-
-<a href="../method/-object/s/yaml_tag.html">.yaml_tag</a>
-
-<a href="../method/-object/s/yaml_tag_subclasses=3f.html">.yaml_tag_subclasses?</a>
-
-</code></p>
-
-
+<p>
+使用例
+</p>
+<pre>
+require 'thwait'
+
+threads = []
+3.times {|i|
+  threads &lt;&lt; Thread.new { sleep 1; p Thread.current }
+}
+
+thall = ThreadsWait.new(*threads)
+p thall.threads
+#=&gt; [#&lt;Thread:0x21750 sleep&gt;, #&lt;Thread:0x216c4 sleep&gt;, #&lt;Thread:0x21638 sleep&gt;]
+</pre>
+</dd>
+
+
+</dl>
 
 
 

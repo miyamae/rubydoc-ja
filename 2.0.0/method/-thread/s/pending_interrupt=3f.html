@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>singleton method Thread.pending_interrupt?</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.0.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-thread.html">Threadクラス</a>
+&gt; pending_interrupt?
+
+</p>
+
+
+<h1>singleton method Thread.pending_interrupt?</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_PENDING_INTERRUPT--3F"><code>pending_interrupt?(error = nil) -&gt; boolean</code><span class="permalink">[<a href="../../../method/-thread/s/pending_interrupt=3f.html">permalink</a>][<a href="http://ruby-doc.org/core-2.0.0/Thread.html#method-c-pending_interrupt-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+非同期割り込みのキューが空かどうかを返します。
+</p>
+<p>
+<a href="../../../method/-thread/s/handle_interrupt.html">Thread.handle_interrupt</a> は非同期割り込みの発生を延期させるのに使
+用しますが、本メソッドは任意の非同期割り込みが存在するかどうかを確認す
+るのに使用します。
+</p>
+<p>
+本メソッドが true を返した場合、<a href="../../../method/-thread/s/handle_interrupt.html">Thread.handle_interrupt</a> で例外の
+発生を延期するブロックを終了すると延期させられていた例外を発生させるこ
+とができます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] error:</dt>
+<dd>
+対象の例外クラスを指定します。省略した場合は全ての例外を対
+象に確認を行います。
+</dd>
+</dl>
+<p>
+例: 延期させられていた例外をただちに発生させる。
+</p>
+<pre>
+def Thread.kick_interrupt_immediately
+  Thread.handle_interrupt(Object =&gt; :immediate) {
+    Thread.pass
+  }
+end
+</pre>
+<h2 >使い方</h2>
+<pre>
+th = Thread.new{
+  Thread.handle_interrupt(RuntimeError =&gt; :on_blocking){
+    while true
+      ...
+      # ここまでで割り込みが発生しても安全な状態になった。
+      if Thread.pending_interrupt?
+        Thread.handle_interrupt(Object =&gt; :immediate){}
+      end
+      ...
+    end
+  }
+}
+...
+th.raise # スレッド停止。
+</pre>
+<p>
+この例は以下のように記述する事もできます。
+</p>
+<pre>
+flag = true
+th = Thread.new{
+  Thread.handle_interrupt(RuntimeError =&gt; :on_blocking){
+    while true
+      ...
+      # ここまでで割り込みが発生しても安全な状態になった。
+      break if flag == false
+      ...
+    end
+  }
+}
+...
+flag = false # スレッド停止
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-thread/i/pending_interrupt=3f.html">Thread#pending_interrupt?</a>, <a href="../../../method/-thread/s/handle_interrupt.html">Thread.handle_interrupt</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

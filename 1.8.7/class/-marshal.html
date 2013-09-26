@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>module Marshal</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -18,12 +17,13 @@
 </p>
 
 
-
 <h1>module Marshal</h1>
 <p>
 
 
 クラスの継承リスト: Marshal
+
+
 
 
 
@@ -46,70 +46,186 @@ Ruby オブジェクトをファイル(または文字列)に書き出したり�
 
 
 
+<h2>目次</h2>
+<dl>
+
+<dt>モジュール関数</dt>
+<dd>
+
+<a href="#M_DUMP">dump</a>
+
+<a href="#M_LOAD">load</a>
+
+<a href="#M_LOAD">restore</a>
+
+</dd>
+
+<dt>定数</dt>
+<dd>
+
+<a href="#C_-M-A-J-O-R_-V-E-R-S-I-O-N">MAJOR_VERSION</a>
+
+<a href="#C_-M-A-J-O-R_-V-E-R-S-I-O-N">MINOR_VERSION</a>
+
+</dd>
+
+</dl>
+
+
 <h2>モジュール関数</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-marshal/m/dump.html"><code>
-  dump(obj, port, limit = -1) -&gt; IO<br>dump(obj, limit = -1) -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="M_DUMP"><code>dump(obj, port, limit = -1) -&gt; IO</code><span class="permalink">[<a href="../method/-marshal/m/dump.html">permalink</a>][<a href="http://ruby-doc.org/core-1.8.7/Marshal.html#method-c-dump">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>dump(obj, limit = -1) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
 obj を指定された出力先に再帰的に出力します。
 </p>
-</td>
+<p>
+ファイルに書き出せないオブジェクトをファイルに書き出そうとすると
+例外 <a href="../class/-type-error.html">TypeError</a> が発生します。
+ファイルに書き出せないオブジェクトは以下の通りです。
+</p>
+<ul>
+<li>名前のついてない <a href="../class/-class.html">Class</a>/<a href="../class/-module.html">Module</a> オブジェクト。(この場
+合は、例外 <a href="../class/-argument-error.html">ArgumentError</a> が発生します。無名クラスについて
+は、<a href="../method/-module/s/new.html">Module.new</a> を参照。)</li>
+<li>システムがオブジェクトの状態を保持するもの。具体的には以下のイン
+スタンス。<a href="../class/-dir.html">Dir</a>, <a href="../class/-file=3a=3a-stat.html">File::Stat</a>, <a href="../class/-i-o.html">IO</a> とそのサブクラス
+<a href="../class/-file.html">File</a>, <a href="../class/-socket.html">Socket</a> など。</li>
+<li><a href="../class/-match-data.html">MatchData</a>, <a href="../class/-data.html">Data</a>, <a href="../class/-method.html">Method</a>, <a href="../class/-unbound-method.html">UnboundMethod</a>,
+<a href="../class/-proc.html">Proc</a>, <a href="../class/-thread.html">Thread</a>, <a href="../class/-thread-group.html">ThreadGroup</a>, <a href="../class/-continuation.html">Continuation</a>
+のインスタンス。</li>
+<li>特異メソッドを定義したオブジェクト</li>
+</ul>
+<p>
+また、これらのオブジェクトを間接的に指すオブジェクトなども書き出せ
+ません。例えば、デフォルト値を求めるブロックを持った <a href="../class/-hash.html">Hash</a> は
+<a href="../class/-proc.html">Proc</a> を間接的に指していることになります。
+</p>
+<pre>
+p Marshal.dump(Hash.new {})
+=&gt; -:1:in `dump': cannot dump hash with default proc (TypeError)
+</pre>
+<p>
+マーシャルの動作を任意に定義することもできます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+ダンプする対象のオブジェクトを指定します。
+</dd>
+<dt class='method-param'>[PARAM] port:</dt>
+<dd>
+<a href="../class/-i-o.html">IO</a> かそのサブクラスのインスタンスを指定します。
+</dd>
+<dt class='method-param'>[PARAM] limit:</dt>
+<dd>
+指定した場合、limit 段以上深くリンクしたオブジェクトを
+ダンプできません。負の limit を指定すると深さチェックを行いません。
+デフォルトは -1 です。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+port を省略すると、obj をダンプした <a href="../class/-string.html">String</a> を返します。
+port を指定すると port を返します。
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+ファイルに書き出せないオブジェクトをファイルに
+書きだそうとした場合に発生します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+名前の付いていない <a href="../class/-class.html">Class</a> や <a href="../class/-module.html">Module</a>
+オブジェクトをダンプしようとした場合に発生します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+limit 段以上深くリンクしたオブジェクトをダンプしようと
+した場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-object/i/marshal_dump.html">Object#marshal_dump</a>, <a href="../method/-object/i/marshal_load.html">Object#marshal_load</a>
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-marshal/m/load.html"><code>
-  load(port, proc = nil) -&gt; object<br>restore(port, proc = nil) -&gt; object
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="M_LOAD"><code>load(port, proc = nil) -&gt; object</code><span class="permalink">[<a href="../method/-marshal/m/load.html">permalink</a>][<a href="http://ruby-doc.org/core-1.8.7/Marshal.html#method-c-load">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>restore(port, proc = nil) -&gt; object</code></dt>
+<dd class="method-description">
+<p>
 port からマーシャルデータを読み込んで、元のオブジェクトと同
 じ状態をもつオブジェクトを生成します。
 </p>
-</td>
+<p>
+proc として手続きオブジェクトが与えられた場合には読み込んだ
+オブジェクトを引数にその手続きを呼び出します。
+</p>
+<pre>
+str = Marshal.dump([&quot;a&quot;, 1, 10 ** 10, 1.0, :foo])
+p Marshal.load(str, proc {|obj| p obj})
 
-</tr>
+=&gt; &quot;a&quot;
+   1
+   10000000000
+   1.0
+   :foo
+   [&quot;a&quot;, 1, 10000000000, 1.0, :foo]
+   [&quot;a&quot;, 1, 10000000000, 1.0, :foo]
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] port:</dt>
+<dd>
+<a href="../class/-string.html">String</a> か <a href="../class/-i-o.html">IO</a> (またはそのサブクラス)の
+インスタンスを指定します。
+</dd>
+<dt class='method-param'>[PARAM] proc:</dt>
+<dd>
+手続きオブジェクト。<a href="../class/-proc.html">Proc</a>
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+メジャーバージョンが異なるか、バージョンの大きな
+マーシャルデータを読み込んだ場合に発生します。
+</dd>
+</dl>
+</dd>
 
-</table>
+
+</dl>
 
 <h2>定数</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-marshal/c/-m-a-j-o-r_-v-e-r-s-i-o-n.html"><code>
-  MAJOR_VERSION -&gt; Fixnum<br>MINOR_VERSION -&gt; Fixnum
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="C_-M-A-J-O-R_-V-E-R-S-I-O-N"><code>MAJOR_VERSION -&gt; Fixnum</code><span class="permalink">[<a href="../method/-marshal/c/-m-a-j-o-r_-v-e-r-s-i-o-n.html">permalink</a>][<a href="http://ruby-doc.org/core-1.8.7/Marshal.html#method-c-MAJOR_VERSION">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>MINOR_VERSION -&gt; Fixnum</code></dt>
+<dd class="method-description">
+<p>
 <a href="../method/-marshal/m/dump.html">Marshal.#dump</a> が出力するデータフォーマットのバージョン番号です。
 </p>
-</td>
+<p>
+<a href="../method/-marshal/m/load.html">Marshal.#load</a> は、メジャーバージョンが異なるか、バージョンの大きな
+マーシャルデータを読み込んだとき例外 <a href="../class/-type-error.html">TypeError</a> を発生させます。
+</p>
+<p>
+マイナーバージョンが古いだけのフォーマットは読み込み可能ですが、
+<a href="../method/-kernel/v/-v-e-r-b-o-s-e.html">$VERBOSE</a> = true のときには警告メッセージが出力されます
+</p>
+<p>
+マーシャルされたデータのバージョン番号は以下のようにして取得するこ
+とができます。
+</p>
+<pre>
+obj = Object.new
+major, minor = Marshal.dump(obj).unpack(&quot;cc&quot;)
+p [major, minor]
+</pre>
+</dd>
 
-</tr>
 
-</table>
-
-
-
-
+</dl>
 
 
 
