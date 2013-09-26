@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>class OpenSSL::PKey::DSA</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.3 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -16,7 +15,6 @@
 &gt; <a href="../library/openssl.html">opensslライブラリ</a>
 &gt; OpenSSL::PKey::DSAクラス
 </p>
-
 
 
 <h1>class OpenSSL::PKey::DSA</h1>
@@ -36,6 +34,8 @@
 
       &lt; <a href="../class/-basic-object.html">BasicObject</a>
       
+
+
 
 
 
@@ -63,515 +63,461 @@ p dsa512.verify('dss1', sign, data)
 
 
 
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_GENERATE">generate</a>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_EXPORT">export</a>
+
+<a href="#I_EXPORT">to_pem</a>
+
+<a href="#I_EXPORT">to_s</a>
+
+<a href="#I_G">g</a>
+
+<a href="#I_G--3D">g=</a>
+
+<a href="#I_P">p</a>
+
+<a href="#I_P--3D">p=</a>
+
+<a href="#I_PARAMS">params</a>
+
+<a href="#I_PRIV_KEY">priv_key</a>
+
+<a href="#I_PRIV_KEY--3D">priv_key=</a>
+
+<a href="#I_PRIVATE--3F">private?</a>
+
+<a href="#I_PUB_KEY">pub_key</a>
+
+<a href="#I_PUB_KEY--3D">pub_key=</a>
+
+<a href="#I_PUBLIC--3F">public?</a>
+
+<a href="#I_PUBLIC_KEY">public_key</a>
+
+<a href="#I_Q">q</a>
+
+<a href="#I_Q--3D">q=</a>
+
+<a href="#I_SYSSIGN">syssign</a>
+
+<a href="#I_SYSVERIFY">sysverify</a>
+
+<a href="#I_TO_DER">to_der</a>
+
+<a href="#I_TO_TEXT">to_text</a>
+
+</dd>
+
+</dl>
+
+
 <h2>特異メソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/s/generate.html"><code>
-  generate(size) -&gt; OpenSSL::PKey::DSA<br>generate(size) {|u,n| ... } -&gt; OpenSSL::PKey::DSA
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_GENERATE"><code>generate(size) -&gt; OpenSSL::PKey::DSA</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/s/generate.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-c-generate">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>generate(size) {|u,n| ... } -&gt; OpenSSL::PKey::DSA</code></dt>
+<dd class="method-description">
+<p>
 乱数により DSA 公開鍵と秘密鍵のペアを生成して、DSA オブジェクトとして
 返します。
 </p>
-</td>
+<p>
+このメソッドを呼ぶ前に <a href="../class/-open-s-s-l=3a=3a-random.html">OpenSSL::Random</a> の各モジュール関数に
+よって乱数が適切に初期化されている必要があります。
+</p>
+<p>
+size は DSA パラメータの素数のビット数を指定します。最大 1024 まで
+指定できます。通常 512 か 1024 を使います。
+</p>
+<p>
+このメソッドにブロックが渡された場合には、鍵パラメータ生成の途中経過の
+情報を引数としてブロックが呼び出されます。
+</p>
+<ul>
+<li>n個目の素数候補を生成した場合、u=0 でブロックが呼びだされる</li>
+<li>生成した素数候補が小さな素数で割りきれてしまった場合は
+u=1, n=-1 でブロックが呼びだされる</li>
+<li>生成した素数候補がn回目の素数テスト(Miller-Robin)に成功した
+場合、u=1 でブロックが呼び出される</li>
+<li>適当な1つめの素数が見付かった場合は、u=2, n=0 と
+u=3, n=0 でブロックが呼び出される</li>
+<li>もう1つ素数を見付けるために、上の1,2,3をもう一度繰り返す</li>
+<li>適当な2つめの素数が見付かった場合は、u=2, n=1 でブロックが
+呼び出される</li>
+<li>パラメータ g (generator) が見付かった場合には、
+u=3, n=1 でブロックが呼び出される</li>
+</ul>
+<p>
+DSA パラメータの生成には時間がかかるため、生成の途中経過を
+ユーザに表示したい場合にこの機能を使います。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/s/new.html"><code>
-  new -&gt; OpenSSL::PKey::DSA<br>new(size) -&gt; OpenSSL::PKey::DSA<br>new(obj, pass=nil) -&gt; OpenSSL::PKey::DSA<br>new(obj, pass=nil) {|flag| ... } -&gt; OpenSSL::PKey::DSA
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_NEW"><code>new -&gt; OpenSSL::PKey::DSA</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>new(size) -&gt; OpenSSL::PKey::DSA</code></dt>
+<dt class="method-heading"><code>new(obj, pass=nil) -&gt; OpenSSL::PKey::DSA</code></dt>
+<dt class="method-heading"><code>new(obj, pass=nil) {|flag| ... } -&gt; OpenSSL::PKey::DSA</code></dt>
+<dd class="method-description">
+<p>
 DSA オブジェクトを生成します。
 </p>
-</td>
+<p>
+引数なしの場合は空の DSA オブジェクトを返します。
+</p>
+<p>
+第一引数に整数を指定した場合には、<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/s/generate.html">OpenSSL::PKey::DSA.generate</a> により
+公開鍵と秘密鍵のペアを生成し、それを返します。
+</p>
+<p>
+それ以外の場合には、以下のようにして鍵データを読みこみ、DSA オブジェクト
+を生成します。
+</p>
+<ul>
+<li>第一引数が文字列の場合は、PEM 形式もしくは DER 形式と仮定して
+鍵データを読み込みます</li>
+<li>第一引数が <a href="../class/-i-o.html">IO</a> オブジェクトの場合は、その内容を
+読み込んで DSA オブジェクトを生成します。</li>
+<li>第一引数が to_der メソッドを持つ場合は、それにより DER 形式の
+文字列に変換してから読み込みます</li>
+</ul>
+<p>
+pass が指定された場合は、秘密鍵を pass を使って復号化します。
+</p>
+<p>
+鍵データにパスフレーズが設定されているにもかかわらず、passが省略された場合は、
+渡されたブロックを呼びだしてパスフレーズを要求します。ブロックの返り値を
+パスフレーズとみなして復号します。ブロックの引数は通常は false が渡されますが、
+これはそのパスフレーズが秘密鍵の復号に使われることを意味します。
+ブロックが渡されなかった場合にはターミナルに問い合わせをします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] size:</dt>
+<dd>
+鍵を生成する時の素数のビット数
+</dd>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+鍵データ
+</dd>
+<dt class='method-param'>[PARAM] pass:</dt>
+<dd>
+鍵データに設定したパスフレーズ
+</dd>
+<dt>[EXCEPTION] OpenSSL::PKey::RSAError:</dt>
+<dd>
+鍵の読み込みに失敗した場合に発生します。
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-</table>
+</dl>
 
 <h2>インスタンスメソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/export.html"><code>
-  export(cipher=nil, pass=nil) -&gt; String<br>export(cipher=nil, pass=nil) {|flag| ... } -&gt; String<br>to_pem(cipher=nil, pass=nil) -&gt; String<br>to_pem(cipher=nil, pass=nil) {|flag| ... } -&gt; String<br>to_s(cipher=nil, pass=nil) -&gt; String<br>to_s(cipher=nil, pass=nil) {|flag| ... } -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_EXPORT"><code>export(cipher=nil, pass=nil) -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/export.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-export">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>export(cipher=nil, pass=nil) {|flag| ... } -&gt; String</code></dt>
+<dt class="method-heading"><code>to_pem(cipher=nil, pass=nil) -&gt; String</code></dt>
+<dt class="method-heading"><code>to_pem(cipher=nil, pass=nil) {|flag| ... } -&gt; String</code></dt>
+<dt class="method-heading"><code>to_s(cipher=nil, pass=nil) -&gt; String</code></dt>
+<dt class="method-heading"><code>to_s(cipher=nil, pass=nil) {|flag| ... } -&gt; String</code></dt>
+<dd class="method-description">
+<p>
 鍵を PEM 形式で出力します。
 </p>
-</td>
+<p>
+cipher と pass が指定された場合、
+秘密鍵を暗号 cipher <a href="../class/-open-s-s-l=3a=3a-cipher=3a=3a-cipher.html">OpenSSL::Cipher::Cipher</a>
+とパスワード pass を使って暗号化します。
+</p>
+<p>
+cipher を指定して pass を省略した場合は
+渡されたブロックを呼びだしてパスフレーズを要求します。ブロックの返り値を
+パスフレーズとみなして暗号化します。
+ブロックの引数は通常は true が渡されますが、
+これはそのパスフレーズが秘密鍵の暗号化に使われることを意味します。
+ブロックが渡されなかった場合にはターミナルに問い合わせをします。
+</p>
+<p>
+公開鍵を出力する場合は cipher と pass は無視されます。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/g.html"><code>
-  g -&gt; OpenSSL::BN
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_G"><code>g -&gt; OpenSSL::BN</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/g.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-g">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 DSA 鍵のパラメータ g を返します。
 </p>
-</td>
+<p>
+g は公開鍵、秘密鍵の両方に属する情報です。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/g=3d.html"><code>
-  g=(g)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_G--3D"><code>g=(g)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/g=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-g-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 DSA 鍵のパラメータ g を設定します。
 </p>
-</td>
+<p>
+通常このメソッドで値を変更することはありません。
+よく考えて必要な場合のみ利用してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] g:</dt>
+<dd>
+設定する整数値
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/p.html"><code>
-  p -&gt; OpenSSL::BN
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_P"><code>p -&gt; OpenSSL::BN</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/p.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-p">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 DSA 鍵のパラメータ p を返します。
 </p>
-</td>
+<p>
+p は公開鍵、秘密鍵の両方に属する情報です。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/p=3d.html"><code>
-  p=(p)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_P--3D"><code>p=(p)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/p=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-p-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 DSA 鍵のパラメータ p を設定します。
 </p>
-</td>
+<p>
+通常このメソッドで値を変更することはありません。
+よく考えて必要な場合のみ利用してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] p:</dt>
+<dd>
+設定する整数値
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/params.html"><code>
-  params -&gt; {String =&gt; OpenSSL::BN}
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_PARAMS"><code>params -&gt; {String =&gt; OpenSSL::BN}</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/params.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-params">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 鍵のパラメータを {パラメータ名 =&gt; その整数値} というハッシュで返します。
 </p>
-</td>
+<p>
+公開鍵における priv_key のように自身が持っていないパラメータは
+0 がセットされます。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/priv_key.html"><code>
-  priv_key -&gt; OpenSSL::BN
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_PRIV_KEY"><code>priv_key -&gt; OpenSSL::BN</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/priv_key.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-priv_key">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 DSA 鍵の秘密鍵パラメータを返します。
 </p>
-</td>
+<p>
+秘密鍵はこの値と、
+<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/p.html">OpenSSL::PKey::DSA#p</a>, <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/q.html">OpenSSL::PKey::DSA#q</a>, <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/g.html">OpenSSL::PKey::DSA#g</a>
+から構成されます。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/priv_key=3d.html"><code>
-  priv_key=(private_key)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_PRIV_KEY--3D"><code>priv_key=(private_key)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/priv_key=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-priv_key-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 DSA 鍵の秘密鍵パラメータを設定します。
 </p>
-</td>
+<p>
+通常このメソッドで値を変更することはありません。
+よく考えて必要な場合のみ利用してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] private_key:</dt>
+<dd>
+設定する整数値
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/private=3f.html"><code>
-  private? -&gt; bool
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_PRIVATE--3F"><code>private? -&gt; bool</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/private=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-private-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身が秘密鍵をもっている場合に true を返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/pub_key.html"><code>
-  pub_key -&gt; OpenSSL::BN
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_PUB_KEY"><code>pub_key -&gt; OpenSSL::BN</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/pub_key.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-pub_key">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 DSA 鍵の公開鍵パラメータを返します。
 </p>
-</td>
+<p>
+公開鍵はこの値と、
+<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/p.html">OpenSSL::PKey::DSA#p</a>, <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/q.html">OpenSSL::PKey::DSA#q</a>, <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/g.html">OpenSSL::PKey::DSA#g</a>
+から構成されます。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/pub_key=3d.html"><code>
-  pub_key=(public_key)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_PUB_KEY--3D"><code>pub_key=(public_key)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/pub_key=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-pub_key-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 DSA 鍵の公開鍵パラメータを設定します。
 </p>
-</td>
+<p>
+通常このメソッドで値を変更することはありません。
+よく考えて必要な場合のみ利用してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] public_key:</dt>
+<dd>
+設定する整数値
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/public=3f.html"><code>
-  public? -&gt; bool
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_PUBLIC--3F"><code>public? -&gt; bool</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/public=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-public-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身が公開鍵をもっている場合に true を返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/public_key.html"><code>
-  public_key -&gt; OpenSSL::PKey::DSA
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_PUBLIC_KEY"><code>public_key -&gt; OpenSSL::PKey::DSA</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/public_key.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-public_key">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 公開鍵を複製して DSA オブジェクトとして返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/q.html"><code>
-  q -&gt; OpenSSL::BN
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_Q"><code>q -&gt; OpenSSL::BN</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/q.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-q">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 DSA 鍵のパラメータ q を返します。
 </p>
-</td>
+<p>
+q は公開鍵、秘密鍵の両方に属する情報です。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/q=3d.html"><code>
-  q=(q)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_Q--3D"><code>q=(q)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/q=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-q-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 DSA 鍵のパラメータ q を設定します。
 </p>
-</td>
+<p>
+通常このメソッドで値を変更することはありません。
+よく考えて必要な場合のみ利用してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] q:</dt>
+<dd>
+設定する整数値
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/syssign.html"><code>
-  syssign(data) -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_SYSSIGN"><code>syssign(data) -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/syssign.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-syssign">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身で data に署名をし、 DER 形式の文字列で署名を返します。
 </p>
-</td>
+<p>
+data は適切なハッシュ関数で計算されたダイジェストであると仮定
+しています。
+</p>
+<p>
+通常は <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-p-key/i/sign.html">OpenSSL::PKey::PKey#sign</a> を使い、署名をすべきです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] data:</dt>
+<dd>
+署名の対象
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/sysverify.html"><code>
-  sysverify(data, sign) -&gt; bool
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_SYSVERIFY"><code>sysverify(data, sign) -&gt; bool</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/sysverify.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-sysverify">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 署名 sign と自身の公開鍵で data を検証します。
 </p>
-</td>
+<p>
+検証に成功した場合は真を返します。
+</p>
+<p>
+sign に <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/syssign.html">OpenSSL::PKey::DSA#syssign</a> が返す DER 形式の文字列
+を渡さなければなりません。
+</p>
+<p>
+data は適切なハッシュ関数で計算されたダイジェストであると仮定
+しています。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] data:</dt>
+<dd>
+検証対象の文字列
+</dd>
+<dt class='method-param'>[PARAM] sign:</dt>
+<dd>
+署名文字列
+</dd>
+<dt>[EXCEPTION] OpenSSL::PKey::DSAError:</dt>
+<dd>
+検証時にエラーが起きた場合に発生します。
+正しい署名でなかった場合など、検証に失敗した場合はこの
+例外は発生しないことに注意してください
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/to_der.html"><code>
-  to_der -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_TO_DER"><code>to_der -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/to_der.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-to_der">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 自身を DER 形式に変換します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/to_text.html"><code>
-  to_text -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_TO_TEXT"><code>to_text -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/i/to_text.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/openssl/rdoc/OpenSSL/PKey/DSA.html#method-i-to_text">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 鍵を人間が読める形式に変換します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-</table>
-
-
-
-<h2>継承したメソッド</h2>
-<p><code>
-
-<a href="../method/-basic-object/i/=21=3d.html">!=</a>
-
-<a href="../method/-basic-object/i/__id__.html">__id__</a>
-
-<a href="../method/-basic-object/i/instance_eval.html">instance_eval</a>
-
-<a href="../method/-basic-object/i/instance_exec.html">instance_exec</a>
-
-<a href="../method/-basic-object/i/singleton_method_added.html">singleton_method_added</a>
-
-<a href="../method/-basic-object/i/singleton_method_removed.html">singleton_method_removed</a>
-
-<a href="../method/-basic-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
-
-<a href="../method/-object/i/=21.html">!</a>
-
-<a href="../method/-object/i/=3d=3d.html">==</a>
-
-<a href="../method/-object/i/=3d=3d=3d.html">===</a>
-
-<a href="../method/-object/i/=3d=7e.html">=~</a>
-
-<a href="../method/-object/i/__send__.html">__send__</a>
-
-<a href="../method/-object/i/_dump.html">_dump</a>
-
-<a href="../method/-object/i/class.html">class</a>
-
-<a href="../method/-object/i/clone.html">clone</a>
-
-<a href="../method/-object/i/dclone.html">dclone</a>
-
-<a href="../method/-object/i/display.html">display</a>
-
-<a href="../method/-object/i/enum_for.html">enum_for</a>
-
-<a href="../method/-object/i/eql=3f.html">eql?</a>
-
-<a href="../method/-object/i/equal=3f.html">equal?</a>
-
-<a href="../method/-object/i/extend.html">extend</a>
-
-<a href="../method/-object/i/freeze.html">freeze</a>
-
-<a href="../method/-object/i/frozen=3f.html">frozen?</a>
-
-<a href="../method/-object/i/hash.html">hash</a>
-
-<a href="../method/-object/i/initialize.html">initialize</a>
-
-<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
-
-<a href="../method/-object/i/inspect.html">inspect</a>
-
-<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
-
-<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
-
-<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
-
-<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
-
-<a href="../method/-object/i/instance_variables.html">instance_variables</a>
-
-<a href="../method/-object/i/is_a=3f.html">is_a?</a>
-
-<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
-
-<a href="../method/-object/i/marshal_load.html">marshal_load</a>
-
-<a href="../method/-object/i/method.html">method</a>
-
-<a href="../method/-object/i/method_missing.html">method_missing</a>
-
-<a href="../method/-object/i/methods.html">methods</a>
-
-<a href="../method/-object/i/must_be.html">must_be</a>
-
-<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
-
-<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
-
-<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
-
-<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
-
-<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
-
-<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
-
-<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
-
-<a href="../method/-object/i/must_equal.html">must_equal</a>
-
-<a href="../method/-object/i/must_include.html">must_include</a>
-
-<a href="../method/-object/i/must_match.html">must_match</a>
-
-<a href="../method/-object/i/must_raise.html">must_raise</a>
-
-<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
-
-<a href="../method/-object/i/must_send.html">must_send</a>
-
-<a href="../method/-object/i/must_throw.html">must_throw</a>
-
-<a href="../method/-object/i/nil=3f.html">nil?</a>
-
-<a href="../method/-object/i/object_id.html">object_id</a>
-
-<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
-
-<a href="../method/-object/i/pretty_print.html">pretty_print</a>
-
-<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
-
-<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
-
-<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
-
-<a href="../method/-object/i/private_methods.html">private_methods</a>
-
-<a href="../method/-object/i/protected_methods.html">protected_methods</a>
-
-<a href="../method/-object/i/psych_to_yaml.html">psych_to_yaml</a>
-
-<a href="../method/-object/i/public_methods.html">public_methods</a>
-
-<a href="../method/-object/i/public_send.html">public_send</a>
-
-<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
-
-<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
-
-<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
-
-<a href="../method/-object/i/singleton_class.html">singleton_class</a>
-
-<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
-
-<a href="../method/-object/i/taguri.html">taguri</a>
-
-<a href="../method/-object/i/taguri=3d.html">taguri=</a>
-
-<a href="../method/-object/i/taint.html">taint</a>
-
-<a href="../method/-object/i/tainted=3f.html">tainted?</a>
-
-<a href="../method/-object/i/tap.html">tap</a>
-
-<a href="../method/-object/i/to_a.html">to_a</a>
-
-<a href="../method/-object/i/to_ary.html">to_ary</a>
-
-<a href="../method/-object/i/to_hash.html">to_hash</a>
-
-<a href="../method/-object/i/to_int.html">to_int</a>
-
-<a href="../method/-object/i/to_io.html">to_io</a>
-
-<a href="../method/-object/i/to_proc.html">to_proc</a>
-
-<a href="../method/-object/i/to_regexp.html">to_regexp</a>
-
-<a href="../method/-object/i/to_str.html">to_str</a>
-
-<a href="../method/-object/i/to_yaml.html">to_yaml</a>
-
-<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
-
-<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
-
-<a href="../method/-object/i/trust.html">trust</a>
-
-<a href="../method/-object/i/untaint.html">untaint</a>
-
-<a href="../method/-object/i/untrust.html">untrust</a>
-
-<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
-
-<a href="../method/-object/s/yaml_tag.html">.yaml_tag</a>
-
-<a href="../method/-object/s/yaml_tag_subclasses=3f.html">.yaml_tag_subclasses?</a>
-
-<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-p-key/i/sign.html">sign</a>
-
-<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-p-key/i/verify.html">verify</a>
-
-</code></p>
-
-
+</dl>
 
 
 

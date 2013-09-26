@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>class REXML::Parsers::PullParser</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -16,7 +15,6 @@
 &gt; <a href="../library/rexml.html">rexmlライブラリ</a>
 &gt; REXML::Parsers::PullParserクラス
 </p>
-
 
 
 <h1>class REXML::Parsers::PullParser</h1>
@@ -43,380 +41,312 @@
 <br>extend: <a href="../class/-forwardable.html">Forwardable</a>
 
 
+
+
 </p>
 
 <h2>要約</h2>
+<p>
+プル方式の XML パーサクラス。
+</p>
+<p>
+<a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-stream-parser.html">REXML::Parsers::StreamParser</a> はパースした結果をコールバックによって
+受動的に受け取りますが、このパーサは <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/pull.html">REXML::Parsers::PullParser#pull</a>
+によってパーサから結果をイベントという形で順に能動的に取り出します。
+外部的にはこのクラスのオブジェクトはイベントのキューと見なせます。
+pull はそのキューの先頭を取り出し、キューから取り除きます。
+</p>
+<p>
+pull は <a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event.html">REXML::Parsers::PullEvent</a> オブジェクトを返します。
+このオブジェクトの
+<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event/i/event_type.html">REXML::Parsers::PullEvent#event_type</a> で「開始タグ」「終了タグ」
+といったイベントの種類を取得します。
+<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event/i/=5b=5d.html">REXML::Parsers::PullEvent#[]</a> でそのイベントのパラメータ
+(例えば開始タグなら要素名と属性)を得ることができます。
+</p>
+<h2 id='event_type'>イベントの種類とパラメータ</h2>
+<p>
+<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event/i/event_type.html">REXML::Parsers::PullEvent#event_type</a> で得られるイベントの種類の
+シンボルを列挙しています。
+</p>
+<p>
+これらのうちのいくつかは、
+<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event/i/start_element=3f.html">REXML::Parsers::PullEvent#start_element?</a> などのメソッドで
+判定することが可能です。
+</p>
+<dl>
+<dt>start_element (要素名, 属性)</dt>
+<dd>
+<p>
+XML要素の開始タグ。属性は { 属性名文字列 =&gt; 属性値文字列 } という <a href="../class/-hash.html">Hash</a>
+</p>
+</dd>
+<dt>end_element (要素名)</dt>
+<dd>
+<p>
+XML要素の終了タグ
+</p>
+</dd>
+<dt>text (正規化文字列, 非正規化文字列)</dt>
+<dd>
+<p>
+テキストノード
+</p>
+</dd>
+<dt>processing_instruction (ターゲット文字列, 内容文字列 | nil)</dt>
+<dd>
+<p>
+XML処理命令(Processing Instruction, PI)
+</p>
+</dd>
+<dt>comment (コメント文字列)</dt>
+<dd>
+<p>
+コメント
+</p>
+</dd>
+<dt>start_doctype (ルート要素名, &quot;SYSTEM&quot; | &quot;PUBLIC&quot; | nil, システム識別子 | nil, 公開識別子 | nil)</dt>
+<dd>
+<p>
+DTD 開始。判定は <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event/i/doctype=3f.html">REXML::Parsers::PullEvent#doctype?</a> メソッドで、
+start_doctype? ではない
+</p>
+</dd>
+<dt>end_doctype ()</dt>
+<dd>
+<p>
+DTD 終了
+</p>
+</dd>
+<dt>attlistdecl (要素名, 属性名とデフォルト値, 宣言文字列)</dt>
+<dd>
+<p>
+DTDの属性リスト宣言。属性名とデフォルト値 は { 属性名文字列 =&gt; デフォルト値文字列(なければnil) } という <a href="../class/-hash.html">Hash</a>
+</p>
+</dd>
+<dt>elementdecl (宣言文字列)</dt>
+<dd>
+<p>
+DTDの要素宣言
+</p>
+</dd>
+<dt>entitydecl</dt>
+<dd>
+<p>
+DTDの実体宣言
+</p>
+</dd>
+<dt>notationdecl (記法名文字列, &quot;PUBLIC&quot; | &quot;SYSTEM&quot; | nil, 公開識別子文字列 | nil, URI文字列 | nil)</dt>
+<dd>
+<p>
+DTDの記法宣言
+</p>
+</dd>
+<dt>cdata (テキスト文字列)</dt>
+<dd>
+<p>
+cdata セクション
+</p>
+</dd>
+<dt>xmldecl (バージョン文字列, エンコーディング文字列 | nil, standalone (&quot;yes&quot; | &quot;no&quot; | nil))</dt>
+<dd>
+<p>
+XML宣言
+</p>
+</dd>
+<dt>externalentity (エンティティ文字列)</dt>
+<dd>
+<p>
+doctype内のパラメータ実体参照。
 
+</p>
+</dd>
+</dl>
+<h2 >例</h2>
+<pre>
+require 'rexml/parsers/pullparser'
+xml = &lt;&lt;EOS
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;?xml-stylesheet type=&quot;text/css&quot; href=&quot;style.css&quot;?&gt;
+&lt;!DOCTYPE root SYSTEM &quot;foo&quot; [
+  &lt;!ELEMENT root (a+)&gt;
+  &lt;!ELEMENT a&gt;
+  &lt;!ENTITY bar &quot;barbarbarbar&quot;&gt;
+  &lt;!ATTLIST a att CDATA #REQUIRED xyz CDATA &quot;foobar&quot;&gt;
+  &lt;!NOTATION foobar SYSTEM &quot;http://example.org/foobar.dtd&quot;&gt;
+  &lt;!ENTITY % HTMLsymbol PUBLIC
+     &quot;-//W3C//ENTITIES Symbols for XHTML//EN&quot;
+     &quot;xhtml-symbol.ent&quot;&gt;
+  %HTMLsymbol;
+]&gt;
+&lt;root xmlns:foo=&quot;http://example.org/foo&quot;
+      xmlns:bar=&quot;http://example.org/bar&quot;&gt;&lt;![CDATA[cdata is here]]&gt;
+  &lt;a foo:att='1' bar:att='2' att='&amp;lt;'/&gt;
+  &amp;amp;&amp;amp; &lt;!-- comment here--&gt; &amp;bar;
+&lt;/root&gt;
+EOS
+
+parser = REXML::Parsers::PullParser.new(xml)
+while parser.has_next?
+  p parser.pull
+end
+# &gt;&gt; xmldecl: [&quot;1.0&quot;, &quot;UTF-8&quot;, nil]
+# &gt;&gt; text: [&quot;\n&quot;, &quot;\n&quot;]
+# &gt;&gt; processing_instruction: [&quot;xml-stylesheet&quot;, &quot; type=\&quot;text/css\&quot; href=\&quot;style.css\&quot;&quot;]
+# &gt;&gt; text: [&quot;\n&quot;, &quot;\n&quot;]
+# &gt;&gt; start_doctype: [&quot;root&quot;, &quot;SYSTEM&quot;, &quot;foo&quot;, nil]
+# &gt;&gt; elementdecl: [&quot;&lt;!ELEMENT root (a+)&quot;]
+# &gt;&gt; elementdecl: [&quot;&lt;!ELEMENT a&quot;]
+# &gt;&gt; entitydecl: [&quot;bar&quot;, &quot;barbarbarbar&quot;]
+# &gt;&gt; attlistdecl: [&quot;a&quot;, {&quot;att&quot;=&gt;nil, &quot;xyz&quot;=&gt;&quot;foobar&quot;}, &quot; \n  &lt;!ATTLIST a att CDATA #REQUIRED xyz CDATA \&quot;foobar\&quot;&gt;&quot;]
+# &gt;&gt; notationdecl: [&quot;foobar&quot;, &quot;SYSTEM&quot;, nil, &quot;http://example.org/foobar.dtd&quot;]
+# &gt;&gt; entitydecl: [&quot;HTMLsymbol&quot;, &quot;PUBLIC&quot;, &quot;-//W3C//ENTITIES Symbols for XHTML//EN&quot;, &quot;xhtml-symbol.ent&quot;, &quot;%&quot;]
+# &gt;&gt; externalentity: [&quot;%HTMLsymbol;&quot;]
+# &gt;&gt; end_doctype: []
+# &gt;&gt; text: [&quot;\n&quot;, &quot;\n&quot;]
+# &gt;&gt; start_element: [&quot;root&quot;, {&quot;xmlns:foo&quot;=&gt;&quot;http://example.org/foo&quot;, &quot;xmlns:bar&quot;=&gt;&quot;http://example.org/bar&quot;}]
+# &gt;&gt; cdata: [&quot;cdata is here&quot;]
+# &gt;&gt; text: [&quot;\n  &quot;, &quot;\n  &quot;]
+# &gt;&gt; start_element: [&quot;a&quot;, {&quot;foo:att&quot;=&gt;&quot;1&quot;, &quot;bar:att&quot;=&gt;&quot;2&quot;, &quot;att&quot;=&gt;&quot;&amp;lt;&quot;}]
+# &gt;&gt; end_element: [&quot;a&quot;]
+# &gt;&gt; text: [&quot;\n  &amp;amp;&amp;amp; &quot;, &quot;\n  &amp;&amp; &quot;]
+# &gt;&gt; comment: [&quot; comment here&quot;]
+# &gt;&gt; text: [&quot; &amp;bar;\n&quot;, &quot; barbarbarbar\n&quot;]
+# &gt;&gt; end_element: [&quot;root&quot;]
+# &gt;&gt; text: [&quot;\n&quot;, &quot;\n&quot;]
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_EACH">each</a>
+
+<a href="#I_EMPTY--3F">empty?</a>
+
+<a href="#I_HAS_NEXT--3F">has_next?</a>
+
+<a href="#I_PEEK">peek</a>
+
+<a href="#I_PULL">pull</a>
+
+<a href="#I_UNSHIFT">unshift</a>
+
+</dd>
+
+</dl>
 
 
 <h2>特異メソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/s/new.html"><code>
-  new(stream)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="S_NEW"><code>new(stream) -&gt; REXML::Parsers::PullParser</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/rexml/rdoc/REXML/Parsers/PullParser.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+新たな PullParser オブジェクトを生成して返します。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] source:</dt>
+<dd>
+入力(文字列、IO、IO互換オブジェクト(StringIOなど))
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-</table>
+</dl>
 
 <h2>インスタンスメソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/add_listener.html"><code>
-  add_listener(listener)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="I_EACH"><code>each {|event| ... } -&gt; ()</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/each.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/rexml/rdoc/REXML/Parsers/PullParser.html#method-i-each">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+XMLをパースし、得られたイベント列を引数として順にブロックを呼び出します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/each.html"><code>
-  each {|event| ... }
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="I_EMPTY--3F"><code>empty? -&gt; bool</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/empty=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/rexml/rdoc/REXML/Parsers/PullParser.html#method-i-empty-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+未処理のイベントが残っていない場合に真を返します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/empty=3f.html"><code>
-  empty?
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+[SEE_ALSO] <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/has_next=3f.html">REXML::Parsers::PullParser#has_next?</a>
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/entity.html"><code>
-  entity
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="I_HAS_NEXT--3F"><code>has_next? -&gt; bool</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/has_next=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/rexml/rdoc/REXML/Parsers/PullParser.html#method-i-has_next-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+未処理のイベントが残っている場合に真を返します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/has_next=3f.html"><code>
-  has_next?
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+[SEE_ALSO] <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/empty=3f.html">REXML::Parsers::PullParser#empty?</a>
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/peek.html"><code>
-  peek(depth = 0)
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<dt class="method-heading" id="I_PEEK"><code>peek(depth = 0) -&gt; REXML::Parsers::PullEvent | nil</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/peek.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/rexml/rdoc/REXML/Parsers/PullParser.html#method-i-peek">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+イベントキューの先頭から depth 番目のイベントを取り出します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/pull.html"><code>
-  pull
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+一番先頭のイベントは 0 で表します。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/source.html"><code>
-  source
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+このメソッドでは列そのものの状態は変化しません。
 </p>
-</td>
-
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/unshift.html"><code>
-  unshift
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
-@todo
+<p>
+先頭から depth 番目のイベントが存在しない(XML文書の末尾の
+さらに先を見ようとした場合)は nil を返します。
 </p>
-</td>
-
-</tr>
-
-</table>
-
-
-
-<h2>継承したメソッド</h2>
-<p><code>
-
-<a href="../method/-basic-object/i/=21=3d.html">!=</a>
-
-<a href="../method/-basic-object/i/instance_eval.html">instance_eval</a>
-
-<a href="../method/-basic-object/i/instance_exec.html">instance_exec</a>
-
-<a href="../method/-basic-object/i/singleton_method_added.html">singleton_method_added</a>
-
-<a href="../method/-basic-object/i/singleton_method_removed.html">singleton_method_removed</a>
-
-<a href="../method/-basic-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
-
-<a href="../method/-forwardable/i/def_delegator.html">def_delegator</a>
-
-<a href="../method/-forwardable/i/def_delegators.html">def_delegators</a>
-
-<a href="../method/-object/i/=21.html">!</a>
-
-<a href="../method/-object/i/=3d=3d.html">==</a>
-
-<a href="../method/-object/i/=3d=3d=3d.html">===</a>
-
-<a href="../method/-object/i/=3d=7e.html">=~</a>
-
-<a href="../method/-object/i/__id__.html">__id__</a>
-
-<a href="../method/-object/i/__send__.html">__send__</a>
-
-<a href="../method/-object/i/_dump.html">_dump</a>
-
-<a href="../method/-object/i/class.html">class</a>
-
-<a href="../method/-object/i/clone.html">clone</a>
-
-<a href="../method/-object/i/dclone.html">dclone</a>
-
-<a href="../method/-object/i/display.html">display</a>
-
-<a href="../method/-object/i/enum_for.html">enum_for</a>
-
-<a href="../method/-object/i/eql=3f.html">eql?</a>
-
-<a href="../method/-object/i/equal=3f.html">equal?</a>
-
-<a href="../method/-object/i/extend.html">extend</a>
-
-<a href="../method/-object/i/freeze.html">freeze</a>
-
-<a href="../method/-object/i/frozen=3f.html">frozen?</a>
-
-<a href="../method/-object/i/hash.html">hash</a>
-
-<a href="../method/-object/i/initialize.html">initialize</a>
-
-<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
-
-<a href="../method/-object/i/inspect.html">inspect</a>
-
-<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
-
-<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
-
-<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
-
-<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
-
-<a href="../method/-object/i/instance_variables.html">instance_variables</a>
-
-<a href="../method/-object/i/is_a=3f.html">is_a?</a>
-
-<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
-
-<a href="../method/-object/i/marshal_load.html">marshal_load</a>
-
-<a href="../method/-object/i/method.html">method</a>
-
-<a href="../method/-object/i/method_missing.html">method_missing</a>
-
-<a href="../method/-object/i/methods.html">methods</a>
-
-<a href="../method/-object/i/must_be.html">must_be</a>
-
-<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
-
-<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
-
-<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
-
-<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
-
-<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
-
-<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
-
-<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
-
-<a href="../method/-object/i/must_equal.html">must_equal</a>
-
-<a href="../method/-object/i/must_include.html">must_include</a>
-
-<a href="../method/-object/i/must_match.html">must_match</a>
-
-<a href="../method/-object/i/must_raise.html">must_raise</a>
-
-<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
-
-<a href="../method/-object/i/must_send.html">must_send</a>
-
-<a href="../method/-object/i/must_throw.html">must_throw</a>
-
-<a href="../method/-object/i/nil=3f.html">nil?</a>
-
-<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
-
-<a href="../method/-object/i/pretty_print.html">pretty_print</a>
-
-<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
-
-<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
-
-<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
-
-<a href="../method/-object/i/private_methods.html">private_methods</a>
-
-<a href="../method/-object/i/protected_methods.html">protected_methods</a>
-
-<a href="../method/-object/i/psych_to_yaml.html">psych_to_yaml</a>
-
-<a href="../method/-object/i/public_methods.html">public_methods</a>
-
-<a href="../method/-object/i/public_send.html">public_send</a>
-
-<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
-
-<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
-
-<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
-
-<a href="../method/-object/i/singleton_class.html">singleton_class</a>
-
-<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
-
-<a href="../method/-object/i/taguri.html">taguri</a>
-
-<a href="../method/-object/i/taguri=3d.html">taguri=</a>
-
-<a href="../method/-object/i/taint.html">taint</a>
-
-<a href="../method/-object/i/tainted=3f.html">tainted?</a>
-
-<a href="../method/-object/i/tap.html">tap</a>
-
-<a href="../method/-object/i/to_a.html">to_a</a>
-
-<a href="../method/-object/i/to_ary.html">to_ary</a>
-
-<a href="../method/-object/i/to_hash.html">to_hash</a>
-
-<a href="../method/-object/i/to_int.html">to_int</a>
-
-<a href="../method/-object/i/to_io.html">to_io</a>
-
-<a href="../method/-object/i/to_proc.html">to_proc</a>
-
-<a href="../method/-object/i/to_regexp.html">to_regexp</a>
-
-<a href="../method/-object/i/to_s.html">to_s</a>
-
-<a href="../method/-object/i/to_str.html">to_str</a>
-
-<a href="../method/-object/i/to_yaml.html">to_yaml</a>
-
-<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
-
-<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
-
-<a href="../method/-object/i/trust.html">trust</a>
-
-<a href="../method/-object/i/untaint.html">untaint</a>
-
-<a href="../method/-object/i/untrust.html">untrust</a>
-
-<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
-
-<a href="../method/-object/s/yaml_tag.html">.yaml_tag</a>
-
-<a href="../method/-object/s/yaml_tag_subclasses=3f.html">.yaml_tag_subclasses?</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-x-m-l-tokens/c/-n-a-m-e.html">::NAME</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-x-m-l-tokens/c/-n-a-m-e-c-h-a-r.html">::NAMECHAR</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-x-m-l-tokens/c/-n-a-m-e_-s-t-r.html">::NAME_STR</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-x-m-l-tokens/c/-n-c-n-a-m-e_-s-t-r.html">::NCNAME_STR</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-x-m-l-tokens/c/-n-m-t-o-k-e-n.html">::NMTOKEN</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-x-m-l-tokens/c/-n-m-t-o-k-e-n-s.html">::NMTOKENS</a>
-
-<a href="../method/-r-e-x-m-l=3a=3a-x-m-l-tokens/c/-r-e-f-e-r-e-n-c-e.html">::REFERENCE</a>
-
-</code></p>
-
-
+<dl>
+<dt class='method-param'>[PARAM] depth:</dt>
+<dd>
+先頭から depth 番目のイベントを取り出します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_PULL"><code>pull -&gt; REXML::Parsers::PullEvent</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/pull.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/rexml/rdoc/REXML/Parsers/PullParser.html#method-i-pull">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+イベントキューの先頭のイベントを取り出し、キューからそれを取り除きます。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_UNSHIFT"><code>unshift(token) -&gt; ()</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/unshift.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/rexml/rdoc/REXML/Parsers/PullParser.html#method-i-unshift">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+イベントキューの先頭に token を追加します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] token:</dt>
+<dd>
+先頭に追加するイベント(<a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event.html">REXML::Parsers::PullEvent</a> オブジェクト)
+</dd>
+</dl>
+</dd>
+
+
+</dl>
 
 
 

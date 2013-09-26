@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>class Enumerator</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 2.0.0 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -16,7 +15,6 @@
 &gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
 &gt; Enumeratorクラス
 </p>
-
 
 
 <h1>class Enumerator</h1>
@@ -36,6 +34,8 @@
 
       &lt; <a href="../class/-basic-object.html">BasicObject</a>
       
+
+
 
 
 
@@ -81,448 +81,580 @@ p a.next
 
 
 
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_EACH">each</a>
+
+<a href="#I_FEED">feed</a>
+
+<a href="#I_NEXT">next</a>
+
+<a href="#I_NEXT_VALUES">next_values</a>
+
+<a href="#I_PEEK">peek</a>
+
+<a href="#I_PEEK_VALUES">peek_values</a>
+
+<a href="#I_REWIND">rewind</a>
+
+<a href="#I_SIZE">size</a>
+
+<a href="#I_WITH_INDEX">with_index</a>
+
+<a href="#I_WITH_OBJECT">with_object</a>
+
+</dd>
+
+</dl>
+
+
 <h2>特異メソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-enumerator/s/new.html"><code>
-  new(obj, method = :each, *args) -&gt; Enumerator
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_NEW"><code>new(obj, method = :each, *args) -&gt; Enumerator</code><span class="permalink">[<a href="../method/-enumerator/s/new.html">permalink</a>][<a href="http://ruby-doc.org/core-2.0.0/Enumerator.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 オブジェクト obj について、 each の代わりに method という
 名前のメソッドを使って繰り返すオブジェクトを生成して返します。
 args を指定すると、 method の呼び出し時に渡されます。
 </p>
-</td>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+イテレータメソッドのレシーバとなるオブジェクト
+</dd>
+<dt class='method-param'>[PARAM] method:</dt>
+<dd>
+イテレータメソッドの名前を表すシンボルまたは文字列
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+イテレータメソッドの呼び出しに渡す任意個の引数
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+str = &quot;xyz&quot;
 
-</tr>
-
-<tr>
-<td class="signature">
-  <a href="../method/-enumerator/s/new.html"><code>
-  new {|y| ... } -&gt; Enumerator
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+enum = Enumerator.new(str, :each_byte)
+p enum.map {|b| '%02x' % b }   # =&gt; [&quot;78&quot;, &quot;79&quot;, &quot;7a&quot;]
+</pre>
+</dd>
+<dt class="method-heading" id="S_NEW"><code>new(size=nil) {|y| ... } -&gt; Enumerator</code><span class="permalink">[<a href="../method/-enumerator/s/new.html">permalink</a>][<a href="http://ruby-doc.org/core-2.0.0/Enumerator.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 Enumerator オブジェクトを生成して返します。与えられたブロックは Enumerator::Yielder オブジェクトを
 引数として実行されます。
 </p>
-</td>
+<p>
+生成された Enumerator オブジェクトに対して each を呼ぶと、この生成時に指定されたブロックを
+実行し、Yielder オブジェクトに対して &lt;&lt; メソッドが呼ばれるたびに、
+each に渡されたブロックが繰り返されます。
+</p>
+<p>
+new に渡されたブロックが終了した時点で each の繰り返しが終わります。
+このときのブロックの返り値が each の返り値となります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] size:</dt>
+<dd>
+生成する Enumerator オブジェクトの要素数を指定します。
+<a href="../class/-integer.html">Integer</a>、<a href="../method/-float/c/-i-n-f-i-n-i-t-y.html">Float::INFINITY</a>、<a href="../class/-proc.html">Proc</a> オブジェク
+ト、nil のいずれかを指定します。<a href="../method/-enumerator/i/size.html">Enumerator#size</a> の実
+行時に参照されます。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+enum = Enumerator.new{|y|
+  (1..10).each{|i|
+    y &lt;&lt; i if i % 5 == 0
+  }
+}
+enum.each{|i| p i }
 
-</tr>
+#=&gt;  5
+    10
 
-</table>
+
+fib = Enumerator.new { |y|
+  a = b = 1
+  loop {
+    y &lt;&lt; a
+    a, b = b, a + b
+  }
+}
+
+p fib.take(10) #=&gt; [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
+</pre>
+</dd>
+
+
+</dl>
 
 <h2>インスタンスメソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-enumerator/i/each.html"><code>
-  each {...} -&gt; object
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_EACH"><code>each {...} -&gt; object</code><span class="permalink">[<a href="../method/-enumerator/i/each.html">permalink</a>][<a href="http://ruby-doc.org/core-2.0.0/Enumerator.html#method-i-each">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 生成時のパラメータに従ってブロックを繰り返します。
 生成時に指定したイテレータの戻り値をそのまま返します。
 </p>
-</td>
+<p>
+例:
+</p>
+<pre>
+str = &quot;Yet Another Ruby Hacker&quot;
 
-</tr>
+enum = Enumerator.new(str, :scan, /\w+/)
+enum.each {|word| p word }              # =&gt; &quot;Yet&quot;
+                                        #    &quot;Another&quot;
+                                        #    &quot;Ruby&quot;
+                                        #    &quot;Hacker&quot;
 
-<tr>
-<td class="signature">
-  <a href="../method/-enumerator/i/feed.html"><code>
-  feed(obj) -&gt; nil
-  </code></a>
-</td>
+str.scan(/\w+/) {|word| p word }        # =&gt; &quot;Yet&quot;
+                                        #    &quot;Another&quot;
+                                        #    &quot;Ruby&quot;
+                                        #    &quot;Hacker&quot;
+</pre>
+</dd>
 
-<td class="description" colspan="2"><p>
+
+<dt class="method-heading" id="I_FEED"><code>feed(obj) -&gt; nil</code><span class="permalink">[<a href="../method/-enumerator/i/feed.html">permalink</a>][<a href="http://ruby-doc.org/core-2.0.0/Enumerator.html#method-i-feed">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 Enumerator 内部の yield が返す値を設定します。
 </p>
-</td>
+<p>
+これで値を設定しなかった場合は yield は nil を返します。
+</p>
+<p>
+この値は内部で yield された時点でクリアされます。
+</p>
+<pre>
+# 例
+# (1), (2), ... (10) の順に実行される
+o = Object.new
+def o.each
+  x = yield         # (2) blocks
+  p x               # (5) =&gt; &quot;foo&quot;
+  x = yield         # (6) blocks
+  p x               # (8) =&gt; nil
+  x = yield         # (9) blocks
+  p x               # not reached w/o another e.next
+end
 
-</tr>
+e = o.to_enum
+e.next              # (1)
+e.feed &quot;foo&quot;        # (3)
+e.next              # (4)
+e.next              # (7)
+                    # (10)
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+Enumerator 内部の yield が返す値
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+すでに値をこのメソッドでセットしている場合に発生します
+</dd>
+</dl>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-enumerator/i/next.html"><code>
-  next -&gt; object
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_NEXT"><code>next -&gt; object</code><span class="permalink">[<a href="../method/-enumerator/i/next.html">permalink</a>][<a href="http://ruby-doc.org/core-2.0.0/Enumerator.html#method-i-next">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 「次」のオブジェクトを返します。
 </p>
-</td>
+<p>
+現在までの列挙状態に応じて「次」のオブジェクトを返し、列挙状態を1つ分進めます。
+列挙が既に最後へ到達している場合は、
+<a href="../class/-stop-iteration.html">StopIteration</a> 例外を発生します。このとき列挙状態は変化しません。
+つまりもう一度 next を呼ぶと再び例外が発生します。
+</p>
+<p>
+next メソッドによる外部列挙の状態は他のイテレータメソッドによる
+内部列挙には影響を与えません。
+ただし、 <a href="../method/-i-o/i/each_line.html">IO#each_line</a> のようにおおもとの列挙メカニズムが副作用を
+伴っている場合には影響があり得ます。
+</p>
+<dl>
+<dt>[EXCEPTION] StopIteration:</dt>
+<dd>
+列挙状態が既に最後へ到達しているとき
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-enumerator/i/rewind.html">Enumerator#rewind</a>
+</p>
+<p>
+例1:
+</p>
+<pre>
+str = &quot;xyz&quot;
+enum = str.each_byte
 
-</tr>
+str.bytesize.times do
+  puts enum.next
+end
+    # =&gt; 120
+    #    121
+    #    122
+</pre>
+<p>
+例2:
+</p>
+<pre>
+str = &quot;xyz&quot;
+enum = str.each_byte
 
-<tr>
-<td class="signature">
-  <a href="../method/-enumerator/i/next_values.html"><code>
-  next_values -&gt; Array
-  </code></a>
-</td>
+begin
+  puts enum.next while true
+rescue StopIteration
+  puts &quot;iteration reached at end&quot;
+end
+    # =&gt; 120
+    #    121
+    #    122
+    #    iteration reached at end
+puts enum.next
+    #=&gt; 再度 StopIteration 例外が発生
+</pre>
+<p>
+例3: <a href="../method/-kernel/m/loop.html">Kernel.#loop</a> は StopIteration を捕捉します。
+</p>
+<pre>
+str = &quot;xyz&quot;
+enum = str.each_byte
+loop do
+  puts enum.next
+end
+    # =&gt; 120
+    #    121
+    #    122
+</pre>
+</dd>
 
-<td class="description" colspan="2"><p>
+
+<dt class="method-heading" id="I_NEXT_VALUES"><code>next_values -&gt; Array</code><span class="permalink">[<a href="../method/-enumerator/i/next_values.html">permalink</a>][<a href="http://ruby-doc.org/core-2.0.0/Enumerator.html#method-i-next_values">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 「次」のオブジェクトを配列で返します。
 </p>
-</td>
+<p>
+<a href="../method/-enumerator/i/next.html">Enumerator#next</a> とほぼ同様の挙動をします。終端まで到達した場合は
+<a href="../class/-stop-iteration.html">StopIteration</a> 例外を発生させます。
+</p>
+<p>
+このメソッドは、
+</p>
+<pre>
+yield
+</pre>
+<p>
+と
+</p>
+<pre>
+yield nil
+</pre>
+<p>
+を区別するために使えます。
+</p>
+<p>
+next メソッドによる外部列挙の状態は他のイテレータメソッドによる
+内部列挙には影響を与えません。
+ただし、 <a href="../method/-i-o/i/each_line.html">IO#each_line</a> のようにおおもとの列挙メカニズムが副作用を
+伴っている場合には影響があり得ます。
+</p>
+<pre>
+# 例、 next と next_values の違いを
+o = Object.new
+def o.each
+  yield
+  yield 1
+  yield 1, 2
+  yield nil
+  yield [1, 2]
+end
+e = o.to_enum
+p e.next_values
+p e.next_values
+p e.next_values
+p e.next_values
+p e.next_values
+e = o.to_enum
+p e.next
+p e.next
+p e.next
+p e.next
+p e.next
 
-</tr>
+## yield args       next_values      next
+#  yield            []               nil
+#  yield 1          [1]              1
+#  yield 1, 2       [1, 2]           [1, 2]
+#  yield nil        [nil]            nil
+#  yield [1, 2]     [[1, 2]]         [1, 2]
+</pre>
+<dl>
+<dt>[EXCEPTION] StopIteration:</dt>
+<dd>
+列挙状態が既に最後へ到達しているとき
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-enumerator/i/next.html">Enumerator#next</a>, <a href="../method/-enumerator/i/peek.html">Enumerator#peek</a>, <a href="../method/-enumerator/i/peek_values.html">Enumerator#peek_values</a>
+</p>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-enumerator/i/peek.html"><code>
-  peek -&gt; object
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_PEEK"><code>peek -&gt; object</code><span class="permalink">[<a href="../method/-enumerator/i/peek.html">permalink</a>][<a href="http://ruby-doc.org/core-2.0.0/Enumerator.html#method-i-peek">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 「次」のオブジェクトを返しますが、列挙状態を変化させません。
 </p>
-</td>
+<p>
+<a href="../method/-enumerator/i/next.html">Enumerator#next</a> のように
+現在までの列挙状態に応じて「次」のオブジェクトを返しますが、
+next と異なり列挙状態を変更しません。
+</p>
+<p>
+列挙が既に最後へ到達している場合は、<a href="../class/-stop-iteration.html">StopIteration</a> 例外を発生します。
+</p>
+<pre>
+# 例
+a = [1,2,3]
+e = a.to_enum
+p e.next   #=&gt; 1
+p e.peek   #=&gt; 2
+p e.peek   #=&gt; 2
+p e.peek   #=&gt; 2
+p e.next   #=&gt; 2
+p e.next   #=&gt; 3
+p e.next   #raises StopIteration
+</pre>
+<dl>
+<dt>[EXCEPTION] StopIteration:</dt>
+<dd>
+列挙状態が既に最後へ到達しているとき
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-enumerator/i/next.html">Enumerator#next</a>, <a href="../method/-enumerator/i/next_values.html">Enumerator#next_values</a>, <a href="../method/-enumerator/i/peek_values.html">Enumerator#peek_values</a>
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-enumerator/i/peek_values.html"><code>
-  peek_values -&gt; Array
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_PEEK_VALUES"><code>peek_values -&gt; Array</code><span class="permalink">[<a href="../method/-enumerator/i/peek_values.html">permalink</a>][<a href="http://ruby-doc.org/core-2.0.0/Enumerator.html#method-i-peek_values">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 <a href="../method/-enumerator/i/next_values.html">Enumerator#next_values</a> のように「次」のオブジェクトを
 配列で返しますが、列挙状態を変化させません。
 </p>
-</td>
+<p>
+<a href="../method/-enumerator/i/next.html">Enumerator#next</a>, <a href="../method/-enumerator/i/next_values.html">Enumerator#next_values</a> のように
+現在までの列挙状態に応じて「次」のオブジェクトを返しますが、
+next と異なり列挙状態を変更しません。
+</p>
+<p>
+列挙が既に最後へ到達している場合は、<a href="../class/-stop-iteration.html">StopIteration</a> 例外を発生します。
+</p>
+<p>
+このメソッドは <a href="../method/-enumerator/i/next_values.html">Enumerator#next_values</a> と同様
+</p>
+<pre>
+yield
+</pre>
+<p>
+と
+</p>
+<pre>
+yield nil
+</pre>
+<p>
+を区別するために使えます。
+</p>
+<pre>
+# 例
+o = Object.new
+def o.each
+  yield
+  yield 1
+  yield 1, 2
+end
+e = o.to_enum
+p e.peek_values    #=&gt; []
+e.next
+p e.peek_values    #=&gt; [1]
+p e.peek_values    #=&gt; [1]
+e.next
+p e.peek_values    #=&gt; [1, 2]
+e.next
+p e.peek_values    # raises StopIteration
+</pre>
+<dl>
+<dt>[EXCEPTION] StopIteration:</dt>
+<dd>
+列挙状態が既に最後へ到達しているとき
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-enumerator/i/next.html">Enumerator#next</a>, <a href="../method/-enumerator/i/next_values.html">Enumerator#next_values</a>, <a href="../method/-enumerator/i/peek_values.html">Enumerator#peek_values</a>
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-enumerator/i/rewind.html"><code>
-  rewind -&gt; self
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_REWIND"><code>rewind -&gt; self</code><span class="permalink">[<a href="../method/-enumerator/i/rewind.html">permalink</a>][<a href="http://ruby-doc.org/core-2.0.0/Enumerator.html#method-i-rewind">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 列挙状態を巻き戻します。
 </p>
-</td>
+<p>
+next メソッドによる外部列挙の状態を最初まで巻き戻します。 self を返します。
+</p>
+<p>
+内包するオブジェクトが rewind メソッドを持つとき(respond_to?(:rewind) に
+真を返すとき) は、その rewind メソッドを呼び出します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-enumerator/i/next.html">Enumerator#next</a>
+</p>
+<p>
+例:
+</p>
+<pre>
+str = &quot;xyz&quot;
+enum = str.each_byte
 
-</tr>
+p enum.next # =&gt; 120
+p enum.next # =&gt; 121
+enum.rewind
+p enum.next # =&gt; 120
+</pre>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-enumerator/i/with_index.html"><code>
-  with_index(offset = 0) {|(*args), idx| ... } -&gt; object<br>with_index(offset = 0) -&gt; Enumerator
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_SIZE"><code>size -&gt; Integer | Float::INFINITY | nil</code><span class="permalink">[<a href="../method/-enumerator/i/size.html">permalink</a>][<a href="http://ruby-doc.org/core-2.0.0/Enumerator.html#method-i-size">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の要素数を返します。
+</p>
+<p>
+要素数が無限の場合は <a href="../method/-float/c/-i-n-f-i-n-i-t-y.html">Float::INFINITY</a> を返します。
+<a href="../method/-enumerator/s/new.html">Enumerator.new</a> に <a href="../class/-proc.html">Proc</a> オブジェクトを指定していた場合はその
+実行結果を返します。呼び出した時に要素数が不明であった場合は nil を返し
+ます。
+</p>
+<pre>
+(1..100).to_a.permutation(4).size # =&gt; 94109400
+loop.size # =&gt; Float::INFINITY
+(1..100).drop_while.size # =&gt; nil
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-enumerator/s/new.html">Enumerator.new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_WITH_INDEX"><code>with_index(offset = 0) {|(*args), idx| ... } -&gt; object</code><span class="permalink">[<a href="../method/-enumerator/i/with_index.html">permalink</a>][<a href="http://ruby-doc.org/core-2.0.0/Enumerator.html#method-i-with_index">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>with_index(offset = 0) -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
 生成時のパラメータに従って、要素にインデックスを添えて繰り返します。
 インデックスは offset から始まります。
 </p>
-</td>
+<p>
+ブロックを指定した場合の戻り値は生成時に指定したレシーバ自身です。
+</p>
+<p>
+例:
+</p>
+<pre>
+str = &quot;xyz&quot;
 
-</tr>
+enum = Enumerator.new(str, :each_byte)
+enum.with_index {|byte, idx| p [byte, idx] }
+    # =&gt; [120, 0]
+    #    [121, 1]
+    #    [122, 2]
 
-<tr>
-<td class="signature">
-  <a href="../method/-enumerator/i/with_object.html"><code>
-  with_object(obj) -&gt; Enumerator<br>with_object(obj) {|(*args), memo_obj| ... } -&gt; object
-  </code></a>
-</td>
+require &quot;stringio&quot;
+StringIO.new(&quot;foo|bar|baz&quot;).each(&quot;|&quot;).with_index(1) {|s, i| p [s, i] }
+    # =&gt; [&quot;foo|&quot;, 1]
+    #    [&quot;bar|&quot;, 2]
+    #    [&quot;baz&quot;, 3]
+</pre>
+<p>
+生成時のパラメータに従って、要素にインデックスを添えてブロックを繰り返します。
+インデックスは 0 から始まります。
+<a href="../method/-enumerator/i/with_index.html">Enumerator#with_index</a> は offset 引数を受け取りますが、
+each_with_index は受け取りません (引数はイテレータメソッドにそのまま渡されます)。
+</p>
+</dd>
 
-<td class="description" colspan="2"><p>
+
+<dt class="method-heading" id="I_WITH_OBJECT"><code>with_object(obj) -&gt; Enumerator</code><span class="permalink">[<a href="../method/-enumerator/i/with_object.html">permalink</a>][<a href="http://ruby-doc.org/core-2.0.0/Enumerator.html#method-i-with_object">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>with_object(obj) {|(*args), memo_obj| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
 繰り返しの各要素に obj を添えてブロックを繰り返し、obj を返り値として返します。
 </p>
-</td>
-
-</tr>
-
-</table>
-
-
-
-<h2>継承したメソッド</h2>
-<p><code>
-
-<a href="../method/-basic-object/i/=21=3d.html">!=</a>
-
-<a href="../method/-basic-object/i/__id__.html">__id__</a>
-
-<a href="../method/-basic-object/i/instance_eval.html">instance_eval</a>
-
-<a href="../method/-basic-object/i/instance_exec.html">instance_exec</a>
-
-<a href="../method/-basic-object/i/singleton_method_added.html">singleton_method_added</a>
-
-<a href="../method/-basic-object/i/singleton_method_removed.html">singleton_method_removed</a>
-
-<a href="../method/-basic-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
-
-<a href="../method/-enumerable/i/all=3f.html">all?</a>
-
-<a href="../method/-enumerable/i/any=3f.html">any?</a>
-
-<a href="../method/-enumerable/i/chunk.html">chunk</a>
-
-<a href="../method/-enumerable/i/collect.html">collect</a>
-
-<a href="../method/-enumerable/i/collect_concat.html">collect_concat</a>
-
-<a href="../method/-enumerable/i/count.html">count</a>
-
-<a href="../method/-enumerable/i/cycle.html">cycle</a>
-
-<a href="../method/-enumerable/i/detect.html">detect</a>
-
-<a href="../method/-enumerable/i/drop.html">drop</a>
-
-<a href="../method/-enumerable/i/drop_while.html">drop_while</a>
-
-<a href="../method/-enumerable/i/each_cons.html">each_cons</a>
-
-<a href="../method/-enumerable/i/each_entry.html">each_entry</a>
-
-<a href="../method/-enumerable/i/each_slice.html">each_slice</a>
-
-<a href="../method/-enumerable/i/each_with_index.html">each_with_index</a>
-
-<a href="../method/-enumerable/i/each_with_object.html">each_with_object</a>
-
-<a href="../method/-enumerable/i/entries.html">entries</a>
-
-<a href="../method/-enumerable/i/find_all.html">find_all</a>
-
-<a href="../method/-enumerable/i/find_index.html">find_index</a>
-
-<a href="../method/-enumerable/i/first.html">first</a>
-
-<a href="../method/-enumerable/i/grep.html">grep</a>
-
-<a href="../method/-enumerable/i/group_by.html">group_by</a>
-
-<a href="../method/-enumerable/i/include=3f.html">include?</a>
-
-<a href="../method/-enumerable/i/inject.html">inject</a>
-
-<a href="../method/-enumerable/i/lazy.html">lazy</a>
-
-<a href="../method/-enumerable/i/max.html">max</a>
-
-<a href="../method/-enumerable/i/max_by.html">max_by</a>
-
-<a href="../method/-enumerable/i/min.html">min</a>
-
-<a href="../method/-enumerable/i/min_by.html">min_by</a>
-
-<a href="../method/-enumerable/i/minmax.html">minmax</a>
-
-<a href="../method/-enumerable/i/minmax_by.html">minmax_by</a>
-
-<a href="../method/-enumerable/i/none=3f.html">none?</a>
-
-<a href="../method/-enumerable/i/one=3f.html">one?</a>
-
-<a href="../method/-enumerable/i/partition.html">partition</a>
-
-<a href="../method/-enumerable/i/reject.html">reject</a>
-
-<a href="../method/-enumerable/i/reverse_each.html">reverse_each</a>
-
-<a href="../method/-enumerable/i/slice_before.html">slice_before</a>
-
-<a href="../method/-enumerable/i/sort.html">sort</a>
-
-<a href="../method/-enumerable/i/sort_by.html">sort_by</a>
-
-<a href="../method/-enumerable/i/take.html">take</a>
-
-<a href="../method/-enumerable/i/take_while.html">take_while</a>
-
-<a href="../method/-enumerable/i/to_set.html">to_set</a>
-
-<a href="../method/-enumerable/i/zip.html">zip</a>
-
-<a href="../method/-object/i/=21.html">!</a>
-
-<a href="../method/-object/i/=3d=3d.html">==</a>
-
-<a href="../method/-object/i/=3d=3d=3d.html">===</a>
-
-<a href="../method/-object/i/=3d=7e.html">=~</a>
-
-<a href="../method/-object/i/__send__.html">__send__</a>
-
-<a href="../method/-object/i/_dump.html">_dump</a>
-
-<a href="../method/-object/i/class.html">class</a>
-
-<a href="../method/-object/i/clone.html">clone</a>
-
-<a href="../method/-object/i/dclone.html">dclone</a>
-
-<a href="../method/-object/i/display.html">display</a>
-
-<a href="../method/-object/i/enum_for.html">enum_for</a>
-
-<a href="../method/-object/i/eql=3f.html">eql?</a>
-
-<a href="../method/-object/i/equal=3f.html">equal?</a>
-
-<a href="../method/-object/i/extend.html">extend</a>
-
-<a href="../method/-object/i/freeze.html">freeze</a>
-
-<a href="../method/-object/i/frozen=3f.html">frozen?</a>
-
-<a href="../method/-object/i/hash.html">hash</a>
-
-<a href="../method/-object/i/initialize.html">initialize</a>
-
-<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
-
-<a href="../method/-object/i/inspect.html">inspect</a>
-
-<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
-
-<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
-
-<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
-
-<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
-
-<a href="../method/-object/i/instance_variables.html">instance_variables</a>
-
-<a href="../method/-object/i/is_a=3f.html">is_a?</a>
-
-<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
-
-<a href="../method/-object/i/marshal_load.html">marshal_load</a>
-
-<a href="../method/-object/i/method.html">method</a>
-
-<a href="../method/-object/i/method_missing.html">method_missing</a>
-
-<a href="../method/-object/i/methods.html">methods</a>
-
-<a href="../method/-object/i/must_be.html">must_be</a>
-
-<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
-
-<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
-
-<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
-
-<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
-
-<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
-
-<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
-
-<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
-
-<a href="../method/-object/i/must_equal.html">must_equal</a>
-
-<a href="../method/-object/i/must_include.html">must_include</a>
-
-<a href="../method/-object/i/must_match.html">must_match</a>
-
-<a href="../method/-object/i/must_raise.html">must_raise</a>
-
-<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
-
-<a href="../method/-object/i/must_send.html">must_send</a>
-
-<a href="../method/-object/i/must_throw.html">must_throw</a>
-
-<a href="../method/-object/i/nil=3f.html">nil?</a>
-
-<a href="../method/-object/i/object_id.html">object_id</a>
-
-<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
-
-<a href="../method/-object/i/pretty_print.html">pretty_print</a>
-
-<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
-
-<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
-
-<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
-
-<a href="../method/-object/i/private_methods.html">private_methods</a>
-
-<a href="../method/-object/i/protected_methods.html">protected_methods</a>
-
-<a href="../method/-object/i/psych_to_yaml.html">psych_to_yaml</a>
-
-<a href="../method/-object/i/public_methods.html">public_methods</a>
-
-<a href="../method/-object/i/public_send.html">public_send</a>
-
-<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
-
-<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
-
-<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
-
-<a href="../method/-object/i/singleton_class.html">singleton_class</a>
-
-<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
-
-<a href="../method/-object/i/taint.html">taint</a>
-
-<a href="../method/-object/i/tainted=3f.html">tainted?</a>
-
-<a href="../method/-object/i/tap.html">tap</a>
-
-<a href="../method/-object/i/to_ary.html">to_ary</a>
-
-<a href="../method/-object/i/to_hash.html">to_hash</a>
-
-<a href="../method/-object/i/to_int.html">to_int</a>
-
-<a href="../method/-object/i/to_io.html">to_io</a>
-
-<a href="../method/-object/i/to_proc.html">to_proc</a>
-
-<a href="../method/-object/i/to_regexp.html">to_regexp</a>
-
-<a href="../method/-object/i/to_s.html">to_s</a>
-
-<a href="../method/-object/i/to_str.html">to_str</a>
-
-<a href="../method/-object/i/trust.html">trust</a>
-
-<a href="../method/-object/i/untaint.html">untaint</a>
-
-<a href="../method/-object/i/untrust.html">untrust</a>
-
-<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
-
-<a href="../method/-object/s/yaml_tag.html">.yaml_tag</a>
-
-</code></p>
-
-
+<p>
+obj には任意のオブジェクトを渡すことができます。
+</p>
+<p>
+ブロックが渡されなかった場合は、上で説明した繰り返しを実行し、
+最後に obj を返す <a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<h4 >例</h4>
+<pre>
+# 0,1,2 と呼びだす enumeratorを作る
+to_three = Enumerator.new do |y|
+  3.times do |x|
+    y &lt;&lt; x
+  end
+end
+
+to_three_with_string = to_three.with_object(&quot;foo&quot;)
+to_three_with_string.each do |x,string|
+  puts &quot;#{string}: #{x}&quot;
+end
+# =&gt; foo:0
+# =&gt; foo:1
+# =&gt; foo:2
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+繰り返しの各要素に添えて渡されるオブジェクト
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-enumerable/i/each_with_object.html">Enumerable#each_with_object</a>
+</p>
+</dd>
+
+
+</dl>
 
 
 

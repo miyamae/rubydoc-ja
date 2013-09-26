@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>module MonitorMixin</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.2 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -18,12 +17,13 @@
 </p>
 
 
-
 <h1>module MonitorMixin</h1>
 <p>
 
 
 クラスの継承リスト: MonitorMixin
+
+
 
 
 
@@ -115,92 +115,138 @@ end
 
 
 
+<h2>目次</h2>
+<dl>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_MON_ENTER">mon_enter</a>
+
+<a href="#I_MON_EXIT">mon_exit</a>
+
+<a href="#I_MON_SYNCHRONIZE">mon_synchronize</a>
+
+<a href="#I_MON_SYNCHRONIZE">synchronize</a>
+
+<a href="#I_MON_TRY_ENTER">mon_try_enter</a>
+
+<a href="#I_MON_TRY_ENTER">try_mon_enter</a>
+
+<a href="#I_NEW_COND">new_cond</a>
+
+</dd>
+
+</dl>
+
+
 <h2>インスタンスメソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-monitor-mixin/i/mon_enter.html"><code>
-  mon_enter -&gt; ()
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_MON_ENTER"><code>mon_enter -&gt; ()</code><span class="permalink">[<a href="../method/-monitor-mixin/i/mon_enter.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/monitor/rdoc/MonitorMixin.html#method-i-mon_enter">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 モニターをロックします。
 </p>
-</td>
+<p>
+一度に一つのスレッドだけがモニターをロックできます。
+既にモニターがロックされている場合は、ロックが開放されるまで
+そのスレッドは待ちます。
+</p>
+<p>
+<a href="../method/-mutex/i/lock.html">Mutex#lock</a> に相当します。
+Mutex#lock と違うのは現在のモニターの所有者が現在実行されているスレッドである場合、
+何度でもロックできる点です。ロックした回数だけ mon_exit を呼ばなければモニターは
+解放されません。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'monitor'
+buf = []
+buf.extend(MonitorMixin)
+buf.mon_enter
+buf.mon_enter
+</pre>
+<p>
+Mutex#lock ではデッドロックが起きます。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'thread'
+m = Mutex.new
+m.lock
+m.lock # =&gt; deadlock; recursive locking (ThreadError)
+</pre>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-monitor-mixin/i/mon_exit.html"><code>
-  mon_exit -&gt; ()
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_MON_EXIT"><code>mon_exit -&gt; ()</code><span class="permalink">[<a href="../method/-monitor-mixin/i/mon_exit.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/monitor/rdoc/MonitorMixin.html#method-i-mon_exit">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 モニターのロックを解放します。
 </p>
-</td>
+<p>
+mon_enter でロックした回数だけ mon_exit を
+呼ばなければモニターは解放されません。
+</p>
+<p>
+モニターが解放されればモニターのロック待ちになっていた
+スレッドが一つ実行を再開します。
+</p>
+<dl>
+<dt>[EXCEPTION] ThreadError:</dt>
+<dd>
+ロックを持っていないスレッドが呼びだした場合に発生します
+</dd>
+</dl>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-monitor-mixin/i/mon_synchronize.html"><code>
-  mon_synchronize { ... } -&gt; object<br>synchronize { ... } -&gt; object
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_MON_SYNCHRONIZE"><code>mon_synchronize { ... } -&gt; object</code><span class="permalink">[<a href="../method/-monitor-mixin/i/mon_synchronize.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/monitor/rdoc/MonitorMixin.html#method-i-mon_synchronize">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>synchronize { ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
 モニターをロックし、ブロックを実行します。実行後に必ずモニターのロックを解放します。
 </p>
-</td>
+<p>
+ブロックの評価値を返り値として返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-monitor-mixin/i/mon_enter.html">MonitorMixin#mon_enter</a>
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-monitor-mixin/i/mon_try_enter.html"><code>
-  mon_try_enter -&gt; bool<br>try_mon_enter -&gt; bool
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_MON_TRY_ENTER"><code>mon_try_enter -&gt; bool</code><span class="permalink">[<a href="../method/-monitor-mixin/i/mon_try_enter.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/monitor/rdoc/MonitorMixin.html#method-i-mon_try_enter">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>try_mon_enter -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
 モニターのロックを取得しようと試みます。
 ロックに成功した(ロックが開放状態だった、もしくは
 ロックを取得していたスレッドが自分自身であった)場合には
 真を返します。
 </p>
-</td>
+<p>
+ロックができなかった場合は偽を返し、実行を継続します。この場合には
+スレッドはブロックしません。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-monitor-mixin/i/new_cond.html"><code>
-  new_cond -&gt; MonitorMixin::ConditionVariable
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_NEW_COND"><code>new_cond -&gt; MonitorMixin::ConditionVariable</code><span class="permalink">[<a href="../method/-monitor-mixin/i/new_cond.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/monitor/rdoc/MonitorMixin.html#method-i-new_cond">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 モニタに関連付けられた、新しい
 <a href="../class/-monitor-mixin=3a=3a-condition-variable.html">MonitorMixin::ConditionVariable</a> を生成して返します。
 </p>
-</td>
-
-</tr>
-
-</table>
+</dd>
 
 
-
-
+</dl>
 
 
 

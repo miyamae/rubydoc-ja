@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../../../style.css">
   <link rel="icon" type="image/png" href="../../../rurema.png">
   <title>instance method REXML::StreamListener#entitydecl</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -20,17 +19,52 @@
 </p>
 
 
-
-
 <h1>instance method REXML::StreamListener#entitydecl</h1>
-
 <dl class="methodlist">
 
-<dt class="method-heading"><code>entitydecl(content)</code></dt>
+<dt class="method-heading" id="I_ENTITYDECL"><code>entitydecl(content) -&gt; ()</code><span class="permalink">[<a href="../../../method/-r-e-x-m-l=3a=3a-stream-listener/i/entitydecl.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.8.7/libdoc/rexml/rdoc/REXML/StreamListener.html#method-i-entitydecl">rdoc</a>]</span></dt>
 <dd class="method-description">
-<p class="todo">
-[TODO]
+<p>
+DTDの実体宣言をパースしたときに呼び出されるコールバックメソッドです。
 </p>
+<dl>
+<dt class='method-param'>[PARAM] content:</dt>
+<dd>
+実体宣言が配列で渡されます
+</dd>
+</dl>
+<h2 >例</h2>
+<p>
+実体宣言の書き方によって content に渡されるデータの形式が異なります。
+</p>
+<pre>
+require 'rexml/parsers/baseparser'
+require 'rexml/parsers/streamparser'
+require 'rexml/streamlistener'
+xml = &lt;&lt;EOS
+&lt;!DOCTYPE root [
+&lt;!ENTITY % YN '&quot;Yes&quot;'&gt;
+&lt;!ENTITY % YN 'Yes'&gt;
+&lt;!ENTITY WhatHeSaid &quot;He said %YN;&quot;&gt;
+&lt;!ENTITY open-hatch SYSTEM &quot;http://www.textuality.com/boilerplate/OpenHatch.xml&quot;&gt;
+&lt;!ENTITY open-hatch PUBLIC &quot;-//Textuality//TEXT Standard open-hatch boilerplate//EN&quot; &quot;http://www.textuality.com/boilerplate/OpenHatch.xml&quot;&gt;
+&lt;!ENTITY hatch-pic SYSTEM &quot;../grafix/OpenHatch.gif&quot; NDATA gif&gt;
+]&gt;
+&lt;root /&gt;
+EOS
+
+class Listener
+  include REXML::StreamListener
+  def entitydecl(content); p content; end
+end
+REXML::Parsers::StreamParser.new(xml, Listener.new).parse
+# &gt;&gt; [&quot;YN&quot;, &quot;\&quot;Yes\&quot;&quot;, &quot;%&quot;]
+# &gt;&gt; [&quot;YN&quot;, &quot;Yes&quot;, &quot;%&quot;]
+# &gt;&gt; [&quot;WhatHeSaid&quot;, &quot;He said %YN;&quot;]
+# &gt;&gt; [&quot;open-hatch&quot;, &quot;SYSTEM&quot;, &quot;http://www.textuality.com/boilerplate/OpenHatch.xml&quot;]
+# &gt;&gt; [&quot;open-hatch&quot;, &quot;PUBLIC&quot;, &quot;-//Textuality//TEXT Standard open-hatch boilerplate//EN&quot;, &quot;http://www.textuality.com/boilerplate/OpenHatch.xml&quot;]
+# &gt;&gt; [&quot;hatch-pic&quot;, &quot;SYSTEM&quot;, &quot;../grafix/OpenHatch.gif&quot;, &quot;gif&quot;]
+</pre>
 </dd>
 
 

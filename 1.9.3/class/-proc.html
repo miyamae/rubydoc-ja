@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>class Proc</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.9.3 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -16,7 +15,6 @@
 &gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
 &gt; Procクラス
 </p>
-
 
 
 <h1>class Proc</h1>
@@ -33,6 +31,8 @@
 
       &lt; <a href="../class/-basic-object.html">BasicObject</a>
       
+
+
 
 
 
@@ -213,365 +213,418 @@ lambda     手続きオブジェクトを抜ける  手続きオブジェクト�
 
 
 
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--3D--3D--3D">===</a>
+
+<a href="#I_--3D--3D--3D">[]</a>
+
+<a href="#I_--3D--3D--3D">call</a>
+
+<a href="#I_--3D--3D--3D">yield</a>
+
+<a href="#I_ARITY">arity</a>
+
+<a href="#I_BINDING">binding</a>
+
+<a href="#I_CURRY">curry</a>
+
+<a href="#I_HASH">hash</a>
+
+<a href="#I_LAMBDA--3F">lambda?</a>
+
+<a href="#I_PARAMETERS">parameters</a>
+
+<a href="#I_SOURCE_LOCATION">source_location</a>
+
+<a href="#I_TO_PROC">to_proc</a>
+
+<a href="#I_TO_S">to_s</a>
+
+</dd>
+
+</dl>
+
+
 <h2>特異メソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-proc/s/new.html"><code>
-  new -&gt; Proc<br>new { ... } -&gt; Proc
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_NEW"><code>new -&gt; Proc</code><span class="permalink">[<a href="../method/-proc/s/new.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.3/Proc.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>new { ... } -&gt; Proc</code></dt>
+<dd class="method-description">
+<p>
 ブロックをコンテキストとともにオブジェクト化して返します。
 </p>
-</td>
+<p>
+ブロックを指定しなければ、このメソッドを呼び出したメソッドが
+ブロックを伴うときに、それを Proc オブジェクトとして生成して返します。
+</p>
+<pre>
+def foo
+  pr = Proc.new
+  pr.call(1)
+end
+foo {|arg| p arg }
+# =&gt; 1
+</pre>
+<p>
+これは以下と同じです。
+</p>
+<pre>
+def foo
+  yield(1)
+end
+foo {|arg| p arg }
+# =&gt; 1
+</pre>
+<p>
+呼び出し元のメソッドがブロックを伴わなければ、例外
+<a href="../class/-argument-error.html">ArgumentError</a> が発生します。
+</p>
+<pre>
+def foo
+  Proc.new
+end
+foo
+# =&gt; -:2:in `new': tried to create Proc object without a block (ArgumentError)
+        from -:2:in `foo'
+        from -:4
+</pre>
+<p>
+Proc.new は、Proc#initialize が定義されていれば
+オブジェクトの初期化のためにこれを呼び出します。このことを
+除けば、<a href="../method/-kernel/m/proc.html">Kernel.#proc</a> と同じです。
+</p>
+</dd>
 
-</tr>
 
-</table>
+</dl>
 
 <h2>インスタンスメソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-proc/i/=3d=3d=3d.html"><code>
-  self[*arg] -&gt; ()<br>call(*arg) -&gt; ()<br>self === *arg -&gt; ()<br>yield(*arg) -&gt; ()
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_--3D--3D--3D"><code>self[*arg] -&gt; ()</code><span class="permalink">[<a href="../method/-proc/i/=3d=3d=3d.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.3/Proc.html#method-i-3D-3D-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>call(*arg) -&gt; ()</code></dt>
+<dt class="method-heading"><code>self === *arg -&gt; ()</code></dt>
+<dt class="method-heading"><code>yield(*arg) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
 手続きオブジェクトを実行してその結果を返します。
 </p>
-</td>
+<p>
+引数の渡され方はオブジェクトの生成方法によって異なります。
+詳しくは <a href="../method/-proc/i/lambda=3f.html">Proc#lambda?</a> を参照してください。
+</p>
+<p>
+「===」は when の所に手続きを渡せるようにするためのものです。
+</p>
+<pre>
+def sign(n)
+  case n
+  when lambda{|n| n &gt; 0} then 1
+  when lambda{|n| n &lt; 0} then -1
+  else 0
+  end
+end
 
-</tr>
+p sign(-4) #=&gt; -1
+p sign(0)  #=&gt; 0
+p sign(7)  #=&gt; 1
+</pre>
+<p>
+また、以下のような syntactic sugar もあります。
+</p>
+<pre>
+fib = lambda{|n|
+  case n
+  when 0 then 0
+  when 1 then 1
+  else
+    fib.(n - 2) + fib.(n - 1)
+  end
+}
+fib.(10) # =&gt; 55
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] arg:</dt>
+<dd>
+手続きオブジェクトに与える引数を指定します。
+</dd>
+<dt>[EXCEPTION] LocalJumpError:</dt>
+<dd>
+Procを生成したメソッドからリターンしてしまった場合に発生します。
+</dd>
+</dl>
+</dd>
 
-<tr>
-<td class="signature">
-  <a href="../method/-proc/i/arity.html"><code>
-  arity -&gt; Fixnum
-  </code></a>
-</td>
 
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_ARITY"><code>arity -&gt; Fixnum</code><span class="permalink">[<a href="../method/-proc/i/arity.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.3/Proc.html#method-i-arity">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 Proc オブジェクトが受け付ける引数の数を返します。
 </p>
-</td>
+<p>
+ただし、可変長引数を受け付ける場合、負の整数
+</p>
+<pre>
+-(必要とされる引数の数 + 1)
+</pre>
+<p>
+を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+lambda{           }.arity   # =&gt; 0
+lambda{||         }.arity   # =&gt;  0
+lambda{|x|        }.arity   # =&gt;  1
+lambda{|*x|       }.arity   # =&gt; -1
+lambda{|x, y|     }.arity   # =&gt;  2
+lambda{|x, *y|    }.arity   # =&gt; -2
+lambda{|(x, y)|   }.arity   # =&gt;  1
+lambda{|(x, y), z|}.arity   # =&gt;  2
+</pre>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-proc/i/binding.html"><code>
-  binding -&gt; Binding
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_BINDING"><code>binding -&gt; Binding</code><span class="permalink">[<a href="../method/-proc/i/binding.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.3/Proc.html#method-i-binding">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 Proc オブジェクトが保持するコンテキストを
 <a href="../class/-binding.html">Binding</a> オブジェクトで返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-proc/i/curry.html"><code>
-  curry -&gt; Proc<br>curry(arity) -&gt; Proc
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_CURRY"><code>curry -&gt; Proc</code><span class="permalink">[<a href="../method/-proc/i/curry.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.3/Proc.html#method-i-curry">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>curry(arity) -&gt; Proc</code></dt>
+<dd class="method-description">
+<p>
 Procをカリー化します
 </p>
-</td>
+<p>
+カリー化したProcはいくつかの引数をとります。十分な数の引数が与えられると、元のProcに引数を渡し
+て実行し、結果を返します。引数の個数が足りないときは、部分適用したカリー化Procを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] arity:</dt>
+<dd>
+引数の個数を指定します
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+カリー化したProcオブジェクトを返します
+</dd>
+</dl>
+<pre>
+b = proc {|x, y, z| (x||0) + (y||0) + (z||0) }
+p b.curry[1][2][3]           #=&gt; 6
+p b.curry[1, 2][3, 4]        #=&gt; 6
+p b.curry(5)[1][2][3][4][5]  #=&gt; 6
+p b.curry(5)[1, 2][3, 4][5]  #=&gt; 6
+p b.curry(1)[1]              #=&gt; 1
 
-</tr>
+b = proc {|x, y, z, *w| (x||0) + (y||0) + (z||0) + w.inject(0, &amp;:+) }
+p b.curry[1][2][3]           #=&gt; 6
+p b.curry[1, 2][3, 4]        #=&gt; 10
+p b.curry(5)[1][2][3][4][5]  #=&gt; 15
+p b.curry(5)[1, 2][3, 4][5]  #=&gt; 15
+p b.curry(1)[1]              #=&gt; 1
 
-<tr>
-<td class="signature">
-  <a href="../method/-proc/i/hash.html"><code>
-  hash -&gt; Integer
-  </code></a>
-</td>
+b = lambda {|x, y, z| (x||0) + (y||0) + (z||0) }
+p b.curry[1][2][3]           #=&gt; 6
+p b.curry[1, 2][3, 4]        #=&gt; wrong number of arguments (4 or 3)
+p b.curry(5)                 #=&gt; wrong number of arguments (5 or 3)
+p b.curry(1)                 #=&gt; wrong number of arguments (1 or 3)
 
-<td class="description" colspan="2"><p>
+b = lambda {|x, y, z, *w| (x||0) + (y||0) + (z||0) + w.inject(0, &amp;:+) }
+p b.curry[1][2][3]           #=&gt; 6
+p b.curry[1, 2][3, 4]        #=&gt; 10
+p b.curry(5)[1][2][3][4][5]  #=&gt; 15
+p b.curry(5)[1, 2][3, 4][5]  #=&gt; 15
+p b.curry(1)                 #=&gt; wrong number of arguments (1 or 3)
+
+b = proc { :foo }
+p b.curry[]                  #=&gt; :foo
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_HASH"><code>hash -&gt; Integer</code><span class="permalink">[<a href="../method/-proc/i/hash.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.3/Proc.html#method-i-hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 self のハッシュ値を返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-proc/i/lambda=3f.html"><code>
-  lambda? -&gt; bool
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_LAMBDA--3F"><code>lambda? -&gt; bool</code><span class="permalink">[<a href="../method/-proc/i/lambda=3f.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.3/Proc.html#method-i-lambda-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 手続きオブジェクトの引数の取扱が厳密であるならば true を返します。
 </p>
-</td>
+<p>
+引数の取扱の厳密さの意味は以下の例を参考にしてください。
+例:
+</p>
+<pre>
+# lambda で生成した Proc オブジェクトでは true
+lambda{}.lambda? # =&gt; true
+# proc で生成した Proc オブジェクトでは false
+proc{}.lambda?   # =&gt; false
+# Proc.new で生成した Proc オブジェクトでは false
+Proc.new{}.lambda? # =&gt; false
 
-</tr>
+# 以下、lambda?が偽である場合
+# 余分な引数を無視する
+proc{|a,b| [a,b]}.call(1,2,3) # =&gt; [1,2]
+# 足りない引数には nil が渡される
+proc{|a,b| [a,b]}.call(1) # =&gt; [1, nil]
+# 配列1つだと展開される
+proc{|a,b| [a,b]}.call([1,2]) =&gt; [1,2]
+# lambdaの場合これらはすべて ArgumentError となる
 
-<tr>
-<td class="signature">
-  <a href="../method/-proc/i/parameters.html"><code>
-  parameters -&gt; [object]
-  </code></a>
-</td>
+# &amp;が付いた仮引数で生成される Proc は lambda? が偽となる
+def n(&amp;b) b.lambda? end
+n {} # =&gt; false
 
-<td class="description" colspan="2"><p>
+# &amp;が付いた実引数によるものは、lambda?が元の Procオブジェクトから
+# 引き継がれる
+lambda(&amp;lambda {}).lambda?   #=&gt; true
+proc(&amp;lambda {}).lambda?     #=&gt; true
+Proc.new(&amp;lambda {}).lambda? #=&gt; true
+
+lambda(&amp;proc {}).lambda?     #=&gt; false
+proc(&amp;proc {}).lambda?       #=&gt; false
+Proc.new(&amp;proc {}).lambda?   #=&gt; false
+
+n(&amp;lambda {})                #=&gt; true
+n(&amp;proc {})                  #=&gt; false
+n(&amp;Proc.new {})              #=&gt; false
+
+# Method#to_proc によるものは lambda?が真となる
+def m() end
+method(:m).to_proc.lambda? #=&gt; true
+
+# Module#define_method は特別扱いで、
+# これで定義されたメソッドの引数は常に厳密に取り扱われる
+class C
+  define_method(:d) {}
+end
+C.new.d(1,2)       #=&gt; ArgumentError
+C.new.method(:d).to_proc.lambda?   #=&gt; true
+
+class C
+  define_method(:e, &amp;proc {})
+end
+C.new.e(1,2)       #=&gt; ArgumentError
+C.new.method(:e).to_proc.lambda?   #=&gt; true
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_PARAMETERS"><code>parameters -&gt; [object]</code><span class="permalink">[<a href="../method/-proc/i/parameters.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.3/Proc.html#method-i-parameters">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 Proc オブジェクトの引数の情報を返します。
 </p>
-</td>
+<p>
+Proc オブジェクトが引数を取らなければ空の配列を返します。引数を取る場合は、配列の配列を返し、
+各配列の要素は引数の種類に対応した以下のような Symbol と、引数名を表す Symbol の 2 要素です。
+</p>
+<dl>
+<dt>:req</dt>
+<dd>
+<p>
+必須の引数
+</p>
+</dd>
+<dt>:opt</dt>
+<dd>
+<p>
+デフォルト値が指定されたオプショナルな引数
+</p>
+</dd>
+<dt>:rest</dt>
+<dd>
+<p>
+* で指定された残りすべての引数
+</p>
+</dd>
+<dt>:block</dt>
+<dd>
+<p>
+&amp; で指定されたブロック引数
+</p>
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+prc = lambda{|x, y=42, *other, &amp;b|}
+prc.parameters #=&gt; [[:req, :x], [:opt, :y], [:rest, :other], [:block, :b]]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-method/i/parameters.html">Method#parameters</a>, <a href="../method/-unbound-method/i/parameters.html">UnboundMethod#parameters</a>
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-proc/i/source_location.html"><code>
-  source_location -&gt; [String, Fixnum] | nil
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_SOURCE_LOCATION"><code>source_location -&gt; [String, Fixnum] | nil</code><span class="permalink">[<a href="../method/-proc/i/source_location.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.3/Proc.html#method-i-source_location">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 ソースコードのファイル名と行番号を配列で返します。
 </p>
-</td>
+<p>
+その手続オブジェクトが ruby で定義されていない(つまりネイティブ
+である)場合は nil を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-method/i/source_location.html">Method#source_location</a>
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-proc/i/to_proc.html"><code>
-  to_proc -&gt; self
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_TO_PROC"><code>to_proc -&gt; self</code><span class="permalink">[<a href="../method/-proc/i/to_proc.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.3/Proc.html#method-i-to_proc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 self を返します。
 </p>
-</td>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-proc/i/to_s.html"><code>
-  to_s -&gt; String
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_TO_S"><code>to_s -&gt; String</code><span class="permalink">[<a href="../method/-proc/i/to_s.html">permalink</a>][<a href="http://ruby-doc.org/core-1.9.3/Proc.html#method-i-to_s">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 self の文字列表現を返します。
 </p>
-</td>
-
-</tr>
-
-</table>
-
-
-
-<h2>継承したメソッド</h2>
-<p><code>
-
-<a href="../method/-basic-object/i/=21=3d.html">!=</a>
-
-<a href="../method/-basic-object/i/__id__.html">__id__</a>
-
-<a href="../method/-basic-object/i/instance_eval.html">instance_eval</a>
-
-<a href="../method/-basic-object/i/instance_exec.html">instance_exec</a>
-
-<a href="../method/-basic-object/i/singleton_method_added.html">singleton_method_added</a>
-
-<a href="../method/-basic-object/i/singleton_method_removed.html">singleton_method_removed</a>
-
-<a href="../method/-basic-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
-
-<a href="../method/-object/i/=21.html">!</a>
-
-<a href="../method/-object/i/=3d=3d.html">==</a>
-
-<a href="../method/-object/i/=3d=7e.html">=~</a>
-
-<a href="../method/-object/i/__send__.html">__send__</a>
-
-<a href="../method/-object/i/_dump.html">_dump</a>
-
-<a href="../method/-object/i/class.html">class</a>
-
-<a href="../method/-object/i/clone.html">clone</a>
-
-<a href="../method/-object/i/dclone.html">dclone</a>
-
-<a href="../method/-object/i/display.html">display</a>
-
-<a href="../method/-object/i/enum_for.html">enum_for</a>
-
-<a href="../method/-object/i/eql=3f.html">eql?</a>
-
-<a href="../method/-object/i/equal=3f.html">equal?</a>
-
-<a href="../method/-object/i/extend.html">extend</a>
-
-<a href="../method/-object/i/freeze.html">freeze</a>
-
-<a href="../method/-object/i/frozen=3f.html">frozen?</a>
-
-<a href="../method/-object/i/initialize.html">initialize</a>
-
-<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
-
-<a href="../method/-object/i/inspect.html">inspect</a>
-
-<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
-
-<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
-
-<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
-
-<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
-
-<a href="../method/-object/i/instance_variables.html">instance_variables</a>
-
-<a href="../method/-object/i/is_a=3f.html">is_a?</a>
-
-<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
-
-<a href="../method/-object/i/marshal_load.html">marshal_load</a>
-
-<a href="../method/-object/i/method.html">method</a>
-
-<a href="../method/-object/i/method_missing.html">method_missing</a>
-
-<a href="../method/-object/i/methods.html">methods</a>
-
-<a href="../method/-object/i/must_be.html">must_be</a>
-
-<a href="../method/-object/i/must_be_close_to.html">must_be_close_to</a>
-
-<a href="../method/-object/i/must_be_empty.html">must_be_empty</a>
-
-<a href="../method/-object/i/must_be_instance_of.html">must_be_instance_of</a>
-
-<a href="../method/-object/i/must_be_kind_of.html">must_be_kind_of</a>
-
-<a href="../method/-object/i/must_be_nil.html">must_be_nil</a>
-
-<a href="../method/-object/i/must_be_same_as.html">must_be_same_as</a>
-
-<a href="../method/-object/i/must_be_within_epsilon.html">must_be_within_epsilon</a>
-
-<a href="../method/-object/i/must_equal.html">must_equal</a>
-
-<a href="../method/-object/i/must_include.html">must_include</a>
-
-<a href="../method/-object/i/must_match.html">must_match</a>
-
-<a href="../method/-object/i/must_raise.html">must_raise</a>
-
-<a href="../method/-object/i/must_respond_to.html">must_respond_to</a>
-
-<a href="../method/-object/i/must_send.html">must_send</a>
-
-<a href="../method/-object/i/must_throw.html">must_throw</a>
-
-<a href="../method/-object/i/nil=3f.html">nil?</a>
-
-<a href="../method/-object/i/object_id.html">object_id</a>
-
-<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
-
-<a href="../method/-object/i/pretty_print.html">pretty_print</a>
-
-<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
-
-<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
-
-<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
-
-<a href="../method/-object/i/private_methods.html">private_methods</a>
-
-<a href="../method/-object/i/protected_methods.html">protected_methods</a>
-
-<a href="../method/-object/i/psych_to_yaml.html">psych_to_yaml</a>
-
-<a href="../method/-object/i/public_methods.html">public_methods</a>
-
-<a href="../method/-object/i/public_send.html">public_send</a>
-
-<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
-
-<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
-
-<a href="../method/-object/i/respond_to_missing=3f.html">respond_to_missing?</a>
-
-<a href="../method/-object/i/singleton_class.html">singleton_class</a>
-
-<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
-
-<a href="../method/-object/i/taguri.html">taguri</a>
-
-<a href="../method/-object/i/taguri=3d.html">taguri=</a>
-
-<a href="../method/-object/i/taint.html">taint</a>
-
-<a href="../method/-object/i/tainted=3f.html">tainted?</a>
-
-<a href="../method/-object/i/tap.html">tap</a>
-
-<a href="../method/-object/i/to_a.html">to_a</a>
-
-<a href="../method/-object/i/to_ary.html">to_ary</a>
-
-<a href="../method/-object/i/to_hash.html">to_hash</a>
-
-<a href="../method/-object/i/to_int.html">to_int</a>
-
-<a href="../method/-object/i/to_io.html">to_io</a>
-
-<a href="../method/-object/i/to_regexp.html">to_regexp</a>
-
-<a href="../method/-object/i/to_str.html">to_str</a>
-
-<a href="../method/-object/i/to_yaml.html">to_yaml</a>
-
-<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
-
-<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
-
-<a href="../method/-object/i/trust.html">trust</a>
-
-<a href="../method/-object/i/untaint.html">untaint</a>
-
-<a href="../method/-object/i/untrust.html">untrust</a>
-
-<a href="../method/-object/i/untrusted=3f.html">untrusted?</a>
-
-<a href="../method/-object/s/yaml_tag.html">.yaml_tag</a>
-
-<a href="../method/-object/s/yaml_tag_subclasses=3f.html">.yaml_tag_subclasses?</a>
-
-</code></p>
-
-
+<p>
+可能なら self を生成したソースファイル名、行番号を含みます。
+</p>
+<pre>
+p Proc.new {
+   true
+}.to_s
+
+=&gt; &quot;#&lt;Proc:0x0x401a880c@-:3&gt;&quot;
+</pre>
+</dd>
+
+
+</dl>
 
 
 

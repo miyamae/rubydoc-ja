@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>module Fiddle::Importer</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.0.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/fiddle=2fimport.html">fiddle/importライブラリ</a>
+&gt; Fiddle::Importerモジュール
+</p>
+
+
+<h1>module Fiddle::Importer</h1>
+<p>
+
+
+クラスの継承リスト: Fiddle::Importer
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+C の関数をモジュールにインポートするためのモジュールです。
+</p>
+<p>
+対象となるモジュールに <a href="../method/-object/i/extend.html">Object#extend</a> することで、
+そのモジュールにインポートできるようになります。
+</p>
+<p>
+使いかたは <a href="../library/fiddle.html">fiddle</a> や <a href="../library/fiddle=2fimport.html">fiddle/import</a> を参照してください。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--5B--5D">[]</a>
+
+<a href="#I_BIND">bind</a>
+
+<a href="#I_CREATE_VALUE">create_value</a>
+
+<a href="#I_CREATE_VALUE">value</a>
+
+<a href="#I_DLLOAD">dlload</a>
+
+<a href="#I_EXTERN">extern</a>
+
+<a href="#I_IMPORT_SYMBOL">import_symbol</a>
+
+<a href="#I_SIZEOF">sizeof</a>
+
+<a href="#I_STRUCT">struct</a>
+
+<a href="#I_TYPEALIAS">typealias</a>
+
+<a href="#I_UNION">union</a>
+
+</dd>
+
+</dl>
+
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--5B--5D"><code>self[name] -&gt; Fiddle::Function|nil</code><span class="permalink">[<a href="../method/-fiddle=3a=3a-importer/i/=5b=5d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/fiddle/import/rdoc/Fiddle/Importer.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-fiddle=3a=3a-importer/i/extern.html">Fiddle::Importer#extern</a> でインポートした関数の
+<a href="../class/-fiddle=3a=3a-function.html">Fiddle::Function</a> オブジェクト
+を返します。
+</p>
+<p>
+name という名前の関数が存在しない場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+関数の名前の文字列
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_BIND"><code>bind(signature, *opts) { ... } -&gt; Fiddle::Function</code><span class="permalink">[<a href="../method/-fiddle=3a=3a-importer/i/bind.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/fiddle/import/rdoc/Fiddle/Importer.html#method-i-bind">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Ruby のブロックを C の関数で wrap し、その関数をモジュールに
+インポートします。
+</p>
+<p>
+これでインポートされた関数はモジュール関数として定義されます。
+また、<a href="../method/-fiddle=3a=3a-importer/i/=5b=5d.html">Fiddle::Importer#[]</a> で <a href="../class/-fiddle=3a=3a-function.html">Fiddle::Function</a> オブジェクトとして
+取り出すことができます。
+</p>
+<p>
+signature で関数の名前とシネグチャを指定します。例えば
+&quot;int compare(void*, void*)&quot; のように指定します。
+</p>
+<p>
+opts には :stdcall もしくは :cdecl を渡すことができ、
+呼出規約を明示することができます。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+インポートした関数を表す <a href="../class/-fiddle=3a=3a-function.html">Fiddle::Function</a> オブジェクトを返します。
+</dd>
+<dt class='method-param'>[PARAM] signature:</dt>
+<dd>
+関数の名前とシネグチャ
+</dd>
+<dt class='method-param'>[PARAM] opts:</dt>
+<dd>
+オプション
+</dd>
+</dl>
+<p>
+例
+</p>
+<pre>
+require 'fiddle/import'
+
+module M
+  extend Fiddle::Importer
+  dlload &quot;libc.so.6&quot;
+  typealias &quot;size_t&quot;, &quot;unsigned long&quot;
+  extern &quot;int qsort(void*, size_t, size_t, void*)&quot;
+
+  bind(&quot;int compare(void*, void*)&quot;){|px, py|
+    x = px.to_s(Fiddle::SIZEOF_INT).unpack(&quot;i!&quot;)
+    y = py.to_s(Fiddle::SIZEOF_INT).unpack(&quot;i!&quot;)
+
+    x &lt;=&gt; y
+  }
+end
+
+data = [32, 180001, -13, -1, 0, 49].pack(&quot;i!*&quot;)
+M.qsort(Fiddle::Pointer[data], 6, Fiddle::SIZEOF_INT, M[&quot;compare&quot;])
+p data.unpack(&quot;i!*&quot;) # =&gt; [-13, -1, 0, 32, 49, 180001]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CREATE_VALUE"><code>create_value(type, val = nil) -&gt; Fiddle::CStruct</code><span class="permalink">[<a href="../method/-fiddle=3a=3a-importer/i/create_value.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/fiddle/import/rdoc/Fiddle/Importer.html#method-i-create_value">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>value(type, val = nil) -&gt; Fiddle::CStruct</code></dt>
+<dd class="method-description">
+<p>
+型が type で要素名が &quot;value&quot; であるような構造体を
+定義(<a href="../method/-fiddle=3a=3a-importer/i/struct.html">Fiddle::Importer#struct</a>)し、
+その構造体のメモリを <a href="../method/-fiddle=3a=3a-c-struct/i/malloc.html">Fiddle::CStruct#malloc</a> で確保し、
+確保したメモリを保持しているオブジェクトを返します。
+</p>
+<p>
+type は &quot;int&quot;, &quot;void*&quot; といった文字列で型を指定します。
+val に nil 以外を指定すると、確保された構造体に
+その値を代入します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] type:</dt>
+<dd>
+型を表す文字列
+</dd>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+構造体に確保される初期値
+</dd>
+</dl>
+<p>
+例
+</p>
+<pre>
+require 'fiddle/import'
+
+module M
+  extend Fiddle::Importer
+end
+
+v = M.value(&quot;int&quot;, 32)
+p v.value # =&gt; 32
+v.value = 48
+p v.value # =&gt; 48
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_DLLOAD"><code>dlload(*libs) -&gt; ()</code><span class="permalink">[<a href="../method/-fiddle=3a=3a-importer/i/dlload.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/fiddle/import/rdoc/Fiddle/Importer.html#method-i-dlload">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+C の動的ライブラリをモジュールにインポートします。
+</p>
+<p>
+これで取り込んだライブラリの関数は <a href="../method/-fiddle=3a=3a-importer/i/extern.html">Fiddle::Importer#extern</a> で
+インポートできます。
+</p>
+<p>
+複数のライブラリを指定することができます。
+ファイル名文字列を指定することでそのライブラリをインポートします。
+<a href="../class/-fiddle=3a=3a-handle.html">Fiddle::Handle</a> を渡すとそのハンドルが指しているライブラリをインポート
+します。
+</p>
+<p>
+このメソッドは同じモジュールで2回呼ばないでください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] libs:</dt>
+<dd>
+インポートするライブラリ
+</dd>
+<dt>[EXCEPTION] Fiddle::DLError:</dt>
+<dd>
+ライブラリのインポートができなかった場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_EXTERN"><code>extern(signature, *opts) -&gt; Fiddle::Function</code><span class="permalink">[<a href="../method/-fiddle=3a=3a-importer/i/extern.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/fiddle/import/rdoc/Fiddle/Importer.html#method-i-extern">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-fiddle=3a=3a-importer/i/dlload.html">Fiddle::Importer#dlload</a> で取り込んだライブラリから
+C の関数をインポートします。
+</p>
+<p>
+インポートした関数はそのモジュールにモジュール関数として定義されます。
+</p>
+<p>
+signature で関数の名前とシネグチャを指定します。例えば
+&quot;int strcmp(char*, char*)&quot; のように指定することができます。
+</p>
+<p>
+opts には :stdcall もしくは :cdecl を渡すことができ、
+呼出規約を明示することができます。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+インポートした関数を表す <a href="../class/-fiddle=3a=3a-function.html">Fiddle::Function</a> オブジェクトを返します。
+</dd>
+<dt class='method-param'>[PARAM] signature:</dt>
+<dd>
+関数の名前とシネグチャ
+</dd>
+<dt class='method-param'>[PARAM] opts:</dt>
+<dd>
+オプション
+</dd>
+</dl>
+<p>
+例
+</p>
+<pre>
+require 'fiddle/import'
+
+module M
+  extern Fiddle::Importer
+  dlload &quot;libc.so.6&quot;
+  extern &quot;int strcmp(char*, char*)&quot;
+end
+
+M.strcmp(&quot;abc&quot;, &quot;abc&quot;) # =&gt; 0
+M.strcmp(&quot;abc&quot;, &quot;abd&quot;) # =&gt; -1
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_IMPORT_SYMBOL"><code>import_symbol(name) -&gt; Fiddle::Pointer</code><span class="permalink">[<a href="../method/-fiddle=3a=3a-importer/i/import_symbol.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/fiddle/import/rdoc/Fiddle/Importer.html#method-i-import_symbol">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+取り込んだライブラリからシンボルをインポートします。
+</p>
+<p>
+返り値はシンボルがロードされたメモリのアドレスを持つ <a href="../class/-fiddle=3a=3a-pointer.html">Fiddle::Pointer</a>
+オブジェクトを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+シンボル名(文字列)
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_SIZEOF"><code>sizeof(t) -&gt; Integer</code><span class="permalink">[<a href="../method/-fiddle=3a=3a-importer/i/sizeof.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/fiddle/import/rdoc/Fiddle/Importer.html#method-i-sizeof">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+C における sizeof(t) の値を返します。
+</p>
+<p>
+t が文字列の場合、その文字列が表す C の型の size が返されます。
+例えば、sizeof(&quot;char&quot;) は 1 を返します。
+sizeof(&quot;char*&quot;) は環境によって 4 や 8 といった値を返します。
+</p>
+<p>
+<a href="../method/-fiddle=3a=3a-importer/i/struct.html">Fiddle::Importer#struct</a> で定義した
+構造体クラスを渡すと、その構造体のサイズを返します。
+<a href="../method/-fiddle=3a=3a-importer/i/union.html">Fiddle::Importer#union</a> で定義した共用体クラスも同様です。
+</p>
+<p>
+t がクラスの場合、t が to_ptr というインスタンスメソッドを持っている
+ならば t.size を返します。
+</p>
+<p>
+それ以外の場合は Pointer[t].size を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] t:</dt>
+<dd>
+サイズを計算する対象
+</dd>
+<dt>[EXCEPTION] Fiddle::DLError:</dt>
+<dd>
+t として文字列を渡し、それが表している型を Fiddle が知らなかった
+場合に発生します
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'fiddle/import'
+
+module A
+  extend Fiddle::Importer
+  Timeval = struct([&quot;long tv_sec&quot;, &quot;long tv_usec&quot;])
+  p sizeof(&quot;char&quot;) # =&gt; 1
+  p sizeof(&quot;void*&quot;) # =&gt; 8
+  p sizeof(Timeval) # =&gt; 16
+end
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_STRUCT"><code>struct(signature) -&gt; Class</code><span class="permalink">[<a href="../method/-fiddle=3a=3a-importer/i/struct.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/fiddle/import/rdoc/Fiddle/Importer.html#method-i-struct">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+C の構造体型に対応する Ruby のクラスを構築して返します。
+</p>
+<p>
+構造体の各要素は C と似せた表記ができます。そしてそれを
+配列で signature に渡してデータを定義します。例えば C における
+</p>
+<pre>
+struct timeval {
+  long tv_sec;
+  long tv_usec;
+};
+</pre>
+<p>
+という構造体型に対応して
+</p>
+<pre>
+Timeval = struct([&quot;long tv_sec&quot;, &quot;long tv_usec&quot;])
+</pre>
+<p>
+として構造体に対応するクラスを生成します。
+</p>
+<p>
+このメソッドが返すクラスには以下のメソッドが定義されています
+</p>
+<ul>
+<li>クラスメソッド malloc</li>
+<li>initialize</li>
+<li>to_ptr</li>
+<li>to_i</li>
+<li>構造体の各メンバへのアクセサ</li>
+</ul>
+<p>
+返されるクラスは <a href="../class/-fiddle=3a=3a-c-struct.html">Fiddle::CStruct</a> を継承しています。詳しくは
+そちらを参照してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] signature:</dt>
+<dd>
+構造体の各要素を文字列で表現したものの配列
+</dd>
+</dl>
+<pre>
+require 'fiddle/import
+
+module M
+  extend Fiddle::Importer
+  dlload &quot;libc.so.6&quot;
+  extern &quot;int gettimeofday(void*, void*)&quot;
+  Timeval = struct([&quot;long tv_sec&quot;, &quot;long tv_usec&quot;])
+end
+
+time = Timeval.malloc
+M.gettimeofday(time, Fiddle::NULL)
+p time.tv_sec
+p time.tv_usec
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TYPEALIAS"><code>typealias(new, orig) -&gt; ()</code><span class="permalink">[<a href="../method/-fiddle=3a=3a-importer/i/typealias.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/fiddle/import/rdoc/Fiddle/Importer.html#method-i-typealias">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+extern や struct で利用する型の別名を定義します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] new:</dt>
+<dd>
+別名(文字列)
+</dd>
+<dt class='method-param'>[PARAM] orig:</dt>
+<dd>
+別名を付けたい型の名前(文字列)
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-fiddle=3a=3a-importer/i/extern.html">Fiddle::Importer#extern</a>, <a href="../method/-fiddle=3a=3a-importer/i/sizeof.html">Fiddle::Importer#sizeof</a>, 
+     <a href="../method/-fiddle=3a=3a-importer/i/struct.html">Fiddle::Importer#struct</a>, <a href="../method/-fiddle=3a=3a-importer/i/union.html">Fiddle::Importer#union</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_UNION"><code>union(signature) -&gt; Class</code><span class="permalink">[<a href="../method/-fiddle=3a=3a-importer/i/union.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.0.0/libdoc/fiddle/import/rdoc/Fiddle/Importer.html#method-i-union">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+C の共用体型に対応する Ruby のクラスを構築して返します。
+</p>
+<p>
+共用体型を Ruby 上で定義する方法は <a href="../method/-fiddle=3a=3a-importer/i/struct.html">Fiddle::Importer#struct</a> と
+ほぼ同様です。C における
+</p>
+<pre>
+typedef union epoll_data
+{
+  void *ptr;
+  int fd;
+  uint32_t u32;
+  uint64_t u64;
+} epoll_data_t;
+</pre>
+<p>
+は、Ruby上では
+</p>
+<pre>
+require 'fiddle/import
+
+module M
+  extend Fiddle::Importer
+  dlload &quot;libc.so.6&quot;
+  typealias(&quot;uint32_t&quot;, &quot;unsigned int&quot;)
+  typealias(&quot;uint64_t&quot;, &quot;unsigned long long&quot;)
+
+  EPollData = union([&quot;void *ptr&quot;,
+                     &quot;int fd&quot;,
+                     &quot;uint32_t u32&quot;,
+                     &quot;uint64_t u64&quot;,
+                    ])
+end
+</pre>
+<p>
+となります。
+</p>
+<p>
+返されるクラスは <a href="../class/-fiddle=3a=3a-c-union.html">Fiddle::CUnion</a> を継承しています。
+</p>
+<p>
+1.9.x ではこのメソッドで返されるクラスは正しく動作しません。
+2.0以降では修正されています。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] signature:</dt>
+<dd>
+共用体の各要素を文字列で表現したものの配列
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

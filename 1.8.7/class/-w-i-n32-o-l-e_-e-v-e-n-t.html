@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="ja-JP">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
   <title>class WIN32OLE_EVENT</title>
-  <link rel="search" type="application/opensearchdescription+xml" title="Ruby 1.8.7 リファレンスマニュアル" href="/opensearchdescription">
 </head>
 <body>
 
@@ -16,7 +15,6 @@
 &gt; <a href="../library/win32ole.html">win32oleライブラリ</a>
 &gt; WIN32OLE_EVENTクラス
 </p>
-
 
 
 <h1>class WIN32OLE_EVENT</h1>
@@ -30,6 +28,8 @@
 
       &lt; <a href="../class/-kernel.html">Kernel</a>
       
+
+
 
 
 
@@ -69,222 +69,245 @@ end
 
 
 
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_MESSAGE_LOOP">message_loop</a>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_ON_EVENT">on_event</a>
+
+<a href="#I_ON_EVENT_WITH_OUTARGS">on_event_with_outargs</a>
+
+</dd>
+
+</dl>
+
+
 <h2>特異メソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-w-i-n32-o-l-e_-e-v-e-n-t/s/message_loop.html"><code>
-  message_loop -&gt; ()
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_MESSAGE_LOOP"><code>message_loop -&gt; ()</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e_-e-v-e-n-t/s/message_loop.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.8.7/libdoc/win32ole/rdoc/WIN32OLE_EVENT.html#method-c-message_loop">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 Windowsのメッセージポンプを実行します。
 </p>
-</td>
+<p>
+message_loopメソッドは、Windowsメッセージがキューイングされている限りメッ
+セージの読み出しとディスパッチを実行します。
+</p>
+<p>
+COMのスレッド間/プロセス間通信はスレッド内で呼び出しをシリアライズする
+ためにWindowsメッセージを利用します。このため、ほとんどのイベント処理は
+Windowsメッセージを読み取ってディスパッチすることで通知されます。
+</p>
+<pre>
+ie = WIN32OLE.new('InternetExplorer.Application.1')
+event = WIN32OLE_EVENT.new(ie, 'DWebBrowserEvents2')
+b = false
+event.on_event('DocumentComplete') do |disp, uri|
+  disp.document.getElementsByTagName('a').each do |e|
+    puts &quot;#{e.innerHTML}=#{e.href}&quot;   #=&gt; ダウンロード=http://www.ruby-lang.org/ja/downloads/ など
+  end
+  disp.quit
+  b = true
+end
+ie.Navigate2 'http://www.ruby-lang.org/ja/'
+loop do
+  break if b
+  WIN32OLE_EVENT.message_loop
+end
+</pre>
+<p>
+なお、メソッド名はloopですが、呼び出し時および既にキューイングされたメッ
+セージの処理中にキューされたメッセージの処理が終わると呼び出し元に制御
+が戻ります。このため、イベント通知までに長い時間がかかる場合はすべての
+イベントを受信するまでループを実行する必要があります。このとき他のスレッ
+ドに制御を与える必要があれば、<a href="../method/-kernel/m/sleep.html">Kernel.#sleep</a>などを呼び出してくださ
+い。message_loopメソッドの呼び出し中はRubyのスレッドの切り替えは行われ
+ません。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-w-i-n32-o-l-e_-e-v-e-n-t/s/new.html"><code>
-  new(ole, event = nil) -&gt; WIN32OLE_EVENT
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="S_NEW"><code>new(ole, event = nil) -&gt; WIN32OLE_EVENT</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e_-e-v-e-n-t/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.8.7/libdoc/win32ole/rdoc/WIN32OLE_EVENT.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 OLEオートメーションサーバのイベント受信機構をオブジェクト化して返します。
 </p>
-</td>
+<p>
+newメソッドは、OLEオートメーションサーバがイベント通知に利用するインター
+フェイスを取得し、オブジェクトとして返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] ole:</dt>
+<dd>
+イベントの通知元のWIN32OLEオブジェクトを指定します。
+</dd>
+<dt class='method-param'>[PARAM] event:</dt>
+<dd>
+イベントのインターフェイスを示すインターフェイス名または
+IIDを文字列で指定します。省略時にはoleパラメータで指定した
+オブジェクトの既定のイベントインターフェイスを利用します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+指定したオブジェクトのイベントを管理するWIN32OLE_EVENTオブジェクト。
+</dd>
+<dt>[EXCEPTION] RuntimeError:</dt>
+<dd>
+eventパラメータで指定したIIDが見つかりません。また
+はオブジェクトがイベントをサポートしていません。
+</dd>
+</dl>
+<p>
+以下の3例はいずれも同等です。
+</p>
+<p>
+デフォルトイベントインターフェイスを指定した例
+</p>
+<pre>
+ie = WIN32OLE.new('InternetExplorer.Application')
+ev = WIN32OLE_EVENT.new(ie)
+</pre>
+<p>
+インターフェイス名を指定した例
+</p>
+<pre>
+ie = WIN32OLE.new('InternetExplorer.Application')
+ev = WIN32OLE_EVENT.new(ie, 'DWebBrowserEvents2')
+</pre>
+<p>
+IIDを指定した例
+</p>
+<pre>
+ie = WIN32OLE.new('InternetExplorer.Application')
+ev = WIN32OLE_EVENT.new(ie, '{34A715A0-6587-11D0-924A-0020AFC7AC4D}')
+</pre>
+</dd>
 
-</tr>
 
-</table>
+</dl>
 
 <h2>インスタンスメソッド</h2>
-<table class="entries methods">
-<tr>
-  <th>定義</th>
-  <th colspan="2">説明</th>
-</tr>
+<dl>
 
-<tr>
-<td class="signature">
-  <a href="../method/-w-i-n32-o-l-e_-e-v-e-n-t/i/on_event.html"><code>
-  on_event(event = nil) {|*args| ... } -&gt; ()
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_ON_EVENT"><code>on_event(event = nil) {|*args| ... } -&gt; ()</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e_-e-v-e-n-t/i/on_event.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.8.7/libdoc/win32ole/rdoc/WIN32OLE_EVENT.html#method-i-on_event">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 イベント通知を受けるブロックを登録します。
 </p>
-</td>
+<p>
+引数にはイベントのメソッド名を指定します。引数を省略した場合は、すべて
+のイベントを対象とするブロックの登録となります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] event:</dt>
+<dd>
+イベント名を文字列で指定します。イベント名は大文字小文字を
+区別します。省略時にはすべてのイベントが対象となります。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+サーバがイベント通知時に指定した引数です。
+eventパラメータを省略した場合、第1引数にはイベントのメソッ
+ド名が文字列で与えられます。引数の変更が必要な場合は、
+<a href="../method/-w-i-n32-o-l-e_-e-v-e-n-t/i/on_event_with_outargs.html">WIN32OLE_EVENT#on_event_with_outargs</a>を利用してください。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+<a href="../method/-w-i-n32-o-l-e_-e-v-e-n-t/i/unadvise.html">WIN32OLE_EVENT#unadvise</a>によってイベン
+トソースと切断済みです。
+</dd>
+</dl>
+<pre>
+ie = WIN32OLE.new('InternetExplorer.Application')
+ev = WIN32OLE_EVENT.new(ie, 'DWebBrowserEvents2')
+ev.on_event(&quot;NavigateComplete2&quot;) do |browser, url|
+  puts url
+end
+</pre>
+<p>
+同じオブジェクトに対してeventパラメータを指定したブロックと指定しないブ
+ロックが混在している場合、通知されたイベントに対応するブロックがあれば
+そちらだけが呼び出されます。
+</p>
+<pre>
+ie = WIN32OLE.new('InternetExplorer.Application')
+ev = WIN32OLE_EVENT.new(ie, 'DWebBrowserEvents2')
+ev.on_event(&quot;NavigateComplete2&quot;) do |browser, url|
+  puts url
+end
+ev.on_event do |*args|   # &lt;- NavigateComplete2イベント時は実行されない
+  puts args[0]
+end
+...
+</pre>
+<p>
+当メソッドはイベント名の大文字小文字を区別するほか、イベント名の存在確
+認を行いません。このため、誤ったイベント名を記述してもエラーとはならず、
+単にイベントを受け取れなくなります。
+</p>
+</dd>
 
-</tr>
 
-<tr>
-<td class="signature">
-  <a href="../method/-w-i-n32-o-l-e_-e-v-e-n-t/i/on_event_with_outargs.html"><code>
-  on_event_with_outargs(event = nil) {|*args| ... } -&gt; ()
-  </code></a>
-</td>
-
-<td class="description" colspan="2"><p>
+<dt class="method-heading" id="I_ON_EVENT_WITH_OUTARGS"><code>on_event_with_outargs(event = nil) {|*args| ... } -&gt; ()</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e_-e-v-e-n-t/i/on_event_with_outargs.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.8.7/libdoc/win32ole/rdoc/WIN32OLE_EVENT.html#method-i-on_event_with_outargs">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
 イベント通知を受けて結果を呼び出し元へ返すブロックを登録します。
 </p>
-</td>
-
-</tr>
-
-</table>
-
-
-
-<h2>継承したメソッド</h2>
-<p><code>
-
-<a href="../method/-object/i/=3d=3d.html">==</a>
-
-<a href="../method/-object/i/=3d=3d=3d.html">===</a>
-
-<a href="../method/-object/i/=3d=7e.html">=~</a>
-
-<a href="../method/-object/i/__id__.html">__id__</a>
-
-<a href="../method/-object/i/__send__.html">__send__</a>
-
-<a href="../method/-object/i/_dump.html">_dump</a>
-
-<a href="../method/-object/i/class.html">class</a>
-
-<a href="../method/-object/i/clone.html">clone</a>
-
-<a href="../method/-object/i/dclone.html">dclone</a>
-
-<a href="../method/-object/i/display.html">display</a>
-
-<a href="../method/-object/i/enum_for.html">enum_for</a>
-
-<a href="../method/-object/i/eql=3f.html">eql?</a>
-
-<a href="../method/-object/i/equal=3f.html">equal?</a>
-
-<a href="../method/-object/i/extend.html">extend</a>
-
-<a href="../method/-object/i/freeze.html">freeze</a>
-
-<a href="../method/-object/i/frozen=3f.html">frozen?</a>
-
-<a href="../method/-object/i/hash.html">hash</a>
-
-<a href="../method/-object/i/initialize.html">initialize</a>
-
-<a href="../method/-object/i/initialize_copy.html">initialize_copy</a>
-
-<a href="../method/-object/i/inspect.html">inspect</a>
-
-<a href="../method/-object/i/instance_eval.html">instance_eval</a>
-
-<a href="../method/-object/i/instance_exec.html">instance_exec</a>
-
-<a href="../method/-object/i/instance_of=3f.html">instance_of?</a>
-
-<a href="../method/-object/i/instance_variable_defined=3f.html">instance_variable_defined?</a>
-
-<a href="../method/-object/i/instance_variable_get.html">instance_variable_get</a>
-
-<a href="../method/-object/i/instance_variable_set.html">instance_variable_set</a>
-
-<a href="../method/-object/i/instance_variables.html">instance_variables</a>
-
-<a href="../method/-object/i/is_a=3f.html">is_a?</a>
-
-<a href="../method/-object/i/marshal_dump.html">marshal_dump</a>
-
-<a href="../method/-object/i/marshal_load.html">marshal_load</a>
-
-<a href="../method/-object/i/method.html">method</a>
-
-<a href="../method/-object/i/method_missing.html">method_missing</a>
-
-<a href="../method/-object/i/methods.html">methods</a>
-
-<a href="../method/-object/i/nil=3f.html">nil?</a>
-
-<a href="../method/-object/i/pretty_inspect.html">pretty_inspect</a>
-
-<a href="../method/-object/i/pretty_print.html">pretty_print</a>
-
-<a href="../method/-object/i/pretty_print_cycle.html">pretty_print_cycle</a>
-
-<a href="../method/-object/i/pretty_print_inspect.html">pretty_print_inspect</a>
-
-<a href="../method/-object/i/pretty_print_instance_variables.html">pretty_print_instance_variables</a>
-
-<a href="../method/-object/i/private_methods.html">private_methods</a>
-
-<a href="../method/-object/i/protected_methods.html">protected_methods</a>
-
-<a href="../method/-object/i/public_methods.html">public_methods</a>
-
-<a href="../method/-object/i/remove_instance_variable.html">remove_instance_variable</a>
-
-<a href="../method/-object/i/respond_to=3f.html">respond_to?</a>
-
-<a href="../method/-object/i/singleton_method_added.html">singleton_method_added</a>
-
-<a href="../method/-object/i/singleton_method_removed.html">singleton_method_removed</a>
-
-<a href="../method/-object/i/singleton_method_undefined.html">singleton_method_undefined</a>
-
-<a href="../method/-object/i/singleton_methods.html">singleton_methods</a>
-
-<a href="../method/-object/i/taguri.html">taguri</a>
-
-<a href="../method/-object/i/taguri=3d.html">taguri=</a>
-
-<a href="../method/-object/i/taint.html">taint</a>
-
-<a href="../method/-object/i/tainted=3f.html">tainted?</a>
-
-<a href="../method/-object/i/tap.html">tap</a>
-
-<a href="../method/-object/i/to_a.html">to_a</a>
-
-<a href="../method/-object/i/to_ary.html">to_ary</a>
-
-<a href="../method/-object/i/to_hash.html">to_hash</a>
-
-<a href="../method/-object/i/to_int.html">to_int</a>
-
-<a href="../method/-object/i/to_io.html">to_io</a>
-
-<a href="../method/-object/i/to_proc.html">to_proc</a>
-
-<a href="../method/-object/i/to_regexp.html">to_regexp</a>
-
-<a href="../method/-object/i/to_s.html">to_s</a>
-
-<a href="../method/-object/i/to_str.html">to_str</a>
-
-<a href="../method/-object/i/to_yaml.html">to_yaml</a>
-
-<a href="../method/-object/i/to_yaml_properties.html">to_yaml_properties</a>
-
-<a href="../method/-object/i/to_yaml_style.html">to_yaml_style</a>
-
-<a href="../method/-object/i/untaint.html">untaint</a>
-
-<a href="../method/-object/s/yaml_tag_subclasses=3f.html">.yaml_tag_subclasses?</a>
-
-</code></p>
-
-
+<p>
+引数にはイベントのメソッド名を指定します。引数を省略した場合は、すべて
+のイベントを対象とするブロックの登録となります。
+</p>
+<p>
+<a href="../method/-w-i-n32-o-l-e_-e-v-e-n-t/i/on_event.html">WIN32OLE_EVENT#on_event</a>と異なり、イベントのブロック変数に戻り値を
+設定できます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] event:</dt>
+<dd>
+イベント名を文字列で指定します。イベント名は大文字小文字を
+区別します。省略時にはすべてのイベントが対象となります。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+サーバがイベント通知時に指定した引数の配列です。
+eventパラメータを省略した場合、第1要素にはイベントのメソッ
+ド名が文字列で与えられます。なお、引数に値を設定するには、
+ブロック変数を分割せずに配列の形式で受けてください。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+<a href="../method/-w-i-n32-o-l-e_-e-v-e-n-t/i/unadvise.html">WIN32OLE_EVENT#unadvise</a>によってイベン
+トソースと切断済みです。
+</dd>
+</dl>
+<pre>
+ie = WIN32OLE.new('InternetExplorer.Application')
+ev = WIN32OLE_EVENT.new(ie, 'DWebBrowserEvents2')
+ev.on_event('BeforeNavigate2') do |*args|
+  args[6] = true unless args[4]  # Cancel = true unless PostData
+end
+</pre>
+<p>
+当メソッドはイベント名の大文字小文字を区別するほか、イベント名の存在確
+認を行いません。このため、誤ったイベント名を記述してもエラーとはならず、
+単にイベントを受け取れなくなります。
+</p>
+</dd>
+
+
+</dl>
 
 
 
