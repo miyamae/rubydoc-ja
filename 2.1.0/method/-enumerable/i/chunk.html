@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method Enumerable#chunk</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-enumerable.html">Enumerableモジュール</a>
+&gt; chunk
+
+</p>
+
+
+<h1>instance method Enumerable#chunk</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_CHUNK"><code>chunk {|elt| ... } -&gt; Enumerator</code><span class="permalink">[<a href="../../../method/-enumerable/i/chunk.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Enumerable.html#method-i-chunk">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>chunk(initial_state) {|elt, state| ... } -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+要素を前から順にブロックで評価し、その結果によって
+要素をチャンクに分けた(グループ化した)要素を持つ
+<a href="../../../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<p>
+ブロックの評価値が同じ値が続くものを一つのチャンクとして
+取り扱います。すなわち、ブロックの評価値が一つ前と
+異なる所でチャンクが区切られます。
+</p>
+<p>
+返り値の <a href="../../../class/-enumerator.html">Enumerator</a> は各チャンクのブロック評価値と
+各チャンクの要素を持つ配列のペアを各要素とします。
+そのため、eachだと以下のようになります。
+</p>
+<pre>
+enum.chunk {|elt| key }.each {|key, ary| ... }
+enum.chunk(initial_state) {|elt, state| key }.each {|key, ary| ... }
+</pre>
+<p>
+例として、整数列を連続する奇数/偶数に分ける例を見てみます。
+「n.even?」が変換するところで区切られているのがわかるでしょう。
+</p>
+<pre>
+[3,1,4,1,5,9,2,6,5,3,5].chunk {|n|
+  n.even?
+}.each {|even, ary|
+  p [even, ary]
+}
+#=&gt; [false, [3, 1]]
+#   [true, [4]]
+#   [false, [1, 5, 9]]
+#   [true, [2, 6]]
+#   [false, [5, 3, 5]]
+</pre>
+<p>
+このメソッドは各要素が既にソートされている場合に便利です。
+以下の例では、テキスト辞書ファイル(中身がソートされている)
+に含まれる単語を先頭の文字ごとに数えています。
+</p>
+<pre>
+# line.ord は先頭の文字のコードポイントを返す
+open(&quot;/usr/share/dict/words&quot;, &quot;r:iso-8859-1&quot;) {|f|
+  f.chunk {|line| line.ord }.each {|ch, lines| p [ch.chr, lines.length] }
+}
+#=&gt; [&quot;\n&quot;, 1]
+#   [&quot;A&quot;, 1327]
+#   [&quot;B&quot;, 1372]
+#   [&quot;C&quot;, 1507]
+#   [&quot;D&quot;, 791]
+#   ...
+</pre>
+<p>
+さらにこのメソッドは以下の値を特別扱いします。
+</p>
+<ul>
+<li>ブロックの評価値が nil もしくは :_separator であった場合、
+その要素を捨てます。チャンクはこの前後で区切られます。</li>
+<li>ブロックの評価値 :_alone であった場合はその要素は
+単独のチャンクをなすものと解釈されます。</li>
+</ul>
+<p>
+アンダースコアで始まるシンボルはこのメソッドでは予約されています。
+ブロックの返り値としては用いないでください。
+</p>
+<p>
+nil、 :_separator はある要素を無視したい場合に用います。
+例として svn log の出力のハイフンの所で区切りたい場合を考えます。
+</p>
+<pre>
+sep = &quot;-&quot;*72 + &quot;\n&quot; # ハイフンが72個の行
+IO.popen(&quot;svn log README&quot;) {|f|
+  f.chunk {|line|
+    line != sep || nil
+  }.each {|_, lines|
+    pp lines
+  }
+}
+#=&gt; [&quot;r20018 | knu | 2008-10-29 13:20:42 +0900 (Wed, 29 Oct 2008) | 2 lines\n&quot;,
+#    &quot;\n&quot;,
+#    &quot;* README, README.ja: Update the portability section.\n&quot;,
+#    &quot;\n&quot;]
+#   [&quot;r16725 | knu | 2008-05-31 23:34:23 +0900 (Sat, 31 May 2008) | 2 lines\n&quot;,
+#    &quot;\n&quot;,
+#    &quot;* README, README.ja: Add a note about default C flags.\n&quot;,
+#    &quot;\n&quot;]
+#   ...
+</pre>
+<p>
+テキストを空行で区切られた段落に分けたい場合にも nil が使えます。
+</p>
+<pre>
+File.foreach(&quot;README&quot;).chunk {|line|
+  /\A\s*\z/ !~ line || nil
+}.each {|_, lines|
+  pp lines
+}
+</pre>
+<p>
+「:_alone」は要素を素通ししたい場合に用います。
+以下の例では「Foo#bar」という形式の行が連続している場合のみ
+チャンク化し、それ以外は素通しします。
+</p>
+<pre>
+pat = /\A[A-Z][A-Za-z0-9_]+\#/
+open(filename) {|f|
+  f.chunk {|line| pat =~ line ? $&amp; : :_alone }.each {|key, lines|
+    if key != :_alone
+      print lines.sort.join('')
+    else
+      print lines.join('')
+    end
+  }
+}
+</pre>
+<p>
+チャンク化に状態遷移が必要な場合は、
+オプション引数 initial_state に状態を保持するオブジェクトを渡します。
+この場合、ブロックの第2引数にはこのオブジェクトが dup で複製
+されて渡されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] initial_state:</dt>
+<dd>
+状態を保持するオブジェクト
+</dd>
+<dt>[EXCEPTION] RuntimeError:</dt>
+<dd>
+予約されている値を用いた場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method UNIXServer#accept_nonblock</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/socket.html">socketライブラリ</a>
+&gt; <a href="../../../class/-u-n-i-x-server.html">UNIXServerクラス</a>
+&gt; accept_nonblock
+
+</p>
+
+
+<h1>instance method UNIXServer#accept_nonblock</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_ACCEPT_NONBLOCK"><code>accept_nonblock -&gt; UnixSocket</code><span class="permalink">[<a href="../../../method/-u-n-i-x-server/i/accept_nonblock.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/socket/rdoc/UNIXServer.html#method-i-accept_nonblock">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ソケットをノンブロッキングモードに設定した後、
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/accept.html">accept(2)</a> を呼び出します。
+</p>
+<p>
+接続した
+<a href="../../../class/-u-n-i-x-socket.html">UNIXSocket</a> のインスタンスを返します。
+</p>
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/accept.html">accept(2)</a> がエラーになった場合、<a href="../../../method/-socket/i/accept.html">Socket#accept</a> と同じ例外が
+発生します。
+</p>
+<p>
+<a href="../../../class/-errno=3a=3a-e-w-o-u-l-d-b-l-o-c-k.html">Errno::EWOULDBLOCK</a>, <a href="../../../class/-errno=3a=3a-e-a-g-a-i-n.html">Errno::EAGAIN</a>,
+<a href="../../../class/-errno=3a=3a-e-c-o-n-n-a-b-o-r-t-e-d.html">Errno::ECONNABORTED</a>, <a href="../../../class/-errno=3a=3a-e-p-r-o-t-o.html">Errno::EPROTO</a> のいずれかの例外が
+発生した場合は、その例外には <a href="../../../class/-i-o=3a=3a-wait-readable.html">IO::WaitReadable</a> が extend
+されます。それを利用してリトライ可能な例外を掴まえることができます。
+</p>
+<pre>
+require 'socket'
+serv = UNIXServer.new(&quot;/tmp/sock&quot;)
+begin # emulate blocking accept
+  sock = serv.accept_nonblock
+rescue IO::WaitReadable, Errno::EINTR
+  IO.select([serv])
+  retry
+end
+# sock is an accepted socket.
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-u-n-i-x-server/i/accept.html">UNIXServer#accept</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

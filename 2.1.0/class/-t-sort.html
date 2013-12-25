@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>module TSort</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/tsort.html">tsortライブラリ</a>
+&gt; TSortモジュール
+</p>
+
+
+<h1>module TSort</h1>
+<p>
+
+
+クラスの継承リスト: TSort
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+TSort は強連結成分に関する Tarjan のアルゴリズムを用いた
+トポロジカルソートの実装です。
+</p>
+<p>
+TSort は任意のオブジェクトを有向グラフとして解釈できるように設計されています。
+TSort がオブジェクトをグラフとして解釈するには2つのメソッドを要求します。
+すなわち、tsort_each_node と tsort_each_child です。
+</p>
+<ul>
+<li>tsort_each_node はグラフ上のすべての頂点を巡回するのに用いられます。</li>
+<li>tsort_each_child は与えられた頂点の子を巡回するのに用いられます。</li>
+</ul>
+<p>
+頂点同士の等価性は eql? と hash によって定義されます。
+これは TSort が内部でハッシュを用いているからです。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_EACH_STRONGLY_CONNECTED_COMPONENT">each_strongly_connected_component</a>
+
+<a href="#I_EACH_STRONGLY_CONNECTED_COMPONENT_FROM">each_strongly_connected_component_from</a>
+
+<a href="#I_STRONGLY_CONNECTED_COMPONENTS">strongly_connected_components</a>
+
+<a href="#I_TSORT">tsort</a>
+
+<a href="#I_TSORT_EACH">tsort_each</a>
+
+<a href="#I_TSORT_EACH_CHILD">tsort_each_child</a>
+
+<a href="#I_TSORT_EACH_NODE">tsort_each_node</a>
+
+</dd>
+
+</dl>
+
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_EACH_STRONGLY_CONNECTED_COMPONENT"><code>each_strongly_connected_component {|nodes| ...} -&gt; nil</code><span class="permalink">[<a href="../method/-t-sort/i/each_strongly_connected_component.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/tsort/rdoc/TSort.html#method-i-each_strongly_connected_component">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+strongly_connected_components メソッドのイテレータ版です。
+obj.each_strongly_connected_component は
+obj.strongly_connected_components.each に似ていますが、
+ブロックの評価中に obj が変更された場合は予期しない結果になる
+ことがあります。
+</p>
+<p>
+each_strongly_connected_component は nil を返します。
+</p>
+<p>
+使用例
+</p>
+<pre>
+require 'tsort'
+
+class Hash
+  include TSort
+  alias tsort_each_node each_key
+  def tsort_each_child(node, &amp;block)
+    fetch(node).each(&amp;block)
+  end
+end
+
+non_sort = {1=&gt;[2], 2=&gt;[3, 4], 3=&gt;[2], 4=&gt;[]}
+
+non_sort.each_strongly_connected_component{|nodes|
+  p nodes
+}
+
+#出力
+#=&gt; [4]
+#=&gt; [2, 3]
+#=&gt; [1]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_STRONGLY_CONNECTED_COMPONENT_FROM"><code>each_strongly_connected_component_from(node) {|nodes| ...} -&gt; ()</code><span class="permalink">[<a href="../method/-t-sort/i/each_strongly_connected_component_from.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/tsort/rdoc/TSort.html#method-i-each_strongly_connected_component_from">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+node から到達可能な強連結成分についてのイテレータです。
+</p>
+<p>
+返す値は規定されていません。
+</p>
+<p>
+each_strongly_connected_component_from は
+tsort_each_node を呼びません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] node:</dt>
+<dd>
+ノードを指定します。
+</dd>
+</dl>
+<pre>
+#例 到達可能なノードを表示する
+require 'tsort'
+
+class Hash
+  include TSort
+  alias tsort_each_node each_key
+  def tsort_each_child(node, &amp;block)
+    fetch(node).each(&amp;block)
+  end
+end
+
+non_sort = {1=&gt;[2], 2=&gt;[3, 4], 3=&gt;[2], 4=&gt;[]}
+
+non_sort.each_strongly_connected_component{|nodes|
+  p nodes
+  nodes.each {|node|
+    non_sort.each_strongly_connected_component_from(node){|ns|
+      printf(&quot;%s -&gt; %s\n&quot;, node, ns.join(&quot;,&quot;))
+    }
+  }
+}
+
+#出力
+#=&gt; [4]
+#=&gt; 4 -&gt; 4
+#=&gt; [2, 3]
+#=&gt; 2 -&gt; 4
+#=&gt; 2 -&gt; 2,3
+#=&gt; 3 -&gt; 4
+#=&gt; 3 -&gt; 3,2
+#=&gt; [1]
+#=&gt; 1 -&gt; 4
+#=&gt; 1 -&gt; 2,3
+#=&gt; 1 -&gt; 1
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_STRONGLY_CONNECTED_COMPONENTS"><code>strongly_connected_components -&gt; Array</code><span class="permalink">[<a href="../method/-t-sort/i/strongly_connected_components.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/tsort/rdoc/TSort.html#method-i-strongly_connected_components">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+強連結成分の集まりを配列の配列として返します。
+この配列は子から親に向かってソートされています。
+各要素は強連結成分を表す配列です。
+</p>
+<pre>
+require 'tsort'
+
+class Hash
+  include TSort
+  alias tsort_each_node each_key
+  def tsort_each_child(node, &amp;block)
+    fetch(node).each(&amp;block)
+  end
+end
+
+non_sort = {1=&gt;[2], 2=&gt;[3, 4], 3=&gt;[2], 4=&gt;[]}
+
+p non_sort.strongly_connected_components
+#=&gt; [[4], [2, 3], [1]]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TSORT"><code>tsort -&gt; Array</code><span class="permalink">[<a href="../method/-t-sort/i/tsort.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/tsort/rdoc/TSort.html#method-i-tsort">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+頂点をトポロジカルソートして得られる配列を返します。
+この配列は子から親に向かってソートされています。
+すなわち、最初の要素は子を持たず、最後の要素は親を持ちません。
+</p>
+<p>
+閉路が存在するとき、例外<a href="../class/-t-sort=3a=3a-cyclic.html">TSort::Cyclic</a>を起こします。
+</p>
+<dl>
+<dt>[EXCEPTION] TSort::Cyclic:</dt>
+<dd>
+閉路が存在するとき、発生します.
+</dd>
+</dl>
+<p>
+使用例
+</p>
+<pre>
+require 'tsort'
+
+class Hash
+  include TSort
+  alias tsort_each_node each_key
+  def tsort_each_child(node, &amp;block)
+    fetch(node).each(&amp;block)
+  end
+end
+
+sorted = {1=&gt;[2, 3], 2=&gt;[3], 3=&gt;[], 4=&gt;[]}.tsort
+p sorted #=&gt; [3, 2, 1, 4]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TSORT_EACH"><code>tsort_each {|node| ...} -&gt; nil</code><span class="permalink">[<a href="../method/-t-sort/i/tsort_each.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/tsort/rdoc/TSort.html#method-i-tsort_each">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+tsort メソッドのイテレータ版です。
+obj.tsort_each は obj.tsort.each と似ていますが、
+ブロックの評価中に obj が変更された場合は予期しない結果になる
+ことがあります。
+</p>
+<p>
+tsort_each は nil を返します。
+閉路が存在するとき、例外 <a href="../class/-t-sort=3a=3a-cyclic.html">TSort::Cyclic</a> を起こします。
+</p>
+<dl>
+<dt>[EXCEPTION] TSort::Cyclic:</dt>
+<dd>
+閉路が存在するとき、発生します.
+</dd>
+</dl>
+<p>
+使用例
+</p>
+<pre>
+require 'tsort'
+
+class Hash
+  include TSort
+  alias tsort_each_node each_key
+  def tsort_each_child(node, &amp;block)
+    fetch(node).each(&amp;block)
+  end
+end
+
+non_sort = {1=&gt;[2, 3], 2=&gt;[3], 3=&gt;[], 4=&gt;[]}
+
+non_sort.tsort_each {|node|
+  non_sort.tsort_each_child(node){|child|
+    printf(&quot;%d -&gt; %d\n&quot;, node, child)
+  }
+}
+
+# 出力
+#=&gt; 2 -&gt; 3
+#=&gt; 1 -&gt; 2
+#=&gt; 1 -&gt; 3
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TSORT_EACH_CHILD"><code>tsort_each_child(node) {|child| ...} -&gt; ()</code><span class="permalink">[<a href="../method/-t-sort/i/tsort_each_child.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/tsort/rdoc/TSort.html#method-i-tsort_each_child">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+TSort で拡張されるクラスで定義されていなければならないメソッドです。
+</p>
+<p>
+tsort_each_child is used to iterate for child nodes of node.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] node:</dt>
+<dd>
+ノードを指定します。
+</dd>
+<dt>[EXCEPTION] NotImplementedError:</dt>
+<dd>
+TSort で拡張されるクラスで定義されていない場合発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_TSORT_EACH_NODE"><code>tsort_each_node {|node| ...} -&gt; ()</code><span class="permalink">[<a href="../method/-t-sort/i/tsort_each_node.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/tsort/rdoc/TSort.html#method-i-tsort_each_node">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+TSort で拡張されるクラスで定義されていなければならないメソッドです。
+</p>
+<p>
+tsort_each_node is used to iterate for all nodes over a graph.
+</p>
+<dl>
+<dt>[EXCEPTION] NotImplementedError:</dt>
+<dd>
+TSort で拡張されるクラスで定義されていない場合発生します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

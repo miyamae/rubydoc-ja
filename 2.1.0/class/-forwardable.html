@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>module Forwardable</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/forwardable.html">forwardableライブラリ</a>
+&gt; Forwardableモジュール
+</p>
+
+
+<h1>module Forwardable</h1>
+<p>
+
+
+クラスの継承リスト: Forwardable
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+クラスに対し、メソッドの委譲機能を定義するモジュールです。
+</p>
+<h2 >使い方</h2>
+<p>
+クラスに対して <a href="../method/-object/i/extend.html">Object#extend</a> して使います。<a href="../method/-module/i/include.html">Module#include</a> でないところに注意して下さい。
+</p>
+<p>
+例:
+</p>
+<pre>
+class Foo
+  extend Forwardable
+
+  def_delegators(&quot;@out&quot;, &quot;printf&quot;, &quot;print&quot;)
+  def_delegators(:@in, :gets)
+  def_delegator(:@contents, :[], &quot;content_at&quot;)
+end
+f = Foo.new
+f.printf ...
+f.gets
+f.content_at(1)
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_DEBUG">debug</a>
+
+<a href="#S_DEBUG--3D">debug=</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_DEF_DELEGATOR">def_delegator</a>
+
+<a href="#I_DEF_DELEGATOR">def_instance_delegator</a>
+
+<a href="#I_DEF_DELEGATORS">def_delegators</a>
+
+<a href="#I_DEF_DELEGATORS">def_instance_delegators</a>
+
+<a href="#I_DELEGATE">delegate</a>
+
+<a href="#I_DELEGATE">instance_delegate</a>
+
+</dd>
+
+<dt>定数</dt>
+<dd>
+
+<a href="#C_-F-O-R-W-A-R-D-A-B-L-E_-V-E-R-S-I-O-N">FORWARDABLE_VERSION</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_DEBUG"><code>debug -&gt; bool</code><span class="permalink">[<a href="../method/-forwardable/s/debug.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/forwardable/rdoc/Forwardable.html#method-c-debug">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+委譲部分をバックトレースに含めるかどうかの状態を返します。
+</p>
+<p>
+バックトレースを含める設定となっている時、真を返します。
+デフォルトは含めない設定となっています。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_DEBUG--3D"><code>debug= -&gt; bool</code><span class="permalink">[<a href="../method/-forwardable/s/debug=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/forwardable/rdoc/Forwardable.html#method-c-debug-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+委譲部分をバックトレースに含めるかどうかの状態を設定します。
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_DEF_DELEGATOR"><code>def_instance_delegator(accessor, method, ali = method) -&gt; ()</code><span class="permalink">[<a href="../method/-forwardable/i/def_delegator.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/forwardable/rdoc/Forwardable.html#method-i-def_delegator">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>def_delegator(accessor, method, ali = method) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+メソッドの委譲先を設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] accessor:</dt>
+<dd>
+委譲先のオブジェクト
+</dd>
+<dt class='method-param'>[PARAM] method:</dt>
+<dd>
+委譲先のメソッド
+</dd>
+<dt class='method-param'>[PARAM] ali:</dt>
+<dd>
+委譲元のメソッド
+</dd>
+</dl>
+<p>
+委譲元のオブジェクトで ali が呼び出された場合に、
+委譲先のオブジェクトの method へ処理が委譲されるようになります。
+</p>
+<p>
+委譲元と委譲先のメソッド名が同じ場合は, ali を省略することが可能です。
+</p>
+<p>
+def_delegator は def_instance_delegator の別名になります。
+</p>
+<p>
+例:
+</p>
+<pre>
+class MyQueue
+  extend Forwardable
+  attr_reader :queue
+  def initialize
+    @queue = []
+  end
+
+  def_delegator :@queue, :push, :mypush
+end
+
+q = MyQueue.new
+q.mypush 42
+q.queue    # =&gt; [42]
+q.push 23  # =&gt; NoMethodError
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-forwardable/i/def_delegators.html">Forwardable#def_delegators</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DEF_DELEGATORS"><code>def_instance_delegators(accessor, *methods) -&gt; ()</code><span class="permalink">[<a href="../method/-forwardable/i/def_delegators.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/forwardable/rdoc/Forwardable.html#method-i-def_delegators">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>def_delegators(accessor, *methods) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+メソッドの委譲先をまとめて設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] accessor:</dt>
+<dd>
+委譲先のオブジェクト
+</dd>
+<dt class='method-param'>[PARAM] methods:</dt>
+<dd>
+委譲するメソッドのリスト
+</dd>
+</dl>
+<p>
+委譲元のオブジェクトで methods のそれぞれのメソッドが呼び出された場合に、
+委譲先のオブジェクトの同名のメソッドへ処理が委譲されるようになります。
+</p>
+<p>
+def_delegators は def_instance_delegators の別名になります。
+</p>
+<p>
+また、以下の 2 つの例は同じ意味です。
+</p>
+<pre>
+def_delegators :@records, :size, :&lt;&lt;, :map
+
+def_delegator :@records, :size
+def_delegator :@records, :&lt;&lt;
+def_delegator :@records, :map
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-forwardable/i/def_delegator.html">Forwardable#def_delegator</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DELEGATE"><code>instance_delegate(hash) -&gt; ()</code><span class="permalink">[<a href="../method/-forwardable/i/delegate.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/forwardable/rdoc/Forwardable.html#method-i-delegate">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>delegate(hash) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+メソッドの委譲先を設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] hash:</dt>
+<dd>
+委譲先のメソッドがキー、委譲先のオブジェクトが値の
+<a href="../class/-hash.html">Hash</a> を指定します。キーは <a href="../class/-symbol.html">Symbol</a>、
+<a href="../class/-string.html">String</a> かその配列で指定します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'forwardable'
+class Zap
+   extend Forwardable
+   delegate :length =&gt; :@str
+   delegate [:first, :last] =&gt; :@arr
+   def initialize
+      @arr = %w/foo bar baz/
+      @str = &quot;world&quot;
+   end
+end
+
+zap = Zap.new
+zap.length # =&gt; 5
+zap.first  # =&gt; &quot;foo&quot;
+zap.last   # =&gt; &quot;baz&quot;
+</pre>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-F-O-R-W-A-R-D-A-B-L-E_-V-E-R-S-I-O-N"><code>FORWARDABLE_VERSION -&gt; &quot;1.1.0&quot;</code><span class="permalink">[<a href="../method/-forwardable/c/-f-o-r-w-a-r-d-a-b-l-e_-v-e-r-s-i-o-n.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/forwardable/rdoc/Forwardable.html#method-c-FORWARDABLE_VERSION">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../library/forwardable.html">forwardable</a> ライブラリのバージョンを返します。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

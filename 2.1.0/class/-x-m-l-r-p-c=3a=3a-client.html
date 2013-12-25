@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class XMLRPC::Client</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/xmlrpc=2fclient.html">xmlrpc/clientライブラリ</a>
+&gt; XMLRPC::Clientクラス
+</p>
+
+
+<h1>class XMLRPC::Client</h1>
+<p>
+
+
+クラスの継承リスト: XMLRPC::Client
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+Class XMLRPC::Client provides remote procedure calls to a XML-RPC server.
+</p>
+<p>
+After setting the connection-parameters with <a href="../method/-x-m-l-r-p-c=3a=3a-client/s/new.html">XMLRPC::Client.new</a> which
+creates a new XMLRPC::Client instance, you can execute a remote procedure
+by sending the <a href="../method/-x-m-l-r-p-c=3a=3a-client/i/call.html">XMLRPC::Client#call</a> or <a href="../method/-x-m-l-r-p-c=3a=3a-client/i/call2.html">XMLRPC::Client#call2</a>
+message to this new instance. The given parameters indicate which method to
+call on the remote-side and of course the parameters for the remote procedure.
+</p>
+<pre>
+require &quot;xmlrpc/client&quot;
+
+server = XMLRPC::Client.new(&quot;www.ruby-lang.org&quot;, &quot;/RPC2&quot;, 80)
+begin
+  param = server.call(&quot;michael.add&quot;, 4, 5)
+  puts &quot;4 + 5 = #{param}&quot;
+rescue XMLRPC::FaultException =&gt; e
+  puts &quot;Error:&quot;
+  puts e.faultCode
+  puts e.faultString
+end
+</pre>
+<p>
+or
+</p>
+<pre>
+require &quot;xmlrpc/client&quot;
+
+server = XMLRPC::Client.new(&quot;www.ruby-lang.org&quot;, &quot;/RPC2&quot;, 80)
+ok, param = server.call2(&quot;michael.add&quot;, 4, 5)
+if ok then
+  puts &quot;4 + 5 = #{param}&quot;
+else
+  puts &quot;Error:&quot;
+  puts param.faultCode
+  puts param.faultString
+end
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+<a href="#S_NEW2">new2</a>
+
+<a href="#S_NEW2">new_from_uri</a>
+
+<a href="#S_NEW3">new3</a>
+
+<a href="#S_NEW3">new_from_hash</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_CALL">call</a>
+
+<a href="#I_CALL2">call2</a>
+
+<a href="#I_CALL2_ASYNC">call2_async</a>
+
+<a href="#I_CALL2_ASYNC">call_async</a>
+
+<a href="#I_CALL2_ASYNC">multicall2_async</a>
+
+<a href="#I_CALL2_ASYNC">multicall_async</a>
+
+<a href="#I_CALL2_ASYNC">proxy2_async</a>
+
+<a href="#I_CALL2_ASYNC">proxy_async</a>
+
+<a href="#I_COOKIE">cookie</a>
+
+<a href="#I_COOKIE">cookie=</a>
+
+<a href="#I_HTTP_HEADER_EXTRA">http_header_extra</a>
+
+<a href="#I_HTTP_HEADER_EXTRA--3D">http_header_extra=</a>
+
+<a href="#I_HTTP_LAST_RESPONSE">http_last_response</a>
+
+<a href="#I_MULTICALL">multicall</a>
+
+<a href="#I_MULTICALL2">multicall2</a>
+
+<a href="#I_PASSWORD">password</a>
+
+<a href="#I_PASSWORD">timeout</a>
+
+<a href="#I_PASSWORD">user</a>
+
+<a href="#I_PASSWORD--3D">password=</a>
+
+<a href="#I_PASSWORD--3D">timeout=</a>
+
+<a href="#I_PASSWORD--3D">user=</a>
+
+<a href="#I_PROXY">proxy</a>
+
+<a href="#I_PROXY2">proxy2</a>
+
+<a href="#I_SET_PARSER">set_parser</a>
+
+<a href="#I_SET_WRITER">set_writer</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(host=nil, path=nil, port=nil, proxy_host=nil, proxy_port=nil, user=nil, password=nil, use_ssl=false, timeout =nil)</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-client/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/xmlrpc/client/rdoc/XMLRPC/Client.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Creates an object which represents the remote XML-RPC server on the
+given host host. If the server is CGI-based, path is the
+path to the CGI-script, which will be called, otherwise (in the
+case of a standalone server) path should be &quot;/RPC2&quot;.
+port is the port on which the XML-RPC server listens.
+If proxy_host is given, then a proxy server listening at
+proxy_host is used. proxy_port is the port of the
+proxy server.
+</p>
+<p>
+Default values for host, path and port are 'localhost', '/RPC2' and
+'80' respectively using SSL '443'.
+</p>
+<p>
+If user and password are given, each time a request is send,
+a Authorization header is send. Currently only Basic Authentification is
+implemented no Digest.
+</p>
+<p>
+If use_ssl is set to true, comunication over SSL is enabled.
+Note, that you need the SSL package from RAA installed.
+</p>
+<p>
+Parameter timeout is the time to wait for a XML-RPC response, defaults to 30.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_NEW2"><code>new2(uri, proxy=nil, timeout=nil)</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-client/s/new2.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/xmlrpc/client/rdoc/XMLRPC/Client.html#method-c-new2">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>new_from_uri(uri, proxy=nil, timeout=nil)</code></dt>
+<dd class="method-description">
+<dl>
+<dt>uri</dt>
+<dd>
+<p>
+URI specifying protocol (http or https), host, port, path, user and password.
+Example: https://user:password@host:port/path
+</p>
+</dd>
+<dt>proxy</dt>
+<dd>
+<p>
+Is of the form &quot;host:port&quot;.
+</p>
+</dd>
+<dt>timeout</dt>
+<dd>
+<p>
+Defaults to 30.
+</p>
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_NEW3"><code>new3(hash={})</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-client/s/new3.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/xmlrpc/client/rdoc/XMLRPC/Client.html#method-c-new3">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>new_from_hash(hash={})</code></dt>
+<dd class="method-description">
+<p>
+Parameter hash has following case-insensitive keys:
+</p>
+<ul>
+<li>host</li>
+<li>path</li>
+<li>port</li>
+<li>proxy_host</li>
+<li>proxy_port</li>
+<li>user</li>
+<li>password</li>
+<li>use_ssl</li>
+<li>timeout</li>
+</ul>
+<p>
+Calls <a href="../method/-x-m-l-r-p-c=3a=3a-client/s/new.html">XMLRPC::Client.new</a> with the corresponding values.
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_CALL"><code>call(method, *args)</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-client/i/call.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/xmlrpc/client/rdoc/XMLRPC/Client.html#method-i-call">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Invokes the method named method with the parameters given by
+args on the XML-RPC server.
+The parameter method is converted into a String and should
+be a valid XML-RPC method-name.
+Each parameter of args must be of one of the following types,
+where Hash, Struct and Array can contain any of these listed ((:types:)):
+</p>
+<ul>
+<li>Fixnum, Bignum</li>
+<li>TrueClass, FalseClass (true, false)</li>
+<li>String, Symbol</li>
+<li>Float</li>
+<li>Hash, Struct</li>
+<li>Array</li>
+<li>Date, Time, XMLRPC::DateTime</li>
+<li>XMLRPC::Base64</li>
+<li>A Ruby object which class includes XMLRPC::Marshallable (only if Config::ENABLE_MARSHALLABLE is true).
+That object is converted into a hash, with one additional key/value pair &quot;___class___&quot; which contains the class name
+for restoring later that object.</li>
+</ul>
+<p>
+The method returns the return-value from the RPC
+((-stands for Remote Procedure Call-)).
+The type of the return-value is one of the above shown,
+only that a Bignum is only allowed when it fits in 32-bit and
+that a XML-RPC (('dateTime.iso8601')) type is always returned as
+a <a href="../class/-x-m-l-r-p-c=3a=3a-date-time.html">XMLRPC::DateTime</a> object and
+a Struct is never returned, only a Hash, the same for a Symbol, where
+always a String is returned.
+A XMLRPC::Base64 is returned as a String from xmlrpc4r version 1.6.1 on.
+</p>
+<p>
+If the remote procedure returned a fault-structure, then a
+XMLRPC::FaultException exception is raised, which has two accessor-methods
+faultCode and faultString of type Integer and String.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CALL2"><code>call2(method, *args)</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-client/i/call2.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/xmlrpc/client/rdoc/XMLRPC/Client.html#method-i-call2">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+The difference between this method and <a href="../method/-x-m-l-r-p-c=3a=3a-client/i/call.html">XMLRPC::Client#call</a> is, that
+this method do ((*not*)) raise a XMLRPC::FaultException exception.
+The method returns an array of two values. The first value indicates if
+the second value is a return-value (true) or an object of type
+XMLRPC::FaultException.
+Both are explained in <a href="../method/-x-m-l-r-p-c=3a=3a-client/i/call.html">XMLRPC::Client#call</a>.
+</p>
+<p>
+Simple to remember: The &quot;2&quot; in &quot;call2&quot; denotes the number of values it returns.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CALL2_ASYNC"><code>call_async(...)</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-client/i/call2_async.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/xmlrpc/client/rdoc/XMLRPC/Client.html#method-i-call2_async">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>call2_async(...)</code></dt>
+<dt class="method-heading"><code>multicall_async(...)</code></dt>
+<dt class="method-heading"><code>multicall2_async(...)</code></dt>
+<dt class="method-heading"><code>proxy_async(...)</code></dt>
+<dt class="method-heading"><code>proxy2_async(...)</code></dt>
+<dd class="method-description">
+<p>
+In contrast to corresponding methods without &quot;_async&quot;, these can be
+called concurrently and use for each request a new connection, where the
+non-asynchronous counterparts use connection-alive (one connection for all requests)
+if possible.
+</p>
+<p>
+Note, that you have to use Threads to call these methods concurrently.
+The following example calls two methods concurrently:
+</p>
+<pre>
+Thread.new {
+  p client.call_async(&quot;michael.add&quot;, 4, 5)
+}
+
+Thread.new {
+  p client.call_async(&quot;michael.div&quot;, 7, 9)
+}
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_COOKIE"><code>cookie</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-client/i/cookie.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/xmlrpc/client/rdoc/XMLRPC/Client.html#method-i-cookie">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>cookie=()</code></dt>
+<dd class="method-description">
+<p>
+Get and set the HTTP Cookie header.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_HTTP_HEADER_EXTRA"><code>http_header_extra</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-client/i/http_header_extra.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/xmlrpc/client/rdoc/XMLRPC/Client.html#method-i-http_header_extra">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Access the via <a href="../method/-x-m-l-r-p-c=3a=3a-client/i/http_header_extra=3d.html">XMLRPC::Client#http_header_extra=</a> assigned header.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_HTTP_HEADER_EXTRA--3D"><code>http_header_extra=()</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-client/i/http_header_extra=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/xmlrpc/client/rdoc/XMLRPC/Client.html#method-i-http_header_extra-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Set extra HTTP headers that are included in the request.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_HTTP_LAST_RESPONSE"><code>http_last_response</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-client/i/http_last_response.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/xmlrpc/client/rdoc/XMLRPC/Client.html#method-i-http_last_response">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Returns the Net::HTTPResponse object of the last RPC.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_MULTICALL"><code>multicall(*methods)</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-client/i/multicall.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/xmlrpc/client/rdoc/XMLRPC/Client.html#method-i-multicall">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+You can use this method to execute several methods on a XMLRPC server which supports
+the multi-call extension.
+Example:
+</p>
+<pre>
+s.multicall(
+  ['michael.add', 3, 4],
+  ['michael.sub', 4, 5]
+)
+# =&gt; [7, -1]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_MULTICALL2"><code>multicall2(*methods)</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-client/i/multicall2.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/xmlrpc/client/rdoc/XMLRPC/Client.html#method-i-multicall2">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Same as <a href="../method/-x-m-l-r-p-c=3a=3a-client/i/multicall.html">XMLRPC::Client#multicall</a>, but returns like <a href="../method/-x-m-l-r-p-c=3a=3a-client/i/call2.html">XMLRPC::Client#call2</a> two parameters
+instead of raising an XMLRPC::FaultException.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PASSWORD"><code>timeout</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-client/i/password.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/xmlrpc/client/rdoc/XMLRPC/Client.html#method-i-password">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>user</code></dt>
+<dt class="method-heading"><code>password</code></dt>
+<dd class="method-description">
+<p>
+Return the corresponding attributes.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PASSWORD--3D"><code>timeout=()</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-client/i/password=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/xmlrpc/client/rdoc/XMLRPC/Client.html#method-i-password-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>user=()</code></dt>
+<dt class="method-heading"><code>password=()</code></dt>
+<dd class="method-description">
+<p>
+Set the corresponding attributes.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PROXY"><code>proxy(prefix, *args)</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-client/i/proxy.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/xmlrpc/client/rdoc/XMLRPC/Client.html#method-i-proxy">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Returns an object of class XMLRPC::Client::Proxy, initialized with
+prefix and args. A proxy object returned by this method behaves
+like <a href="../method/-x-m-l-r-p-c=3a=3a-client/i/call.html">XMLRPC::Client#call</a>, i.e. a call on that object will raise a
+XMLRPC::FaultException when a fault-structure is returned by that call.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PROXY2"><code>proxy2(prefix, *args)</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-client/i/proxy2.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/xmlrpc/client/rdoc/XMLRPC/Client.html#method-i-proxy2">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Almost the same like <a href="../method/-x-m-l-r-p-c=3a=3a-client/i/proxy.html">XMLRPC::Client#proxy</a> only that a call on the returned
+XMLRPC::Client::Proxy object behaves like <a href="../method/-x-m-l-r-p-c=3a=3a-client/i/call2.html">XMLRPC::Client#call2</a>, i.e.
+a call on that object will return two parameters.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SET_PARSER"><code>set_parser(parser)</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-client/i/set_parser.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/xmlrpc/client/rdoc/XMLRPC/Client.html#method-i-set_parser">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Sets the XML parser to use for parsing XML documents.
+Should be an instance of a class from module XMLRPC::XMLParser.
+If this method is not called, then XMLRPC::Config::DEFAULT_PARSER is used.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SET_WRITER"><code>set_writer(writer)</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-client/i/set_writer.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/xmlrpc/client/rdoc/XMLRPC/Client.html#method-i-set_writer">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Sets the XML writer to use for generating XML output.
+Should be an instance of a class from module XMLRPC::XMLWriter.
+If this method is not called, then XMLRPC::Config::DEFAULT_WRITER is used.
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

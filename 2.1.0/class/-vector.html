@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class Vector</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/matrix.html">matrixライブラリ</a>
+&gt; Vectorクラス
+</p>
+
+
+<h1>class Vector</h1>
+<p>
+
+
+クラスの継承リスト: Vector
+
+      &lt; <a href="../class/-enumerable.html">Enumerable</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+数 <a href="../class/-numeric.html">Numeric</a> を要素とするベクトルを扱うクラスです。
+<a href="../class/-vector.html">Vector</a> オブジェクトは <a href="../class/-matrix.html">Matrix</a> オブジェクトとの演算においては列ベクトルとして扱われます。
+</p>
+<p>
+ベクトルの要素のインデックスは 0 から始まることに注意してください。
+</p>
+<h2 >Complexクラスとの併用 Working with Complex class</h2>
+<p>
+require 'complex' することによって、
+Vector オブジェクトの要素は <a href="../class/-complex.html">Complex</a> クラスに拡張されます。
+多くのメソッドは、この拡張されたVectorクラスでも、期待通りに動作します。
+</p>
+<p>
+次の例は、各要素を共役複素数に置換するメソッド (Vector#conjugate)です。
+</p>
+<pre>
+require 'matrix'
+require 'complex'
+
+class Vector
+  def conjugate
+    collect{|e| e.conjugate }
+  end
+end
+
+v1 = Vector[Complex(1,1),Complex(2,2),Complex(3,3)]
+v2 = v1.conjugate
+p v2 #=&gt; Vector[Complex(1,-1),Complex(2,-2),Complex(3,-3)]
+v3 = v1+v2
+p v3 #=&gt; Vector[Complex(1,0),Complex(2,0),Complex(3,0)]
+</pre>
+<p>
+しかし、Complex 要素に拡張された Vector クラスで、
+期待通りに動作しないメソッドもあります。
+例えば、ベクトルの絶対値を求める <a href="../method/-vector/i/r.html">Vector#r</a> メソッドは、
+各要素の2乗和の平方根 <a href="../method/-math/m/sqrt.html">Math.#sqrt</a> を求めますが、
+このとき例外を発生させる可能性があります。
+</p>
+<p>
+複素数を要素とするベクトルの絶対値を求めるためには、
+各要素の絶対値の2乗和をとらなくてはなりません(次の例 Vector#absメソッド）。
+</p>
+<pre>
+require 'matrix'
+require 'complex'
+
+class Vector
+  def abs
+    r=0
+    @elements.each{|e| r += e.abs2 }
+    Math.sqrt(r)
+  end
+end
+
+v = Vector[Complex(1,1),Complex(2,2),Complex(3,3)}
+p v.abs #=&gt; 5.291502622 # Math.sqrt(28)
+p v.r   #=&gt; 'sqrt': undefined method `Rational'
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_--5B--5D">[]</a>
+
+<a href="#S_ELEMENTS">elements</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--2A">*</a>
+
+<a href="#I_--2B">+</a>
+
+<a href="#I_--2D">-</a>
+
+<a href="#I_--2F">/</a>
+
+<a href="#I_--3D--3D">==</a>
+
+<a href="#I_--3D--3D">eql?</a>
+
+<a href="#I_--5B--5D">[]</a>
+
+<a href="#I_--5B--5D">component</a>
+
+<a href="#I_--5B--5D">element</a>
+
+<a href="#I_CLONE">clone</a>
+
+<a href="#I_COLLECT">collect</a>
+
+<a href="#I_COLLECT">map</a>
+
+<a href="#I_COLLECT2">collect2</a>
+
+<a href="#I_COVECTOR">covector</a>
+
+<a href="#I_EACH">each</a>
+
+<a href="#I_EACH2">each2</a>
+
+<a href="#I_ELEMENTS_TO_F">elements_to_f</a>
+
+<a href="#I_ELEMENTS_TO_I">elements_to_i</a>
+
+<a href="#I_ELEMENTS_TO_R">elements_to_r</a>
+
+<a href="#I_HASH">hash</a>
+
+<a href="#I_INNER_PRODUCT">inner_product</a>
+
+<a href="#I_INSPECT">inspect</a>
+
+<a href="#I_MAGNITUDE">magnitude</a>
+
+<a href="#I_MAGNITUDE">norm</a>
+
+<a href="#I_MAGNITUDE">r</a>
+
+<a href="#I_MAP2">map2</a>
+
+<a href="#I_NORMALIZE">normalize</a>
+
+<a href="#I_SIZE">size</a>
+
+<a href="#I_TO_A">to_a</a>
+
+<a href="#I_TO_S">to_s</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_--5B--5D"><code>self[*a] -&gt; Vector</code><span class="permalink">[<a href="../method/-vector/s/=5b=5d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-c-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+可変個引数を要素とするベクトルを生成します。
+</p>
+<p>
+Vector[a1, a2, a3, ... ]としたとき、 引数a1, a2, a3, ... を要素とするベクトルを生成します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] a:</dt>
+<dd>
+ベクトルの要素
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+v1 = Vector[1, 3, 5, 7]
+v2 = Vector[5.25, 10.5]
+p v1   #=&gt; Vector[1, 3, 5, 7]
+p v2   #=&gt; Vector[5.25, 10.5]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_ELEMENTS"><code>elements(a, copy = true) -&gt; Vector</code><span class="permalink">[<a href="../method/-vector/s/elements.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-c-elements">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+配列 a を要素とするベクトルを生成します。
+ただし、オプション引数 copy が偽 (false) ならば、複製を行いません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] a:</dt>
+<dd>
+<a href="../class/-vector.html">Vector</a>を生成する際の要素の配列
+</dd>
+<dt class='method-param'>[PARAM] copy:</dt>
+<dd>
+引数の配列 a のコピーをするかどうかのフラグ
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+a = [1, 2, 3, 4]
+v1 = Vector.elements(a, true)
+v2 = Vector.elements(a, false)
+p v1        #=&gt; Vector[1, 2, 3, 4]
+p v2        #=&gt; Vector[1, 2, 3, 4]
+a[0] = -1
+p v1        #=&gt; Vector[1, 2, 3, 4]
+p v2        #=&gt; Vector[-1, 2, 3, 4]
+</pre>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--2A"><code>self * other -&gt; Vector</code><span class="permalink">[<a href="../method/-vector/i/=2a.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-2A">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の各要素に数 other を乗じたベクトルを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+self の各要素に掛ける <a href="../class/-numeric.html">Numeric</a> オブジェクトを指定します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+a = [1, 2, 3.5, 100]
+v1 = Vector.elements(a)
+p v1.*(2)     #=&gt; Vector[2, 4, 7.0, 200]
+p v1.*(-1.5)  #=&gt; Vector[-1.5, -3.0, -5.25, -150.0]
+</pre>
+</dd>
+<dt class="method-heading" id="I_--2A"><code>self * m -&gt; Matrix</code><span class="permalink">[<a href="../method/-vector/i/=2a.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-2A">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自分自身を列ベクトル(行列)に変換して (実際には <a href="../method/-matrix/s/column_vector.html">Matrix.column_vector</a>(self) を適用) から、行列 m を右から乗じた行列 (<a href="../class/-matrix.html">Matrix</a> クラス) を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] m:</dt>
+<dd>
+右から乗算を行う行列
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+次元が合わない場合に発生します
+</dd>
+</dl>
+<h5 >注意</h5>
+<p>
+引数の行列 m は自分自身を列ベクトルとした場合に乗算が定義できる行列である必要があります。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'matrix'
+
+v = Vector[1, 2]
+a = [4, 5, 6]
+m = Matrix[a]
+
+p v * m #=&gt; Matrix[[4, 5, 6], [8, 10, 12]]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--2B"><code>self + v -&gt; Vector | Matrix</code><span class="permalink">[<a href="../method/-vector/i/=2b.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-2B">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self にベクトル v を加えたベクトルを返します。
+</p>
+<p>
+v には column_size が 1 の <a href="../class/-matrix.html">Matrix</a> オブジェクトも指定できます。
+その場合は返り値も <a href="../class/-matrix.html">Matrix</a> オブジェクトになります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] v:</dt>
+<dd>
+加算するベクトル。加算可能な行列やベクトルを指定します。
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+自分自身と引数のベクト
+ルの要素の数(次元)が異なっていたときに発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_--2D"><code>self - v -&gt; Vector | Matrix</code><span class="permalink">[<a href="../method/-vector/i/=2d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-2D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self からベクトル v を減じたベクトルを返します。
+</p>
+<p>
+v には column_size が 1 の <a href="../class/-matrix.html">Matrix</a> オブジェクトも指定できます。
+その場合は返り値も <a href="../class/-matrix.html">Matrix</a> オブジェクトになります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] v:</dt>
+<dd>
+減算するベクトル。減算可能な行列やベクトルを指定します。
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+自分自身と引数のベクト
+ルの要素の数(次元)が異なっていたときに発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_--2F"><code>self / other -&gt; Vector</code><span class="permalink">[<a href="../method/-vector/i/=2f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-2F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の各要素を数 other で割った行列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+self の各要素を割る <a href="../class/-numeric.html">Numeric</a> オブジェクトを指定します。
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrOperationNotDefined:</dt>
+<dd>
+other が Vector や Matrix
+の場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_--3D--3D"><code>self == v -&gt; bool</code><span class="permalink">[<a href="../method/-vector/i/=3d=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-3D-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>eql?(v) -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+自分自身と引数 v を比較し、true/false を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] v:</dt>
+<dd>
+比較対象ベクトル
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_--5B--5D"><code>self[i] -&gt; object | nil</code><span class="permalink">[<a href="../method/-vector/i/=5b=5d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>element(i) -&gt; object | nil</code></dt>
+<dt class="method-heading"><code>component(i) -&gt; object | nil</code></dt>
+<dd class="method-description">
+<p>
+i 番目の要素を返します。インデックスは 0 から開始します。
+要素が存在しないインデックスを指定した時には nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] i:</dt>
+<dd>
+取得する要素のインデックスを整数値で指定します。
+インデックスは 0 から始めます。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_CLONE"><code>clone() -&gt; Vector</code><span class="permalink">[<a href="../method/-vector/i/clone.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-clone">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自分自身をコピーしたベクトルを返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_COLLECT"><code>collect {|x| ... } -&gt; Vector</code><span class="permalink">[<a href="../method/-vector/i/collect.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-collect">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>map {|x| ... } -&gt; Vector</code></dt>
+<dt class="method-heading"><code>collect -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>map -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+ベクトルの各要素に対してブロックを評価した結果を、要素として持つベクトルを生成します。
+</p>
+<p>
+ブロックを省略した場合は <a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+a = [1, 2, 3.5, -10]
+v1 = Vector.elements(a)
+p v1 #=&gt; Vector[1, 2, 3.5, -10]
+v2 =  v1.map{|x|
+  x * -1
+}
+p v2 #=&gt; Vector[-1, -2, -3.5, 10]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_COLLECT2"><code>collect2(v) {|x, y| ... } -&gt; Array</code><span class="permalink">[<a href="../method/-vector/i/collect2.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-collect2">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>collect2(v) -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+ベクトルの各要素と引数 v の要素との組に対してブロックを評価し、その結果を要素として持つ配列を返します。
+</p>
+<p>
+ベクトルの各要素と、それに対応するインデックスを持つ引数 v (ベクトル or 配列)の要素との組に対して (2引数の) ブロックを評価し、その結果を要素として持つ配列を返します。
+</p>
+<p>
+ブロックを省略した場合は <a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] v:</dt>
+<dd>
+ブロック内で評価される(ベクトル or 配列)
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+自分自身と引数のベクト
+ルの要素の数(次元)が異なっていたときに発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-vector/i/map2.html">Vector#map2</a>
+</p>
+<p>
+次の例は、２つのベクトルの要素毎の積を要素とする配列を生成します。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'matrix'
+
+v1 = Vector[2, 3, 5]
+v2 = Vector[7, 9, 11]
+a = Array[7, 9, 11]
+
+z = v1.collect2(v2){|x, y| x * y }
+p z #=&gt; [14, 27, 55]
+
+z = v1.collect2(a) {|x, y| x * y } # ArrayでもOK
+p z #=&gt; [14, 27, 55]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_COVECTOR"><code>covector -&gt; Matrix</code><span class="permalink">[<a href="../method/-vector/i/covector.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-covector">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-matrix.html">Matrix</a> オブジェクトへ変換します。
+</p>
+<p>
+列ベクトル (行列)、すなわち、(n, 1) 型の行列に変換します。
+実際には <a href="../method/-matrix/s/row_vector.html">Matrix.row_vector</a>(self) を適用します。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'matrix'
+
+v = Vector[2, 3, 5]
+p v #=&gt; Vector[2, 3, 5]
+m = v.covector
+p m #=&gt; Matrix[[2, 3, 5]]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH"><code>each {|e| ... } -&gt; self</code><span class="permalink">[<a href="../method/-vector/i/each.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-each">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+ベクトルの各要素をブロックの引数として順にブロックを呼び出します。
+</p>
+<p>
+このクラスは <a href="../class/-enumerable.html">Enumerable</a> を include しているため、
+このメソッドを経由して Enumerable の各メソッドを使うことができます。
+</p>
+<p>
+ブロックを省略した場合は <a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH2"><code>each2(v) {|x, y| ... } -&gt; self</code><span class="permalink">[<a href="../method/-vector/i/each2.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-each2">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each2(v) -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+ベクトルの各要素と、それに対応するインデックスを持つ引数 v の要素との組に対して (2引数の) ブロックを繰返し評価します。
+</p>
+<p>
+v は配列互換(size メソッドと [] メソッドを持つ)オブジェクトです。
+<a href="../class/-vector.html">Vector</a> も使えます。
+</p>
+<p>
+ブロックを省略した場合は <a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] v:</dt>
+<dd>
+各要素と組を取るためのオブジェクト
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+自分自身と引数のベクト
+ルの要素の数(次元)が異なっていたときに発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-array/i/zip.html">Array#zip</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ELEMENTS_TO_F"><code>elements_to_f -&gt; Vector</code><span class="permalink">[<a href="../method/-vector/i/elements_to_f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-elements_to_f">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ベクトルの各成分を<a href="../class/-float.html">Float</a>に変換したベクトルを返します。
+</p>
+<p>
+このメソッドは deprecated です。 map(&amp;:to_f) を使ってください。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'matrix'
+
+v = Vector.elements([2, 3, 5, 7, 9])
+vf = v.elements_to_f
+p vf #=&gt; &quot;Vector[2.0, 3.0, 5.0, 7.0, 9.0]&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ELEMENTS_TO_I"><code>elements_to_i -&gt; Vector</code><span class="permalink">[<a href="../method/-vector/i/elements_to_i.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-elements_to_i">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ベクトルの各成分を<a href="../class/-integer.html">Integer</a>に変換したベクトルを返します。
+</p>
+<p>
+このメソッドは deprecated です。 map(&amp;:to_i) を使ってください。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'matrix'
+
+v = Vector.elements([2.5, 3.0, 5.01, 7])
+vi = v.elements_to_i
+p vi #=&gt; &quot;Vector[2, 3, 5, 7]&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ELEMENTS_TO_R"><code>elements_to_r -&gt; Vector</code><span class="permalink">[<a href="../method/-vector/i/elements_to_r.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-elements_to_r">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ベクトルの各成分を<a href="../class/-rational.html">Rational</a>に変換したベクトルを返します。
+</p>
+<p>
+このメソッドは deprecated です。 map(&amp;:to_r) を使ってください。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'matrix'
+
+v = Vector.elements([2.5, 3.0, 5.75, 7])
+vr = v.elements_to_r
+p vr #=&gt; &quot;Vector[Rational(5, 2), Rational(3, 1), Rational(23, 4), Rational(7, 1)]&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_HASH"><code>hash() -&gt; Fixnum</code><span class="permalink">[<a href="../method/-vector/i/hash.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自分自身のハッシュ値を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INNER_PRODUCT"><code>inner_product(v) -&gt; Float</code><span class="permalink">[<a href="../method/-vector/i/inner_product.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-inner_product">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ベクトル v との内積を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] v:</dt>
+<dd>
+内積を求めるベクトル
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+自分自身と引数のベクト
+ルの要素の数(次元)が異なっていたときに発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect() -&gt; String</code><span class="permalink">[<a href="../method/-vector/i/inspect.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-inspect">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+オブジェクトの内容を文字列化します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_MAGNITUDE"><code>r -&gt; Float</code><span class="permalink">[<a href="../method/-vector/i/magnitude.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-magnitude">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>magnitude -&gt; Float</code></dt>
+<dt class="method-heading"><code>norm -&gt; Float</code></dt>
+<dd class="method-description">
+<p>
+ベクトルの大きさ（ノルム）を返します。
+</p>
+<p>
+ただし、要素の自乗和の平方根（Math.sqrt）を計算しているので、
+複素ベクトルの場合は一般に正しい値（要素の絶対値自乗の和の平方根）
+を返しません。
+</p>
+<pre>
+Vector[3, 4].r # =&gt; 5.0
+Vector[Complex(0, 1), 0].r # =&gt; Complex(0.0, 1.0)   正しくは 1.0
+</pre>
+<p>
+要素が複素数の場合にも対応したメソッドは以下のように定義できます。
+</p>
+<pre>
+class Vector
+  def norm
+    Math.sqrt @elements.inject(0){|sum, z| sum+(z*z).abs}
+  end
+end
+
+Vector[Complex(0, 1), 0].norm # =&gt; 1.0
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_MAP2"><code>map2(v) {|x, y| ... } -&gt; Vector</code><span class="permalink">[<a href="../method/-vector/i/map2.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-map2">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ベクトルの各要素と引数 v の要素との組に対してブロックを評価し、その結果を要素として持つベクトルを返します。
+</p>
+<p>
+ベクトルの各要素と、それに対応するインデックスを持つ引数 (ベクトル or 配列) の要素との組に対して (2引数の) ブロックを評価した結果を、要素として持つベクトルを返します。
+</p>
+<p>
+ブロックを省略した場合は <a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] v:</dt>
+<dd>
+ブロック内で評価される(ベクトル or 配列)
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+自分自身と引数のベクト
+ルの要素の数(次元)が異なっていたときに発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-vector/i/collect2.html">Vector#collect2</a>
+</p>
+<p>
+次の例は、２つのベクトルの要素毎の積を要素として持つベクトルを生成します。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'matrix'
+
+v1 = Vector[2, 3, 5]
+v2 = Vector[7, 9, 11]
+a = Array[7, 9, 11]
+
+z = v1.map2(v2) {|x, y| x * y }
+p z #=&gt; Vector[14, 27, 55]
+
+z = v1.map2(a) {|x, y| x * y } # ArrayでもOK
+p z #=&gt; Vector[14, 27, 55]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_NORMALIZE"><code>normalize -&gt; Vector</code><span class="permalink">[<a href="../method/-vector/i/normalize.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-normalize">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を <a href="../method/-vector/i/norm.html">Vector#norm</a> で正規化したベクトルを返します。
+</p>
+<p>
+<a href="../method/-vector/i/norm.html">Vector#norm</a> を使うため複素ベクトルでは一般に正しい値を返しません。
+</p>
+<dl>
+<dt>[EXCEPTION] Vector::ZeroVectorError:</dt>
+<dd>
+ベクトルが0である場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_SIZE"><code>size() -&gt; Fixnum</code><span class="permalink">[<a href="../method/-vector/i/size.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-size">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ベクトルの要素数(次元)を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_A"><code>to_a -&gt; Array</code><span class="permalink">[<a href="../method/-vector/i/to_a.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-to_a">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ベクトル(<a href="../class/-vector.html">Vector</a>)から配列 (<a href="../class/-array.html">Array</a>) に変換します。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'matrix'
+
+v = Vector[2, 3, 5, 7, 9]
+a = v.to_a
+p a #=&gt; [2, 3, 5, 7, 9]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_S"><code>to_s -&gt; String</code><span class="permalink">[<a href="../method/-vector/i/to_s.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/matrix/rdoc/Vector.html#method-i-to_s">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ベクトル(<a href="../class/-vector.html">Vector</a>)から文字列 (<a href="../class/-string.html">String</a>) に変換します。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'matrix'
+
+v = Vector[2, 3, 5, 7, 9]
+s = v.to_s
+p s #=&gt; &quot;Vector[2, 3, 5, 7, 9]&quot;
+</pre>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

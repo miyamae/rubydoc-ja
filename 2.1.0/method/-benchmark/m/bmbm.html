@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>module function Benchmark.#bmbm</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/benchmark.html">benchmarkライブラリ</a>
+&gt; <a href="../../../class/-benchmark.html">Benchmarkモジュール</a>
+&gt; bmbm
+
+</p>
+
+
+<h1>module function Benchmark.#bmbm</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_BMBM"><code>bmbm(width = 0) {|job| ... } -&gt; [Benchmark::Tms]</code><span class="permalink">[<a href="../../../method/-benchmark/m/bmbm.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/benchmark/rdoc/Benchmark.html#method-c-bmbm">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../../../class/-benchmark=3a=3a-job.html">Benchmark::Job</a> オブジェクトを生成して、それを引数として与えられたブロックを
+実行します。
+</p>
+<p>
+ベンチマークの結果は GC の影響によって歪められてしまうことがあります。
+このメソッドは与えられたブロックを二度実行する事によってこの影響を最小化します。
+一回目は実行環境を安定化するためにリハーサルとして実行します。二回目は本番として
+実行します。
+</p>
+<p>
+二回目のブロック実行の前に <a href="../../../method/-g-c/s/start.html">GC.start</a> を実行しますが、この実行時間は計測には
+含まれません。しかし、実際にはこのメソッドを使用しても、GC などの影響を分離する
+ことは保証されません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] width:</dt>
+<dd>
+ラベルの幅を指定します。
+</dd>
+</dl>
+<pre>
+require 'benchmark'
+
+array = (1..1000000).map { rand }
+
+Benchmark.bmbm do |x|
+  x.report(&quot;sort!&quot;) { array.dup.sort! }
+  x.report(&quot;sort&quot;)  { array.dup.sort  }
+end
+
+#=&gt;
+
+Rehearsal -----------------------------------------
+sort!  11.928000   0.010000  11.938000 ( 12.756000)
+sort   13.048000   0.020000  13.068000 ( 13.857000)
+------------------------------- total: 25.006000sec
+
+            user     system      total        real
+sort!  12.959000   0.010000  12.969000 ( 13.793000)
+sort   12.007000   0.000000  12.007000 ( 12.791000)
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

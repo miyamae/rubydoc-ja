@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method Module#undef_method</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-module.html">Moduleクラス</a>
+&gt; undef_method
+(private)
+</p>
+
+
+<h1>instance method Module#undef_method</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_UNDEF_METHOD"><code>undef_method(*name) -&gt; self</code><span class="permalink">[<a href="../../../method/-module/i/undef_method.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Module.html#method-i-undef_method">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このモジュールのインスタンスメソッド name を未定義にします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+0 個以上の <a href="../../../class/-string.html">String</a> か <a href="../../../class/-symbol.html">Symbol</a> を指定します。
+</dd>
+<dt>[EXCEPTION] NameError:</dt>
+<dd>
+指定したインスタンスメソッドが定義されていない場合に発生します。
+</dd>
+</dl>
+<h1 >「未定義にする」とは</h1>
+<p>
+このモジュールのインスタンスに対して name という
+メソッドを呼び出すことを禁止するということです。
+スーパークラスの定義が継承されるかどうかという点において、
+「未定義」は「メソッドの削除」とは区別されます。
+以下のコード例を参照してください。
+</p>
+<pre>
+class A
+  def ok
+    puts 'A'
+  end
+end
+class B &lt; A
+  def ok
+    puts 'B'
+  end
+end
+
+B.new.ok   # =&gt; B
+
+# undef_method の場合はスーパークラスに同名のメソッドがあっても
+# その呼び出しはエラーになる
+class B
+  undef_method :ok
+end
+B.new.ok   # =&gt; NameError
+
+# remove_method の場合はスーパークラスに同名のメソッドがあると
+# それが呼ばれる
+class B
+  remove_method :ok
+end
+B.new.ok   # =&gt; A
+</pre>
+<p>
+また、undef 文と undef_method の違いは、
+メソッド名を <a href="../../../class/-string.html">String</a> または <a href="../../../class/-symbol.html">Symbol</a> で与えられることです。
+</p>
+<pre>
+module M1
+  def foo
+  end
+  def self.moo
+    undef foo
+  end
+end
+M1.instance_methods false #=&gt; [&quot;foo&quot;]
+M1.moo
+M1.instance_methods false #=&gt; []
+module M2
+  def foo
+  end
+  def self.moo
+    undef_method :foo
+  end
+end
+M2.instance_methods false #=&gt; [&quot;foo&quot;]
+M2.moo
+M2.instance_methods false #=&gt; []
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

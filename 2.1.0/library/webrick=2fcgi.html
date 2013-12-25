@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library webrick/cgi</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; webrick/cgiライブラリ
+</p>
+
+<h1>library webrick/cgi</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+一般の CGI 環境で <a href="../library/webrick.html">webrick</a> ライブラリのサーブレットと同じように CGI スクリプトを書くための
+ライブラリです。サーバが WEBrick でなくても使うことが出来ます。
+</p>
+<h2 >使い方</h2>
+<p>
+WEBrick のサーブレットを作成するのと同じように、<a href="../class/-w-e-brick=3a=3a-c-g-i.html">WEBrick::CGI</a> のサブクラスでメソッド
+do_GET や do_POST を定義することによって CGI スクリプトを書きます。
+</p>
+<p>
+スクリプトの最後で <a href="../method/-w-e-brick=3a=3a-c-g-i/i/start.html">WEBrick::CGI#start</a> メソッドを呼ぶ必要があります。
+WEBrick::CGI#start メソッドは service メソッドを呼び出し、service メソッドはリクエストに応じて
+do_XXX メソッドを呼び出します。このようにしてスクリプトは実行されます。
+</p>
+<p>
+例:
+</p>
+<pre>
+#!/usr/local/bin/ruby
+require 'webrick/cgi'
+
+class MyCGI &lt; WEBrick::CGI
+  def do_GET(req, res)
+    res[&quot;content-type&quot;] = &quot;text/plain&quot;
+    ret = &quot;hoge\n&quot;
+    res.body = ret
+  end
+end
+
+MyCGI.new.start()
+</pre>
+<h3 >do_XXX メソッド</h3>
+<p>
+do_XXX メソッドの XXX には GET, HEAD, POST, PUT, DELETE, OPTIONS が使用できます。
+</p>
+<p>
+<a href="../class/-w-e-brick=3a=3a-c-g-i.html">WEBrick::CGI</a> のサブクラスで定義された do_XXX メソッドは <a href="../method/-w-e-brick=3a=3a-c-g-i/i/service.html">WEBrick::CGI#service</a> メソッド
+から HTTP のリクエストに応じて自動的に呼び出されます。
+なので <a href="../class/-w-e-brick=3a=3a-c-g-i.html">WEBrick::CGI</a> のサブクラスはこれらのメソッドを適切に実装しなければなりません。
+これらのメソッドの返り値は特に規定されていません。
+</p>
+<p>
+<a href="../class/-w-e-brick=3a=3a-c-g-i.html">WEBrick::CGI</a> のサブクラスでは、クライアントが使う可能性のある RFC で定義された HTTP の
+メソッドはすべて実装する必要があります。
+クライアントからのリクエストに使われないと分かっているメソッドは実装しなくてもかまいません。
+実装されていない HTTP メソッドであった場合、<a href="../method/-w-e-brick=3a=3a-c-g-i/i/service.html">WEBrick::CGI#service</a> メソッドが例外を発生させます。
+</p>
+<p>
+do_XXX メソッドが呼ばれた時点では、クライアントからのリクエストに含まれる Entity Body の読み込みは
+まだ行われていません。<a href="../method/-w-e-brick=3a=3a-h-t-t-p-request/i/query.html">WEBrick::HTTPRequest#query</a>, <a href="../method/-w-e-brick=3a=3a-h-t-t-p-request/i/body.html">WEBrick::HTTPRequest#body</a> などの
+メソッドが読ばれた時点で読み込みが行われます。クライアントから巨大なデータが送られてくることを考慮して
+ユーザはプログラミングを行うべきです。
+</p>
+<p>
+do_XXX メソッドには二つの引数があります。
+第一引数は、クライアントからのリクエストを表す <a href="../class/-w-e-brick=3a=3a-h-t-t-p-request.html">WEBrick::HTTPRequest</a> オブジェクトです。
+第二引数は、クライアントへのレスポンスを表す <a href="../class/-w-e-brick=3a=3a-h-t-t-p-response.html">WEBrick::HTTPResponse</a> オブジェクトです。
+</p>
+<h3 >フォームフィールドの値を得る</h3>
+<p>
+フォームフィールドの値は <a href="../method/-w-e-brick=3a=3a-h-t-t-p-request/i/query.html">WEBrick::HTTPRequest#query</a> メソッドが返す Hash オブジェクトに
+収納されています。
+</p>
+<pre>
+require &quot;webrick/cgi&quot;
+class MyCGI &lt; WEBrick::CGI
+  def do_GET(req, res)
+    req.query               #=&gt; Hash を返します。
+    req.query['q']
+    req.query['num']
+  end
+end
+MyCGI.new.start()
+</pre>
+<p>
+同じ名前のフィールドが複数ある場合、list メソッドや each_data メソッドを使います。
+</p>
+<pre>
+require &quot;webrick/cgi&quot;
+class MyCGI &lt; WEBrick::CGI
+  def do_GET(req, res)
+    req.query['q'].list     #=&gt; フォームの値を保持した文字列の配列を返します。
+  end
+end
+MyCGI.new.start()
+</pre>
+<p>
+query メソッドが返す Hash オブジェクトのキーと値のうち値は <a href="../class/-w-e-brick=3a=3a-h-t-t-p-utils=3a=3a-form-data.html">WEBrick::HTTPUtils::FormData</a> クラスの
+インスタンスになります。FormData クラスは String クラスのサブクラスです。
+</p>
+<h3 >マルチパートフィールドの値を取得する（ファイル送信）</h3>
+<pre>
+require &quot;webrick/cgi&quot;
+class MyCGI &lt; WEBrick::CGI
+  def do_GET(req, res)
+    d = req.query['field_name']   #=&gt; FormData クラスのインスタンス
+    d.name                        #=&gt; &quot;field_name&quot;
+    d.filename                    #=&gt; もしあればファイル名を返す。
+    d['content-type']             #=&gt; ヘッダの値は [] メソッドで取得する
+    d                             #=&gt; 送られてきたファイルの中身
+  end
+end
+MyCGI.new.start()
+</pre>
+<h3 >クライアントにクッキーを渡す</h3>
+<pre>
+require &quot;webrick/cgi&quot;
+class MyCGI &lt; WEBrick::CGI
+  def do_GET(req, res)
+    c1 = WEBrick::Cookie.new(&quot;name1&quot;, &quot;val1&quot;)
+    c1.expires = Time.now + 30
+    res.cookies &lt;&lt; c1
+
+    c2 = WEBrick::Cookie.new(&quot;name2&quot;, &quot;val2&quot;)
+    c2.expires = Time.now + 30
+    res.cookies &lt;&lt; c2
+  end
+end
+MyCGI.new.start()
+</pre>
+<h3 >クライアントからクッキーを得る</h3>
+<pre>
+require &quot;webrick/cgi&quot;
+class MyCGI &lt; WEBrick::CGI
+  def do_GET(req, res)
+    req.cookies                                   #=&gt; WEBrick::Cookie オブジェクトの配列
+    c = req.cookies.find{|c| c.name == &quot;name1&quot; }  #=&gt; WEBrick::Cookie オブジェクト
+  end
+end
+MyCGI.new.start()
+</pre>
+<h3 >CGI に関連する環境変数の値を取得する</h3>
+<p>
+CGI に関連する環境変数の値は直接 ENV から得る他に、
+WEBrick::HTTPRequest オブジェクトの各メソッドから得ることができます。
+</p>
+<pre>
+require &quot;webrick/cgi&quot;
+class MyCGI &lt; WEBrick::CGI
+  def do_GET(req, res)
+    req.content_length
+    req.content_type
+    req.path_info
+    req.query_string
+    req.peeraddr
+    req.host
+    req.user
+    req.request_method
+    req.script_name
+    req.port
+  end
+end
+MyCGI.new.start()
+</pre>
+<h2 >リンク</h2>
+<ul>
+<li><a class="external" href="http://www.ietf.org/rfc/rfc3875.txt">[RFC3875]</a></li>
+</ul>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-w-e-brick=3a=3a-c-g-i.html">WEBrick::CGI</a>
+</td>
+<td class="description"><p>
+一般の CGI 環境で <a href="../class/-w-e-brick.html">WEBrick</a> のサーブレットと同じように CGI スクリプトを書くための
+クラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-w-e-brick=3a=3a-c-g-i=3a=3a-c-g-i-error.html">WEBrick::CGI::CGIError</a>
+</td>
+<td class="description"><p>
+CGI に関係する例外クラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>同時にrequireされるライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/webrick=2fconfig.html">webrick/config</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/webrick=2fcookie.html">webrick/cookie</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/webrick=2fhtmlutils.html">webrick/htmlutils</a></td>
+<td class="description"><p>
+HTML のためのユーティリティ関数を提供します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/webrick=2fhttprequest.html">webrick/httprequest</a></td>
+<td class="description"><p>
+HTTP リクエストのためのクラスを提供するライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/webrick=2fhttpresponse.html">webrick/httpresponse</a></td>
+<td class="description"><p>
+HTTP のレスポンスを表すためのクラスを提供するライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/webrick=2fhttpstatus.html">webrick/httpstatus</a></td>
+<td class="description"><p>
+HTTP のステータスを表す例外クラスを提供します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/webrick=2fhttputils.html">webrick/httputils</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/webrick=2fhttpversion.html">webrick/httpversion</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/webrick=2flog.html">webrick/log</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/webrick=2futils.html">webrick/utils</a></td>
+<td class="description"></td>
+</tr>
+
+</table>
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

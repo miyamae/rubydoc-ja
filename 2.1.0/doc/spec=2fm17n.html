@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>多言語化</title>
+</head>
+<body>
+
+<p>
+
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; 多言語化
+
+</p>
+
+<h1>多言語化</h1>
+
+<p>
+Ruby は US-ASCII はもちろん、US-ASCII 以外の文字エンコーディングもサポートしています。
+文字列の内部表現のエンコーディングは固定されておらず、
+プログラマは目的に応じて使用するエンコーディングを選ぶことができます。
+</p>
+<p>
+同じプロセスの中で異なるエンコーディングの文字列が同時に存在することができます。
+全ての String や Regexp などのオブジェクトは自身のエンコーディング情報を保持しています。
+これにより各オブジェクト内の文字を適切に取り扱うことができます。
+</p>
+<p>
+後述のマジックコメントでスクリプトエンコーディングを指定すると、
+Ruby スクリプトに非 ASCII 文字を使うことができます。(<a href="#magic_comment">magic comment</a>)
+文字列リテラルや正規表現リテラルだけでなく変数名、メソッド名、クラス名などにも
+非 ASCII 文字を使うことができます。ただし文字列リテラル・正規表現リテラル以外での非 ASCII 文字の使用は
+推奨されません。
+</p>
+<p>
+グローバル変数 <a href="../method/-kernel/v/-k-c-o-d-e.html">$KCODE</a> は廃止されました。
+</p>
+<ul>
+<li><a href="#m17n_prog">M17N プログラミングの基本</a></li>
+<li><a href="#convert">エンコーディングの変更</a></li>
+<li><a href="#ruby18">Ruby 1.8 からの移行</a></li>
+<li><a href="#encoding">Ruby がサポートするエンコーディング</a></li>
+<li><a href="#script_encoding">スクリプトエンコーディング</a></li>
+</ul>
+<h2 id='m17n_prog'>M17N プログラミングの基本</h2>
+<p>
+プログラマは文字列を扱うときエンコーディングを常に意識しなければいけません。
+オブジェクトが生成される段階で、適切なエンコーディング情報を持つよう心がけるべきです。
+文字列が生成されるのは主に「リテラルから」「IOから」
+「文字列操作から」の 3 通りです。このうち文字列操作に関しては通常 Ruby 実行系が適切に
+処理しますから、プログラマは 「リテラルから生成」「IO から生成」 の二通りに関して注意する必要があります。
+IO から生成される文字列のエンコーディングに関しては <a href="../class/-i-o.html#m17n">IO/多言語化と IO のエンコーディング</a> を参照してください。
+</p>
+<h2 id='convert'>エンコーディングの変更</h2>
+<p>
+文字列のエンコーディングを変更するには、次の2つのメソッドを用います。
+</p>
+<p>
+<a href="../method/-string/i/encode.html">String#encode</a> メソッドは文字列のエンコーディングを変換した新しい文字列を生成して返します。
+Ruby 1.9 ではこれを用いてエンコーディングを変換するのが標準的なやり方です。
+</p>
+<p>
+<a href="../method/-string/i/force_encoding.html">String#force_encoding</a> メソッドは文字列のエンコーディング情報を破壊的に書き換えます。
+新しい文字列は生成されません。
+例えばエンコーディングが不明のテキストファイルから読み込んだ文字列に後からエンコーディングを
+設定する場合などに使います。
+</p>
+<p>
+例:
+</p>
+<pre>
+&quot;いろは&quot;.encode(&quot;Shift_JIS&quot;)
+ &quot;\xA4\xA4\xA4\xED\xA4\xCF&quot;.force_encoding(&quot;EUC-JP&quot;)
+</pre>
+<h3 id='ruby18'>Ruby 1.8 からの移行</h3>
+<p>
+Ruby 1.8 からの移行措置として、コマンドオプション -K を指定すれば
+Ruby 1.8 用に書かれたスクリプトもできる限り動くような仕様になっています。
+ただし Ruby 1.9 には多言語化以外にも多くの非互換性が存在するので必ずしも動くとは限りません。
+</p>
+<p>
+いずれにしても、これからは Ruby 1.9 への移行を考慮してスクリプトに非 ASCII 文字を使う場合、
+マジックコメントでスクリプトエンコーディングを指定しておくのがよいでしょう。<a href="#magic_comment">magic comment</a> を
+参照してください。
+</p>
+<p>
+例:
+</p>
+<pre>
+スクリプトを EUC-JP で書いていて、扱うテキストも EUC-JP の場合。 =&gt; コマンドオプションに -Ke を指定。
+</pre>
+<h2 id='encoding'>Ruby がサポートするエンコーディング</h2>
+<p>
+Ruby のエンコーディングのサポート水準はエンコーディングの種類によって異なります。
+</p>
+<dl>
+<dt>ASCII互換エンコーディング</dt>
+<dd>
+<p>
+フルサポートです。UTF-8, EUC-JP, Shift_JIS などがこれにあたります。
+</p>
+</dd>
+<dt>ASCII互換ではないエンコーディング</dt>
+<dd>
+<p>
+スクリプトエンコーディングに使えません。またエンコーディングが固定されていない
+正規表現がマッチングを行うと例外が発生します。UTF-16LE, UTF-16BE などがこれにあたります。
+</p>
+</dd>
+<dt>ダミーエンコーディング</dt>
+<dd>
+<p>
+文字の列としての処理をサポートしません。Ruby はエンコーディングの名前だけ知っている状態です。
+ISO-2022-JP, UTF-7 がこれにあたります。
+</p>
+</dd>
+</dl>
+<p>
+サポートするエンコーディングのリストは <a href="../method/-encoding/s/list.html">Encoding.list</a>, <a href="../method/-encoding/s/name_list.html">Encoding.name_list</a>
+で取得することができます。
+また拡張ライブラリを作成することによりサポートするエンコーディングを動的に増やすことができます。
+</p>
+<p>
+それぞれの用語の定義は以下を参照してください。
+</p>
+<h3 id='ascii_compat'>ASCII互換エンコーディング</h3>
+<p>
+「ASCII互換エンコーディング」とは、
+US-ASCII に含まれる文字を \x00-\x7F で表し、ロッキングシフトを用いない
+エンコーディングです。
+日本語の文字を表現するエンコーディングでは、
+shift_jis やcp932などのその変種、EUC-JPとその変種、UTF-8などが
+ASCII 互換エンコーディングです。
+UTF-16 や ISO-2022-JP などが ASCII 互換でないエンコーディングの代表例です。
+</p>
+<p>
+ASCII互換エンコーディングである文字列や正規表現は、7bit クリーンな文字列や正規表現と、
+結合・比較・マッチ等を行うことができます。
+</p>
+<h3 id='7bit_clean'>7bit クリーンな文字列</h3>
+<p>
+ASCII 互換エンコーディングをもつ 7bit クリーンな文字列は、
+他の ASCII 互換エンコーディングを持つ文字列と結合・比較が可能です。
+例えば、ASCII 互換エンコーディングをもつ文字列に、
+7bit クリーンな文字列をエンコーディングの変換なしで結合することができます。
+また、通常 Ruby の文字列比較メソッドである <a href="../method/-string/i/=3d=3d.html">String#==</a> は、
+2 つの文字列のエンコーディングが異なっていると、バイト列としては一致していても false を返します。
+しかし、7bit クリーンな文字列同士の比較の際は、
+両者の文字エンコーディングが異なっていても、バイト列として一致していれば true を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+a = &quot;abc&quot;
+e = a.encode(&quot;EUC-JP&quot;)
+u = a.encode(&quot;UTF-8&quot;)
+p e == u                           #=&gt; true
+p e + u                            #=&gt; &quot;abcabc&quot;
+p &quot;あ&quot; + e                         #=&gt; &quot;あabc&quot;
+p &quot;あ&quot; + u                         #=&gt; &quot;あabc&quot;
+</pre>
+<h3 id='binary'>バイナリの取扱い</h3>
+<p>
+Ruby の String は、文字の列を扱うためだけでなく、バイトの列を扱うためにも使われます。
+しかし、Ruby M17N には直接にバイナリを表すエンコーディングは存在しません。
+このため、バイナリを String で扱う際には、ASCII 互換オクテット列を意味する ASCII-8BIT を用います。
+これにより、ASCII 互換であるこの String は 7bit クリーンな文字列と比較・結合が可能となります。
+</p>
+<h3 id='dummy'>ダミーエンコーディング</h3>
+<p>
+@todo
+</p>
+<p>
+ダミーエンコーディングとは Ruby が名前を知っているが、
+文字の列としての処理に対応していないエンコーディングのことです。
+実際には ISO-2022-JP や UTF-7 のようなステートフルエンコーディングがダミーエンコーディングになります。
+ダミーであるかどうかは <a href="../method/-encoding/i/dummy=3f.html">Encoding#dummy?</a> を使って識別できます。
+ダミーエンコーディングを持つ文字列の扱いは以下のように制限されます。
+</p>
+<ul>
+<li>String のインスタンスメソッドは 1 文字ではなく 1 バイトを単位として動作します。</li>
+<li>エンコーディングの異なる 7bit クリーンな文字列との結合ができません。
+例外 (EncodingCompatibilityError) が発生します。</li>
+</ul>
+<p>
+またダミーエンコーディングはスクリプトエンコーディングとして使うことができません。
+</p>
+<p>
+例:
+</p>
+<pre>
+s = &quot;漢字&quot;.encode(&quot;ISO-2022-JP&quot;)
+p s[0]   #=&gt; &quot;\e&quot;
+s + &quot;b&quot;  #=&gt; EncodingCompatibilityError: incompatible character encodings: ISO-2022-JP and US-ASCII
+</pre>
+<h2 id='script_encoding'>スクリプトエンコーディング</h2>
+<p>
+スクリプトエンコーディングとは Ruby スクリプトを書くのに使われているエンコーディングです。
+スクリプトエンコーディングは マジックコメントを用いて指定します。
+スクリプトエンコーディングには ASCII 互換エンコーディングを用いることができます。
+ASCII 非互換のエンコーディングや、ダミーエンコーディングは用いることができません。
+</p>
+<p>
+現在のスクリプトエンコーディングは __ENCODING__ により取得することができます。
+</p>
+<p>
+例:
+</p>
+<pre>
+# coding: euc-jp
+p __ENCODING__     #=&gt; #&lt;Encoding:EUC-JP&gt;
+</pre>
+<h3 id='magic_comment'>magic comment</h3>
+<p>
+マジックコメントを使うことにより Ruby 実行系にスクリプトエンコーディングを
+伝えることができます。マジックコメントとはスクリプトファイルの1行目に書かれた
+</p>
+<pre>
+# coding: euc-jp
+</pre>
+<p>
+という形式のコメントのことです。1 行目が shebang である場合、マジックコメントは 2 行目に
+書くことができます（それ以降の行ではいけません。無視されます）。上の形式以外にも
+</p>
+<pre>
+# encoding: euc-jp
+# -*- coding: euc-jp -*-
+# vim:set fileencoding=euc-jp:
+</pre>
+<p>
+などの形式を解釈します。
+</p>
+<pre>
+#!/bin/sh
+exec ruby19 -x &quot;$0&quot; &quot;$@&quot;
+#!ruby
+# coding: utf-8
+</pre>
+<p>
+このように -x オプションを使っている場合には「#! で始まり、ruby がある行」
+の次の行に書きます。
+</p>
+<p>
+マジックコメントによりスクリプトファイル毎にスクリプトエンコーディングを
+指定することができます。あるファイルに非 ASCII 文字を使う場合、マジックコメントを
+必ず設定しなければいけません。設定されていなかった場合、エラーになります。
+</p>
+<p>
+マジックコメントが指定されなかった場合、コマンド引数 -K, RUBYOPT およびファイルの shebang から
+スクリプトエンコーディングは以下のように決定されます。左が優先です。
+</p>
+<pre>
+magic comment(最優先) &gt; -K &gt; RUBYOPTの-K &gt; shebang
+</pre>
+<p>
+上のどれもが指定されていない場合、通常のスクリプトなら US-ASCII、-e や stdin から実行されたものなら
+locale がスクリプトエンコーディングになります。
+-K オプションが複数指定されていた場合は、後のものが優先されます。
+</p>
+<h3 id='incompat'>1.8 からのスクリプトエンコーディングに関する非互換性</h3>
+<ul>
+<li>スクリプトのリテラル中に非 ASCII 文字が含まれている場合、
+1.8 では -K オプションなしで正常に動作していたとしても、1.9 では必ずパース時に
+エラーになります。
+-K オプションがない場合、1.8 では 1.9 の ASCII-8BIT 相当の挙動でしたが、1.9
+では US-ASCII として扱われるためです。</li>
+</ul>
+<ul>
+<li>マジックコメントがあった場合、1.8 では無視されますが、1.9 ではそれ
+がスクリプトエンコーディングに反映されます。これは -K オプションよりも優先されます。</li>
+</ul>
+<ul>
+<li>-K オプション・RUBYOPT・shebang の間の優先順位が 1.8 と 1.9 では違います。
+それぞれの優先順位は以下の通りです。左が優先です。</li>
+</ul>
+<pre>
+    Ruby 1.8 : shebang &gt; RUBYOPTの-K &gt; -K
+    Ruby 1.9 : -K      &gt; RUBYOPTの-K &gt; shebang
+</pre>
+<h3 id='literal'>リテラルのエンコーディング</h3>
+<p>
+文字列リテラル、正規表現リテラルそしてシンボルリテラルから生成されるオブジェクトのエンコーディングは
+スクリプトエンコーディングになります。
+</p>
+<p>
+またスクリプトエンコーディングが US-ASCII である場合、7bit クリーンではないバックスラッシュ記法で
+表記されたリテラルのエンコーディングは ASCII-8BIT になります。
+</p>
+<p>
+さらに Unicode エスケープ (\uXXXX) を含む場合、リテラルのエンコーディングは UTF-8 になります。
+</p>
+<p>
+例:
+</p>
+<pre>
+# coding: us-ascii
+p __ENCODING__        #=&gt; #&lt;Encoding:US-ASCII&gt;
+p &quot;abc&quot;.encoding      #=&gt; #&lt;Encoding:US-ASCII&gt;
+p &quot;\x80&quot;.encoding     #=&gt; #&lt;Encoding:ASCII-8BIT&gt;
+
+
+# coding: euc-jp
+p __ENCODING__        #=&gt; #&lt;Encoding:EUC-JP&gt;
+p &quot;abc&quot;.encoding      #=&gt; #&lt;Encoding:EUC-JP&gt;
+p &quot;\x80&quot;.encoding     #=&gt; #&lt;Encoding:EUC-JP&gt;
+p &quot;\u3042&quot;.encoding   #=&gt; #&lt;Encoding:UTF-8&gt;  (Unicode エスケープがあるので UTF-8 になる)
+p &quot;\x80\u3042&quot;.encoding #=&gt; エラー
+</pre>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

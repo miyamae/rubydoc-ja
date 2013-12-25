@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class Shell::CommandProcessor</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/shell=2fcommand=2dprocessor.html">shell/command-processorライブラリ</a>
+&gt; Shell::CommandProcessorクラス
+</p>
+
+
+<h1>class Shell::CommandProcessor</h1>
+<p>
+
+
+クラスの継承リスト: Shell::CommandProcessor
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_ADD_DELEGATE_COMMAND_TO_SHELL">add_delegate_command_to_shell</a>
+
+<a href="#S_ALIAS_COMMAND">alias_command</a>
+
+<a href="#S_ALIAS_MAP">alias_map</a>
+
+<a href="#S_DEF_BUILTIN_COMMANDS">def_builtin_commands</a>
+
+<a href="#S_DEF_SYSTEM_COMMAND">def_system_command</a>
+
+<a href="#S_INITIALIZE">initialize</a>
+
+<a href="#S_INSTALL_BUILTIN_COMMANDS">install_builtin_commands</a>
+
+<a href="#S_INSTALL_SYSTEM_COMMANDS">install_system_commands</a>
+
+<a href="#S_METHOD_ADDED">method_added</a>
+
+<a href="#S_NEW">new</a>
+
+<a href="#S_RUN_CONFIG">run_config</a>
+
+<a href="#S_UNALIAS_COMMAND">unalias_command</a>
+
+<a href="#S_UNDEF_SYSTEM_COMMAND">undef_system_command</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--5B--5D">[]</a>
+
+<a href="#I_--5B--5D">test</a>
+
+<a href="#I_APPEND">append</a>
+
+<a href="#I_ATIME">atime</a>
+
+<a href="#I_BASENAME">basename</a>
+
+<a href="#I_BLOCKDEV--3F">blockdev?</a>
+
+<a href="#I_CAT">cat</a>
+
+<a href="#I_CHARDEV--3F">chardev?</a>
+
+<a href="#I_CHECK_POINT">check_point</a>
+
+<a href="#I_CHECK_POINT">finish_all_jobs</a>
+
+<a href="#I_CHMOD">chmod</a>
+
+<a href="#I_CHOWN">chown</a>
+
+<a href="#I_CONCAT">concat</a>
+
+<a href="#I_CTIME">ctime</a>
+
+<a href="#I_DELETE">delete</a>
+
+<a href="#I_DELETE">rm</a>
+
+<a href="#I_DIRECTORY--3F">directory?</a>
+
+<a href="#I_DIRNAME">dirname</a>
+
+<a href="#I_ECHO">echo</a>
+
+<a href="#I_EXECUTABLE--3F">executable?</a>
+
+<a href="#I_EXECUTABLE_REAL--3F">executable_real?</a>
+
+<a href="#I_EXIST--3F">exist?</a>
+
+<a href="#I_EXIST--3F">exists?</a>
+
+<a href="#I_EXPAND_PATH">expand_path</a>
+
+<a href="#I_FILE--3F">file?</a>
+
+<a href="#I_FIND_SYSTEM_COMMAND">find_system_command</a>
+
+<a href="#I_FOREACH">foreach</a>
+
+<a href="#I_FTYPE">ftype</a>
+
+<a href="#I_GLOB">glob</a>
+
+<a href="#I_GRPOWNED--3F">grpowned?</a>
+
+<a href="#I_IDENTICAL--3F">identical?</a>
+
+<a href="#I_JOIN">join</a>
+
+<a href="#I_LINK">link</a>
+
+<a href="#I_LSTAT">lstat</a>
+
+<a href="#I_MKDIR">mkdir</a>
+
+<a href="#I_MTIME">mtime</a>
+
+<a href="#I_NOTIFY">notify</a>
+
+<a href="#I_OPEN">open</a>
+
+<a href="#I_OUT">out</a>
+
+<a href="#I_OWNED--3F">owned?</a>
+
+<a href="#I_PIPE--3F">pipe?</a>
+
+<a href="#I_READABLE--3F">readable?</a>
+
+<a href="#I_READABLE_REAL--3F">readable_real?</a>
+
+<a href="#I_READLINK">readlink</a>
+
+<a href="#I_REHASH">rehash</a>
+
+<a href="#I_RENAME">rename</a>
+
+<a href="#I_RMDIR">rmdir</a>
+
+<a href="#I_SETGID--3F">setgid?</a>
+
+<a href="#I_SETUID--3F">setuid?</a>
+
+<a href="#I_SIZE">size</a>
+
+<a href="#I_SIZE">size?</a>
+
+<a href="#I_SOCKET--3F">socket?</a>
+
+<a href="#I_SPLIT">split</a>
+
+<a href="#I_STAT">stat</a>
+
+<a href="#I_STICKY--3F">sticky?</a>
+
+<a href="#I_SYMLINK">symlink</a>
+
+<a href="#I_SYMLINK--3F">symlink?</a>
+
+<a href="#I_SYSTEM">system</a>
+
+<a href="#I_TEE">tee</a>
+
+<a href="#I_TRANSACT">transact</a>
+
+<a href="#I_TRUNCATE">truncate</a>
+
+<a href="#I_UNLINK">unlink</a>
+
+<a href="#I_UTIME">utime</a>
+
+<a href="#I_WORLD_READABLE--3F">world_readable?</a>
+
+<a href="#I_WORLD_WRITABLE--3F">world_writable?</a>
+
+<a href="#I_WRITABLE--3F">writable?</a>
+
+<a href="#I_WRITABLE_REAL--3F">writable_real?</a>
+
+<a href="#I_ZERO--3F">zero?</a>
+
+</dd>
+
+<dt>定数</dt>
+<dd>
+
+<a href="#C_-NO-DELEGATE-METHODS">NoDelegateMethods</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_ADD_DELEGATE_COMMAND_TO_SHELL"><code>add_delegate_command_to_shell(id)</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/s/add_delegate_command_to_shell.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-c-add_delegate_command_to_shell">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
+</p>
+<p>
+<a href="../class/-shell.html">Shell</a> 自体を初期化する時に呼び出されるメソッドです。
+ユーザが使用することはありません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] id:</dt>
+<dd>
+メソッド名を指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_ALIAS_COMMAND"><code>alias_command(alias, command, *opts) -&gt; self</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/s/alias_command.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-c-alias_command">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>alias_command(alias, command, *opts) { ... } -&gt; self</code></dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
+</p>
+<dl>
+<dt class='method-param'>[PARAM] alias:</dt>
+<dd>
+エイリアスの名前を指定します。
+</dd>
+<dt class='method-param'>[PARAM] command:</dt>
+<dd>
+コマンド名を指定します。
+</dd>
+<dt class='method-param'>[PARAM] opts:</dt>
+<dd>
+コマンドに与えるオプションを指定します。
+</dd>
+<dt>[EXCEPTION] SyntaxError:</dt>
+<dd>
+コマンドのエイリアス作成に失敗した時に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_ALIAS_MAP"><code>alias_map -&gt; Hash</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/s/alias_map.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-c-alias_map">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-shell=3a=3a-command-processor/s/alias_command.html">Shell::CommandProcessor.alias_command</a> で定義したエイリアスの一覧を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_DEF_BUILTIN_COMMANDS"><code>def_builtin_commands(delegation_class, commands_specs) -&gt; ()</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/s/def_builtin_commands.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-c-def_builtin_commands">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
+</p>
+<dl>
+<dt class='method-param'>[PARAM] delegation_class:</dt>
+<dd>
+処理を委譲したいクラスかモジュールを指定します。
+</dd>
+<dt class='method-param'>[PARAM] commands_specs:</dt>
+<dd>
+コマンドの仕様を文字列の配列で指定します。
+[[コマンド名, [引数1, 引数2, ...]], ...]
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_DEF_SYSTEM_COMMAND"><code>def_system_command(command, path = command) -&gt; ()</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/s/def_system_command.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-c-def_system_command">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
+</p>
+<p>
+与えられたコマンドをメソッドとして定義します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] command:</dt>
+<dd>
+定義したいコマンドを指定します。
+</dd>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+command のパスを指定します。省略すると環境変数 PATH から command を探します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_INITIALIZE"><code>initialize -&gt; ()</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/s/initialize.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-c-initialize">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
+</p>
+<p>
+このクラスを初期化します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_INSTALL_BUILTIN_COMMANDS"><code>install_builtin_commands -&gt; ()</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/s/install_builtin_commands.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-c-install_builtin_commands">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ビルトインコマンドを定義します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_INSTALL_SYSTEM_COMMANDS"><code>install_system_commands(prefix = &quot;sys_&quot;) -&gt; ()</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/s/install_system_commands.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-c-install_system_commands">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+全てのシステムコマンドをメソッドとして定義します。
+</p>
+<p>
+既に定義されているコマンドを再定義することはありません。
+デフォルトでは全てのコマンドに &quot;sys_&quot; というプレフィクスが付きます。
+また、メソッド名として使用できない文字は全て &quot;_&quot; に置換してメソッドを定義します。
+このメソッドの実行中に発生した例外は単に無視されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] prefix:</dt>
+<dd>
+プレフィクスを指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_METHOD_ADDED"><code>method_added(id)</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/s/method_added.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-c-method_added">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
+</p>
+<p>
+このクラスに定義されたメソッドを <a href="../class/-shell.html">Shell</a> にも定義するためのフックです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] id:</dt>
+<dd>
+メソッド名を指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_NEW"><code>new(shell)</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_RUN_CONFIG"><code>run_config -&gt; ()</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/s/run_config.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-c-run_config">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ユーザのホームディレクトリに &quot;~/.rb_shell&quot; というファイルが存在すれば、それを <a href="../method/-kernel/m/load.html">Kernel.#load</a> します。
+</p>
+<p>
+存在しない時は何もしません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_UNALIAS_COMMAND"><code>unalias_command(alias) -&gt; self</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/s/unalias_command.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-c-unalias_command">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+エイリアスを削除します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] alias:</dt>
+<dd>
+削除したいエイリアスを指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_UNDEF_SYSTEM_COMMAND"><code>undef_system_command(command) -&gt; self</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/s/undef_system_command.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-c-undef_system_command">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+与えられたコマンドを削除します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] command:</dt>
+<dd>
+削除したいコマンド名を指定します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--5B--5D"><code>test(command, file1, file2 = nil) -&gt; bool | Time | Integer | nil</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/=5b=5d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>self[command, file1, file2 = nil] -&gt; bool | Time | Integer | nil</code></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-kernel/m/test.html">Kernel.#test</a> や <a href="../class/-file-test.html">FileTest</a> のメソッドに処理を委譲します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] command:</dt>
+<dd>
+数値、またはサイズが 1 の文字列の場合は <a href="../method/-kernel/m/test.html">Kernel.#test</a> に処理委譲します。
+2 文字以上の文字列の場合は <a href="../class/-file-test.html">FileTest</a> のメソッドとして実行します。
+</dd>
+<dt class='method-param'>[PARAM] file1:</dt>
+<dd>
+文字列でファイルへのパスを指定します。
+</dd>
+<dt class='method-param'>[PARAM] file2:</dt>
+<dd>
+文字列でファイルへのパスを指定します。
+</dd>
+</dl>
+<pre>
+require 'shell'
+Shell.verbose = false
+sh = Shell.new
+begin
+  sh.mkdir(&quot;foo&quot;)
+rescue
+end
+p sh[?e, &quot;foo&quot;]         # =&gt; true
+p sh[:e, &quot;foo&quot;]         # =&gt; true
+p sh[&quot;e&quot;, &quot;foo&quot;]        # =&gt; true
+p sh[:exists?, &quot;foo&quot;]   # =&gt; true
+p sh[&quot;exists?&quot;, &quot;foo&quot;]  # =&gt; true
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/m/test.html">Kernel.#test</a>, <a href="../class/-file-test.html">FileTest</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_APPEND"><code>append(to, filter) -&gt; Shell::AppendFile | Shell::AppendIO</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/append.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-append">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
+</p>
+<dl>
+<dt class='method-param'>[PARAM] to:</dt>
+<dd>
+文字列か <a href="../class/-i-o.html">IO</a> を指定します。
+</dd>
+<dt class='method-param'>[PARAM] filter:</dt>
+<dd>
+<a href="../class/-shell=3a=3a-filter.html">Shell::Filter</a> のインスタンスをしています。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_ATIME"><code>atime(filename) -&gt; Time</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/atime.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-atime">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+ファイル名を表す文字列か IO オブジェクトを指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/atime.html">File.atime</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_BASENAME"><code>basename(filename, suffix = &quot;&quot;) -&gt; String</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/basename.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-basename">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] suffix:</dt>
+<dd>
+サフィックスを文字列で与えます。'.*' という文字列を与えた場合、'*' はワイルドカードとして働き
+'.' を含まない任意の文字列にマッチします。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/basename.html">File.basename</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_BLOCKDEV--3F"><code>blockdev?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/blockdev=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-blockdev-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列か IO オブジェクトを指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/blockdev=3f.html">FileTest.#blockdev?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CAT"><code>cat(*files) -&gt; Shell::Filter</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/cat.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-cat">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+実行すると, それらを内容とする Filter オブジェクトを返します.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] files:</dt>
+<dd>
+シェルコマンド cat に与えるファイル名を文字列で指定します。
+</dd>
+</dl>
+<p>
+動作例
+</p>
+<pre>
+require 'shell'
+Shell.def_system_command(&quot;head&quot;)
+sh = Shell.new
+sh.transact {
+  glob(&quot;*.txt&quot;).to_a.each { |file|
+    file.chomp!
+    cat(file).each { |l|
+      echo(l) | tee(file + &quot;.tee&quot;) &gt;&gt; &quot;all.tee&quot;
+    }
+  }
+}
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CHARDEV--3F"><code>chardev?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/chardev=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-chardev-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列か IO オブジェクトを指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/chardev=3f.html">FileTest.#chardev?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CHECK_POINT"><code>check_point</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/check_point.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-check_point">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>finish_all_jobs</code></dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CHMOD"><code>chmod(mode, *filename) -&gt; Integer</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/chmod.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-chmod">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/chmod.html">chmod(2)</a> と同様に整数で指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/chmod.html">File.chmod</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CHOWN"><code>chown(owner, group, *filename) -&gt; Integer</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/chown.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-chown">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] owner:</dt>
+<dd>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/chown.html">chown(2)</a> と同様に数値で指定します。nil または -1 を指定することで、オーナーを現在の&gt;ままにすることができます。
+</dd>
+<dt class='method-param'>[PARAM] group:</dt>
+<dd>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/chown.html">chown(2)</a> と同様に数値で指定します。nil または -1 を指定することで、グループを現在の&gt;ままにすることができます。
+</dd>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/chown.html">File.chown</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CONCAT"><code>concat(*jobs) -&gt; Shell::Concat</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/concat.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-concat">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CTIME"><code>ctime(filename) -&gt; Time</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/ctime.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-ctime">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+ファイル名を表す文字列か IO オブジェクトを指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/ctime.html">File.ctime</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DELETE"><code>delete(*filename) -&gt; Integer</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/delete.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-delete">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>rm(*filename) -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/delete.html">File.delete</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DIRECTORY--3F"><code>directory?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/directory=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-directory-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列か IO オブジェクトを指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/directory=3f.html">FileTest.#directory?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DIRNAME"><code>dirname(filename) -&gt; String</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/dirname.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-dirname">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/dirname.html">File.dirname</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ECHO"><code>echo(*strings) -&gt; Shell::Filter</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/echo.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-echo">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+実行すると, それらを内容とする Filter オブジェクトを返します.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] strings:</dt>
+<dd>
+シェルコマンド echo に与える引数を文字列で指定します。
+</dd>
+</dl>
+<p>
+動作例
+</p>
+<pre>
+require 'shell'
+Shell.def_system_command(&quot;head&quot;)
+sh = Shell.new
+sh.transact {
+  glob(&quot;*.txt&quot;).to_a.each { |file|
+    file.chomp!
+    cat(file).each { |l|
+      echo(l) | tee(file + &quot;.tee&quot;) &gt;&gt; &quot;all.tee&quot;
+    }
+  }
+}
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_EXECUTABLE--3F"><code>executable?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/executable=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-executable-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/executable=3f.html">FileTest.#executable?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EXECUTABLE_REAL--3F"><code>executable_real?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/executable_real=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-executable_real-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/executable_real=3f.html">FileTest.#executable_real?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EXIST--3F"><code>exist?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/exist=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-exist-3F">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>exists?(file) -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列か IO オブジェクトを指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/exist=3f.html">FileTest.#exist?</a> <a href="../method/-file-test/m/exists=3f.html">FileTest.#exists?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EXPAND_PATH"><code>expand_path(path) -&gt; String</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/expand_path.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-expand_path">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Fileクラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/expand_path.html">File.expand_path</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FILE--3F"><code>file?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/file=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-file-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列か IO オブジェクトを指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/file=3f.html">FileTest.#file?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FIND_SYSTEM_COMMAND"><code>find_system_command(command)</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/find_system_command.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-find_system_command">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FOREACH"><code>foreach(path = nil, &amp;block) -&gt; ()</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/foreach.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-foreach">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+pathがファイルなら, File#foreach
+pathがディレクトリなら, Dir#foreach
+の動作をします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+ファイルもしくはディレクトリのパスを文字列で指定します。
+</dd>
+</dl>
+<p>
+使用例
+</p>
+<pre>
+require 'shell'
+Shell.verbose = false
+sh = Shell.new
+sh.foreach(&quot;/tmp&quot;){|f|
+  puts f
+}
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_FTYPE"><code>ftype(filename) -&gt; String</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/ftype.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-ftype">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/ftype.html">File.ftype</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_GLOB"><code>glob(patten) -&gt; Shell::Filter</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/glob.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-glob">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+実行すると, それらを内容とする Filter オブジェクトを返します.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] patten:</dt>
+<dd>
+シェルコマンド glob に与えるパターンを指定します。
+パターンの書式については、<a href="../method/-dir/s/=5b=5d.html">Dir.[]</a>を参照してください。
+</dd>
+</dl>
+<p>
+動作例
+</p>
+<pre>
+require 'shell'
+Shell.def_system_command(&quot;head&quot;)
+sh = Shell.new
+sh.transact {
+  glob(&quot;*.txt&quot;).to_a.each { |file|
+    file.chomp!
+    cat(file).each { |l|
+      echo(l) | tee(file + &quot;.tee&quot;) &gt;&gt; &quot;all.tee&quot;
+    }
+  }
+}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-dir/s/=5b=5d.html">Dir.[]</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_GRPOWNED--3F"><code>grpowned?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/grpowned=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-grpowned-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列か IO オブジェクトを指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/grpowned=3f.html">FileTest.#grpowned?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_IDENTICAL--3F"><code>identical?</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/identical=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-identical-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_JOIN"><code>join(*item) -&gt; String</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/join.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-join">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] item:</dt>
+<dd>
+連結したいディレクトリ名やファイル名を文字列で与えます。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/join.html">File.join</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LINK"><code>link(old, new) -&gt; 0</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/link.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-link">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] old:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] new:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/link.html">File.link</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LSTAT"><code>lstat(filename) -&gt; File::Stat</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/lstat.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-lstat">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/lstat.html">File.lstat</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_MKDIR"><code>mkdir(*path) -&gt; Array</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/mkdir.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-mkdir">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Dir.mkdirと同じです。 (複数可)
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+作成するディレクトリ名を文字列で指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+作成するディレクトリの一覧の配列を返します。
+</dd>
+</dl>
+<p>
+使用例
+</p>
+<pre>
+require 'shell'
+Shell.verbose = false
+sh = Shell.new
+begin
+  p sh.mkdir(&quot;foo&quot;) #=&gt; [&quot;foo&quot;]
+rescue =&gt; err
+  puts err
+end
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_MTIME"><code>mtime(filename) -&gt; Time</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/mtime.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-mtime">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+ファイル名を表す文字列か IO オブジェクトを指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/mtime.html">File.mtime</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_NOTIFY"><code>notify(*opts) { ... } -&gt; ()</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/notify.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-notify">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OPEN"><code>open(path, mode) -&gt; File | Dir</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/open.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-open">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+path がファイルなら、 <a href="../method/-file/s/open.html">File.open</a> path がディレクトリなら、 <a href="../method/-dir/s/open.html">Dir.open</a> の動作をします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+開きたいパスを指定します。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+アクセスモードを指定します。path がディレクトリの場合は無視されます。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/open.html">File.open</a>, <a href="../method/-dir/s/open.html">Dir.open</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OUT"><code>out(dev = STDOUT, &amp;block) -&gt; ()</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/out.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-out">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-shell/i/transact.html">Shell#transact</a> を呼び出しその結果を dev に出力します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] dev:</dt>
+<dd>
+出力先をIO オブジェクトなどで指定します。
+</dd>
+<dt class='method-param'>[PARAM] block:</dt>
+<dd>
+transact 内部で実行するシェルを指定します。
+</dd>
+</dl>
+<p>
+使用例:
+</p>
+<pre>
+require 'shell'
+Shell.def_system_command(&quot;head&quot;)
+sh = Shell.new
+File.open(&quot;out.txt&quot;, &quot;w&quot;){ |fp|
+  sh.out(fp) {
+    system(&quot;ls&quot;, &quot;-l&quot;) | head(&quot;-n 3&quot;)
+  }
+}
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_OWNED--3F"><code>owned?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/owned=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-owned-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列か IO オブジェクトを指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/owned=3f.html">FileTest.#owned?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PIPE--3F"><code>pipe?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/pipe=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-pipe-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列か IO オブジェクトを指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/pipe=3f.html">FileTest.#pipe?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_READABLE--3F"><code>readable?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/readable=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-readable-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/readable=3f.html">FileTest.#readable?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_READABLE_REAL--3F"><code>readable_real?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/readable_real=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-readable_real-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/readable_real=3f.html">FileTest.#readable_real?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_READLINK"><code>readlink(path) -&gt; String</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/readlink.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-readlink">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+シンボリックリンクを表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/readlink.html">File.readlink</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_REHASH"><code>rehash -&gt; {}</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/rehash.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-rehash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+登録されているシステムコマンドの情報をクリアします。
+通常、使うことはありません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_RENAME"><code>rename(from, to) -&gt; 0</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/rename.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-rename">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] from:</dt>
+<dd>
+ファイルの名前を文字列で与えます。
+</dd>
+<dt class='method-param'>[PARAM] to:</dt>
+<dd>
+新しいファイル名を文字列で与えます。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/rename.html">File.rename</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_RMDIR"><code>rmdir(*path) -&gt; ()</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/rmdir.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-rmdir">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Dir.rmdirと同じです。 (複数可)
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+削除するディレクトリ名を文字列で指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_SETGID--3F"><code>setgid?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/setgid=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-setgid-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/setgid=3f.html">FileTest.#setgid?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SETUID--3F"><code>setuid?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/setuid=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-setuid-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/setuid=3f.html">FileTest.#setuid?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SIZE"><code>size(file) -&gt; Integer</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/size.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-size">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>size?(file) -&gt; Integer | nil</code></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/size.html">FileTest.#size</a> <a href="../method/-file-test/m/size=3f.html">FileTest.#size?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SOCKET--3F"><code>socket?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/socket=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-socket-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/socket=3f.html">FileTest.#socket?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SPLIT"><code>split(pathname) -&gt; [String]</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/split.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-split">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pathname:</dt>
+<dd>
+パス名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/split.html">File.split</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_STAT"><code>stat(filename) -&gt; File::Stat</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/stat.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-stat">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/stat.html">File.stat</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_STICKY--3F"><code>sticky?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/sticky=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-sticky-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/sticky=3f.html">FileTest.#sticky?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SYMLINK"><code>symlink(old, new) -&gt; 0</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/symlink.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-symlink">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] old:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] new:</dt>
+<dd>
+シンボリックリンクを表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/symlink.html">File.symlink</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SYMLINK--3F"><code>symlink?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/symlink=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-symlink-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/symlink=3f.html">FileTest.#symlink?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SYSTEM"><code>system(command, *opts) -&gt; Shell::SystemCommand</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/system.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-system">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+command を実行する.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] command:</dt>
+<dd>
+実行するコマンドのパスを文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] opts:</dt>
+<dd>
+command のオプションを文字列で指定します。複数可。
+</dd>
+</dl>
+<p>
+使用例:
+</p>
+<pre>
+require 'shell'
+Shell.verbose = false
+sh = Shell.new
+
+print sh.system(&quot;ls&quot;, &quot;-l&quot;)
+Shell.def_system_command(&quot;head&quot;)
+sh.system(&quot;ls&quot;, &quot;-l&quot;) | sh.head(&quot;-n 3&quot;) &gt; STDOUT
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TEE"><code>tee(file) -&gt; Shell::Filter</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/tee.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-tee">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+実行すると, それらを内容とする Filter オブジェクトを返します.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+シェルコマンドtee に与えるファイル名を文字列で指定します。
+</dd>
+</dl>
+<p>
+動作例
+</p>
+<pre>
+require 'shell'
+Shell.def_system_command(&quot;head&quot;)
+sh = Shell.new
+sh.transact {
+  glob(&quot;*.txt&quot;).to_a.each { |file|
+    file.chomp!
+    cat(file).each { |l|
+      echo(l) | tee(file + &quot;.tee&quot;) &gt;&gt; &quot;all.tee&quot;
+    }
+  }
+}
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TRANSACT"><code>transact { ... } -&gt; object</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/transact.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-transact">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ブロック中で shell を self として実行します。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'shell'
+Shell.def_system_command(&quot;head&quot;)
+sh = Shell.new
+sh.transact{
+  system(&quot;ls&quot;, &quot;-l&quot;) | head &gt; STDOUT
+  # transact の中では、
+  # sh.system(&quot;ls&quot;, &quot;-l&quot;) | sh.head &gt; STDOUT と同じとなる。
+}
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TRUNCATE"><code>truncate(path, length) -&gt; 0</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/truncate.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-truncate">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+パスを表す文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] length:</dt>
+<dd>
+変更したいサイズを整数で与えます。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/truncate.html">File.truncate</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_UNLINK"><code>unlink(path) -&gt; self</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/unlink.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-unlink">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+path がファイルなら <a href="../method/-file/s/unlink.html">File.unlink</a>、path がディレクトリなら <a href="../method/-dir/s/unlink.html">Dir.unlink</a> の動作をします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+削除したいパスを指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/unlink.html">File.unlink</a>, <a href="../method/-dir/s/unlink.html">Dir.unlink</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_UTIME"><code>utime(atime, mtime, *filename) -&gt; Integer</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/utime.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-utime">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file.html">File</a> クラスにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] atime:</dt>
+<dd>
+最終アクセス時刻を <a href="../class/-time.html">Time</a> か、起算時からの経過秒数を数値で指定します。
+</dd>
+<dt class='method-param'>[PARAM] utime:</dt>
+<dd>
+更新時刻を <a href="../class/-time.html">Time</a> か、起算時からの経過秒数を数値で指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/utime.html">File.utime</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_WORLD_READABLE--3F"><code>world_readable?</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/world_readable=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-world_readable-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_WORLD_WRITABLE--3F"><code>world_writable?</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/world_writable=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-world_writable-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_WRITABLE--3F"><code>writable?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/writable=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-writable-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/writable=3f.html">FileTest.#writable?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_WRITABLE_REAL--3F"><code>writable_real?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/writable_real=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-writable_real-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/writable_real=3f.html">FileTest.#writable_real?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ZERO--3F"><code>zero?(file) -&gt; bool</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/i/zero=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-i-zero-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-file-test.html">FileTest</a> モジュールにある同名のクラスメソッドと同じです.
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/zero=3f.html">FileTest.#zero?</a>
+</p>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-NO-DELEGATE-METHODS"><code>NoDelegateMethods -&gt; [String]</code><span class="permalink">[<a href="../method/-shell=3a=3a-command-processor/c/-no-delegate-methods.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/shell/command-processor/rdoc/Shell/CommandProcessor.html#method-c-NoDelegateMethods">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+内部で使用する定数です。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

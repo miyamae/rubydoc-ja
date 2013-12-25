@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class Binding</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Bindingクラス
+</p>
+
+
+<h1>class Binding</h1>
+<p>
+
+
+クラスの継承リスト: Binding
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+ローカル変数のテーブルと self、モジュールのネストなどの情報を保
+持するオブジェクトのクラスです。
+</p>
+<p>
+組み込み関数 <a href="../method/-kernel/m/binding.html">Kernel.#binding</a> によっ
+てのみ生成され、<a href="../method/-kernel/m/eval.html">Kernel.#eval</a> の第 2 引数に使用します。
+またトップレベルの Binding オブジェクトとして組み込み定数
+<a href="../method/-object/c/-t-o-p-l-e-v-e-l_-b-i-n-d-i-n-g.html">Object::TOPLEVEL_BINDING</a> が用意されています。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_EVAL">eval</a>
+
+<a href="#I_LOCAL_VARIABLE_DEFINED--3F">local_variable_defined?</a>
+
+<a href="#I_LOCAL_VARIABLE_GET">local_variable_get</a>
+
+<a href="#I_LOCAL_VARIABLE_SET">local_variable_set</a>
+
+</dd>
+
+</dl>
+
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_EVAL"><code>eval(expr, fname = __FILE__, lineno = 1) -&gt; object</code><span class="permalink">[<a href="../method/-binding/i/eval.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Binding.html#method-i-eval">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身をコンテキストとし文字列 expr を
+Ruby プログラムとして評価しその結果を返します。
+組み込み関数 <a href="../method/-kernel/m/eval.html">Kernel.#eval</a> を使って
+eval(expr, self, fname, lineno) とするのと同じです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] expr:</dt>
+<dd>
+評価したい式を文字列で与えます。
+</dd>
+<dt class='method-param'>[PARAM] fname:</dt>
+<dd>
+ファイル名を文字列で与えます。式 expr が fname というファイル名にあるかのように実行されます。
+</dd>
+<dt class='method-param'>[PARAM] lineno:</dt>
+<dd>
+行番号を整数で与えます。式 expr の先頭行の行番号が lineno であるかのように実行されます。
+</dd>
+</dl>
+<pre>
+def getBinding(str)
+  return binding
+end
+str = &quot;hello&quot;
+p eval(&quot;str + ' Fred'&quot;)                     #=&gt; &quot;hello Fred&quot;
+p getBinding(&quot;bye&quot;).eval(&quot;str + ' Fred'&quot;)   #=&gt; &quot;bye Fred&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/m/eval.html">Kernel.#eval</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LOCAL_VARIABLE_DEFINED--3F"><code>local_variable_defined?(symbol) -&gt; bool</code><span class="permalink">[<a href="../method/-binding/i/local_variable_defined=3f.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Binding.html#method-i-local_variable_defined-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数 symbol で指定した名前のローカル変数が定義されている場合に true を、
+そうでない場合に false を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] symbol:</dt>
+<dd>
+ローカル変数名を <a href="../class/-symbol.html">Symbol</a> オブジェクトで指定します。
+</dd>
+</dl>
+<pre>
+def foo
+  a = 1
+  binding.local_variable_defined?(:a) # =&gt; true
+  binding.local_variable_defined?(:b) # =&gt; false
+end
+</pre>
+<p>
+このメソッドは以下のコードの短縮形です。
+</p>
+<pre>
+binding.eval(&quot;defined?(#{symbol}) == 'local-variable'&quot;)
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-binding/i/local_variable_get.html">Binding#local_variable_get</a>, <a href="../method/-binding/i/local_variable_set.html">Binding#local_variable_set</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LOCAL_VARIABLE_GET"><code>local_variable_get(symbol) -&gt; object</code><span class="permalink">[<a href="../method/-binding/i/local_variable_get.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Binding.html#method-i-local_variable_get">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数 symbol で指定した名前のローカル変数に設定された値を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] symbol:</dt>
+<dd>
+ローカル変数名を <a href="../class/-symbol.html">Symbol</a> オブジェクトで指定します。
+</dd>
+<dt>[EXCEPTION] NameError:</dt>
+<dd>
+引数 symbol で指定したローカル変数が未定義の場合に発生します。
+</dd>
+</dl>
+<pre>
+def foo
+  a = 1
+  binding.local_variable_get(:a) # =&gt; 1
+  binding.local_variable_get(:b) # =&gt; NameError
+end
+</pre>
+<p>
+このメソッドは以下のコードの短縮形です。
+</p>
+<pre>
+binding.eval(&quot;#{symbol}&quot;)
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-binding/i/local_variable_set.html">Binding#local_variable_set</a>, <a href="../method/-binding/i/local_variable_defined=3f.html">Binding#local_variable_defined?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LOCAL_VARIABLE_SET"><code>local_variable_set(symbol, obj)</code><span class="permalink">[<a href="../method/-binding/i/local_variable_set.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Binding.html#method-i-local_variable_set">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数 symbol で指定した名前のローカル変数に引数 obj を設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] symbol:</dt>
+<dd>
+ローカル変数名を <a href="../class/-symbol.html">Symbol</a> オブジェクトで指定します。
+</dd>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+引数 symbol で指定したローカル変数に設定するオブジェクトを指定します。
+</dd>
+</dl>
+<pre>
+def foo
+  a = 1
+  b = binding
+  b.local_variable_set(:a, 2) # set existing local variable `a'
+  b.local_variable_set(:b, 3) # create new local variable `b'
+                              # `b' exists only in binding.
+  b.local_variable_get(:a) # =&gt; 2
+  b.local_variable_get(:b) # =&gt; 3
+  p a # =&gt; 2
+  p b # =&gt; NameError
+end
+</pre>
+<p>
+このメソッドは以下のコード(ただし、obj が Ruby のコードで出力される場
+合)と同様の動作をします。
+</p>
+<pre>
+binding.eval(&quot;#{symbol} = #{obj}&quot;)
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-binding/i/local_variable_get.html">Binding#local_variable_get</a>, <a href="../method/-binding/i/local_variable_defined=3f.html">Binding#local_variable_defined?</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

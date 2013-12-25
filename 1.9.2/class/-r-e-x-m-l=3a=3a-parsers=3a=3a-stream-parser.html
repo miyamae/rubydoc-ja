@@ -12,7 +12,7 @@
 <p>
 <a href="../doc/index.html">Ruby 1.9.2 リファレンスマニュアル</a>
 &gt; <a href="../library/index.html">ライブラリ一覧</a>
-&gt; <a href="../library/rexml.html">rexmlライブラリ</a>
+&gt; <a href="../library/rexml=2fparsers=2fstreamparser.html">rexml/parsers/streamparserライブラリ</a>
 &gt; REXML::Parsers::StreamParserクラス
 </p>
 
@@ -42,147 +42,8 @@
 
 <h2>要約</h2>
 <p>
-ストリーム式の XML パーサです。
+ストリーム式の XML パーサクラス。
 </p>
-<p>
-rexml の XML パーサの中では高速ですが、機能は限定的です。
-もう少し高機能なストリーム式パーサが必要な場合は
-<a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser.html">REXML::Parsers::SAX2Parser</a> を用いてください。
-</p>
-<p>
-パーサからはコールバックによってパースした情報を受け取ります。
-<a href="../class/-r-e-x-m-l=3a=3a-stream-listener.html">REXML::StreamListener</a> を include し、
-必要なメソッドをオーバーライドしたクラスのオブジェクトを
-コールバックオブジェクトとして <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-stream-parser/s/new.html">REXML::Parsers::StreamParser.new</a>
-に渡します。
-</p>
-<p>
-コールバックされるメソッドは <a href="../class/-r-e-x-m-l=3a=3a-stream-listener.html">REXML::StreamListener</a> になにもしない
-メソッドとして定義されています。どのようなコールバックがあるかは
-そちらを参照してください。
-</p>
-<p>
-パーサはXML文書の各構成要素を前から順に処理し、
-その順にコールバックメソッドを呼び出します。順が前後することはありません。
-</p>
-<h3 id='example'>StreamParserの例</h3>
-<p>
-この例では tag_start と text をオーバーライドして
-開始タグとテキストの情報を受け取れるようにしています。
-空白や改行もテキストであることに注意してください。
-</p>
-<pre>
-require 'rexml/parsers/baseparser'
-require 'rexml/parsers/streamparser'
-require 'rexml/streamlistener'
-class Listener
-  include REXML::StreamListener
-  def initialize
-    @events = []
-  end
-
-  def text(text)
-    @events &lt;&lt; &quot;text[#{text}]&quot;
-  end
-
-  def tag_start(name, attrs)
-    @events &lt;&lt; &quot;tag_start[#{name}]&quot;
-  end
-
-  attr_reader :events
-end
-
-xml = &lt;&lt;EOS
-&lt;members&gt;
-  &lt;member name=&quot;apple&quot; color=&quot;red&quot;&gt;
-    &lt;comment&gt;comment here&lt;/comment&gt;
-  &lt;/member&gt;
-  &lt;member name=&quot;banana&quot; color=&quot;yellow&quot;/&gt;
-&lt;/members&gt;
-EOS
-listener = Listener.new
-REXML::Parsers::StreamParser.new(xml, listener).parse
-listener.events
-# =&gt; [&quot;tag_start[members]&quot;,
-#     &quot;text[\n  ]&quot;,
-#     &quot;tag_start[member]&quot;,
-#     &quot;text[\n    ]&quot;,
-#     &quot;tag_start[comment]&quot;,
-#     &quot;text[comment here]&quot;,
-#     &quot;text[\n  ]&quot;,
-#     &quot;text[\n  ]&quot;,
-#     &quot;tag_start[member]&quot;,
-#     &quot;text[\n]&quot;,
-#     &quot;text[\n]&quot;]
-</pre>
-<h3 >コールバック仕様確認サンプル</h3>
-<p>
-以下の例では様々なXMLの構成要素を含むXML文書を
-StreamParser で処理したときに、どのコールバックメソッドがどのような
-引数で呼び出されるかを示すためのサンプルです。
-実体参照は定義済みのものを除いては変換処理されていないことなどが
-わかります。
-</p>
-<pre>
-require 'rexml/parsers/baseparser'
-require 'rexml/parsers/streamparser'
-require 'rexml/streamlistener'
-
-xml = &lt;&lt;EOS
-&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;?xml-stylesheet type=&quot;text/css&quot; href=&quot;style.css&quot;?&gt;
-&lt;!DOCTYPE root SYSTEM &quot;foo&quot; [
-  &lt;!ELEMENT root (a+)&gt;
-  &lt;!ELEMENT a&gt;
-  &lt;!ENTITY bar &quot;barbarbarbar&quot;&gt;
-  &lt;!ATTLIST a att CDATA #REQUIRED xyz CDATA &quot;foobar&quot;&gt;
-  &lt;!NOTATION foobar SYSTEM &quot;http://example.org/foobar.dtd&quot;&gt;
-  &lt;!ENTITY % HTMLsymbol PUBLIC
-     &quot;-//W3C//ENTITIES Symbols for XHTML//EN&quot;
-     &quot;xhtml-symbol.ent&quot;&gt;
-  %HTMLsymbol;
-]&gt;
-&lt;root xmlns:foo=&quot;http://example.org/foo&quot;
-      xmlns:bar=&quot;http://example.org/bar&quot;&gt;&lt;![CDATA[cdata is here]]&gt;
-  &lt;a foo:att='1' bar:att='2' att='&amp;lt;'/&gt;
-  &amp;amp;&amp;amp; &lt;!-- comment here--&gt; &amp;bar;
-&lt;/root&gt;
-EOS
-
-class Listener
-  def method_missing(name, *args)
-    p [name, *args]
-  end
-  def respond_to_missing?(sym, include_private)
-    true
-  end
-end
-
-REXML::Parsers::StreamParser.new(xml, Listener.new).parse
-# &gt;&gt; [:xmldecl, &quot;1.0&quot;, &quot;UTF-8&quot;, nil]
-# &gt;&gt; [:text, &quot;\n&quot;]
-# &gt;&gt; [:instruction, &quot;xml-stylesheet&quot;, &quot; type=\&quot;text/css\&quot; href=\&quot;style.css\&quot;&quot;]
-# &gt;&gt; [:text, &quot;\n&quot;]
-# &gt;&gt; [:doctype, &quot;root&quot;, &quot;SYSTEM&quot;, &quot;foo&quot;, nil]
-# &gt;&gt; [:elementdecl, &quot;&lt;!ELEMENT root (a+)&quot;]
-# &gt;&gt; [:elementdecl, &quot;&lt;!ELEMENT a&quot;]
-# &gt;&gt; [:entitydecl, [&quot;bar&quot;, &quot;barbarbarbar&quot;]]
-# &gt;&gt; [:attlistdecl, &quot;a&quot;, {&quot;att&quot;=&gt;nil, &quot;xyz&quot;=&gt;&quot;foobar&quot;}, &quot; \n  &lt;!ATTLIST a att CDATA #REQUIRED xyz CDATA \&quot;foobar\&quot;&gt;&quot;]
-# &gt;&gt; [:notationdecl, [&quot;foobar&quot;, &quot;SYSTEM&quot;, nil, &quot;http://example.org/foobar.dtd&quot;]]
-# &gt;&gt; [:entitydecl, [&quot;HTMLsymbol&quot;, &quot;PUBLIC&quot;, &quot;-//W3C//ENTITIES Symbols for XHTML//EN&quot;, &quot;xhtml-symbol.ent&quot;, &quot;%&quot;]]
-# &gt;&gt; [:doctype_end]
-# &gt;&gt; [:text, &quot;\n&quot;]
-# &gt;&gt; [:tag_start, &quot;root&quot;, {&quot;xmlns:foo&quot;=&gt;&quot;http://example.org/foo&quot;, &quot;xmlns:bar&quot;=&gt;&quot;http://example.org/bar&quot;}]
-# &gt;&gt; [:cdata, &quot;cdata is here&quot;]
-# &gt;&gt; [:text, &quot;\n  &quot;]
-# &gt;&gt; [:tag_start, &quot;a&quot;, {&quot;foo:att&quot;=&gt;&quot;1&quot;, &quot;bar:att&quot;=&gt;&quot;2&quot;, &quot;att&quot;=&gt;&quot;&lt;&quot;}]
-# &gt;&gt; [:tag_end, &quot;a&quot;]
-# &gt;&gt; [:text, &quot;\n  &amp;&amp; &quot;]
-# &gt;&gt; [:comment, &quot; comment here&quot;]
-# &gt;&gt; [:text, &quot; &amp;bar;\n&quot;]
-# &gt;&gt; [:tag_end, &quot;root&quot;]
-# &gt;&gt; [:text, &quot;\n&quot;]
-</pre>
 
 
 
@@ -209,7 +70,7 @@ REXML::Parsers::StreamParser.new(xml, Listener.new).parse
 <h2>特異メソッド</h2>
 <dl>
 
-<dt class="method-heading" id="S_NEW"><code>new(source, listener) -&gt; REXML::Parsers::StreamParser</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-stream-parser/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/rexml/rdoc/REXML/Parsers/StreamParser.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading" id="S_NEW"><code>new(source, listener) -&gt; REXML::Parsers::StreamParser</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-stream-parser/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/rexml/parsers/streamparser/rdoc/REXML/Parsers/StreamParser.html#method-c-new">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 ストリームパーサオブジェクトを生成します。
@@ -232,7 +93,7 @@ REXML::Parsers::StreamParser.new(xml, Listener.new).parse
 <h2>インスタンスメソッド</h2>
 <dl>
 
-<dt class="method-heading" id="I_PARSE"><code>parse -&gt; ()</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-stream-parser/i/parse.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/rexml/rdoc/REXML/Parsers/StreamParser.html#method-i-parse">rdoc</a>]</span></dt>
+<dt class="method-heading" id="I_PARSE"><code>parse -&gt; ()</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-stream-parser/i/parse.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.2/libdoc/rexml/parsers/streamparser/rdoc/REXML/Parsers/StreamParser.html#method-i-parse">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 入力をパースします。
@@ -240,6 +101,17 @@ REXML::Parsers::StreamParser.new(xml, Listener.new).parse
 <p>
 このメソッドの中からコールバックが呼び出されます。
 </p>
+<dl>
+<dt>[EXCEPTION] REXML::ParseException:</dt>
+<dd>
+XML文書のパースに失敗した場合に発生します
+</dd>
+<dt>[EXCEPTION] REXML::UndefinedNamespaceException:</dt>
+<dd>
+XML文書のパース中に、定義されていない名前空間
+が現れた場合に発生します
+</dd>
+</dl>
 </dd>
 
 

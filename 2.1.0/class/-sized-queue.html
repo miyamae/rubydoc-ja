@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class SizedQueue</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/thread.html">threadライブラリ</a>
+&gt; SizedQueueクラス
+</p>
+
+
+<h1>class SizedQueue</h1>
+<p>
+
+
+クラスの継承リスト: SizedQueue
+
+      &lt; <a href="../class/-queue.html">Queue</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+サイズの最大値を指定できる <a href="../class/-queue.html">Queue</a> です。
+</p>
+<h2 >例</h2>
+<p>
+<a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-list/283">[ruby-list:283]</a> より。q をサイズ 1 の SizedQueue オブジェクトに
+することによって、入力される行と出力される行が同じ順序になります。
+q = [] にすると入力と違った順序で行が出力されます。
+</p>
+<pre>
+require 'thread'
+
+q = SizedQueue.new(1)
+
+th = Thread.start {
+  while line = q.pop
+    print line
+  end
+}
+
+while l = gets
+  q.push(l)
+end
+q.push(l)
+
+th.join
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--3C--3C"><<</a>
+
+<a href="#I_--3C--3C">enq</a>
+
+<a href="#I_--3C--3C">push</a>
+
+<a href="#I_DEQ">deq</a>
+
+<a href="#I_DEQ">pop</a>
+
+<a href="#I_DEQ">shift</a>
+
+<a href="#I_MAX">max</a>
+
+<a href="#I_MAX--3D">max=</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(max) -&gt; SizedQueue</code><span class="permalink">[<a href="../method/-sized-queue/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/thread/rdoc/SizedQueue.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+SizedQueue オブジェクトを生成します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] max:</dt>
+<dd>
+キューのサイズの最大値です。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--3C--3C"><code>push(obj) -&gt; ()</code><span class="permalink">[<a href="../method/-sized-queue/i/=3c=3c.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/thread/rdoc/SizedQueue.html#method-i-3C-3C">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>self &lt;&lt; obj -&gt; ()</code></dt>
+<dt class="method-heading"><code>enq(obj) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+キューに与えられたオブジェクトを追加します。
+</p>
+<p>
+キューのサイズが <a href="../method/-sized-queue/i/max.html">SizedQueue#max</a> に達している場合は、
+キューのサイズが <a href="../method/-sized-queue/i/max.html">SizedQueue#max</a> より小さくなるまで他のスレッドに実行を譲ります。
+その後、キューに与えられたオブジェクトを追加します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+キューに追加したいオブジェクトを指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-queue/i/push.html">Queue#push</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DEQ"><code>pop(non_block = false) -&gt; object</code><span class="permalink">[<a href="../method/-sized-queue/i/deq.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/thread/rdoc/SizedQueue.html#method-i-deq">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>shift(non_block = false) -&gt; object</code></dt>
+<dt class="method-heading"><code>deq(non_block = false) -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+キューからひとつ値を取り出します。
+キューに push しようと待っているスレッドがあれば、実行を再開させます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] non_block:</dt>
+<dd>
+true を与えると、キューが空の時に例外 <a href="../class/-thread-error.html">ThreadError</a> が発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-queue/i/pop.html">Queue#pop</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_MAX"><code>max -&gt; Fixnum</code><span class="permalink">[<a href="../method/-sized-queue/i/max.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/thread/rdoc/SizedQueue.html#method-i-max">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+キューの最大サイズを返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_MAX--3D"><code>max=(n)</code><span class="permalink">[<a href="../method/-sized-queue/i/max=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/thread/rdoc/SizedQueue.html#method-i-max-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+キューの最大サイズを設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] n:</dt>
+<dd>
+キューの最大サイズを指定します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

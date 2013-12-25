@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>module function Kernel.#fail</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-kernel.html">Kernelモジュール</a>
+&gt; fail
+
+</p>
+
+
+<h1>module function Kernel.#fail</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_FAIL"><code>raise -&gt; ()</code><span class="permalink">[<a href="../../../method/-kernel/m/fail.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Kernel.html#method-c-fail">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>fail -&gt; ()</code></dt>
+<dt class="method-heading"><code>raise(message) -&gt; ()</code></dt>
+<dt class="method-heading"><code>fail(message) -&gt; ()</code></dt>
+<dt class="method-heading"><code>raise(error_type, message = nil, backtrace = caller(0)) -&gt; ()</code></dt>
+<dt class="method-heading"><code>fail(error_type, message = nil, backtrace = caller(0)) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+例外を発生させます。
+発生した例外は変数 <a href="../../../method/-kernel/v/=21.html">$!</a> に格納されます。また例外が
+発生した時のスタックトレースは変数 <a href="../../../method/-kernel/v/=40.html">$@</a> に格納され
+ます。発生した例外は rescue 節で捕捉できます。
+</p>
+<p>
+引数無しの場合は、同スレッドの同じブロック内で最後に rescue された
+例外オブジェクト (<a href="../../../method/-kernel/v/=21.html">$!</a>) を再発生させます。そのような
+例外が存在しないが自身は捕捉されている時には例外 <a href="../../../class/-runtime-error.html">RuntimeError</a> を発生させます。
+</p>
+<pre>
+begin
+  open(&quot;nonexist&quot;)
+rescue
+  raise   #=&gt; `open': No such file or directory - &quot;nonexist&quot; (Errno::ENOENT)
+end
+</pre>
+<p>
+引数を渡した場合は、例外メッセージ message を持った error_type の示す例外(省略時 RuntimeError)を
+発生させます。
+</p>
+<p>
+error_type として例外ではないクラスやオブジェクトを指定した場合、
+そのオブジェクトの exception メソッドが返す値を発生する例外にします。
+その際、exception メソッドに引数として変数 message を渡すことができます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] error_type:</dt>
+<dd>
+発生させる例外を例外クラスまたは例外クラスのインスタンスで指定します。
+</dd>
+<dt class='method-param'>[PARAM] message:</dt>
+<dd>
+例外のメッセージとなる文字列です。
+</dd>
+<dt class='method-param'>[PARAM] backtrace:</dt>
+<dd>
+例外発生時のスタックトレースで、<a href="../../../method/-kernel/m/caller.html">Kernel.#caller</a> の戻り値と同じ
+形式で指定しなければいけません。
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+exception メソッドが例外オブジェクトを返さなかった場合に発生します。
+</dd>
+</dl>
+<p>
+例外の捕捉の例を示します。
+</p>
+<pre>
+#例1
+begin
+  raise NameError,&quot;!!error!!&quot;
+rescue ArgumentError =&gt; err
+rescue NameError =&gt; err
+rescue TypeError =&gt; err
+ensure
+  p err #=&gt; #&lt;NameError: !!error!!&gt;
+end
+
+#例2
+def foo num
+  print 'in method.'
+  raise &quot;error!!&quot; if num &lt;= 9
+rescue RuntimeError
+  num += 10
+  print 'in rescue.'
+  retry
+else
+  print 'in else.'
+ensure
+  print &quot;in ensure.\n&quot;
+end
+
+foo(4) #=&gt; in method.in rescue.in method.in else.in ensure.
+
+#例3
+class MyException
+  def exception(mesg=nil)
+    SecurityError.new(mesg)
+  end
+end
+
+begin
+  raise MyException.new
+rescue SecurityError
+  p $! #=&gt; #&lt;SecurityError: SecurityError&gt;
+end
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/caller.html">Kernel.#caller</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class Symbol</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Symbolクラス
+</p>
+
+
+<h1>class Symbol</h1>
+<p>
+
+
+クラスの継承リスト: Symbol
+
+      &lt; <a href="../class/-comparable.html">Comparable</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+シンボルを表すクラス。シンボルは任意の文字列と一対一に対応するオブジェクトです。
+</p>
+<p>
+文字列の代わりに用いることもできますが、必ずしも文字列と同じ振る舞いをするわけではありません。
+同じ内容のシンボルはかならず同一のオブジェクトです。
+</p>
+<p>
+シンボルオブジェクトは以下のようなリテラルで得られます。
+</p>
+<pre>
+:symbol
+:'symbol'
+%s!symbol! # %記法
+</pre>
+<p>
+生成されたシンボルの一覧は <a href="../method/-symbol/s/all_symbols.html">Symbol.all_symbols</a> で得られます。
+一番目のリテラルでシンボルを表す場合、`:' の後に
+は識別子、メソッド名(`!',`?',`=' などの接尾辞を含む)、変数名
+(`$'などの接頭辞を含む)、再定義できる演算子のいずれかに適合する
+ものしか書くことはできません(そうでなければ文法エラーになります)。
+そうでない文字列をシンボルにしたい場合は残りの表記か <a href="../method/-string/i/intern.html">String#intern</a> を使用してください。
+</p>
+<h2 >シンボルの実装と用途</h2>
+<h3 >実装</h3>
+<p>
+Rubyの内部実装では、メソッド名や変数名、定数名、クラス名など
+の`名前'を整数で管理しています。これは名前を直接文字列として処理するよりも
+速度面で有利だからです。そしてその整数をRubyのコード上で表現したものがシンボルです。
+</p>
+<p>
+シンボルは、ソース上では文字列のように見え、内部では整数として扱われる、両者を仲立ちするような存在です。
+</p>
+<p>
+名前を管理するという役割上、シンボルと文字列は一対一に対応します。
+また、文字列と違い、immutable (変更不可)であり、同値ならば必ず同一です。
+</p>
+<pre>
+p &quot;abc&quot; == &quot;abc&quot; #=&gt; true
+p &quot;abc&quot;.equal?(&quot;abc&quot;) #=&gt; false
+p :abc == :abc #=&gt; true
+p :abc.equal?(:abc) #=&gt; true ←同値ならば同一
+</pre>
+<h3 >用途</h3>
+<p>
+実用面では、シンボルは文字の意味を明確にします。`名前'を指し示す時など、
+文字列そのものが必要なわけではない時に用います。
+</p>
+<ul>
+<li>ハッシュのキー { :key =&gt; &quot;value&quot; }</li>
+<li>アクセサの引数で渡すインスタンス変数名 attr_reader :name</li>
+<li>メソッド引数で渡すメソッド名 __send__ :to_s</li>
+<li>C の enum 的な使用 (値そのものは無視してよい場合)</li>
+</ul>
+<p>
+シンボルを使うメリットは
+</p>
+<ul>
+<li>新しく文字列を生成しない分やや効率がよく、比較も高速。</li>
+<li>文字の意味がはっきりするのでコードが読みやすくなる</li>
+<li>immutable なので内容を書き換えられる心配がない</li>
+</ul>
+<p>
+大抵のメソッドはシンボルの代わりに文字列を引数として渡すこともできるようになっています。
+</p>
+<p>
+<a href="../class/-symbol.html">Symbol</a> クラスのメソッドには、<a href="../class/-string.html">String</a> クラスのメソッドと同名で似た働きをするものもあります。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_ALL_SYMBOLS">all_symbols</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--3C--3D--3E"><=></a>
+
+<a href="#I_--3D--3D">==</a>
+
+<a href="#I_--3D--7E">=~</a>
+
+<a href="#I_--3D--7E">match</a>
+
+<a href="#I_--5B--5D">[]</a>
+
+<a href="#I_--5B--5D">slice</a>
+
+<a href="#I_CAPITALIZE">capitalize</a>
+
+<a href="#I_CASECMP">casecmp</a>
+
+<a href="#I_DOWNCASE">downcase</a>
+
+<a href="#I_EMPTY--3F">empty?</a>
+
+<a href="#I_ENCODING">encoding</a>
+
+<a href="#I_ID2NAME">id2name</a>
+
+<a href="#I_ID2NAME">to_s</a>
+
+<a href="#I_INSPECT">inspect</a>
+
+<a href="#I_INTERN">intern</a>
+
+<a href="#I_INTERN">to_sym</a>
+
+<a href="#I_LENGTH">length</a>
+
+<a href="#I_LENGTH">size</a>
+
+<a href="#I_NEXT">next</a>
+
+<a href="#I_NEXT">succ</a>
+
+<a href="#I_SWAPCASE">swapcase</a>
+
+<a href="#I_TO_PROC">to_proc</a>
+
+<a href="#I_UPCASE">upcase</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_ALL_SYMBOLS"><code>all_symbols -&gt; [Symbol]</code><span class="permalink">[<a href="../method/-symbol/s/all_symbols.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-c-all_symbols">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+定義済みの全てのシンボルオブジェクトの配列を返します。
+</p>
+<pre>
+p Symbol.all_symbols #=&gt; [:RUBY_PLATFORM, :RUBY_VERSION, ...]
+</pre>
+<p>
+リテラルで表記したシンボルのうち、コンパイル時に値が決まるものはその時に生成されます。
+それ以外の式展開を含むリテラルや、メソッドで表記されたものは式の評価時に生成されます。
+(何にも使われないシンボルは最適化により生成されないことがあります)
+</p>
+<pre>
+def number
+  'make_3'
+end
+
+p Symbol.all_symbols.select{|sym|sym.to_s.include? 'make'}
+#=&gt; [:make_1, :make_2]
+
+re  = #確実に生成されるように代入操作を行う
+:make_1,
+:'make_2',
+:&quot;#{number}&quot;,
+'make_4'.intern
+
+p Symbol.all_symbols.select{|sym|sym.to_s.include? 'make'}
+#=&gt; [:make_1, :make_2, :make_3, :make_4]
+</pre>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--3C--3D--3E"><code>self &lt;=&gt; other -&gt; -1 | 0 | 1</code><span class="permalink">[<a href="../method/-symbol/i/=3c=3d=3e.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-3C-3D-3E">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self と other のシンボルに対応する文字列を ASCII コード順で比較して、
+self が大きい時には正の整数、等しい時には 0、小さい時には負の整数を返し
+ます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+比較対象のシンボルを指定します。
+</dd>
+</dl>
+<pre>
+p :aaa &lt;=&gt; :xxx  # =&gt; -1
+p :aaa &lt;=&gt; :aaa  # =&gt; 0
+p :xxx &lt;=&gt; :aaa  # =&gt; 1
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/=3c=3d=3e.html">String#&lt;=&gt;</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_--3D--3D"><code>self == other -&gt; true | false</code><span class="permalink">[<a href="../method/-symbol/i/=3d=3d.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-3D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+other が同じシンボルの時に真を返します。
+そうでない場合は偽を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+比較対象のシンボルを指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_--3D--7E"><code>self =~ other -&gt; Integer | nil</code><span class="permalink">[<a href="../method/-symbol/i/=3d=7e.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-3D-7E">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>match(other) -&gt; Integer | nil</code></dt>
+<dd class="method-description">
+<p>
+正規表現 other とのマッチを行います。
+</p>
+<p>
+(self.to_s =~ other と同じです。)
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+比較対象のシンボルを指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+マッチが成功すればマッチした位置のインデックスを、そうでなければ nil を返します。
+</dd>
+</dl>
+<pre>
+p :foo =~ /foo/    # =&gt; 0
+p :foobar =~ /bar/ # =&gt; 3
+p :foo =~ /bar/    # =&gt; nil
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/=3d=7e.html">String#=~</a>, <a href="../method/-string/i/match.html">String#match</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_--5B--5D"><code>self[nth] -&gt; String | nil</code><span class="permalink">[<a href="../method/-symbol/i/=5b=5d.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>slice(nth) -&gt; String | nil</code></dt>
+<dd class="method-description">
+<p>
+nth 番目の文字を返します。
+</p>
+<p>
+(self.to_s[nth] と同じです。)
+</p>
+<dl>
+<dt class='method-param'>[PARAM] nth:</dt>
+<dd>
+文字の位置を表す整数を指定します。
+</dd>
+</dl>
+<pre>
+:foo[0] # =&gt; &quot;f&quot;
+:foo[1] # =&gt; &quot;o&quot;
+:foo[2] # =&gt; &quot;o&quot;
+</pre>
+</dd>
+<dt class="method-heading" id="I_--5B--5D"><code>self[nth, len] -&gt; String | nil</code><span class="permalink">[<a href="../method/-symbol/i/=5b=5d.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>slice(nth, len) -&gt; String | nil</code></dt>
+<dd class="method-description">
+<p>
+nth 番目から長さ len の部分文字列を新しく作って返します。
+</p>
+<p>
+(self.to_s[nth, len] と同じです。)
+</p>
+<dl>
+<dt class='method-param'>[PARAM] nth:</dt>
+<dd>
+文字の位置を表す整数を指定します。
+</dd>
+<dt class='method-param'>[PARAM] len:</dt>
+<dd>
+文字列の長さを指定します。
+</dd>
+</dl>
+<pre>
+:foo[1, 2] # =&gt; &quot;oo&quot;
+</pre>
+</dd>
+<dt class="method-heading" id="I_--5B--5D"><code>self[substr] -&gt; String | nil</code><span class="permalink">[<a href="../method/-symbol/i/=5b=5d.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>slice(substr) -&gt; String | nil</code></dt>
+<dd class="method-description">
+<p>
+self が substr を含む場合、一致した文字列を新しく作って返します。
+</p>
+<p>
+(self.to_s[substr] と同じです。)
+</p>
+</dd>
+<dt class="method-heading" id="I_--5B--5D"><code>self[regexp, nth = 0] -&gt; String | nil</code><span class="permalink">[<a href="../method/-symbol/i/=5b=5d.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>slice(regexp, nth = 0) -&gt; String | nil</code></dt>
+<dd class="method-description">
+<p>
+正規表現 regexp の nth 番目の括弧にマッチする最初の部分文字列を返します。
+</p>
+<p>
+(self.to_s[regexp, nth] と同じです。)
+</p>
+<dl>
+<dt class='method-param'>[PARAM] regexp:</dt>
+<dd>
+正規表現を指定します。
+</dd>
+<dt class='method-param'>[PARAM] nth:</dt>
+<dd>
+取得したい正規表現レジスタのインデックスを指定します。
+</dd>
+</dl>
+<pre>
+:foobar[/bar/] # =&gt; &quot;bar&quot;
+:foobarbaz[/(ba.)(ba.)/, 0] # =&gt; &quot;barbaz&quot;
+:foobarbaz[/(ba.)(ba.)/, 1] # =&gt; &quot;bar&quot;
+:foobarbaz[/(ba.)(ba.)/, 2] # =&gt; &quot;baz&quot;
+</pre>
+</dd>
+<dt class="method-heading" id="I_--5B--5D"><code>self[range] -&gt; String | nil</code><span class="permalink">[<a href="../method/-symbol/i/=5b=5d.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>slice(range) -&gt; String | nil</code></dt>
+<dd class="method-description">
+<p>
+rangeで指定したインデックスの範囲に含まれる部分文字列を返します。
+</p>
+<p>
+(self.to_s[range] と同じです。)
+</p>
+<dl>
+<dt class='method-param'>[PARAM] range:</dt>
+<dd>
+取得したい文字列の範囲を示す <a href="../class/-range.html">Range</a> オブジェクトを指定します。
+</dd>
+</dl>
+<pre>
+:foo[0..1] # =&gt; &quot;fo&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/=5b=5d.html">String#[]</a>, <a href="../method/-string/i/slice.html">String#slice</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CAPITALIZE"><code>capitalize -&gt; Symbol</code><span class="permalink">[<a href="../method/-symbol/i/capitalize.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-capitalize">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+シンボルに対応する文字列の先頭の文字を大文字に、残りを小文字に変更した
+シンボルを返します。
+</p>
+<p>
+(self.to_s.capitalize.intern と同じです。)
+</p>
+<pre>
+:foobar.capitalize     #=&gt; :Foobar
+:fooBar.capitalize     #=&gt; :Foobar
+:FOOBAR.capitalize     #=&gt; :Foobar
+:&quot;foobar--&quot;.capitalize # =&gt; &quot;Foobar--&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/capitalize.html">String#capitalize</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CASECMP"><code>casecmp(other) -&gt; -1 | 0 | 1</code><span class="permalink">[<a href="../method/-symbol/i/casecmp.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-casecmp">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-symbol/i/=3c=3d=3e.html">Symbol#&lt;=&gt;</a> と同様にシンボルに対応する文字列の順序を比較しますが、
+アルファベットの大文字小文字の違いを無視します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+比較対象のシンボルを指定します。
+</dd>
+</dl>
+<pre>
+p :a &lt;=&gt; :A      # =&gt; 1
+p :a.casecmp(:A) # =&gt; 0
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/casecmp.html">String#casecmp</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DOWNCASE"><code>downcase -&gt; Symbol</code><span class="permalink">[<a href="../method/-symbol/i/downcase.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-downcase">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+大文字を小文字に変換したシンボルを返します。
+</p>
+<p>
+(self.to_s.downcase.intern と同じです。)
+</p>
+<pre>
+:FOO.downcase #=&gt; :foo
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/downcase.html">String#downcase</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EMPTY--3F"><code>empty? -&gt; bool</code><span class="permalink">[<a href="../method/-symbol/i/empty=3f.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-empty-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身が :&quot;&quot; (length が 0 のシンボル)かどうかを返します。
+</p>
+<pre>
+:&quot;&quot;.empty?  #=&gt; true
+:foo.empty? #=&gt; false
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/empty=3f.html">String#empty?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ENCODING"><code>encoding -&gt; Encoding</code><span class="permalink">[<a href="../method/-symbol/i/encoding.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-encoding">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+シンボルに対応する文字列のエンコーディング情報を表現した <a href="../class/-encoding.html">Encoding</a> オブ
+ジェクトを返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/encoding.html">String#encoding</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ID2NAME"><code>id2name -&gt; String</code><span class="permalink">[<a href="../method/-symbol/i/id2name.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-id2name">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_s -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+シンボルに対応する文字列を返します。
+</p>
+<p>
+逆に、文字列に対応するシンボルを得るには
+<a href="../method/-string/i/intern.html">String#intern</a> を使います。
+</p>
+<pre>
+p :foo.id2name  # =&gt; &quot;foo&quot;
+p :foo.id2name.intern == :foo  # =&gt; true
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/intern.html">String#intern</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-symbol/i/inspect.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-inspect">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を人間に読みやすい文字列にして返します。
+</p>
+<pre>
+:fred.inspect   #=&gt; &quot;:fred&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_INTERN"><code>intern -&gt; self</code><span class="permalink">[<a href="../method/-symbol/i/intern.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-intern">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_sym -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+self を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/intern.html">String#intern</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LENGTH"><code>length -&gt; Integer</code><span class="permalink">[<a href="../method/-symbol/i/length.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-length">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>size -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+シンボルに対応する文字列の長さを返します。
+</p>
+<p>
+(self.to_s.length と同じです。)
+</p>
+<pre>
+:foo.length #=&gt; 3
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/length.html">String#length</a>, <a href="../method/-string/i/size.html">String#size</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_NEXT"><code>succ -&gt; Symbol</code><span class="permalink">[<a href="../method/-symbol/i/next.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-next">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>next -&gt; Symbol</code></dt>
+<dd class="method-description">
+<p>
+シンボルに対応する文字列の「次の」文字列に対応するシンボルを返します。
+</p>
+<p>
+(self.to_s.next.intern と同じです。)
+</p>
+<pre>
+:a.next   # =&gt; :b
+:foo.next # =&gt; :fop
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/succ.html">String#succ</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SWAPCASE"><code>swapcase -&gt; Symbol</code><span class="permalink">[<a href="../method/-symbol/i/swapcase.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-swapcase">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+'A' から 'Z' までのアルファベット大文字を小文字に、'a' から 'z' までの
+アルファベット小文字を大文字に変更したシンボルを返します。
+</p>
+<p>
+(self.to_s.swapcase.intern と同じです。)
+</p>
+<pre>
+p :ABCxyz.swapcase   # =&gt; :abcXYZ
+p :Access.swapcase   # =&gt; :aCCESS
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/swapcase.html">String#swapcase</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_PROC"><code>to_proc -&gt; Proc</code><span class="permalink">[<a href="../method/-symbol/i/to_proc.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-to_proc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self に対応する Proc オブジェクトを返します。
+</p>
+<p>
+生成される Proc オブジェクトを呼びだす(<a href="../method/-proc/i/call.html">Proc#call</a>)と、
+その第一引数の self という名前のメソッドを
+残りの引数を渡して呼びだされます。
+</p>
+<pre>
+:to_i.to_proc[&quot;ff&quot;, 16]  # =&gt; 255
+(1..3).collect(&amp;:to_s)  #=&gt; [&quot;1&quot;, &quot;2&quot;, &quot;3&quot;]
+(1..3).inject(&amp;:+)      #=&gt; 6
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_UPCASE"><code>upcase -&gt; Symbol</code><span class="permalink">[<a href="../method/-symbol/i/upcase.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Symbol.html#method-i-upcase">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+小文字を大文字に変換したシンボルを返します。
+</p>
+<p>
+(self.to_s.upcase.intern と同じです。)
+</p>
+<pre>
+:foo.upcase #=&gt; :FOO
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/upcase.html">String#upcase</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

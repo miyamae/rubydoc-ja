@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class Enumerator::Lazy</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Enumerator::Lazyクラス
+</p>
+
+
+<h1>class Enumerator::Lazy</h1>
+<p>
+
+
+クラスの継承リスト: Enumerator::Lazy
+
+      &lt; <a href="../class/-enumerator.html">Enumerator</a>
+      
+
+      &lt; <a href="../class/-enumerable.html">Enumerable</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+map や select などのメソッドの遅延評価版を提供するためのクラス。
+</p>
+<p>
+動作は通常の Enumerator と同じですが、以下のメソッドが遅延評価を行う
+(つまり、配列ではなく Enumerator を返す) ように再定義されています。
+</p>
+<ul>
+<li>map/collect</li>
+<li>flat_map/collect_concat</li>
+<li>select/find_all</li>
+<li>reject</li>
+<li>grep</li>
+<li>take, take_while</li>
+<li>drop, drop_while</li>
+<li>zip (※互換性のため、ブロックを渡さないケースのみlazy)</li>
+</ul>
+<p>
+Lazyオブジェクトは、<a href="../method/-enumerable/i/lazy.html">Enumerable#lazy</a>メソッドによって生成されます。
+</p>
+<p>
+Lazyから値を取り出すには、<a href="../method/-enumerator=3a=3a-lazy/i/force.html">Enumerator::Lazy#force</a> または
+<a href="../method/-enumerable/i/first.html">Enumerable#first</a> を呼びます。
+</p>
+<p>
+例:
+</p>
+<pre>
+# 二乗して偶数になるような整数を、小さい方から5個表示する
+p (1..Float::INFINITY).lazy.select{|n| (n**2).even?}.first(5)
+# LTSV (http://ltsv.org/) 形式のログファイルから検索を行う
+# Enumerator::Lazy#map は配列ではなく Enumerator を返すため、
+# 巨大な配列を確保しようとしてメモリを使い切ったりはしない
+open(&quot;log.txt&quot;){|f|
+  f.each_line.lazy.map{|line|
+    Hash[line.split(/\t/).map{|s| s.split(/:/, 2)}]
+  }.select{|hash|
+    hash[&quot;req&quot;] =~ /GET/ &amp;&amp; hash[&quot;status&quot;] == &quot;200&quot;
+  }.each{|hash|
+    p hash
+  }
+}
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_COLLECT">collect</a>
+
+<a href="#I_COLLECT">map</a>
+
+<a href="#I_COLLECT_CONCAT">collect_concat</a>
+
+<a href="#I_COLLECT_CONCAT">flat_map</a>
+
+<a href="#I_DROP">drop</a>
+
+<a href="#I_DROP_WHILE">drop_while</a>
+
+<a href="#I_ENUM_FOR">enum_for</a>
+
+<a href="#I_ENUM_FOR">to_enum</a>
+
+<a href="#I_FIND_ALL">find_all</a>
+
+<a href="#I_FIND_ALL">select</a>
+
+<a href="#I_FORCE">force</a>
+
+<a href="#I_GREP">grep</a>
+
+<a href="#I_LAZY">lazy</a>
+
+<a href="#I_REJECT">reject</a>
+
+<a href="#I_TAKE">take</a>
+
+<a href="#I_TAKE_WHILE">take_while</a>
+
+<a href="#I_ZIP">zip</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(obj, size=nil) {|yielder, *values| ... } -&gt; Enumerator::Lazy</code><span class="permalink">[<a href="../method/-enumerator=3a=3a-lazy/s/new.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Enumerator/Lazy.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Lazy Enumerator を作成します。<a href="../method/-enumerator=3a=3a-lazy/i/force.html">Enumerator::Lazy#force</a> メソッドなどに
+よって列挙が実行されたとき、objのeachメソッドが実行され、値が一つずつ
+ブロックに渡されます。ブロックは、yielder を使って最終的に yield される値を
+指定できます。
+</p>
+<p>
+Enumerable#filter_map と、その遅延評価版を定義する例:
+</p>
+<pre>
+module Enumerable
+  def filter_map(&amp;block)
+    map(&amp;block).compact
+  end
+end
+
+class Enumerator::Lazy
+  def filter_map
+    Lazy.new(self) do |yielder, *values|
+      result = yield *values
+      yielder &lt;&lt; result if result
+    end
+  end
+end
+
+(1..Float::INFINITY).lazy.filter_map{|i| i*i if i.even?}.first(5)
+    # =&gt; [4, 16, 36, 64, 100]
+</pre>
+<dl>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+引数を指定しなかった場合、ブロックを指定しなかった場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-enumerator/s/new.html">Enumerator.new</a>
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_COLLECT"><code>map {|item| ... } -&gt; Enumerator::Lazy</code><span class="permalink">[<a href="../method/-enumerator=3a=3a-lazy/i/collect.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Enumerator/Lazy.html#method-i-collect">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>collect {|item| ... } -&gt; Enumerator::Lazy</code></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-enumerable/i/map.html">Enumerable#map</a> と同じですが、配列ではなくEnumerator::Lazy を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+ブロックを指定しなかった場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-enumerable/i/map.html">Enumerable#map</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_COLLECT_CONCAT"><code>flat_map {|item| ... } -&gt; Enumerator::Lazy</code><span class="permalink">[<a href="../method/-enumerator=3a=3a-lazy/i/collect_concat.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Enumerator/Lazy.html#method-i-collect_concat">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>collect_concat {|item| ... } -&gt; Enumerator::Lazy</code></dt>
+<dd class="method-description">
+<p>
+ブロックの実行結果をひとつに繋げたものに対してイテレートするような
+Enumerator::Lazy のインスタンスを返します。
+</p>
+<pre>
+[&quot;foo&quot;, &quot;bar&quot;].lazy.flat_map {|i| i.each_char.lazy}.force
+#=&gt; [&quot;f&quot;, &quot;o&quot;, &quot;o&quot;, &quot;b&quot;, &quot;a&quot;, &quot;r&quot;]
+</pre>
+<p>
+ブロックの返した値 x は、以下の場合にのみ分解され、連結されます。
+</p>
+<ul>
+<li>x が配列であるか、to_ary メソッドを持つとき</li>
+<li>x が each および force メソッドを持つ (例：Enumerator::Lazy) とき</li>
+</ul>
+<p>
+それ以外のときは、x は分解されず、そのままの値として使われます。
+</p>
+<pre>
+[{a:1}, {b:2}].lazy.flat_map {|i| i}.force
+#=&gt; [{:a=&gt;1}, {:b=&gt;2}]
+</pre>
+<dl>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+ブロックを指定しなかった場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-enumerable/i/flat_map.html">Enumerable#flat_map</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DROP"><code>drop(n) -&gt; Enumerator::Lazy</code><span class="permalink">[<a href="../method/-enumerator=3a=3a-lazy/i/drop.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Enumerator/Lazy.html#method-i-drop">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-enumerable/i/drop.html">Enumerable#drop</a> と同じですが、配列ではなくEnumerator::Lazy を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] n:</dt>
+<dd>
+要素数を指定します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+n に負の数を指定した場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-enumerable/i/drop.html">Enumerable#drop</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DROP_WHILE"><code>drop_while -&gt; Enumerator::Lazy</code><span class="permalink">[<a href="../method/-enumerator=3a=3a-lazy/i/drop_while.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Enumerator/Lazy.html#method-i-drop_while">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>drop_while {|item| ... } -&gt; Enumerator::Lazy</code></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-enumerable/i/drop_while.html">Enumerable#drop_while</a> と同じですが、配列ではなくEnumerator::Lazy を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-enumerable/i/drop_while.html">Enumerable#drop_while</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ENUM_FOR"><code>to_enum(method = :each, *args) -&gt; Enumerator::Lazy</code><span class="permalink">[<a href="../method/-enumerator=3a=3a-lazy/i/enum_for.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Enumerator/Lazy.html#method-i-enum_for">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>enum_for(method = :each, *args) -&gt; Enumerator::Lazy</code></dt>
+<dt class="method-heading"><code>to_enum(method = :each, *args) {|*args| block} -&gt; Enumerator::Lazy</code></dt>
+<dt class="method-heading"><code>enum_for(method = :each, *args) {|*args| block} -&gt; Enumerator::Lazy</code></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-object/i/to_enum.html">Object#to_enum</a> と同じですが、Enumerator::Lazy を返します。
+</p>
+<p>
+to_enum は「ブロック付きで呼ぶとループを実行し、ブロックを省略した場合は
+Enumerator を返す」ようなメソッドを定義するときによく使われます。
+このときに lazy 性が正しく引き継がれるように、Lazy#to_enum は
+素のEnumerator ではなく Enumerator::Lazy を返すようになってします。
+</p>
+<p>
+例:
+</p>
+<pre>
+module Enumerable
+  # 要素をn回ずつ繰り返すメソッド
+  # 例：[1,2,3].repeat(2)  #=&gt; [1,1,2,2,3,3]
+  def repeat(n)
+    raise ArgumentError if n &lt; 0
+    if block_given?
+      each do |*val|
+        n.times { yield *val }
+      end
+    else
+      to_enum(:repeat, n)
+    end
+  end
+end
+
+r = 1..10
+p r.map{|n| n**2}.repeat(2).first(5)
+#=&gt; [1, 1, 4, 4, 9]
+
+r = 1..Float::INFINITY
+p r.lazy.map{|n| n**2}.repeat(2).first(5)
+#=&gt; [1, 1, 4, 4, 9]
+
+# Lazy#to_enum のおかげで、repeat の返り値は
+# もとが Enumerator のときは Enumerator に、
+# もとが Lazy のときは Lazy になる
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_FIND_ALL"><code>select {|item| ... } -&gt; Enumerator::Lazy</code><span class="permalink">[<a href="../method/-enumerator=3a=3a-lazy/i/find_all.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Enumerator/Lazy.html#method-i-find_all">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>find_all {|item| ... } -&gt; Enumerator::Lazy</code></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-enumerable/i/select.html">Enumerable#select</a> と同じですが、配列ではなくEnumerator::Lazy を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+ブロックを指定しなかった場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-enumerable/i/select.html">Enumerable#select</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FORCE"><code>force(*args) -&gt; [object]</code><span class="permalink">[<a href="../method/-enumerator=3a=3a-lazy/i/force.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Enumerator/Lazy.html#method-i-force">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+全ての要素を含む配列を返します。Lazy から実際に値を取り出すのに使います。
+</p>
+<p>
+<a href="../method/-enumerable/i/to_a.html">Enumerable#to_a</a> のエイリアスです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_GREP"><code>grep(pattern) {|item| ... } -&gt; Enumerator::Lazy</code><span class="permalink">[<a href="../method/-enumerator=3a=3a-lazy/i/grep.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Enumerator/Lazy.html#method-i-grep">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-enumerable/i/grep.html">Enumerable#grep</a> と同じですが、配列ではなくEnumerator::Lazy を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-enumerable/i/grep.html">Enumerable#grep</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LAZY"><code>lazy -&gt; self</code><span class="permalink">[<a href="../method/-enumerator=3a=3a-lazy/i/lazy.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Enumerator/Lazy.html#method-i-lazy">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_REJECT"><code>reject {|item| ... } -&gt; Enumerator::Lazy</code><span class="permalink">[<a href="../method/-enumerator=3a=3a-lazy/i/reject.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Enumerator/Lazy.html#method-i-reject">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-enumerable/i/reject.html">Enumerable#reject</a> と同じですが、配列ではなくEnumerator::Lazy を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+ブロックを指定しなかった場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-enumerable/i/reject.html">Enumerable#reject</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TAKE"><code>take(n) -&gt; Enumerator::Lazy</code><span class="permalink">[<a href="../method/-enumerator=3a=3a-lazy/i/take.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Enumerator/Lazy.html#method-i-take">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-enumerable/i/take.html">Enumerable#take</a> と同じですが、配列ではなくEnumerator::Lazy を返します。
+</p>
+<p>
+n が大きな数 (100000とか) の場合に備えて再定義されています。
+配列が必要な場合は <a href="../method/-enumerable/i/first.html">Enumerable#first</a> を使って下さい。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] n:</dt>
+<dd>
+要素数を指定します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+n に負の数を指定した場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-enumerable/i/take.html">Enumerable#take</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TAKE_WHILE"><code>take_while -&gt; Enumerator::Lazy</code><span class="permalink">[<a href="../method/-enumerator=3a=3a-lazy/i/take_while.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Enumerator/Lazy.html#method-i-take_while">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>take_while {|item| ... } -&gt; Enumerator::Lazy</code></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-enumerable/i/take_while.html">Enumerable#take_while</a> と同じですが、配列ではなくEnumerator::Lazy を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-enumerable/i/take_while.html">Enumerable#take_while</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ZIP"><code>zip(*lists) -&gt; Enumerator::Lazy</code><span class="permalink">[<a href="../method/-enumerator=3a=3a-lazy/i/zip.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Enumerator/Lazy.html#method-i-zip">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>zip(*lists) {|v1, v2, ...| ... } -&gt; nil</code></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-enumerable/i/zip.html">Enumerable#zip</a> と同じですが、配列ではなくEnumerator::Lazy を返します。
+</p>
+<p>
+ただし一貫性のため、ブロック付きで呼び出した場合は Enumerable#zip と
+同じ挙動になります。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-enumerable/i/zip.html">Enumerable#zip</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

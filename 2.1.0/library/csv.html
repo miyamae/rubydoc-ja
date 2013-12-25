@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library csv</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; csvライブラリ
+</p>
+
+<h1>library csv</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+CSV (Comma Separated Values) を扱うライブラリです。
+</p>
+<p>
+このバージョンの CSV ライブラリは FasterCSV から始まりました。
+FasterCSV は Ruby1.8 に標準添付されている CSV ライブラリの置き換えとして開発されました。
+このライブラリはユーザの関心事を解決するためにデザインされています。
+主なゴールが三つあります。
+</p>
+<ol>
+<li>ピュア Ruby のままで元の CSV ライブラリよりもかなり速くすること</li>
+<li>小さくメンテナンスしやすいコードベースであること (FasterCSV はかなり大きく
+機能豊かになりました。構文解析部分のコードはかなり小さいままです)</li>
+<li>CSV のインターフェイスを改善すること</li>
+</ol>
+<p>
+明らかに最後のものは主観的です。変更するやむを得ない理由が無い限り、オリジナルの
+インターフェイスに従うようにしたので、おそらく旧 CSV ライブラリとはあまり
+大きな違いは無いでしょう。
+</p>
+<h2 >古い CSV ライブラリとの違い</h2>
+<p>
+大きな違いについて言及します。
+</p>
+<h3 >CSV 構文解析</h3>
+<ul>
+<li>このパーサは m17n に対応しています。<a href="../class/-c-s-v.html">CSV</a> も参照してください</li>
+<li>このライブラリはより厳しいパーサを持っているので、問題のあるデータに対して <a href="../class/-c-s-v=3a=3a-malformed-c-s-v-error.html">CSV::MalformedCSVError</a> を投げます</li>
+<li>旧 CSV ライブラリよりも行末に関しては寛容ではありません。あなたが :row_sep としてセットした値が法です。
+しかし、自動検出させることもできます</li>
+<li>旧ライブラリでは空行に対して [nil] を返しますが、このライブラリは空の配列を返します</li>
+<li>このライブラリはかなり速いパーサを持っています</li>
+</ul>
+<h3 >インターフェイス</h3>
+<ul>
+<li>オプションをセットするのにハッシュ形式の引数を使うようになりました</li>
+<li>CSV#generate_row, CSV#parse_row はなくなりました</li>
+<li>古い CSV::Reader, CSV::Writer クラスはなくなりました</li>
+<li><a href="../method/-c-s-v/s/open.html">CSV.open</a> はより Ruby らしくなりました</li>
+<li><a href="../class/-c-s-v.html">CSV</a> オブジェクトは <a href="../class/-i-o.html">IO</a> の多くのメソッドをサポートするようになりました</li>
+<li>文字列や IO のようなオブジェクトを読み書きするためにラップする <a href="../method/-c-s-v/s/new.html">CSV.new</a> メソッドが追加されました</li>
+<li><a href="../method/-c-s-v/s/generate.html">CSV.generate</a> は古いものとは異なります</li>
+<li>部分読み出しはもうサポートしていません。読み込みは行単位で行います</li>
+<li>パフォーマンスのため、インスタンスメソッドでセパレータを上書き出来なくなりました。
+<a href="../method/-c-s-v/s/new.html">CSV.new</a> でセットするようにしてください。</li>
+</ul>
+<h2 >CSV とは</h2>
+<p>
+CSV ライブラリは <a class="external" href="http://www.ietf.org/rfc/rfc4180.txt">[RFC4180]</a> から直接とられたかなり厳しい定義を維持します。
+一ヶ所だけ定義を緩和することでこのライブラリを使いやすくしています。<a href="../class/-c-s-v.html">CSV</a> は
+すべての有効な CSV ファイルをパースします。
+</p>
+<p>
+不正な CSV データを与えたくない。あるフィールドが不正であることが確定す
+るのはファイルを全て読み込んだ後です。これは多くの時間やメモリを消費し
+ます。
+</p>
+<p>
+Ruby の組込みメソッドはほとんど全ての点でより優れています。運が良ければ
+不正な CSV データを与えても動きます。例えば、クオートされていないフィー
+ルドだけを持つ CSV データは次のように簡単にパースできます。
+</p>
+<pre>
+data.split(&quot;,&quot;)
+</pre>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-c-s-v.html">CSV</a>
+</td>
+<td class="description"><p>
+このクラスは CSV ファイルやデータに対する完全なインターフェイスを提供します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-c-s-v=3a=3a-row.html">CSV::Row</a>
+</td>
+<td class="description"><p>
+<a href="../class/-c-s-v=3a=3a-row.html">CSV::Row</a> は配列やハッシュのように似ています。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-c-s-v=3a=3a-table.html">CSV::Table</a>
+</td>
+<td class="description"><p>
+<a href="../class/-c-s-v=3a=3a-table.html">CSV::Table</a> は CSV ドキュメントを表す二次元のデータ構造です。
+行単位や列単位の操作を行うことが出来ます。また必要であれば CSV に
+戻すこともできます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-c-s-v=3a=3a-field-info.html">CSV::FieldInfo</a>
+</td>
+<td class="description"><p>
+行が読み込まれたデータソース内でのフィールドの位置の情報を格納するための
+構造体です。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-c-s-v=3a=3a-malformed-c-s-v-error.html">CSV::MalformedCSVError</a>
+</td>
+<td class="description"><p>
+不正な CSV をパースしようとしたときに発生する例外です。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

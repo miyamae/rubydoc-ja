@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class WEBrick::HTTPAuth::BasicAuth</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/webrick=2fhttpauth=2fbasicauth.html">webrick/httpauth/basicauthライブラリ</a>
+&gt; WEBrick::HTTPAuth::BasicAuthクラス
+</p>
+
+
+<h1>class WEBrick::HTTPAuth::BasicAuth</h1>
+<p>
+
+
+クラスの継承リスト: WEBrick::HTTPAuth::BasicAuth
+
+      &lt; <a href="../class/-w-e-brick=3a=3a-h-t-t-p-auth=3a=3a-authenticator.html">WEBrick::HTTPAuth::Authenticator</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+HTTP の Basic 認証のためのクラスです。
+</p>
+<p>
+例
+</p>
+<pre>
+realm = &quot;WEBrick's realm&quot;
+srv = HTTPServer.new({ :BindAddress =&gt; '127.0.0.1', :Port =&gt; 10080})
+
+htpd = HTTPAuth::Htpasswd.new('dot.htpasswd')
+htpd.set_passwd(nil, 'username', 'supersecretpass')
+
+authenticator = HTTPAuth::BasicAuth.new(:UserDB =&gt; htpd, :Realm =&gt; realm)
+srv.mount_proc('/basic_auth') {|req, res|
+  authenticator.authenticate(req, res)
+  res.body = &quot;hoge&quot;
+}
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_MAKE_PASSWD">make_passwd</a>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_AUTHENTICATE">authenticate</a>
+
+<a href="#I_CHALLENGE">challenge</a>
+
+<a href="#I_LOGGER">logger</a>
+
+<a href="#I_REALM">realm</a>
+
+<a href="#I_USERDB">userdb</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_MAKE_PASSWD"><code>make_passwd(realm, user, pass) -&gt; String</code><span class="permalink">[<a href="../method/-w-e-brick=3a=3a-h-t-t-p-auth=3a=3a-basic-auth/s/make_passwd.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/webrick/httpauth/basicauth/rdoc/WEBrick/HTTPAuth/BasicAuth.html#method-c-make_passwd">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+pass をランダムなソルトで crypt した文字列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] realm:</dt>
+<dd>
+レルムを指定します。
+</dd>
+<dt class='method-param'>[PARAM] user:</dt>
+<dd>
+ユーザ名を指定します。
+</dd>
+<dt class='method-param'>[PARAM] pass:</dt>
+<dd>
+パスワードを指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_NEW"><code>new(config, default = Config::BasicAuth) -&gt; WEBrick::HTTPAuth::BasicAuth</code><span class="permalink">[<a href="../method/-w-e-brick=3a=3a-h-t-t-p-auth=3a=3a-basic-auth/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/webrick/httpauth/basicauth/rdoc/WEBrick/HTTPAuth/BasicAuth.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+BasicAuth オブジェクトを生成します。config は設定を保存したハッシュです。
+</p>
+<p>
+config で有効なハッシュキーは以下の通りです。
+</p>
+<pre>
+:Realm            =&gt;
+:UserDB           =&gt;
+:Logger           =&gt;
+:AutoReloadUserDB =&gt;
+</pre>
+<p>
+realm を表す文字列 :Realm には与えます。:UserDB
+には <a href="../class/-w-e-brick=3a=3a-h-t-t-p-auth=3a=3a-htpasswd.html">WEBrick::HTTPAuth::Htpasswd</a> オブジェクトを与えます。:Logger には
+ロガーオブジェクトを与えます。また、:AutoReloadUserDB には
+<a href="../method/-w-e-brick=3a=3a-h-t-t-p-auth=3a=3a-htpasswd/i/get_passwd.html">WEBrick::HTTPAuth::Htpasswd#get_passwd</a> の
+reload_db に渡す引数を与えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] config:</dt>
+<dd>
+設定を保持しているハッシュを指定します。
+</dd>
+<dt class='method-param'>[PARAM] default:</dt>
+<dd>
+デフォルトは <a href="../method/-w-e-brick=3a=3a-config/c/-basic-auth.html">WEBrick::Config::BasicAuth</a> です。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_AUTHENTICATE"><code>authenticate(request, response) -&gt; bool</code><span class="permalink">[<a href="../method/-w-e-brick=3a=3a-h-t-t-p-auth=3a=3a-basic-auth/i/authenticate.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/webrick/httpauth/basicauth/rdoc/WEBrick/HTTPAuth/BasicAuth.html#method-i-authenticate">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+クライアントから送られてきたユーザ名とパスワードを認証します。
+認証に失敗した場合は challenge を呼びます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] request:</dt>
+<dd>
+<a href="../class/-w-e-brick=3a=3a-h-t-t-p-request.html">WEBrick::HTTPRequest</a> のインスタンスを指定します。
+</dd>
+<dt class='method-param'>[PARAM] response:</dt>
+<dd>
+<a href="../class/-w-e-brick=3a=3a-h-t-t-p-response.html">WEBrick::HTTPResponse</a> のインスタンスを指定します。
+</dd>
+<dt>[EXCEPTION] WEBrick::HTTPStatus::Unauthorized:</dt>
+<dd>
+認証に失敗した場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_CHALLENGE"><code>challenge(request, response) -&gt; ()</code><span class="permalink">[<a href="../method/-w-e-brick=3a=3a-h-t-t-p-auth=3a=3a-basic-auth/i/challenge.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/webrick/httpauth/basicauth/rdoc/WEBrick/HTTPAuth/BasicAuth.html#method-i-challenge">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+クライアントにパスワードを要求するためにレスポンスに WWW-Authenticate ヘッダを
+設定し、例外 WEBrick::HTTPStatus::Unauthorized を投げます。
+</p>
+<dl>
+<dt>[EXCEPTION] WEBrick::HTTPStatus::Unauthorized:</dt>
+<dd>
+このメソッドを呼ぶと必ず発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_LOGGER"><code>logger -&gt; object</code><span class="permalink">[<a href="../method/-w-e-brick=3a=3a-h-t-t-p-auth=3a=3a-basic-auth/i/logger.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/webrick/httpauth/basicauth/rdoc/WEBrick/HTTPAuth/BasicAuth.html#method-i-logger">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ロガーオブジェクトを返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_REALM"><code>realm -&gt; String</code><span class="permalink">[<a href="../method/-w-e-brick=3a=3a-h-t-t-p-auth=3a=3a-basic-auth/i/realm.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/webrick/httpauth/basicauth/rdoc/WEBrick/HTTPAuth/BasicAuth.html#method-i-realm">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+realm を文字列で返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_USERDB"><code>userdb -&gt; WEBrick::HTTPAuth::Htpasswd</code><span class="permalink">[<a href="../method/-w-e-brick=3a=3a-h-t-t-p-auth=3a=3a-basic-auth/i/userdb.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/webrick/httpauth/basicauth/rdoc/WEBrick/HTTPAuth/BasicAuth.html#method-i-userdb">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ユーザ名とパスワードを保存した <a href="../class/-w-e-brick=3a=3a-h-t-t-p-auth=3a=3a-htpasswd.html">WEBrick::HTTPAuth::Htpasswd</a> オブジェクトを返します。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

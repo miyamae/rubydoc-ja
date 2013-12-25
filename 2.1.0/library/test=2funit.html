@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library test/unit</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; test/unitライブラリ
+</p>
+
+<h1>library test/unit</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+ユニットテストを行うためのライブラリです。
+</p>
+<p>
+test/unit は <a href="../library/minitest=2funit.html">minitest/unit</a> を使って再実装されましたが、完全な互
+換性がある訳ではありません。1.9 以降で test/unit を使いたい場合は、以下
+のtest-unit を RubyGems でインストールしてください。(本ドキュメントでは、
+1.9 以降については <a href="../library/minitest=2funit.html">minitest/unit</a> で再実装された test/unit につ
+いて記述しています)
+</p>
+<ul>
+<li>Test::Unit - Ruby用単体テストフレームワーク: <a class="external" href="http://test-unit.rubyforge.org/index.html.ja">http://test-unit.rubyforge.org/index.html.ja</a></li>
+</ul>
+<h2 >使い方</h2>
+<p>
+Test::Unit は以下のように使います。
+</p>
+<p>
+まずテスト対象のソース(foo.rb)が必要です。
+</p>
+<pre>
+class Foo
+   def foo
+     &quot;foo&quot;
+   end
+   def bar
+     &quot;foo&quot;
+   end
+end
+</pre>
+<p>
+次にユニットテスト(test_foo.rb)を書きます。テストを実行するメソッド(テストメソッド)の名前は
+全て test_ で始まる必要があります。テストメソッドが実行される前には setup メソッドが必ず
+呼ばれます。実行されたあとには、teardown メソッドが必ず呼ばれます。
+</p>
+<pre>
+require 'test/unit'
+require 'foo'
+
+class TC_Foo &lt; Test::Unit::TestCase
+  def setup
+    @obj = Foo.new
+  end
+
+  # def teardown
+  # end
+
+  def test_foo
+    assert_equal(&quot;foo&quot;, @obj.foo)
+  end
+  def test_bar
+    assert_equal(&quot;bar&quot;, @obj.bar)
+  end
+end
+</pre>
+<p>
+テストを実行するには上で用意した test_foo.rb を実行します。
+デフォルトではすべてのテストが実行されます。
+</p>
+<pre>
+$ ruby test_foo.rb
+
+Loaded suite test_foo
+Started
+F.
+Finished in 0.022223 seconds.
+
+  1) Failure:
+test_bar(TC_Foo) [test_foo.rb:16]:
+&lt;&quot;bar&quot;&gt; expected but was
+&lt;&quot;foo&quot;&gt;.
+
+2 tests, 2 assertions, 1 failures, 0 errors, 0 skips
+</pre>
+<p>
+test_bar だけテストしたい場合は以下のようなオプションを与えます。
+</p>
+<pre>
+$ ruby test_foo.rb --name test_bar
+
+Loaded suite test_foo
+Started
+F
+Finished in 0.019573 seconds.
+
+  1) Failure:
+test_bar(TC_Foo) [test_foo.rb:16]:
+&lt;&quot;bar&quot;&gt; expected but was
+&lt;&quot;foo&quot;&gt;.
+
+1 tests, 1 assertions, 1 failures, 0 errors, 0 skips
+</pre>
+<p>
+--name=test_barのような指定は行えません。
+</p>
+<p>
+以下のようにすると help も表示されます。
+</p>
+<pre>
+$ ruby test_foo.rb --help
+Usage: test_foo [options]
+minitest options:
+    -h, --help                       Display this help.
+    -s, --seed SEED                  Sets random seed
+    -v, --verbose                    Verbose. Show progress processing files.
+    -n, --name PATTERN               Filter test names on pattern.
+        --jobs-status [TYPE]         Show status of jobs every file; Disabled when --jobs isn't specified.
+    -j, --jobs N                     Allow run tests with N jobs at once
+        --no-retry                   Don't retry running testcase when --jobs specified
+        --ruby VAL                   Path to ruby; It'll have used at -j option
+    -q, --hide-skip                  Hide skipped tests
+    -b, --basedir=DIR                Base directory of test suites.
+    -x, --exclude PATTERN            Exclude test files on pattern.
+    -Idirectory                      Add library load path
+        --[no-]gc-stress             Set GC.stress as true
+</pre>
+<p>
+複数のテストを一度に行う場合、以下のように書いただけのファイルを実行します。
+</p>
+<pre>
+require 'test/unit'
+require 'test_foo.rb'
+require 'test_bar.rb'
+</pre>
+<h2 >いつテストは実行されるか</h2>
+<p>
+上の例では、テストクラスを「定義しただけ」で、テストが実行されています。
+これは、require 'test/unit'した時に<a href="../method/-mini-test=3a=3a-unit/s/autorun.html">MiniTest::Unit.autorun</a>を実行し
+ているためです。その結果、終了時の後処理として実行されるようになってい
+ます。
+</p>
+<h2 >Error と Failure の違い</h2>
+<dl>
+<dt>Error</dt>
+<dd>
+<p>
+テストメソッド実行中に例外が発生した。
+</p>
+</dd>
+<dt>Failure</dt>
+<dd>
+<p>
+アサーションに失敗した。
+</p>
+</dd>
+</dl>
+<h2 >並列実行</h2>
+<p>
+1.9.3 から単体テストの高速化のために、並列実行がサポートされました。
+</p>
+<p>
+並列化の仕組みについては以下の記事をご覧ください。
+</p>
+<ul>
+<li>Rubyist Magazine 0033 号 詳解! test-all 並列化: <a class="external" href="http://jp.rubyist.net/magazine/?0033-ParallelizeTestAll">http://jp.rubyist.net/magazine/?0033-ParallelizeTestAll</a></li>
+</ul>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-test=3a=3a-unit=3a=3a-test-case.html">Test::Unit::TestCase</a>
+</td>
+<td class="description"><p>
+テストの基本単位(あるいは「テスト本体」)を表すクラスです。
+テストを行うメソッド(テストメソッド)は TestCase のサブクラスのインスタンスメソッド
+として定義されます。テストメソッドの名前は「test」で始まっていなければなりません。
+逆に、「test」で始まっているメソッドは全てテストメソッドと見なされます。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>モジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-test=3a=3a-unit.html">Test::Unit</a>
+</td>
+<td class="description"><p>
+ユニットテストを行うためのモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-test=3a=3a-unit=3a=3a-assertions.html">Test::Unit::Assertions</a>
+</td>
+<td class="description"><p>
+各種の assert メソッドを提供するモジュールです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>同時にrequireされるライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/test=2funit=2fassertions.html">test/unit/assertions</a></td>
+<td class="description"><p>
+各種の assert メソッドを提供します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/test=2funit=2ftestcase.html">test/unit/testcase</a></td>
+<td class="description"><p>
+テストケースを記述するときに使います。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

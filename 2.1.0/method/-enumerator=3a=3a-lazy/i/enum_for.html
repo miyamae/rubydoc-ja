@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method Enumerator::Lazy#enum_for</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-enumerator=3a=3a-lazy.html">Enumerator::Lazyクラス</a>
+&gt; enum_for
+
+</p>
+
+
+<h1>instance method Enumerator::Lazy#enum_for</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_ENUM_FOR"><code>to_enum(method = :each, *args) -&gt; Enumerator::Lazy</code><span class="permalink">[<a href="../../../method/-enumerator=3a=3a-lazy/i/enum_for.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Enumerator/Lazy.html#method-i-enum_for">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>enum_for(method = :each, *args) -&gt; Enumerator::Lazy</code></dt>
+<dt class="method-heading"><code>to_enum(method = :each, *args) {|*args| block} -&gt; Enumerator::Lazy</code></dt>
+<dt class="method-heading"><code>enum_for(method = :each, *args) {|*args| block} -&gt; Enumerator::Lazy</code></dt>
+<dd class="method-description">
+<p>
+<a href="../../../method/-object/i/to_enum.html">Object#to_enum</a> と同じですが、Enumerator::Lazy を返します。
+</p>
+<p>
+to_enum は「ブロック付きで呼ぶとループを実行し、ブロックを省略した場合は
+Enumerator を返す」ようなメソッドを定義するときによく使われます。
+このときに lazy 性が正しく引き継がれるように、Lazy#to_enum は
+素のEnumerator ではなく Enumerator::Lazy を返すようになってします。
+</p>
+<p>
+例:
+</p>
+<pre>
+module Enumerable
+  # 要素をn回ずつ繰り返すメソッド
+  # 例：[1,2,3].repeat(2)  #=&gt; [1,1,2,2,3,3]
+  def repeat(n)
+    raise ArgumentError if n &lt; 0
+    if block_given?
+      each do |*val|
+        n.times { yield *val }
+      end
+    else
+      to_enum(:repeat, n)
+    end
+  end
+end
+
+r = 1..10
+p r.map{|n| n**2}.repeat(2).first(5)
+#=&gt; [1, 1, 4, 4, 9]
+
+r = 1..Float::INFINITY
+p r.lazy.map{|n| n**2}.repeat(2).first(5)
+#=&gt; [1, 1, 4, 4, 9]
+
+# Lazy#to_enum のおかげで、repeat の返り値は
+# もとが Enumerator のときは Enumerator に、
+# もとが Lazy のときは Lazy になる
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

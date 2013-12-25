@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>module function Signal.#trap</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-signal.html">Signalモジュール</a>
+&gt; trap
+
+</p>
+
+
+<h1>module function Signal.#trap</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_TRAP"><code>trap(signal, command) -&gt; String | Proc | nil</code><span class="permalink">[<a href="../../../method/-signal/m/trap.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Signal.html#method-c-trap">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>trap(signal) { ... } -&gt; String | Proc | nil</code></dt>
+<dd class="method-description">
+<p>
+指定された割り込み signal に対するハンドラとして
+command を登録します。
+指定したシグナルが捕捉された時には例外が発生せず、代わりに command が実行されます。
+ブロックを指定した場合にはブロックをハンドラとして登録します。
+</p>
+<p>
+trap は前回の trap で設定したハンドラを返します。
+文字列を登録していた場合はそれを、
+ブロックを登録していたらそれを <a href="../../../class/-proc.html">Proc</a> オブジェクトに変換して返します。
+また何も登録されていないときも nil を返します。
+ruby の仕組みの外でシグナルハンドラが登録された場合
+(例えば拡張ライブラリが独自に sigaction を呼んだ場合など)
+も nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] signal:</dt>
+<dd>
+シグナル名を表す文字列か <a href="../../../class/-symbol.html">Symbol</a>、またはシグナル番号を指定します。
+さらに特別な値として 0 または &quot;EXIT&quot; が指定できます。
+これは「プログラムの終了時」を表します。
+</dd>
+<dt class='method-param'>[PARAM] command:</dt>
+<dd>
+シグナルハンドラとして Ruby プログラムを表す文字列か Proc オブジェクト、また次に挙げる文字列を
+指定します。nil、空文字列&quot;&quot;、&quot;SIG_IGN&quot; または&quot;IGNORE&quot; を指定した時は、
+可能ならばそのシグナルを無視します。
+&quot;SIG_DFL&quot; または &quot;DEFAULT&quot; を指定した時は、シグナルハンドラをデフォルトに戻します。
+&quot;EXIT&quot;を指定した時は、シグナルを受け取ると終了処理を
+行ったあとステータス 0 で終了します。
+文字列の代わりに <a href="../../../class/-symbol.html">Symbol</a> で指定することも出来ます。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+引数 signalに SEGV BUS ILL FPE VTALRM を指定した場
+合に発生します。また、システムに定義されていないシ
+グナルを引数 signal に指定した場合に発生します。
+例えばネイティブな Windows システム (mswin32,
+mingw など) で動く ruby では INT ILL FPE SEGV
+TERM BREAK ABRT EXIT しか定義されていません。
+</dd>
+</dl>
+<p>
+いくつかのシグナルに対して、Ruby インタプリタは例外 <a href="../../../class/-interrupt.html">Interrupt</a> や
+<a href="../../../class/-signal-exception.html">SignalException</a> を発生させます。このようなシグナルは例外処理によっ
+て捕捉することもできます。
+</p>
+<p>
+例:
+</p>
+<pre>
+begin
+  Process.kill :QUIT, $$   # 自身にSIGQUITを送信
+rescue SignalException
+  puts &quot;rescue #$!&quot;
+end
+# =&gt; rescue SIGQUIT
+</pre>
+<p>
+例:
+</p>
+<pre>
+Signal.trap(:INT, &quot;p true&quot;)       # =&gt; &quot;DEFAULT&quot;
+Signal.trap(:INT) { p false }     # =&gt; &quot;p true&quot;
+Signal.trap(:INT, proc{ p nil })  # =&gt; #&lt;Proc:0x8e45ae0@-:2&gt;
+Signal.trap(:INT, &quot;SIG_IGN&quot;)      # =&gt; #&lt;Proc:0x8e45914@-:3&gt;
+Signal.trap(:INT, &quot;DEFAULT&quot;)      # =&gt; &quot;IGNORE&quot;
+Signal.trap(:INT, &quot;EXIT&quot;)         # =&gt; &quot;DEFAULT&quot;
+Signal.trap(:INT, nil)            # =&gt; &quot;EXIT&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../doc/spec=2fterminate.html">終了処理</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

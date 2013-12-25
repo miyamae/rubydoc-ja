@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>変数と定数</title>
+</head>
+<body>
+
+<p>
+
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; 変数と定数
+
+</p>
+
+<h1>変数と定数</h1>
+
+<ul>
+<li><a href="#local">ローカル変数</a></li>
+<li><a href="#instance">インスタンス変数</a></li>
+<li><a href="#class">クラス変数</a></li>
+<li><a href="#class_var_scope">クラス変数のスコープ</a></li>
+<li><a href="#global">グローバル変数</a></li>
+<li><a href="#pseudo">疑似変数</a></li>
+<li><a href="#const">定数</a></li>
+<li><a href="#prio">定数参照の優先順位</a></li>
+</ul>
+<p>
+Ruby の変数と定数の種別は変数名の最初の一文字によって、
+ローカル変数、
+インスタンス変数、
+クラス変数、
+グローバル変数、
+定数
+のいずれかに区別されます。
+通常の変数の二文字目以降は英数字または
+_ですが、組み込み変数の一部には
+「`$'+1文字の記号」という変数があります(<a href="#builtin">組み込み変数</a>を参照)。変数名
+の長さにはメモリのサイズ以外の制限はありません。
+</p>
+<h2 id='local'>ローカル変数</h2>
+<p>
+例:
+</p>
+<pre>
+foobar
+</pre>
+<p>
+小文字または`_'で始まる識別子はローカル変数また
+はメソッド呼び出しです。ローカル変数スコープ(クラス、モジュー
+ル、メソッド定義の本体)における小文字で始まる識別子への最初
+の代入はそのスコープに属するローカル変数の宣言になります。宣
+言されていない識別子の参照は引数の無いメソッド呼び出しとみな
+されます。
+</p>
+<p>
+ローカル変数のスコープは、((*宣言した位置から*))その変数が宣
+言されたブロック、メソッド定義、またはクラス/モジュール定義
+の終りまでです。寿命もそのブロックの終りまで(トップレベルの
+ローカル変数はプログラムの終了まで)ですが、例外としてブロッ
+クが手続きオブジェクト化された場合は、そのオブジェクトが消滅
+するまで存在します。同じスコープを参照する手続きオブジェクト
+間ではローカル変数は共有されます。
+</p>
+<pre>
+# (A) の部分はスコープに入らない
+2.times {
+  p defined?(v)    # (A)
+  v = 1            # ここ(宣言開始)から
+  p v              # ここ(ブロックの終り)までが v のスコープ
+}
+
+# =&gt; nil
+     1
+     nil           &lt;- これが nil であることに注意
+     1
+</pre>
+<p>
+宣言は、例え実行されなくても宣言とみなされます。
+</p>
+<pre>
+v = 1 if false # 代入は行われないが宣言は有効
+p defined?(v)  # =&gt; &quot;local-variable&quot;
+p v            # =&gt; nil
+</pre>
+<h2 id='instance'>インスタンス変数</h2>
+<p>
+例:
+</p>
+<pre>
+@foobar
+</pre>
+<p>
+`@'で始まる変数はインスタンス変数であり、特定の
+オブジェクトに所属しています。インスタンス変数はそのクラスま
+たはサブクラスのメソッドから参照できます。初期化されていない
+インスタンス変数を参照した時の値はnilです。
+</p>
+<h2 id='class'>クラス変数</h2>
+<p>
+例:
+</p>
+<pre>
+class Foo
+  @@foo = 1
+  def bar
+    puts @@foo
+  end
+end
+</pre>
+<p>
+@@で始まる変数はクラス変数です。クラス変数はクラス定義
+の中で定義され、クラスの特異メソッド、インスタンスメソッドなどから参照／
+代入ができます。
+</p>
+<p>
+クラス変数と定数の違いは以下の通りです。
+</p>
+<ul>
+<li>再代入可能(定数は警告を出す)</li>
+<li>クラスの外から直接参照できない(継承されたクラスからは参照／代入可能)</li>
+</ul>
+<p>
+クラス変数はクラス自身のインスタンス変数とは以下の点で異なります。
+</p>
+<ul>
+<li>サブクラスから参照／代入が可能</li>
+<li>インスタンスメソッドから参照／代入が可能</li>
+</ul>
+<p>
+クラス変数は、そのクラスやサブクラス、それらのインスタンスで共有される
+グローバル変数であるとみなすことができます。
+</p>
+<pre>
+class Foo
+  @@foo = 1
+end
+class Bar &lt; Foo
+  p @@foo += 1          # =&gt; 2
+end
+class Baz &lt; Bar
+  p @@foo += 1          # =&gt; 3
+end
+</pre>
+<p>
+モジュールで定義されたクラス変数(モジュール変数)は、そのモジュールをイ
+ンクルードしたクラス間でも共有されます。
+</p>
+<pre>
+module Foo
+  @@foo = 1
+end
+class Bar
+  include Foo
+  p @@foo += 1          # =&gt; 2
+end
+class Baz
+  include Foo
+  p @@foo += 1          # =&gt; 3
+end
+</pre>
+<p>
+親クラスに、子クラスで既に定義されている同名のクラス変数を追加した場合には、
+子クラスのクラス変数が上書きされます。
+</p>
+<pre>
+class Foo
+end
+
+class Bar &lt; Foo
+  @@v = :bar
+end
+
+class Foo
+  @@v = :foo
+end
+
+class Bar
+  p @@v       #=&gt; :foo
+end
+</pre>
+<h3 id='class_var_scope'>クラス変数のスコープ</h3>
+<p>
+クラス変数は、その場所を囲むもっとも内側の(特異クラスでない) class 式
+または module 式のボディをスコープとして持ちます。
+</p>
+<pre>
+class Foo
+  @@a = :a
+  class &lt;&lt; Foo
+    p @@a       #=&gt; :a
+  end
+
+  def Foo.a1
+    p @@a
+  end
+end
+
+Foo.a1          #=&gt; :a
+
+def Foo.a2
+  p @@a
+end
+Foo.a2          #=&gt; NameError になります。
+
+class &lt;&lt; Foo
+  p @@a         #=&gt; NameError になります。
+end
+</pre>
+<h2 id='global'>グローバル変数</h2>
+<p>
+例:
+</p>
+<pre>
+$foobar
+$/
+</pre>
+<p>
+`$'で始まる変数はグローバル変数で、プログラムのどこからでも参照できます(その分、利用には注意が必要です)。
+グローバル変数には宣言は必要ありません。初期化されていないグローバル変数を参照した時の値はnilです。
+</p>
+<h3 id='builtin'>組み込み変数</h3>
+<p>
+グローバル変数には Ruby 処理系によって特殊な意味を与えられているものがあります。これらを組み込み変数と呼びます。
+</p>
+<p>
+詳細は <a href="../class/-kernel.html">Kernel</a> の特殊変数を参照してください。
+</p>
+<h3 >識別子と分類</h3>
+<p>
+組み込み変数の一部は、通常の変数としては使用できない特殊な名前を持っています。
+</p>
+<p>
+例えば、 $' や $&amp;  あるいは $1, $2, $12345678901234567890 がそうです。
+このように 「'$' + 特殊文字一文字」、または「'$' + 10進数字」という名前を持つ変数を特殊変数と呼びます。
+</p>
+<p>
+また、 $-F や $-I のような変数もあります。
+これらは Ruby の起動オプションと -F や -I などと対応しており、オプション変数と呼ばれます。
+</p>
+<h3 >スコープ</h3>
+<p>
+組み込み変数は文法解析上はグローバル変数として扱われます。しかし、実際のスコープは必ずしもグローバルとは限りません。
+</p>
+<p>
+組み込み変数には次の種類のスコープがありえます。
+</p>
+<dl>
+<dt>グローバルスコープ</dt>
+<dd>
+<p>
+通常のグローバル変数と同じ大域的なスコープを持ちます。
+</p>
+</dd>
+<dt>ローカルスコープ</dt>
+<dd>
+<p>
+通常のローカル変数と同じスコープを持ちます。つまり、 class 式本体やメソッド本体で行われた代入はその外側には影響しません。
+プログラム内のすべての場所において代入を行わずともアクセスできることを除いて、通常のローカル変数と同じです。
+</p>
+</dd>
+<dt>スレッドローカルスコープ</dt>
+<dd>
+<p>
+スレッドごとの値を持ちます。他のスレッドで異なる値が割り当てられても影響しません。
+</p>
+</dd>
+</dl>
+<p>
+また、一部の変数は読み取り専用です。ユーザープログラムから変更することができません。代入しようとすると実行時に例外を生じます。
+</p>
+<h2 id='pseudo'>疑似変数</h2>
+<p>
+通常の変数以外に疑似変数と呼ばれる特殊な変数があります。
+</p>
+<dl>
+<dt>self</dt>
+<dd>
+<p>
+現在のメソッドの実行主体
+</p>
+</dd>
+<dt>nil</dt>
+<dd>
+<p>
+<a href="../class/-nil-class.html">NilClass</a>クラスの唯一のインスタンス
+</p>
+</dd>
+<dt>true</dt>
+<dd>
+<p>
+<a href="../class/-true-class.html">TrueClass</a>クラスの唯一のインスタンス。真の代表値
+</p>
+</dd>
+<dt>false</dt>
+<dd>
+<p>
+<a href="../class/-false-class.html">FalseClass</a>クラスの唯一のインスタンス。nilとfalseは偽を表します。
+</p>
+</dd>
+<dt>__FILE__</dt>
+<dd>
+<p>
+現在のソースファイル名
+</p>
+<p>
+フルパスとは限らないため、フルパスが必要な場合は
+File.expand_path(__FILE__) とする必要があります。
+</p>
+</dd>
+<dt>__LINE__</dt>
+<dd>
+<p>
+現在のソースファイル中の行番号
+</p>
+</dd>
+<dt>__ENCODING__</dt>
+<dd>
+<p>
+現在のソースファイルのスクリプトエンコーディング
+</p>
+</dd>
+</dl>
+<p>
+疑似変数の値を変更することはできません。
+擬似変数へ代入すると文法エラーになります。
+</p>
+<h2 id='const'>定数</h2>
+<p>
+例:
+</p>
+<pre>
+FOOBAR
+</pre>
+<p>
+アルファベット大文字 ([A-Z]) で始まる識別子は定数です。
+定数の定義 (と初期化) は代入によって行われますが、メソッドの
+中では定義できません。一度定義された定数に再び代入を行おうと
+すると警告メッセージが出ます。定義されていない定数にアクセス
+すると例外 <a href="../class/-name-error.html">NameError</a> が発生します。
+</p>
+<p>
+定数はその定数が定義されたクラス/モジュール定義の中(メソッド
+本体やネストしたクラス/モジュール定義中を含みます)、クラスを
+継承しているクラス、モジュールをインクルードしているクラスま
+たはモジュールから参照することができます。クラス定義の外(トッ
+プレベル)で定義された定数は <a href="../class/-object.html">Object</a> に所属することになり
+ます。
+</p>
+<p>
+例:
+</p>
+<pre>
+class Foo
+  FOO = 'FOO'       # クラス Foo の定数 FOO を定義(Foo::FOO)
+end
+
+class Bar &lt; Foo
+  BAR = 'BAR'       # クラス Bar の定数 BAR を定義(Bar::BAR)
+
+  # 親クラスの定数は直接参照できる
+  p FOO             # =&gt; &quot;FOO&quot;
+  class Baz
+
+    # ネストしたクラスはクラスの継承関係上は無関係であるがネス
+    # トの外側の定数も直接参照できる
+    p BAR           # =&gt; &quot;BAR&quot;
+  end
+end
+</pre>
+<p>
+またクラス定義式はクラスオブジェクトの生成を行うと同時に、
+名前がクラス名である定数にクラスオブジェクトを代入する動作をします。
+クラス名を参照することは文法上は定数を参照していることになります。
+</p>
+<pre>
+class C
+end
+p C    # =&gt; C
+</pre>
+<p>
+あるクラスまたはモジュールで定義された定数を外部から参照する
+ためには`::'演算子を用います。またObjectクラスで
+定義されている定数(トップレベルの定数と言う)を確実に参照する
+ためには左辺無しの`::'演算子が使えます。
+</p>
+<p>
+例:
+</p>
+<pre>
+module M
+  I = 35
+  class C
+  end
+end
+p M::I   #=&gt; 35
+p M::C   #=&gt; M::C
+p ::M    #=&gt; M
+
+M::NewConst = 777   # =&gt; 777
+</pre>
+<h3 id='prio'>定数参照の優先順位</h3>
+<p>
+親クラスとネストの外側のクラスで同名の定数が定義されているとネストの外
+側の定数の方を先に参照します。つまり、定数参照時の定数の探索順序は、最
+初にネスト関係を外側に向かって探索し、次に継承関係を上位に向かって探索
+します。
+</p>
+<p>
+例:
+</p>
+<pre>
+class Foo
+  CONST = 'Foo'
+end
+
+class Bar
+  CONST = 'Bar'
+  class Baz &lt; Foo
+    p CONST             # =&gt; &quot;Bar&quot;      外側の定数
+    # この場合、親クラスの定数は明示的に指定しなければ見えない
+    p Foo::CONST        # =&gt; &quot;Foo&quot;
+  end
+end
+</pre>
+<p>
+トップレベルの定数定義はネストの外側とはみなされません。したがってトッ
+プレベルの定数は、継承関係を探索した結果で参照されるので優先順位は低い
+と言えます。
+</p>
+<p>
+例:
+</p>
+<pre>
+class Foo
+  CONST = 'Foo'
+end
+
+CONST = 'Object'
+
+class Bar &lt; Foo
+  p CONST               # =&gt; &quot;Foo&quot;
+end
+
+# 以下のように明示的にネストしていれば規則通り Object の定数
+# (ネストの外側)が先に探索される
+class Object
+  class Bar &lt; Foo
+    p CONST             # =&gt; &quot;Object&quot;
+  end
+end
+</pre>
+<p>
+上位のクラス(クラスの継承関係上、およびネストの関係上の上位クラス)の定
+数と同名の定数(下の例で CONST) に代入を行うと、上位の定数への代入では
+なく、そのクラスの定数の定義になります。
+</p>
+<p>
+例:
+</p>
+<pre>
+class Foo
+  CONST = 'Foo'
+end
+class Bar &lt; Foo
+  p CONST               # =&gt; &quot;Foo&quot;
+  CONST = 'Bar'         # Bar の定数 CONST を*定義*
+  p CONST               # =&gt; &quot;Bar&quot;  (Foo::CONST は隠蔽される)
+  p Foo::CONST          # =&gt; &quot;Foo&quot;  (:: 演算子で明示すれば見える)
+end
+</pre>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>
