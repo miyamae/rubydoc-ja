@@ -1,0 +1,2298 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class Encoding</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Encodingクラス
+</p>
+
+
+<h1>class Encoding</h1>
+<p>
+
+
+クラスの継承リスト: Encoding
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+文字エンコーディング(文字符号化方式)のクラスです。Rubyの多言語対応(M17N)機能において利用されます。
+</p>
+<p>
+例えば文字列オブジェクトは、文字列のバイト表現の他にそのバイト表現がどのエンコーディングによるものであるかも併せて保持しています。この情報は <a href="../method/-string/i/encoding.html">String#encoding</a> により取得できます。 Encoding オブジェクトを返すメソッドにはこの他に <a href="../method/-i-o/i/internal_encoding.html">IO#internal_encoding</a>, <a href="../method/-i-o/i/external_encoding.html">IO#external_encoding</a> などがあります。
+</p>
+<p>
+@see <a href="../doc/spec=2fm17n.html">多言語化</a>
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_ALIASES">aliases</a>
+
+<a href="#S_COMPATIBLE--3F">compatible?</a>
+
+<a href="#S_DEFAULT_EXTERNAL">default_external</a>
+
+<a href="#S_DEFAULT_EXTERNAL--3D">default_external=</a>
+
+<a href="#S_DEFAULT_INTERNAL">default_internal</a>
+
+<a href="#S_DEFAULT_INTERNAL--3D">default_internal=</a>
+
+<a href="#S_FIND">find</a>
+
+<a href="#S_LIST">list</a>
+
+<a href="#S_LOCALE_CHARMAP">locale_charmap</a>
+
+<a href="#S_NAME_LIST">name_list</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_ASCII_COMPATIBLE--3F">ascii_compatible?</a>
+
+<a href="#I_DUMMY--3F">dummy?</a>
+
+<a href="#I_INSPECT">inspect</a>
+
+<a href="#I_NAME">name</a>
+
+<a href="#I_NAME">to_s</a>
+
+<a href="#I_NAMES">names</a>
+
+<a href="#I_REPLICATE">replicate</a>
+
+</dd>
+
+<dt>定数</dt>
+<dd>
+
+<a href="#C_-A-N-S-I_-X3_4_1968">ANSI_X3_4_1968</a>
+
+<a href="#C_-A-N-S-I_-X3_4_1968">ASCII</a>
+
+<a href="#C_-A-N-S-I_-X3_4_1968">US_ASCII</a>
+
+<a href="#C_-A-S-C-I-I_8-B-I-T">ASCII_8BIT</a>
+
+<a href="#C_-A-S-C-I-I_8-B-I-T">BINARY</a>
+
+<a href="#C_-B-I-G5">BIG5</a>
+
+<a href="#C_-B-I-G5">Big5</a>
+
+<a href="#C_-B-I-G5_-H-K-S-C-S">BIG5_HKSCS</a>
+
+<a href="#C_-B-I-G5_-H-K-S-C-S">BIG5_HKSCS_2008</a>
+
+<a href="#C_-B-I-G5_-H-K-S-C-S">Big5_HKSCS</a>
+
+<a href="#C_-B-I-G5_-H-K-S-C-S">Big5_HKSCS_2008</a>
+
+<a href="#C_-B-I-G5_-U-A-O">BIG5_UAO</a>
+
+<a href="#C_-B-I-G5_-U-A-O">Big5_UAO</a>
+
+<a href="#C_-C-P1250">CP1250</a>
+
+<a href="#C_-C-P1250">WINDOWS_1250</a>
+
+<a href="#C_-C-P1250">Windows_1250</a>
+
+<a href="#C_-C-P1251">CP1251</a>
+
+<a href="#C_-C-P1251">WINDOWS_1251</a>
+
+<a href="#C_-C-P1251">Windows_1251</a>
+
+<a href="#C_-C-P1252">CP1252</a>
+
+<a href="#C_-C-P1252">WINDOWS_1252</a>
+
+<a href="#C_-C-P1252">Windows_1252</a>
+
+<a href="#C_-C-P1253">CP1253</a>
+
+<a href="#C_-C-P1253">WINDOWS_1253</a>
+
+<a href="#C_-C-P1253">Windows_1253</a>
+
+<a href="#C_-C-P1254">CP1254</a>
+
+<a href="#C_-C-P1254">WINDOWS_1254</a>
+
+<a href="#C_-C-P1254">Windows_1254</a>
+
+<a href="#C_-C-P1255">CP1255</a>
+
+<a href="#C_-C-P1255">WINDOWS_1255</a>
+
+<a href="#C_-C-P1255">Windows_1255</a>
+
+<a href="#C_-C-P1256">CP1256</a>
+
+<a href="#C_-C-P1256">WINDOWS_1256</a>
+
+<a href="#C_-C-P1256">Windows_1256</a>
+
+<a href="#C_-C-P1257">CP1257</a>
+
+<a href="#C_-C-P1257">WINDOWS_1257</a>
+
+<a href="#C_-C-P1257">Windows_1257</a>
+
+<a href="#C_-C-P1258">CP1258</a>
+
+<a href="#C_-C-P1258">WINDOWS_1258</a>
+
+<a href="#C_-C-P1258">Windows_1258</a>
+
+<a href="#C_-C-P437">CP437</a>
+
+<a href="#C_-C-P437">IBM437</a>
+
+<a href="#C_-C-P50220">CP50220</a>
+
+<a href="#C_-C-P50221">CP50221</a>
+
+<a href="#C_-C-P51932">CP51932</a>
+
+<a href="#C_-C-P65000">CP65000</a>
+
+<a href="#C_-C-P65000">UTF_7</a>
+
+<a href="#C_-C-P65001">CP65001</a>
+
+<a href="#C_-C-P65001">UTF_8</a>
+
+<a href="#C_-C-P737">CP737</a>
+
+<a href="#C_-C-P737">IBM737</a>
+
+<a href="#C_-C-P775">CP775</a>
+
+<a href="#C_-C-P775">IBM775</a>
+
+<a href="#C_-C-P850">CP850</a>
+
+<a href="#C_-C-P850">IBM850</a>
+
+<a href="#C_-C-P852">CP852</a>
+
+<a href="#C_-C-P852">IBM852</a>
+
+<a href="#C_-C-P855">CP855</a>
+
+<a href="#C_-C-P855">IBM855</a>
+
+<a href="#C_-C-P857">CP857</a>
+
+<a href="#C_-C-P857">IBM857</a>
+
+<a href="#C_-C-P860">CP860</a>
+
+<a href="#C_-C-P860">IBM860</a>
+
+<a href="#C_-C-P861">CP861</a>
+
+<a href="#C_-C-P861">IBM861</a>
+
+<a href="#C_-C-P862">CP862</a>
+
+<a href="#C_-C-P862">IBM862</a>
+
+<a href="#C_-C-P863">CP863</a>
+
+<a href="#C_-C-P863">IBM863</a>
+
+<a href="#C_-C-P864">CP864</a>
+
+<a href="#C_-C-P864">IBM864</a>
+
+<a href="#C_-C-P865">CP865</a>
+
+<a href="#C_-C-P865">IBM865</a>
+
+<a href="#C_-C-P866">CP866</a>
+
+<a href="#C_-C-P866">IBM866</a>
+
+<a href="#C_-C-P869">CP869</a>
+
+<a href="#C_-C-P869">IBM869</a>
+
+<a href="#C_-C-P874">CP874</a>
+
+<a href="#C_-C-P874">WINDOWS_874</a>
+
+<a href="#C_-C-P874">Windows_874</a>
+
+<a href="#C_-C-P878">CP878</a>
+
+<a href="#C_-C-P878">KOI8_R</a>
+
+<a href="#C_-C-P932">CP932</a>
+
+<a href="#C_-C-P932">CSWINDOWS31J</a>
+
+<a href="#C_-C-P932">CsWindows31J</a>
+
+<a href="#C_-C-P932">PCK</a>
+
+<a href="#C_-C-P932">SJIS</a>
+
+<a href="#C_-C-P932">WINDOWS_31J</a>
+
+<a href="#C_-C-P932">Windows_31J</a>
+
+<a href="#C_-C-P936">CP936</a>
+
+<a href="#C_-C-P936">GBK</a>
+
+<a href="#C_-C-P949">CP949</a>
+
+<a href="#C_-C-P950">CP950</a>
+
+<a href="#C_-C-P951">CP951</a>
+
+<a href="#C_-E-M-A-C-S_-M-U-L-E">EMACS_MULE</a>
+
+<a href="#C_-E-M-A-C-S_-M-U-L-E">Emacs_Mule</a>
+
+<a href="#C_-E-U-C-C-N">EUCCN</a>
+
+<a href="#C_-E-U-C-C-N">EUC_CN</a>
+
+<a href="#C_-E-U-C-C-N">EucCN</a>
+
+<a href="#C_-E-U-C-J-P">EUCJP</a>
+
+<a href="#C_-E-U-C-J-P">EUC_JP</a>
+
+<a href="#C_-E-U-C-J-P">EucJP</a>
+
+<a href="#C_-E-U-C-J-P_-M-S">EUCJP_MS</a>
+
+<a href="#C_-E-U-C-J-P_-M-S">EUC_JP_MS</a>
+
+<a href="#C_-E-U-C-J-P_-M-S">EucJP_ms</a>
+
+<a href="#C_-E-U-C-K-R">EUCKR</a>
+
+<a href="#C_-E-U-C-K-R">EUC_KR</a>
+
+<a href="#C_-E-U-C-K-R">EucKR</a>
+
+<a href="#C_-E-U-C-T-W">EUCTW</a>
+
+<a href="#C_-E-U-C-T-W">EUC_TW</a>
+
+<a href="#C_-E-U-C-T-W">EucTW</a>
+
+<a href="#C_-G-B12345">GB12345</a>
+
+<a href="#C_-G-B18030">GB18030</a>
+
+<a href="#C_-G-B1988">GB1988</a>
+
+<a href="#C_-I-S-O2022_-J-P">ISO2022_JP</a>
+
+<a href="#C_-I-S-O2022_-J-P">ISO_2022_JP</a>
+
+<a href="#C_-I-S-O2022_-J-P2">ISO2022_JP2</a>
+
+<a href="#C_-I-S-O2022_-J-P2">ISO_2022_JP_2</a>
+
+<a href="#C_-I-S-O8859_1">ISO8859_1</a>
+
+<a href="#C_-I-S-O8859_1">ISO_8859_1</a>
+
+<a href="#C_-I-S-O8859_10">ISO8859_10</a>
+
+<a href="#C_-I-S-O8859_10">ISO_8859_10</a>
+
+<a href="#C_-I-S-O8859_11">ISO8859_11</a>
+
+<a href="#C_-I-S-O8859_11">ISO_8859_11</a>
+
+<a href="#C_-I-S-O8859_13">ISO8859_13</a>
+
+<a href="#C_-I-S-O8859_13">ISO_8859_13</a>
+
+<a href="#C_-I-S-O8859_14">ISO8859_14</a>
+
+<a href="#C_-I-S-O8859_14">ISO_8859_14</a>
+
+<a href="#C_-I-S-O8859_15">ISO8859_15</a>
+
+<a href="#C_-I-S-O8859_15">ISO_8859_15</a>
+
+<a href="#C_-I-S-O8859_16">ISO8859_16</a>
+
+<a href="#C_-I-S-O8859_16">ISO_8859_16</a>
+
+<a href="#C_-I-S-O8859_2">ISO8859_2</a>
+
+<a href="#C_-I-S-O8859_2">ISO_8859_2</a>
+
+<a href="#C_-I-S-O8859_3">ISO8859_3</a>
+
+<a href="#C_-I-S-O8859_3">ISO_8859_3</a>
+
+<a href="#C_-I-S-O8859_4">ISO8859_4</a>
+
+<a href="#C_-I-S-O8859_4">ISO_8859_4</a>
+
+<a href="#C_-I-S-O8859_5">ISO8859_5</a>
+
+<a href="#C_-I-S-O8859_5">ISO_8859_5</a>
+
+<a href="#C_-I-S-O8859_6">ISO8859_6</a>
+
+<a href="#C_-I-S-O8859_6">ISO_8859_6</a>
+
+<a href="#C_-I-S-O8859_7">ISO8859_7</a>
+
+<a href="#C_-I-S-O8859_7">ISO_8859_7</a>
+
+<a href="#C_-I-S-O8859_8">ISO8859_8</a>
+
+<a href="#C_-I-S-O8859_8">ISO_8859_8</a>
+
+<a href="#C_-I-S-O8859_9">ISO8859_9</a>
+
+<a href="#C_-I-S-O8859_9">ISO_8859_9</a>
+
+<a href="#C_-I-S-O_2022_-J-P_-K-D-D-I">ISO_2022_JP_KDDI</a>
+
+<a href="#C_-K-O-I8_-U">KOI8_U</a>
+
+<a href="#C_-M-A-C-C-E-N-T-E-U-R-O">MACCENTEURO</a>
+
+<a href="#C_-M-A-C-C-E-N-T-E-U-R-O">MacCentEuro</a>
+
+<a href="#C_-M-A-C-C-R-O-A-T-I-A-N">MACCROATIAN</a>
+
+<a href="#C_-M-A-C-C-R-O-A-T-I-A-N">MacCroatian</a>
+
+<a href="#C_-M-A-C-C-Y-R-I-L-L-I-C">MACCYRILLIC</a>
+
+<a href="#C_-M-A-C-C-Y-R-I-L-L-I-C">MacCyrillic</a>
+
+<a href="#C_-M-A-C-G-R-E-E-K">MACGREEK</a>
+
+<a href="#C_-M-A-C-G-R-E-E-K">MacGreek</a>
+
+<a href="#C_-M-A-C-I-C-E-L-A-N-D">MACICELAND</a>
+
+<a href="#C_-M-A-C-I-C-E-L-A-N-D">MacIceland</a>
+
+<a href="#C_-M-A-C-J-A-P-A-N">MACJAPAN</a>
+
+<a href="#C_-M-A-C-J-A-P-A-N">MACJAPANESE</a>
+
+<a href="#C_-M-A-C-J-A-P-A-N">MacJapan</a>
+
+<a href="#C_-M-A-C-J-A-P-A-N">MacJapanese</a>
+
+<a href="#C_-M-A-C-R-O-M-A-N">MACROMAN</a>
+
+<a href="#C_-M-A-C-R-O-M-A-N">MacRoman</a>
+
+<a href="#C_-M-A-C-R-O-M-A-N-I-A">MACROMANIA</a>
+
+<a href="#C_-M-A-C-R-O-M-A-N-I-A">MacRomania</a>
+
+<a href="#C_-M-A-C-T-H-A-I">MACTHAI</a>
+
+<a href="#C_-M-A-C-T-H-A-I">MacThai</a>
+
+<a href="#C_-M-A-C-T-U-R-K-I-S-H">MACTURKISH</a>
+
+<a href="#C_-M-A-C-T-U-R-K-I-S-H">MacTurkish</a>
+
+<a href="#C_-M-A-C-U-K-R-A-I-N-E">MACUKRAINE</a>
+
+<a href="#C_-M-A-C-U-K-R-A-I-N-E">MacUkraine</a>
+
+<a href="#C_-S-H-I-F-T_-J-I-S">SHIFT_JIS</a>
+
+<a href="#C_-S-H-I-F-T_-J-I-S">Shift_JIS</a>
+
+<a href="#C_-S-J-I-S_-D-O-C-O-M-O">SJIS_DOCOMO</a>
+
+<a href="#C_-S-J-I-S_-D-O-C-O-M-O">SJIS_DoCoMo</a>
+
+<a href="#C_-S-J-I-S_-K-D-D-I">SJIS_KDDI</a>
+
+<a href="#C_-S-J-I-S_-S-O-F-T-B-A-N-K">SJIS_SOFTBANK</a>
+
+<a href="#C_-S-J-I-S_-S-O-F-T-B-A-N-K">SJIS_SoftBank</a>
+
+<a href="#C_-S-T-A-T-E-L-E-S-S_-I-S-O_2022_-J-P">STATELESS_ISO_2022_JP</a>
+
+<a href="#C_-S-T-A-T-E-L-E-S-S_-I-S-O_2022_-J-P">Stateless_ISO_2022_JP</a>
+
+<a href="#C_-S-T-A-T-E-L-E-S-S_-I-S-O_2022_-J-P_-K-D-D-I">STATELESS_ISO_2022_JP_KDDI</a>
+
+<a href="#C_-S-T-A-T-E-L-E-S-S_-I-S-O_2022_-J-P_-K-D-D-I">Stateless_ISO_2022_JP_KDDI</a>
+
+<a href="#C_-T-I-S_620">TIS_620</a>
+
+<a href="#C_-U-C-S_2-B-E">UCS_2BE</a>
+
+<a href="#C_-U-C-S_2-B-E">UTF_16BE</a>
+
+<a href="#C_-U-C-S_4-B-E">UCS_4BE</a>
+
+<a href="#C_-U-C-S_4-B-E">UTF_32BE</a>
+
+<a href="#C_-U-C-S_4-L-E">UCS_4LE</a>
+
+<a href="#C_-U-C-S_4-L-E">UTF_32LE</a>
+
+<a href="#C_-U-T-F8_-D-O-C-O-M-O">UTF8_DOCOMO</a>
+
+<a href="#C_-U-T-F8_-D-O-C-O-M-O">UTF8_DoCoMo</a>
+
+<a href="#C_-U-T-F8_-K-D-D-I">UTF8_KDDI</a>
+
+<a href="#C_-U-T-F8_-M-A-C">UTF8_MAC</a>
+
+<a href="#C_-U-T-F8_-M-A-C">UTF_8_HFS</a>
+
+<a href="#C_-U-T-F8_-M-A-C">UTF_8_MAC</a>
+
+<a href="#C_-U-T-F8_-S-O-F-T-B-A-N-K">UTF8_SOFTBANK</a>
+
+<a href="#C_-U-T-F8_-S-O-F-T-B-A-N-K">UTF8_SoftBank</a>
+
+<a href="#C_-U-T-F_16">UTF_16</a>
+
+<a href="#C_-U-T-F_16-L-E">UTF_16LE</a>
+
+<a href="#C_-U-T-F_32">UTF_32</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_ALIASES"><code>aliases -&gt; Hash</code><span class="permalink">[<a href="../method/-encoding/s/aliases.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-aliases">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+エンコーディングの別名に対して元の名前を対応づけるハッシュを返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+p Encoding.aliases
+#=&gt; {&quot;BINARY&quot;=&gt;&quot;ASCII-8BIT&quot;, &quot;ASCII&quot;=&gt;&quot;US-ASCII&quot;, &quot;ANSI_X3.4-1986&quot;=&gt;&quot;US-ASCII&quot;,
+    &quot;SJIS&quot;=&gt;&quot;Shift_JIS&quot;, &quot;eucJP&quot;=&gt;&quot;EUC-JP&quot;, &quot;CP932&quot;=&gt;&quot;Windows-31J&quot;}
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_COMPATIBLE--3F"><code>compatible?(obj1, obj2) -&gt; Encoding | nil</code><span class="permalink">[<a href="../method/-encoding/s/compatible=3f.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-compatible-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+2つのオブジェクトのエンコーディングに関する互換性をチェックします。
+互換性がある場合はそのエンコーディングを、
+ない場合は nil を返します。
+</p>
+<p>
+引数が両方とも文字列である場合、互換性があるならば
+その文字列を結合できます。この場合返り値のエンコーディングは
+結合した文字列が取るであろう Encoding オブジェクトを返します。
+</p>
+<pre>
+Encoding.compatible?(&quot;\xa1&quot;.force_encoding(&quot;iso-8859-1&quot;), &quot;b&quot;)
+#=&gt; #&lt;Encoding:ISO-8859-1&gt;
+
+Encoding.compatible?(
+  &quot;\xa1&quot;.force_encoding(&quot;iso-8859-1&quot;),
+  &quot;\xa1\xa1&quot;.force_encoding(&quot;euc-jp&quot;))
+#=&gt; nil
+</pre>
+<p>
+引数が文字列でない場合でも、両方のオブジェクトが encoding を持つ場合には
+互換性を判定することができます。
+</p>
+<pre>
+Encoding.compatible?(Encoding::UTF_8, Encoding::CP932)
+# =&gt; nil
+Encoding.compatible?(Encoding::UTF_8, Encoding::US_ASCII)
+# =&gt; #&lt;Encoding:UTF-8&gt;
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] obj1:</dt>
+<dd>
+チェック対象のオブジェクト
+</dd>
+<dt class='method-param'>[PARAM] obj2:</dt>
+<dd>
+チェック対象のオブジェクト
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_DEFAULT_EXTERNAL"><code>default_external -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/s/default_external.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-default_external">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+規定の外部エンコーディングを返します。
+</p>
+<p>
+入出力において、外部エンコーディングが指定されていない場合の規定値として利用されます。Rubyはロケールまたは -E オプションに従って default_external を決定します。ロケールの確認・設定方法については各システムのマニュアルを参照してください。
+</p>
+<p>
+default_external は必ず設定されます。<a href="../method/-encoding/s/locale_charmap.html">Encoding.locale_charmap</a> が nil を返す場合には US-ASCII が、
+ロケールにRubyが扱えないエンコーディングが指定されている場合には ASCII-8BIT が、default_external に設定されます。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/utilities/locale.html">locale(1)</a>, <a href="../method/-encoding/s/locale_charmap.html">Encoding.locale_charmap</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_DEFAULT_EXTERNAL--3D"><code>default_external=(encoding)</code><span class="permalink">[<a href="../method/-encoding/s/default_external=3d.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-default_external-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+規定の外部エンコーディングを設定します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_DEFAULT_INTERNAL"><code>default_internal -&gt; Encoding | nil</code><span class="permalink">[<a href="../method/-encoding/s/default_internal.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-default_internal">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+規定の内部エンコーディングを返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_DEFAULT_INTERNAL--3D"><code>default_internal=(encoding)</code><span class="permalink">[<a href="../method/-encoding/s/default_internal=3d.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-default_internal-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+規定の内部エンコーディングを設定します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_FIND"><code>find(name) -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/s/find.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-find">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+指定された name という名前を持つ Encoding オブジェクトを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+エンコーディング名を表す <a href="../class/-string.html">String</a> か <a href="../class/-symbol.html">Symbol</a> を指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+発見された Encoding オブジェクトを返します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+指定した名前のエンコーディングが発見できないと発生します。
+</dd>
+</dl>
+<p>
+特殊なエンコーディング名として、ロケールエンコーディングを表す locale、default_external を表す external、default_internal を表す internal、ファイルシステムエンコーディングを表す filesystem があります。
+</p>
+<p>
+例:
+</p>
+<pre>
+p Encoding.find(:Shift_JIS)    #=&gt; #&lt;Encoding:Shift_JIS&gt;
+p Encoding.find(&quot;utf-8&quot;)       #=&gt; #&lt;Encoding:UTF-8&gt;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_LIST"><code>list -&gt; [Encoding]</code><span class="permalink">[<a href="../method/-encoding/s/list.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-list">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在ロードされているエンコーディングのリストを返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+Encoding.list
+=&gt; [#&lt;Encoding:ASCII-8BIT&gt;, #&lt;Encoding:EUC-JP&gt;,
+    #&lt;Encoding:Shift_JIS&gt;, #&lt;Encoding:UTF-8&gt;,
+    #&lt;Encoding:ISO-2022-JP (dummy)&gt;]
+
+Encoding.find(&quot;US-ASCII&quot;)
+=&gt; #&lt;Encoding:US-ASCII&gt;
+
+Encoding.list
+=&gt; [#&lt;Encoding:ASCII-8BIT&gt;, #&lt;Encoding:EUC-JP&gt;,
+    #&lt;Encoding:Shift_JIS&gt;, #&lt;Encoding:UTF-8&gt;,
+    #&lt;Encoding:US-ASCII&gt;, #&lt;Encoding:ISO-2022-JP (dummy)&gt;]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_LOCALE_CHARMAP"><code>locale_charmap -&gt; String | nil</code><span class="permalink">[<a href="../method/-encoding/s/locale_charmap.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-locale_charmap">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ロケールエンコーディングを決定するために用いる、locale charmap 名を返します。nl_langinfo 等がない環境では nil を、miniruby では ASCII_8BIT を返します。
+</p>
+<pre>
+Debian GNU/Linux
+  LANG=C
+    Encoding.locale_charmap  =&gt; &quot;ANSI_X3.4-1968&quot;
+LANG=ja_JP.EUC-JP
+    Encoding.locale_charmap  =&gt; &quot;EUC-JP&quot;
+
+SunOS 5
+  LANG=C
+    Encoding.locale_charmap  =&gt; &quot;646&quot;
+  LANG=ja
+    Encoding.locale_charmap  =&gt; &quot;eucJP&quot;
+</pre>
+<p>
+[SEE_ALSO] charmap(5)
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_NAME_LIST"><code>name_list -&gt; [String]</code><span class="permalink">[<a href="../method/-encoding/s/name_list.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-name_list">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+利用可能なエンコーディングの名前を文字列の配列で返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+p Encoding.name_list
+#=&gt; [&quot;US-ASCII&quot;, &quot;ASCII-8BIT&quot;, &quot;UTF-8&quot;,
+     &quot;ISO-8859-1&quot;, &quot;Shift_JIS&quot;, &quot;EUC-JP&quot;,
+     &quot;Windows-31J&quot;,
+     &quot;BINARY&quot;, &quot;CP932&quot;, &quot;eucJP&quot;, ...]
+</pre>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_ASCII_COMPATIBLE--3F"><code>ascii_compatible? -&gt; bool</code><span class="permalink">[<a href="../method/-encoding/i/ascii_compatible=3f.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-i-ascii_compatible-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身が ASCII 互換のエンコーディングである場合真返します。
+そうでない場合は偽を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+Encoding::UTF_8.ascii_compatible?     #=&gt; true
+Encoding::UTF_16BE.ascii_compatible?  #=&gt; false
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_DUMMY--3F"><code>dummy? -&gt; bool</code><span class="permalink">[<a href="../method/-encoding/i/dummy=3f.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-i-dummy-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身がダミーエンコーディングである場合に true を返します。
+そうでない場合に false を返します。
+</p>
+<p>
+ダミーエンコーディングとは Ruby が名前を知っているものの実質的には対応していないエンコーディングのことです。例えば、ダミーエンコーディングで符号化された文字列の場合、 <a href="../method/-string/i/length.html">String#length</a> はマルチバイト文字を考慮せずにバイト列の長さを返します。
+</p>
+<p>
+ダミーエンコーディングも <a href="../class/-i-o.html">IO</a> の外部エンコーディングに指定できます。また
+Ruby はサポートしていないが拡張ライブラリがサポートしているエンコーディングを扱う場合にも
+用います。
+</p>
+<p>
+例:
+</p>
+<pre>
+Encoding::ISO_2022_JP.dummy?       #=&gt; true
+Encoding::UTF_8.dummy?             #=&gt; false
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-encoding/i/inspect.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-i-inspect">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+プログラマにわかりやすい表現の文字列を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+Encoding::UTF_8.inspect       #=&gt; &quot;#&lt;Encoding:UTF-8&gt;&quot;
+Encoding::ISO_2022_JP.inspect #=&gt; &quot;#&lt;Encoding:ISO-2022-JP (dummy)&gt;&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_NAME"><code>name -&gt; String</code><span class="permalink">[<a href="../method/-encoding/i/name.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-i-name">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_s -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+エンコーディングの名前を返します。
+</p>
+<pre>
+Encoding::UTF_8.name       =&gt; &quot;UTF-8&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_NAMES"><code>names -&gt; String</code><span class="permalink">[<a href="../method/-encoding/i/names.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-i-names">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+エンコーディングの名前とエイリアス名の配列を返します。
+</p>
+<pre>
+Encoding::UTF_8.names      =&gt; [&quot;UTF-8&quot;, &quot;CP65001&quot;]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_REPLICATE"><code>replicate(name) -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/i/replicate.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-i-replicate">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+レシーバのエンコーディングを複製(replicate)します。
+複製されたエンコーディングは元のエンコーディングと同じバイト構造を持たなければなりません。
+name という名前のエンコーディングが既に存在する場合は <a href="../class/-argument-error.html">ArgumentError</a> を発生します。
+</p>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-A-N-S-I_-X3_4_1968"><code>US_ASCII -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-a-n-s-i_-x3_4_1968.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ANSI_X3_4_1968">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ASCII -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>ANSI_X3_4_1968 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+US-ASCII、いわゆる ASCII のことで、ISO 646 IRV と一致します。
+</p>
+<p>
+7bit の範囲のみを含み、8bit 目の立っている文字 (たとえば \x80 など) が含まれる場合は正しいエンコーディングであるとみなしません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-A-S-C-I-I_8-B-I-T"><code>ASCII_8BIT -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-a-s-c-i-i_8-b-i-t.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ASCII_8BIT">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>BINARY -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ASCII-8BIT、ASCII互換オクテット列用のエンコーディングです。
+</p>
+<p>
+もっぱら文字エンコーディングを持たないデータ、文字を符号化したのではない単なるバイトの列を表現するために用いますが、このエンコーディングは ASCII 互換であることがポイントです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-B-I-G5"><code>Big5 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-b-i-g5.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-BIG5">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>BIG5 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+Big5 エンコーディングです。
+</p>
+<p>
+台湾で使われている繁体字中国語のエンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Big5">http://en.wikipedia.org/wiki/Big5</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-B-I-G5_-H-K-S-C-S"><code>Big5_HKSCS -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-b-i-g5_-h-k-s-c-s.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-BIG5_HKSCS">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>BIG5_HKSCS -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>BIG5_HKSCS_2008 -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>Big5_HKSCS_2008 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+Big5-HKSCS エンコーディングです。
+</p>
+<p>
+香港で使われている Big5 の亜種です。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.iana.org/assignments/charset-reg/Big5-HKSCS">http://www.iana.org/assignments/charset-reg/Big5-HKSCS</a>,
+     <a class="external" href="http://www.ogcio.gov.hk/ccli/eng/hkscs/mapping_table_2008.html">http://www.ogcio.gov.hk/ccli/eng/hkscs/mapping_table_2008.html</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-B-I-G5_-U-A-O"><code>BIG5_UAO -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-b-i-g5_-u-a-o.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-BIG5_UAO">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>Big5_UAO -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+Big5_UAO エンコーディングです。
+</p>
+<p>
+Big5 の亜種(非公式的拡張)です。
+</p>
+<p>
+Unicodeとの対応表が
+<a class="external" href="http://moztw.org/docs/big5/table/big5_2003-b2u.txt">http://moztw.org/docs/big5/table/big5_2003-b2u.txt</a>
+にあります。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P1250"><code>Windows_1250 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p1250.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP1250">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP1250 -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>WINDOWS_1250 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+Windows-1250 エンコーディング。
+</p>
+<p>
+ISO8859-2 の亜種です。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.microsoft.com/globaldev/reference/sbcs/1250.mspx">http://www.microsoft.com/globaldev/reference/sbcs/1250.mspx</a>,
+     <a class="external" href="http://en.wikipedia.org/wiki/Windows-1250">http://en.wikipedia.org/wiki/Windows-1250</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P1251"><code>Windows_1251 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p1251.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP1251">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP1251 -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>WINDOWS_1251 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+Windows-1251 エンコーディング。
+</p>
+<p>
+キリル文字を用いる言語を取り扱う8bit single-byteエンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.iana.org/assignments/character-sets">http://www.iana.org/assignments/character-sets</a>,
+     <a class="external" href="http://www.microsoft.com/globaldev/reference/sbcs/1251.mspx">http://www.microsoft.com/globaldev/reference/sbcs/1251.mspx</a>,
+     <a class="external" href="http://en.wikipedia.org/wiki/Windows-1251">http://en.wikipedia.org/wiki/Windows-1251</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P1252"><code>Windows_1252 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p1252.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP1252">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP1252 -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>WINDOWS_1252 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+Windows-1252 エンコーディングです。
+</p>
+<p>
+ISO8859-1 の亜種です。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding/c/-i-s-o_8859_1.html">Encoding::ISO_8859_1</a>
+     <a class="external" href="http://www.iana.org/assignments/character-sets">http://www.iana.org/assignments/character-sets</a>,
+     <a class="external" href="http://www.microsoft.com/globaldev/reference/sbcs/1252.mspx">http://www.microsoft.com/globaldev/reference/sbcs/1252.mspx</a>,
+     <a class="external" href="http://en.wikipedia.org/wiki/Windows-1252">http://en.wikipedia.org/wiki/Windows-1252</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P1253"><code>Windows_1253 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p1253.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP1253">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP1253 -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>WINDOWS_1253 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+Windows-1253 エンコーディング。
+</p>
+<p>
+ISO8859-7 の亜種です。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding/c/-i-s-o_8859_7.html">Encoding::ISO_8859_7</a>,
+     <a class="external" href="http://www.iana.org/assignments/character-sets">http://www.iana.org/assignments/character-sets</a>,
+     <a class="external" href="http://www.microsoft.com/globaldev/reference/sbcs/1253.mspx">http://www.microsoft.com/globaldev/reference/sbcs/1253.mspx</a>,
+     <a class="external" href="http://en.wikipedia.org/wiki/Windows-1253">http://en.wikipedia.org/wiki/Windows-1253</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P1254"><code>Windows_1254 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p1254.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP1254">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP1254 -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>WINDOWS_1254 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+Windows-1254 エンコーディング。
+</p>
+<p>
+ISO8859-9 の亜種です。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding/c/-i-s-o_8859_9.html">Encoding::ISO_8859_9</a>,
+     <a class="external" href="http://www.iana.org/assignments/character-sets">http://www.iana.org/assignments/character-sets</a>,
+     <a class="external" href="http://www.microsoft.com/globaldev/reference/sbcs/1254.mspx">http://www.microsoft.com/globaldev/reference/sbcs/1254.mspx</a>,
+     <a class="external" href="http://en.wikipedia.org/wiki/Windows-1254">http://en.wikipedia.org/wiki/Windows-1254</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P1255"><code>Windows_1255 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p1255.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP1255">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP1255 -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>WINDOWS_1255 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+Windows-1255 エンコーディング。
+</p>
+<p>
+ISO8859-8 の亜種です。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding/c/-i-s-o_8859_8.html">Encoding::ISO_8859_8</a>,
+     <a class="external" href="http://www.iana.org/assignments/character-sets">http://www.iana.org/assignments/character-sets</a>,
+     <a class="external" href="http://www.microsoft.com/globaldev/reference/sbcs/1255.mspx">http://www.microsoft.com/globaldev/reference/sbcs/1255.mspx</a>,
+     <a class="external" href="http://en.wikipedia.org/wiki/Windows-1255">http://en.wikipedia.org/wiki/Windows-1255</a>,
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P1256"><code>Windows_1256 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p1256.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP1256">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP1256 -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>WINDOWS_1256 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+Windows-1256 エンコーディング。
+</p>
+<p>
+Windowsで用いられる、アラビア文字を扱う 8bit single-byte エンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding/c/-i-s-o_8859_6.html">Encoding::ISO_8859_6</a>,
+     <a class="external" href="http://www.iana.org/assignments/character-sets">http://www.iana.org/assignments/character-sets</a>,
+     <a class="external" href="http://www.microsoft.com/globaldev/reference/sbcs/1256.mspx">http://www.microsoft.com/globaldev/reference/sbcs/1256.mspx</a>,
+     <a class="external" href="http://en.wikipedia.org/wiki/Windows-1256">http://en.wikipedia.org/wiki/Windows-1256</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P1257"><code>Windows_1257 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p1257.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP1257">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP1257 -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>WINDOWS_1257 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+Windows-1257 エンコーディング。
+</p>
+<p>
+ISO8859-13 の亜種です。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding/c/-i-s-o8859_13.html">Encoding::ISO8859_13</a>,
+     <a class="external" href="http://www.iana.org/assignments/character-sets">http://www.iana.org/assignments/character-sets</a>,
+     <a class="external" href="http://www.microsoft.com/globaldev/reference/sbcs/1257.mspx">http://www.microsoft.com/globaldev/reference/sbcs/1257.mspx</a>,
+     <a class="external" href="http://en.wikipedia.org/wiki/Windows-1257">http://en.wikipedia.org/wiki/Windows-1257</a>,
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P1258"><code>Windows_1258 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p1258.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP1258">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP1258 -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>WINDOWS_1258 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+WINDOWS-1258 エンコーディング。
+</p>
+<p>
+ベトナム語を扱う 8bit single-byteエンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Windows-1258">http://en.wikipedia.org/wiki/Windows-1258</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P437"><code>IBM437 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p437.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP437">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP437 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+CP437 エンコーディング。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Code_page_437">http://en.wikipedia.org/wiki/Code_page_437</a>,
+     <a href="../method/-encoding/c/-c-p869.html">Encoding::CP869</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P50220"><code>CP50220 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p50220.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP50220">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+CP50220 エンコーディング、
+Windows で用いられる ISO-2022-JP 亜種です。
+</p>
+<p>
+CP50221 とほぼ同様のエンコーディングですが、
+他のエンコーディングへの変換テーブルが少し異なります。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://legacy-encoding.sourceforge.jp/wiki/index.php?cp50220">http://legacy-encoding.sourceforge.jp/wiki/index.php?cp50220</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P50221"><code>CP50221 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p50221.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP50221">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Windows で用いられる、ISO-2022-JP 亜種です。
+</p>
+<p>
+ISO-2022-JP に加え、ESC ( I でいわゆる半角カナを許し、Windows の機種依存文字を扱うことができます。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://legacy-encoding.sourceforge.jp/wiki/index.php?cp50221">http://legacy-encoding.sourceforge.jp/wiki/index.php?cp50221</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P51932"><code>CP51932 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p51932.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP51932">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Windows で用いられる、日本語 EUC 亜種です。
+</p>
+<p>
+G0 が US-ASCII、G1 が JIS X 0201 片仮名図形文字集合、G2 が JIS X 0208 + Windows の機種依存文字となっており、G3 は未割り当てになっています。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://legacy-encoding.sourceforge.jp/wiki/index.php?cp51932">http://legacy-encoding.sourceforge.jp/wiki/index.php?cp51932</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P65000"><code>UTF_7 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p65000.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP65000">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP65000 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+UTF-7 です。
+</p>
+<p>
+7ビットの範囲内で表現される、Unicode のエンコーディングの一種です。
+ダミーエンコーディングです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P65001"><code>UTF_8 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p65001.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP65001">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP65001 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+UTF-8、Unicode や ISO 10646 を ASCII 互換な形で符号化するための方式です。
+</p>
+<p>
+BOM を含みません。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://tools.ietf.org/html/rfc3629">http://tools.ietf.org/html/rfc3629</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P737"><code>IBM737 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p737.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP737">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP737 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+CP437 エンコーディング。
+</p>
+<p>
+ギリシャ語を取り扱う 8bit single-byteエンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Code_page_737">http://en.wikipedia.org/wiki/Code_page_737</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P775"><code>IBM775 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p775.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP775">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP775 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+CP775 エンコーディング。
+</p>
+<p>
+バルト語派の言語を扱うための 8bit single-byteエンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Code_page_775">http://en.wikipedia.org/wiki/Code_page_775</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P850"><code>CP850 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p850.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP850">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>IBM850 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+CP850 エンコーディング。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Code_page_850">http://en.wikipedia.org/wiki/Code_page_850</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P852"><code>IBM852 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p852.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP852">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP852 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+CP852 エンコーディング。
+</p>
+<p>
+ラテンアルファベットを用いる中欧の言語のための
+8bit single-byte エンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Code_page_852">http://en.wikipedia.org/wiki/Code_page_852</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P855"><code>IBM855 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p855.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP855">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP855 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+CP855 エンコーディング。
+</p>
+<p>
+キリル文字を用いる言語のための
+8bit single-byte エンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Code_page_855">http://en.wikipedia.org/wiki/Code_page_855</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P857"><code>IBM857 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p857.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP857">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP857 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+CP857 エンコーディング。
+</p>
+<p>
+トルコ語に用いられる、
+8bit single-byte エンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Code_page_857">http://en.wikipedia.org/wiki/Code_page_857</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P860"><code>IBM860 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p860.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP860">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP860 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+CP860 エンコーディング。
+</p>
+<p>
+ポルトガル語に用いられる、
+8bit single-byte エンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Code_page_860">http://en.wikipedia.org/wiki/Code_page_860</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P861"><code>IBM861 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p861.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP861">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP861 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+CP861 エンコーディング。
+</p>
+<p>
+アイスランド語に用いられる、
+8bit single-byte エンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Code_page_861">http://en.wikipedia.org/wiki/Code_page_861</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P862"><code>IBM862 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p862.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP862">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP862 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+CP862 エンコーディング。
+</p>
+<p>
+ヘブライ語に用いられる、
+8bit single-byte エンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Code_page_861">http://en.wikipedia.org/wiki/Code_page_861</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P863"><code>IBM863 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p863.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP863">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP863 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+CP863 エンコーディング。
+</p>
+<p>
+フランス語に用いられる、
+8bit single-byte エンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Code_page_863">http://en.wikipedia.org/wiki/Code_page_863</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P864"><code>IBM864 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p864.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP864">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP864 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+CP864 エンコーディング。
+</p>
+<p>
+アラビア語に用いられる、
+8bit single-byte エンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Code_page_864">http://en.wikipedia.org/wiki/Code_page_864</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P865"><code>IBM865 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p865.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP865">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP865 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+CP865 エンコーディング。
+</p>
+<p>
+北欧の諸言語に用いられる、
+8bit single-byte エンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Code_page_865">http://en.wikipedia.org/wiki/Code_page_865</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P866"><code>IBM866 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p866.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP866">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP866 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+CP866 エンコーディング。
+</p>
+<p>
+キリル文字を使う諸言語に用いられる、
+8bit single-byte エンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Code_page_866">http://en.wikipedia.org/wiki/Code_page_866</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P869"><code>IBM869 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p869.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP869">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP869 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+CP869 エンコーディング。
+</p>
+<p>
+ギリシャ語を取り扱う 8bit single-byteエンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Code_page_869">http://en.wikipedia.org/wiki/Code_page_869</a>,
+     <a href="../method/-encoding/c/-c-p737.html">Encoding::CP737</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P874"><code>Windows_874 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p874.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP874">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP874 -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>WINDOWS_874 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+Windows-874 エンコーディング。
+</p>
+<p>
+タイ語を扱うエンコーディングで、ISO8859-11の亜種です。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding/c/-t-i-s_620.html">Encoding::TIS_620</a>, <a href="../method/-encoding/c/-i-s-o_8859_11.html">Encoding::ISO_8859_11</a>,
+     <a class="external" href="http://www.microsoft.com/globaldev/reference/sbcs/874.mspx">http://www.microsoft.com/globaldev/reference/sbcs/874.mspx</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P878"><code>KOI8_R -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p878.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP878">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP878 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+KOI8-R エンコーディング。
+</p>
+<p>
+ロシア語のキリル文字で使われる8bit single-byteエンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/KOI8-R">http://en.wikipedia.org/wiki/KOI8-R</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P932"><code>Windows_31J -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p932.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP932">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP932 -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>CSWINDOWS31J -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>CsWindows31J -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>WINDOWS_31J -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>PCK -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>SJIS -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+Windows-31J、Windows で用いられる、シフトJIS亜種で、CP932とも言います。
+</p>
+<p>
+7bit 部分が論理的には US-ASCIIであり、また Windows の機種依存文字を扱うことができます。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www2d.biglobe.ne.jp/~msyk/charcode/cp932/index.html">http://www2d.biglobe.ne.jp/~msyk/charcode/cp932/index.html</a>,
+     <a class="external" href="http://legacy-encoding.sourceforge.jp/wiki/index.php?cp932">http://legacy-encoding.sourceforge.jp/wiki/index.php?cp932</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P936"><code>GBK -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p936.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP936">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>CP936 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+GBK エンコーディング
+</p>
+<p>
+中国で用いられる簡体字中国語のエンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.iana.org/assignments/character-sets">http://www.iana.org/assignments/character-sets</a>,
+     <a class="external" href="http://www.iana.org/assignments/charset-reg/GBK">http://www.iana.org/assignments/charset-reg/GBK</a>,
+     <a class="external" href="http://www.microsoft.com/globaldev/reference/dbcs/936.mspx">http://www.microsoft.com/globaldev/reference/dbcs/936.mspx</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P949"><code>CP949 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p949.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP949">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+CP949 エンコーディング。
+</p>
+<p>
+EUC-KR に近い、韓国語を取り扱う multi-byte エンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding/c/-e-u-c_-k-r.html">Encoding::EUC_KR</a>,
+     <a class="external" href="http://www.microsoft.com/globaldev/reference/dbcs/949.mspx">http://www.microsoft.com/globaldev/reference/dbcs/949.mspx</a>,
+     <a class="external" href="http://en.wikipedia.org/wiki/EUC-KR#EUC-KR">http://en.wikipedia.org/wiki/EUC-KR#EUC-KR</a>,
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P950"><code>CP950 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p950.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP950">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+CP950 エンコーディングです。
+</p>
+<p>
+Windows で使われる Big5 の亜種です。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://msdn.microsoft.com/en-us/goglobal/cc305155.aspx">http://msdn.microsoft.com/en-us/goglobal/cc305155.aspx</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P951"><code>CP951 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-c-p951.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-CP951">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+CP951 エンコーディングです。
+</p>
+<p>
+Windows で使われる Big5-HKSCS の亜種です。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.microsoft.com/hk/hkscs/default.aspx">http://www.microsoft.com/hk/hkscs/default.aspx</a>,
+     <a class="external" href="http://www.microsoft.com/downloads/en/details.aspx?FamilyID=0e6f5ac8-7baa-4571-b8e8-78b3b776afd7&amp;DisplayLang=en">http://www.microsoft.com/downloads/en/details.aspx?FamilyID=0e6f5ac8-7baa-4571-b8e8-78b3b776afd7&amp;DisplayLang=en</a>,
+     <a class="external" href="http://blogs.msdn.com/b/shawnste/archive/2007/03/12/cp-951-hkscs.aspx">http://blogs.msdn.com/b/shawnste/archive/2007/03/12/cp-951-hkscs.aspx</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-E-M-A-C-S_-M-U-L-E"><code>EMACS_MULE -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-e-m-a-c-s_-m-u-l-e.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-EMACS_MULE">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>Emacs_Mule -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+Emacs-Mule エンコーディングです。
+</p>
+<p>
+Emacsの多言語化(Mule)で使われているステートレスのエンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.m17n.org/mule/pricai96/mule.en.html">http://www.m17n.org/mule/pricai96/mule.en.html</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-E-U-C-C-N"><code>EUC_CN -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-e-u-c-c-n.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-EUCCN">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>EUCCN -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>EucCN -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ENC-CN エンコーディングです。
+</p>
+<p>
+中国で用いられる簡体字中国語 EUCのエンコーディングです。
+GB2312 と呼ばれることも多いです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-E-U-C-J-P"><code>EUC_JP -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-e-u-c-j-p.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-EUCJP">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>EucJP -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>EUCJP -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+IANA Character Sets にある EUC-JP のことです。
+</p>
+<p>
+日本語 EUC 亜種で、G0 が US-ASCII、G1 が JIS X 0201 片仮名図形文字集合、G2 が JIS X 0208、G3 が JIS X 0212 となっています。
+EUC-JP を指定する場合は、それが実際には CP51932 のことである可能性を考えなければなりません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-E-U-C-J-P_-M-S"><code>EUCJP_MS -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-e-u-c-j-p_-m-s.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-EUCJP_MS">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>EucJP_ms -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>EUC_JP_MS -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+eucJP-ms、Unix 系で用いられる、日本語 EUC 亜種です。
+</p>
+<p>
+EUC-JPに加え、Windowsの機種依存文字とユーザ定義文字を扱うことができます。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www2d.biglobe.ne.jp/~msyk/charcode/cp932/eucJP-ms.html">http://www2d.biglobe.ne.jp/~msyk/charcode/cp932/eucJP-ms.html</a>,
+     <a class="external" href="http://legacy-encoding.sourceforge.jp/wiki/index.php?eucJP-ms">http://legacy-encoding.sourceforge.jp/wiki/index.php?eucJP-ms</a>,
+     <a class="external" href="http://blog.livedoor.jp/numa2666/archives/50980727.html">http://blog.livedoor.jp/numa2666/archives/50980727.html</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-E-U-C-K-R"><code>EUC_KR -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-e-u-c-k-r.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-EUCKR">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>EUCKR -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>EucKR -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+EUC-KR エンコーディングです。
+</p>
+<p>
+韓国語 EUC のエンコーディングです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-E-U-C-T-W"><code>EUC_TW -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-e-u-c-t-w.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-EUCTW">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>EUCTW -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>EucTW -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+EUC-TW エンコーディングです。
+</p>
+<p>
+台湾で用いられる繁体字中国語 EUCのエンコーディングです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-G-B12345"><code>GB12345 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-g-b12345.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-GB12345">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+GB 12345 エンコーディング。
+</p>
+<p>
+GB 2312 から派生したもので、繁体字中国語を取り扱うエンコーディングです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-G-B18030"><code>GB18030 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-g-b18030.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-GB18030">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+GBK エンコーディング
+</p>
+<p>
+中国で用いられる中国語のエンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.iana.org/assignments/charset-reg/GB18030">http://www.iana.org/assignments/charset-reg/GB18030</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-G-B1988"><code>GB1988 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-g-b1988.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-GB1988">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+GB1988 エンコーディング。
+</p>
+<p>
+ISO/IEC 646 の中国版です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-S-O2022_-J-P"><code>ISO_2022_JP -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-i-s-o2022_-j-p.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ISO2022_JP">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ISO2022_JP -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ISO 2022-JP エンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://tools.ietf.org/html/rfc1468">http://tools.ietf.org/html/rfc1468</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-S-O2022_-J-P2"><code>ISO_2022_JP_2 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-i-s-o2022_-j-p2.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ISO2022_JP2">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ISO2022_JP2 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ISO-2022-JP-2 エンコーディングです。
+</p>
+<p>
+ISO-2022-JP の拡張版です。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding/c/-i-s-o_2022_-j-p.html">Encoding::ISO_2022_JP</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-S-O8859_1"><code>ISO_8859_1 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-i-s-o8859_1.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ISO8859_1">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ISO8859_1 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ISO-8859-1 エンコーディングです。
+</p>
+<p>
+多くの西欧言語を含むさまざまなラテン文字言語を表現するための
+8bitエンコーディングです。
+</p>
+<p>
+Latin-1 とも呼ばれます。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-S-O8859_10"><code>ISO_8859_10 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-i-s-o8859_10.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ISO8859_10">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ISO8859_10 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ISO 8859-10 エンコーディング。
+</p>
+<p>
+北欧の言語を扱う 8bit single-byte エンコーディングです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-S-O8859_11"><code>ISO_8859_11 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-i-s-o8859_11.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ISO8859_11">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ISO8859_11 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ISO8859-11 エンコーディング。
+</p>
+<p>
+タイ語を扱う 8bit single-byte エンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding/c/-t-i-s_620.html">Encoding::TIS_620</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-S-O8859_13"><code>ISO_8859_13 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-i-s-o8859_13.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ISO8859_13">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ISO8859_13 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ISO8859-13 エンコーディング。
+</p>
+<p>
+バルト語派の言語を扱う8bit single-byteエンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding/c/-windows_1257.html">Encoding::Windows_1257</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-S-O8859_14"><code>ISO_8859_14 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-i-s-o8859_14.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ISO8859_14">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ISO8859_14 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ISO8859-14 エンコーディング。
+</p>
+<p>
+ケルト語派の言語を扱う8bit single-byteエンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding/c/-windows_1257.html">Encoding::Windows_1257</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-S-O8859_15"><code>ISO_8859_15 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-i-s-o8859_15.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ISO8859_15">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ISO8859_15 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ISO 8859-15 エンコーディング。
+</p>
+<p>
+ISO 8859-1 の改訂版です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-S-O8859_16"><code>ISO_8859_16 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-i-s-o8859_16.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ISO8859_16">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ISO8859_16 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ISO 8859-16 エンコーディング。
+</p>
+<p>
+東欧を中心とした地域の諸語を扱う 8bit single-byte エンコーディングです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-S-O8859_2"><code>ISO_8859_2 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-i-s-o8859_2.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ISO8859_2">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ISO8859_2 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ISO8859-2 エンコーディング。
+</p>
+<p>
+中東欧の言語を扱う 8bit single-byte エンコーディングです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-S-O8859_3"><code>ISO_8859_3 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-i-s-o8859_3.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ISO8859_3">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ISO8859_3 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ISO8859-3 エンコーディング。
+</p>
+<p>
+トルコ語、マルタ語、エスペラントを扱う 8bit single-byte エンコーディングです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-S-O8859_4"><code>ISO_8859_4 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-i-s-o8859_4.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ISO8859_4">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ISO8859_4 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ISO 8859-4 エンコーディング。
+</p>
+<p>
+北欧の言語を扱う 8bit single-byte エンコーディングです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-S-O8859_5"><code>ISO_8859_5 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-i-s-o8859_5.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ISO8859_5">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ISO8859_5 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ISO 8859-5 エンコーディング。
+</p>
+<p>
+キリル文字を用いる言語を扱う 8bit single-byte エンコーディングです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-S-O8859_6"><code>ISO_8859_6 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-i-s-o8859_6.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ISO8859_6">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ISO8859_6 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ISO8859-6 エンコーディング。
+</p>
+<p>
+アラビア文字を扱う 8bit single-byte エンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding/c/-windows_1256.html">Encoding::Windows_1256</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-S-O8859_7"><code>ISO_8859_7 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-i-s-o8859_7.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ISO8859_7">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ISO8859_7 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ISO8859-7 エンコーディング。
+</p>
+<p>
+ギリシャ語を扱う 8bit single-byte エンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding/c/-windows_1253.html">Encoding::Windows_1253</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-S-O8859_8"><code>ISO_8859_8 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-i-s-o8859_8.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ISO8859_8">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ISO8859_8 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ISO8859-8 エンコーディング。
+</p>
+<p>
+ヘブライ語を扱う 8bit single-byte エンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding/c/-windows_1255.html">Encoding::Windows_1255</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-S-O8859_9"><code>ISO_8859_9 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-i-s-o8859_9.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ISO8859_9">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ISO8859_9 -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+ISO8859-9 エンコーディング。
+</p>
+<p>
+ISO8859-1 に近い、
+トルコ語を扱うことができる8bit single-byteエンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding/c/-windows_1254.html">Encoding::Windows_1254</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-S-O_2022_-J-P_-K-D-D-I"><code>ISO_2022_JP_KDDI -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-i-s-o_2022_-j-p_-k-d-d-i.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-ISO_2022_JP_KDDI">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ISO-2022-JP-KDDI エンコーディングです。
+</p>
+<p>
+ISO-2022-JP の亜種です。
+KDDI の携帯電話で使われる絵文字が含まれています。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.au.kddi.com/ezfactory/tec/spec/img/typeD.pdf">http://www.au.kddi.com/ezfactory/tec/spec/img/typeD.pdf</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-K-O-I8_-U"><code>KOI8_U -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-k-o-i8_-u.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-KOI8_U">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+KOI8-U エンコーディング。
+</p>
+<p>
+ウクライナ語のキリル文字で使われる8bit single-byteエンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/KOI8-U">http://en.wikipedia.org/wiki/KOI8-U</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-M-A-C-C-E-N-T-E-U-R-O"><code>MacCentEuro -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-m-a-c-c-e-n-t-e-u-r-o.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-MACCENTEURO">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>MACCENTEURO -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+MacCentEuro エンコーディング。
+</p>
+<p>
+Mac OSで使われる
+8bit single-byteエンコーディングで、
+中欧および南東欧の言語を取り扱うものです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Macintosh_Central_European_encoding">http://en.wikipedia.org/wiki/Macintosh_Central_European_encoding</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-M-A-C-C-R-O-A-T-I-A-N"><code>MacCroatian -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-m-a-c-c-r-o-a-t-i-a-n.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-MACCROATIAN">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>MACCROATIAN -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+MacCroatian エンコーディング。
+</p>
+<p>
+Mac OS で使われる
+8bit single-byteエンコーディングで、
+クロアチア語、スベロニア語を取り扱うものです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/CROATIAN.TXT">http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/CROATIAN.TXT</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-M-A-C-C-Y-R-I-L-L-I-C"><code>MacCyrillic -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-m-a-c-c-y-r-i-l-l-i-c.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-MACCYRILLIC">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>MACCYRILLIC -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+MacCyrillic エンコーディング。
+</p>
+<p>
+Mac OS で使われる 8bit single-byte エンコーディングで、
+キリル文字を取り扱うものです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Macintosh_Cyrillic_encoding">http://en.wikipedia.org/wiki/Macintosh_Cyrillic_encoding</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-M-A-C-G-R-E-E-K"><code>MacGreek -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-m-a-c-g-r-e-e-k.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-MACGREEK">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>MACGREEK -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+MacGreek エンコーディング。
+</p>
+<p>
+Mac OSで使われる
+8bit single-byte エンコーディングで、
+ギリシャ語のために使われます。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/GREEK.TXT">http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/GREEK.TXT</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-M-A-C-I-C-E-L-A-N-D"><code>MacIceland -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-m-a-c-i-c-e-l-a-n-d.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-MACICELAND">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>MACICELAND -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+MacIceland エンコーディング。
+</p>
+<p>
+Mac OSで使われる
+8bit single-byte エンコーディングで、
+アイスランド語のために使われます
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Mac_Icelandic_encoding">http://en.wikipedia.org/wiki/Mac_Icelandic_encoding</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-M-A-C-J-A-P-A-N"><code>MacJapanese -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-m-a-c-j-a-p-a-n.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-MACJAPAN">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>MACJAPAN -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>MACJAPANESE -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>MacJapan -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+MacJapanese エンコーディング。
+</p>
+<p>
+Mac OS の 9.x までで用いられていた Shift_JIS 亜種です。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://unicode.org/Public/MAPPINGS/VENDORS/APPLE/JAPANESE.TXT">http://unicode.org/Public/MAPPINGS/VENDORS/APPLE/JAPANESE.TXT</a>,
+     <a class="external" href="http://ja.wikipedia.org/wiki/MacJapanese">http://ja.wikipedia.org/wiki/MacJapanese</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-M-A-C-R-O-M-A-N"><code>MacRoman -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-m-a-c-r-o-m-a-n.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-MACROMAN">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>MACROMAN -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+MacRoman エンコーディング。
+</p>
+<p>
+Mac OSで使われる
+8bit single-byte エンコーディングで、
+西欧を中心としたラテン文字を用いる諸語を取り扱うためのものです。
+</p>
+<p>
+IANA character-sets で &quot;macintosh&quot; で表現されるものです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Mac_OS_Roman">http://en.wikipedia.org/wiki/Mac_OS_Roman</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-M-A-C-R-O-M-A-N-I-A"><code>MacRomania -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-m-a-c-r-o-m-a-n-i-a.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-MACROMANIA">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>MACROMANIA -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+MacRoman エンコーディング。
+</p>
+<p>
+Mac OSで使われる
+8bit single-byte エンコーディングで、
+ルーマニア語のために使われます。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/ROMANIAN.TXT">http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/ROMANIAN.TXT</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-M-A-C-T-H-A-I"><code>MacThai -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-m-a-c-t-h-a-i.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-MACTHAI">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>MACTHAI -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+MacThai エンコーディング。
+</p>
+<p>
+タイ語を扱うエンコーディングで、ISO8859-11の亜種です。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding/c/-t-i-s_620.html">Encoding::TIS_620</a>, <a href="../method/-encoding/c/-i-s-o_8859_11.html">Encoding::ISO_8859_11</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-M-A-C-T-U-R-K-I-S-H"><code>MacTurkish -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-m-a-c-t-u-r-k-i-s-h.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-MACTURKISH">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>MACTURKISH -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+MacTurkish エンコーディング。
+</p>
+<p>
+Mac OSで使われる
+8bit single-byte エンコーディングで、
+トルコ語のために使われます。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/TURKISH.TXT">http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/TURKISH.TXT</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-M-A-C-U-K-R-A-I-N-E"><code>MacUkraine -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-m-a-c-u-k-r-a-i-n-e.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-MACUKRAINE">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>MACUKRAINE -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+MacUkraine エンコーディング。
+</p>
+<p>
+Mac OS で使われる、ウクライナ語キリル文字を取り扱うエンコーディング。
+MacCyrillic の亜種です。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Macintosh_Ukrainian_encoding">http://en.wikipedia.org/wiki/Macintosh_Ukrainian_encoding</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-S-H-I-F-T_-J-I-S"><code>Shift_JIS -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-s-h-i-f-t_-j-i-s.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-SHIFT_JIS">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>SHIFT_JIS -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+IANA Character Sets にある Shift_JIS のことです。
+</p>
+<p>
+基本的にはJIS X 0208:1997の付属書1にある「シフト符号化表現」のことですが、
+Ruby M17N では 7bit 部分が US-ASCII になっています。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-S-J-I-S_-D-O-C-O-M-O"><code>SJIS_DOCOMO -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-s-j-i-s_-d-o-c-o-m-o.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-SJIS_DOCOMO">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>SJIS_DoCoMo -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+SJIS-DoCoMo エンコーディングです。
+</p>
+<p>
+Shift_JIS, CP932 の亜種です。
+DoCoMo の携帯電話で使われる絵文字が含まれています。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.nttdocomo.co.jp/english/service/imode/make/content/pictograph/basic/index.html">http://www.nttdocomo.co.jp/english/service/imode/make/content/pictograph/basic/index.html</a>,
+     <a class="external" href="http://www.nttdocomo.co.jp/english/service/imode/make/content/pictograph/extention/index.html">http://www.nttdocomo.co.jp/english/service/imode/make/content/pictograph/extention/index.html</a>,
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-S-J-I-S_-K-D-D-I"><code>SJIS_KDDI -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-s-j-i-s_-k-d-d-i.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-SJIS_KDDI">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+SJIS-KDDI エンコーディングです。
+</p>
+<p>
+Shift_JIS, CP932 の亜種です。
+KDDI の携帯電話で使われる絵文字が含まれています。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.au.kddi.com/ezfactory/tec/spec/img/typeD.pdf">http://www.au.kddi.com/ezfactory/tec/spec/img/typeD.pdf</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-S-J-I-S_-S-O-F-T-B-A-N-K"><code>SJIS_SOFTBANK -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-s-j-i-s_-s-o-f-t-b-a-n-k.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-SJIS_SOFTBANK">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>SJIS_SoftBank -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+SJIS-SoftBank エンコーディングです。
+</p>
+<p>
+Shift_JIS, CP932 の亜種です。
+SoftBank の携帯電話で使われる絵文字が含まれています。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://creation.mb.softbank.jp/web/web_pic_about.html">http://creation.mb.softbank.jp/web/web_pic_about.html</a>,
+     <a class="external" href="http://www2.developers.softbankmobile.co.jp/dp/tool_dl/download.php?docid=120&amp;companyid=">http://www2.developers.softbankmobile.co.jp/dp/tool_dl/download.php?docid=120&amp;companyid=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-S-T-A-T-E-L-E-S-S_-I-S-O_2022_-J-P"><code>STATELESS_ISO_2022_JP -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-s-t-a-t-e-l-e-s-s_-i-s-o_2022_-j-p.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-STATELESS_ISO_2022_JP">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>Stateless_ISO_2022_JP -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+stateless-ISO-2022-JP エンコーディングです。
+</p>
+<p>
+ISO-2022-JPをステートレスに扱うための方式です。
+Emacs-Mule エンコーディングを元にしています。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-S-T-A-T-E-L-E-S-S_-I-S-O_2022_-J-P_-K-D-D-I"><code>STATELESS_ISO_2022_JP_KDDI -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-s-t-a-t-e-l-e-s-s_-i-s-o_2022_-j-p_-k-d-d-i.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-STATELESS_ISO_2022_JP_KDDI">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>Stateless_ISO_2022_JP_KDDI -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+stateless-ISO-2022-JP-KDDI エンコーディングです。
+</p>
+<p>
+stateless-ISO-2022-JP の亜種です。
+KDDI の携帯電話で使われる絵文字が含まれています。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.au.kddi.com/ezfactory/tec/spec/img/typeD.pdf">http://www.au.kddi.com/ezfactory/tec/spec/img/typeD.pdf</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-T-I-S_620"><code>TIS_620 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-t-i-s_620.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-TIS_620">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+TIS-620 エンコーディング。
+</p>
+<p>
+タイ語を扱うためのエンコーディングで、 ISO8859-11 とほぼ
+同一のエンコーディングです。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://en.wikipedia.org/wiki/Thai_Industrial_Standard_620-2533">http://en.wikipedia.org/wiki/Thai_Industrial_Standard_620-2533</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-U-C-S_2-B-E"><code>UTF_16BE -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-u-c-s_2-b-e.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-UCS_2BE">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>UCS_2BE -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+UTF-16BE (ビッグエンディアン) です。
+</p>
+<p>
+BOM を含みません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-U-C-S_4-B-E"><code>UTF_32BE -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-u-c-s_4-b-e.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-UCS_4BE">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>UCS_4BE -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+UTF-32BE (ビッグエンディアン) です。
+</p>
+<p>
+BOM を含みません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-U-C-S_4-L-E"><code>UTF_32LE -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-u-c-s_4-l-e.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-UCS_4LE">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>UCS_4LE -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+UTF-32LE (リトルエンディアン) です。
+</p>
+<p>
+BOM を含みません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-U-T-F8_-D-O-C-O-M-O"><code>UTF8_DOCOMO -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-u-t-f8_-d-o-c-o-m-o.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-UTF8_DOCOMO">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>UTF8_DoCoMo -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+UTF8-DoCoMo エンコーディングです。
+</p>
+<p>
+UTF-8 の亜種です。
+DoCoMo の携帯電話で使われる絵文字が含まれています。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.nttdocomo.co.jp/english/service/imode/make/content/pictograph/basic/index.html">http://www.nttdocomo.co.jp/english/service/imode/make/content/pictograph/basic/index.html</a>,
+     <a class="external" href="http://www.nttdocomo.co.jp/english/service/imode/make/content/pictograph/extention/index.html">http://www.nttdocomo.co.jp/english/service/imode/make/content/pictograph/extention/index.html</a>,
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-U-T-F8_-K-D-D-I"><code>UTF8_KDDI -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-u-t-f8_-k-d-d-i.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-UTF8_KDDI">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+UTF8-KDDI エンコーディングです。
+</p>
+<p>
+UTF8 の亜種です。
+KDDI の携帯電話で使われる絵文字が含まれています。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.au.kddi.com/ezfactory/tec/spec/img/typeD.pdf">http://www.au.kddi.com/ezfactory/tec/spec/img/typeD.pdf</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-U-T-F8_-M-A-C"><code>UTF8_MAC -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-u-t-f8_-m-a-c.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-UTF8_MAC">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>UTF_8_MAC -&gt; Encoding</code></dt>
+<dt class="method-heading"><code>UTF_8_HFS -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+UTF8-MAC、アップルによって修正された Normalization Form D（分解済み）という形式のUTF-8です。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://developer.apple.com/jp/technotes/tn1150.html">http://developer.apple.com/jp/technotes/tn1150.html</a>,
+     <a class="external" href="http://developer.apple.com/jp/technotes/tn2078.html">http://developer.apple.com/jp/technotes/tn2078.html</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-U-T-F8_-S-O-F-T-B-A-N-K"><code>UTF8_SOFTBANK -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-u-t-f8_-s-o-f-t-b-a-n-k.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-UTF8_SOFTBANK">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>UTF8_SoftBank -&gt; Encoding</code></dt>
+<dd class="method-description">
+<p>
+UTF8-SoftBank エンコーディングです。
+</p>
+<p>
+UTF-8 の亜種です。
+SoftBank の携帯電話で使われる絵文字が含まれています。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://creation.mb.softbank.jp/web/web_pic_about.html">http://creation.mb.softbank.jp/web/web_pic_about.html</a>,
+     <a class="external" href="http://www2.developers.softbankmobile.co.jp/dp/tool_dl/download.php?docid=120&amp;companyid=">http://www2.developers.softbankmobile.co.jp/dp/tool_dl/download.php?docid=120&amp;companyid=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-U-T-F_16"><code>UTF_16 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-u-t-f_16.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-UTF_16">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+UTF-16 (BOMを含む) です。
+</p>
+<p>
+ダミーエンコーディングです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-U-T-F_16-L-E"><code>UTF_16LE -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-u-t-f_16-l-e.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-UTF_16LE">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+UTF-16LE (リトルエンディアン) です。
+</p>
+<p>
+BOM を含みません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-U-T-F_32"><code>UTF_32 -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding/c/-u-t-f_32.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding.html#method-c-UTF_32">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+UTF-32 (BOMを含む) です。
+</p>
+<p>
+ダミーエンコーディングです。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

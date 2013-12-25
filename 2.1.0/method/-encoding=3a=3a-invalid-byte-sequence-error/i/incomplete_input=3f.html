@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method Encoding::InvalidByteSequenceError#incomplete_input?</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-encoding=3a=3a-invalid-byte-sequence-error.html">Encoding::InvalidByteSequenceErrorクラス</a>
+&gt; incomplete_input?
+
+</p>
+
+
+<h1>instance method Encoding::InvalidByteSequenceError#incomplete_input?</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_INCOMPLETE_INPUT--3F"><code>incomplete_input? -&gt; bool</code><span class="permalink">[<a href="../../../method/-encoding=3a=3a-invalid-byte-sequence-error/i/incomplete_input=3f.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Encoding/InvalidByteSequenceError.html#method-i-incomplete_input-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+エラー発生時に入力文字列が不足している場合に真を返します。
+</p>
+<p>
+つまり、マルチバイト文字列の途中で文字列が終わっている場合に
+真を返します。これは後続の入力を追加することでエラーが
+解消する可能性があることを意味します。
+</p>
+<pre>
+ec = Encoding::Converter.new(&quot;EUC-JP&quot;, &quot;ISO-8859-1&quot;)
+
+begin
+  ec.convert(&quot;abc\xA1z&quot;)
+rescue Encoding::InvalidByteSequenceError
+  p $!
+  #=&gt; #&lt;Encoding::InvalidByteSequenceError: &quot;\xA1&quot; followed by &quot;z&quot; on EUC-JP&gt;
+  p $!.incomplete_input?    #=&gt; false
+end
+
+begin
+  ec.convert(&quot;abc\xA1&quot;)
+  ec.finish
+rescue Encoding::InvalidByteSequenceError
+  p $! #=&gt; #&lt;Encoding::InvalidByteSequenceError: incomplete &quot;\xA1&quot; on EUC-JP&gt;
+  p $!.incomplete_input?    #=&gt; true
+end
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

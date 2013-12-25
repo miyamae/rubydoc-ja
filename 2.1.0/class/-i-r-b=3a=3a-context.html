@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class IRB::Context</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/irb=2fcontext.html">irb/contextライブラリ</a>
+&gt; IRB::Contextクラス
+</p>
+
+
+<h1>class IRB::Context</h1>
+<p>
+
+
+クラスの継承リスト: IRB::Context
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+irb の設定を扱うためのクラスです。
+</p>
+<p>
+irb 中で conf コマンドの戻り値や .irbrc で IRB.conf を操作する事で設定
+を変更します。irb の起動後は IRB.conf の内容を更新しても変更の内容は反
+映されない事に注意してください。
+</p>
+<p>
+なお、.irbrc 中に記述できる以下の設定値については、<a href="../class/-i-r-b=3a=3a-context.html">IRB::Context</a>
+オブジェクトのメソッドとして操作できません。
+</p>
+<dl>
+<dt>IRB.conf[:AT_EXIT]</dt>
+<dd>
+<p>
+irb の終了時(サブ irb を含みません)に本項目に設定された <a href="../class/-proc.html">Proc</a> オ
+ブジェクトを実行します。ブロック引数には何も渡されません。
+</p>
+<p>
+デフォルト値は [] です。
+</p>
+</dd>
+<dt>IRB.conf[:CONTEXT_MODE]</dt>
+<dd>
+<p>
+新しいワークスペースを作成した時(サブ irb の起動や pushws した時)に、
+ワークスペースに関連する <a href="../class/-binding.html">Binding</a> オブジェクトの作成方法を
+<a href="../class/-integer.html">Integer</a> で設定します。
+</p>
+<p>
+0 を指定した場合、<a href="../method/-object/c/-t-o-p-l-e-v-e-l_-b-i-n-d-i-n-g.html">Object::TOPLEVEL_BINDING</a> の <a href="../class/-proc.html">Proc</a> 内の
+<a href="../class/-binding.html">Binding</a> を使用します。1 を指定した場合、<a href="../class/-tempfile.html">Tempfile</a> 中の
+<a href="../class/-binding.html">Binding</a> を使用します。2 を指定した場合、<a href="../class/-thread.html">Thread</a> 内で読み込
+んだファイル中の <a href="../class/-binding.html">Binding</a> を使用します。3 を指定した場合、
+<a href="../method/-object/c/-t-o-p-l-e-v-e-l_-b-i-n-d-i-n-g.html">Object::TOPLEVEL_BINDING</a> の関数中の <a href="../class/-binding.html">Binding</a> を使用します。
+</p>
+<p>
+ただし、IRB.conf[:SINGLE_IRB] に true を設定していた場合は、現在のワー
+クスペースをそのまま使用します。
+</p>
+<p>
+デフォルト値は 3 です。
+</p>
+</dd>
+<dt>IRB.conf[:IRB_LIB_PATH]</dt>
+<dd>
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+<dt>IRB.conf[:IRB_RC]</dt>
+<dd>
+<p>
+irb の起動時(サブ irb を含みます)に本項目に設定された <a href="../class/-proc.html">Proc</a> オブ
+ジェクトを実行します。ブロック引数には <a href="../class/-i-r-b=3a=3a-context.html">IRB::Context</a> が渡されます。
+そのため、サブ irb の設定をまとめて実行するのに使用します。
+</p>
+<p>
+デフォルト値は nil です。
+</p>
+<p>
+<a href="../library/irb.html#configure_sub_irb">irb/サブ irb の設定</a> も併せて参照してください。
+</p>
+</dd>
+<dt>IRB.conf[:LC_MESSAGES]</dt>
+<dd>
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+<dt>IRB.conf[:MAIN_CONTEXT]</dt>
+<dd>
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+<dt>IRB.conf[:SCRIPT]</dt>
+<dd>
+<p>
+ファイル名を指定して irb を実行した場合のパスを文字列で返します。
+</p>
+<p>
+デフォルト値は nil です。
+</p>
+</dd>
+<dt>IRB.conf[:SINGLE_IRB]</dt>
+<dd>
+<p>
+irb 中で self を実行して得られるオブジェクトをサブ irb と共有するかど
+うかを設定します。true を設定した場合に共有されます。
+</p>
+<p>
+デフォルト値は false です。
+</p>
+</dd>
+<dt>IRB.conf[:VERSION]</dt>
+<dd>
+<p>
+<a href="../method/-i-r-b/s/version.html">IRB.version</a> を実行した時に返すバージョンを <a href="../class/-string.html">String</a> で指定
+します。
+</p>
+<p>
+デフォルト値は nil です。
+</p>
+</dd>
+<dt>IRB.conf[:__MAIN__]</dt>
+<dd>
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+</dl>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I___INSPECT__">__inspect__</a>
+
+<a href="#I___TO_S__">__to_s__</a>
+
+<a href="#I_AP_NAME">ap_name</a>
+
+<a href="#I_AP_NAME--3D">ap_name=</a>
+
+<a href="#I_AUTO_INDENT_MODE">auto_indent_mode</a>
+
+<a href="#I_AUTO_INDENT_MODE--3D">auto_indent_mode=</a>
+
+<a href="#I_BACK_TRACE_LIMIT">back_trace_limit</a>
+
+<a href="#I_BACK_TRACE_LIMIT--3D">back_trace_limit=</a>
+
+<a href="#I_DEBUG--3F">debug?</a>
+
+<a href="#I_DEBUG_LEVEL">debug_level</a>
+
+<a href="#I_DEBUG_LEVEL--3D">debug_level=</a>
+
+<a href="#I_ECHO">echo</a>
+
+<a href="#I_ECHO">echo?</a>
+
+<a href="#I_ECHO--3D">echo=</a>
+
+<a href="#I_EVALUATE">evaluate</a>
+
+<a href="#I_EXIT">exit</a>
+
+<a href="#I_FILE_INPUT--3F">file_input?</a>
+
+<a href="#I_IGNORE_EOF">ignore_eof</a>
+
+<a href="#I_IGNORE_EOF">ignore_eof?</a>
+
+<a href="#I_IGNORE_EOF--3D">ignore_eof=</a>
+
+<a href="#I_IGNORE_SIGINT">ignore_sigint</a>
+
+<a href="#I_IGNORE_SIGINT">ignore_sigint?</a>
+
+<a href="#I_IGNORE_SIGINT--3D">ignore_sigint=</a>
+
+<a href="#I_INSPECT">inspect</a>
+
+<a href="#I_INSPECT">to_s</a>
+
+<a href="#I_INSPECT--3F">inspect?</a>
+
+<a href="#I_INSPECT_MODE">inspect_mode</a>
+
+<a href="#I_INSPECT_MODE--3D">inspect_mode=</a>
+
+<a href="#I_IO">io</a>
+
+<a href="#I_IO--3D">io=</a>
+
+<a href="#I_IRB">irb</a>
+
+<a href="#I_IRB--3D">irb=</a>
+
+<a href="#I_IRB_NAME">irb_name</a>
+
+<a href="#I_IRB_NAME--3D">irb_name=</a>
+
+<a href="#I_IRB_PATH">irb_path</a>
+
+<a href="#I_IRB_PATH--3D">irb_path=</a>
+
+<a href="#I_LAST_VALUE">last_value</a>
+
+<a href="#I_LOAD_MODULES">load_modules</a>
+
+<a href="#I_MAIN">main</a>
+
+<a href="#I_PROMPT_C">prompt_c</a>
+
+<a href="#I_PROMPT_C--3D">prompt_c=</a>
+
+<a href="#I_PROMPT_I">prompt_i</a>
+
+<a href="#I_PROMPT_I--3D">prompt_i=</a>
+
+<a href="#I_PROMPT_MODE">prompt_mode</a>
+
+<a href="#I_PROMPT_MODE--3D">prompt_mode=</a>
+
+<a href="#I_PROMPT_N">prompt_n</a>
+
+<a href="#I_PROMPT_N--3D">prompt_n=</a>
+
+<a href="#I_PROMPT_S">prompt_s</a>
+
+<a href="#I_PROMPT_S--3D">prompt_s=</a>
+
+<a href="#I_PROMPTING--3F">prompting?</a>
+
+<a href="#I_RC">rc</a>
+
+<a href="#I_RC">rc?</a>
+
+<a href="#I_RETURN_FORMAT">return_format</a>
+
+<a href="#I_RETURN_FORMAT--3D">return_format=</a>
+
+<a href="#I_SET_LAST_VALUE">set_last_value</a>
+
+<a href="#I_THREAD">thread</a>
+
+<a href="#I_USE_READLINE">use_readline</a>
+
+<a href="#I_USE_READLINE">use_readline?</a>
+
+<a href="#I_VERBOSE">verbose</a>
+
+<a href="#I_VERBOSE--3D">verbose=</a>
+
+<a href="#I_VERBOSE--3F">verbose?</a>
+
+<a href="#I_WORKSPACE">workspace</a>
+
+<a href="#I_WORKSPACE--3D">workspace=</a>
+
+</dd>
+
+<dt>定数</dt>
+<dd>
+
+<a href="#C_-I-D-N-A-M-E_-I-V-A-R-S">IDNAME_IVARS</a>
+
+<a href="#C_-N-O-P-R-I-N-T-I-N-G_-I-V-A-R-S">NOPRINTING_IVARS</a>
+
+<a href="#C_-N-O_-I-N-S-P-E-C-T-I-N-G_-I-V-A-R-S">NO_INSPECTING_IVARS</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(irb, workspace = nil, input_method = nil, output_method = nil) -&gt; IRB::Context</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を初期化します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] irb:</dt>
+<dd>
+<a href="../class/-i-r-b=3a=3a-irb.html">IRB::Irb</a> オブジェクトを指定します。
+</dd>
+<dt class='method-param'>[PARAM] workspace:</dt>
+<dd>
+<a href="../class/-i-r-b=3a=3a-work-space.html">IRB::WorkSpace</a> オブジェクトを指定します。省略し
+た場合は新しく作成されます。
+</dd>
+<dt class='method-param'>[PARAM] input_method:</dt>
+<dd>
+<a href="../class/-string.html">String</a>、<a href="../class/-i-r-b=3a=3a-input-method.html">IRB::InputMethod</a> のサブクラスの
+オブジェクト、nil のいずれかを指定します。
+</dd>
+<dt class='method-param'>[PARAM] output_method:</dt>
+<dd>
+<a href="../class/-i-r-b=3a=3a-output-method.html">IRB::OutputMethod</a> のサブクラスのオブジェクト
+を指定します。省略した場合は
+<a href="../class/-i-r-b=3a=3a-stdio-output-method.html">IRB::StdioOutputMethod</a> オブジェクトが新しく
+作成されます。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I___INSPECT__"><code>__inspect__ -&gt; String</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/__inspect__.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-__inspect__">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を文字列表現にしたオブジェクトを返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I___TO_S__"><code>__to_s__ -&gt; String</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/__to_s__.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-__to_s__">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を文字列表現にしたオブジェクトを返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_AP_NAME"><code>ap_name -&gt; String</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/ap_name.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-ap_name">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身のアプリケーション名を返します。
+</p>
+<p>
+デフォルト値は &quot;irb&quot; です。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/ap_name=3d.html">IRB::Context#ap_name=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_AP_NAME--3D"><code>ap_name=(val)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/ap_name=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-ap_name-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身のアプリケーション名を val に設定します。
+</p>
+<p>
+.irbrc ファイル中で IRB.conf[:AP_NAME] を設定する事でも同様の操作が行え
+ます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+アプリケーション名を <a href="../class/-string.html">String</a> で指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/ap_name.html">IRB::Context#ap_name</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_AUTO_INDENT_MODE"><code>auto_indent_mode -&gt; bool</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/auto_indent_mode.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-auto_indent_mode">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+入力が次の行に継続した時に自動で字下げを行うかどうかを返します。
+</p>
+<p>
+デフォルト値は false です。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+自動で字下げを行う場合は true を返します。行わない場合は false
+を返します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/auto_indent_mode=3d.html">IRB::Context#auto_indent_mode=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_AUTO_INDENT_MODE--3D"><code>auto_indent_mode=(val)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/auto_indent_mode=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-auto_indent_mode-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+入力が次の行に継続した時に自動で字下げを行うかどうかを val に設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+true を指定した場合、自動で字下げを行います。false を指定し
+た場合は自動で字下げを行いません。
+</dd>
+</dl>
+<p>
+<a href="../method/-i-r-b=3a=3a-context/i/prompt_mode.html">IRB::Context#prompt_mode</a> の変更に影響を受ける事に注意してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/auto_indent_mode.html">IRB::Context#auto_indent_mode</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_BACK_TRACE_LIMIT"><code>back_trace_limit -&gt; Integer</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/back_trace_limit.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-back_trace_limit">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+エラー発生時のバックトレース表示の先頭、末尾の上限の行数を返します。
+</p>
+<p>
+デフォルト値は 16 です。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/back_trace_limit=3d.html">IRB::Context#back_trace_limit=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_BACK_TRACE_LIMIT--3D"><code>back_trace_limit=(val)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/back_trace_limit=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-back_trace_limit-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+エラー発生時のバックトレース表示の先頭、末尾の上限の行数をそれぞれ val
+行に設定します。
+</p>
+<p>
+.irbrc ファイル中で IRB.conf[:BACK_TRACE_LIMIT] を設定する事でも同様の
+操作が行えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+バックトレース表示の先頭、末尾の上限を <a href="../class/-integer.html">Integer</a> で指定
+します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/back_trace_limit.html">IRB::Context#back_trace_limit</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DEBUG--3F"><code>debug? -&gt; bool</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/debug=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-debug-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+irb がデバッグモード(<a href="../method/-i-r-b=3a=3a-context/i/debug_level.html">IRB::Context#debug_level</a> が 1 以上)で動作し
+ているかどうかを返します。
+</p>
+<p>
+デフォルト値は false です。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/debug_level.html">IRB::Context#debug_level</a>, <a href="../method/-i-r-b=3a=3a-context/i/debug_level=3d.html">IRB::Context#debug_level=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DEBUG_LEVEL"><code>debug_level -&gt; Integer</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/debug_level.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-debug_level">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+irb のデバッグレベルを返します。
+</p>
+<p>
+デフォルト値は 0 です。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/debug_level=3d.html">IRB::Context#debug_level=</a>, <a href="../method/-i-r-b=3a=3a-context/i/debug=3f.html">IRB::Context#debug?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DEBUG_LEVEL--3D"><code>debug_level=(val)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/debug_level=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-debug_level-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+irb のデバッグレベルを val に設定します。
+</p>
+<p>
+.irbrc ファイル中で IRB.conf[:DEBUG_LEVEL] を設定する事でも同様の操作
+が行えます。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/debug_level.html">IRB::Context#debug_level</a>, <a href="../method/-i-r-b=3a=3a-context/i/debug=3f.html">IRB::Context#debug?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ECHO"><code>echo -&gt; bool</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/echo.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-echo">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>echo? -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+irb のプロンプトでの評価結果を表示するかどうかを返します。
+</p>
+<p>
+デフォルト値は false です。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/echo=3d.html">IRB::Context#echo=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ECHO--3D"><code>echo=(val)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/echo=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-echo-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+irb のプロンプトでの評価結果を表示するかどうかを設定します。
+</p>
+<p>
+.irbrc ファイル中で IRB.conf[:ECHO] を設定する事でも同様の操作が行えま
+す。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+true を指定した場合、irb のプロンプトでの評価結果を表示しま
+す。false を指定した場合は表示しません。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/echo.html">IRB::Context#echo</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EVALUATE"><code>evaluate(line, line_no) -&gt; object</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/evaluate.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-evaluate">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EXIT"><code>exit(ret = 0) -&gt; object</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/exit.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-exit">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+irb を終了します。ret で指定したオブジェクトを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] ret:</dt>
+<dd>
+戻り値を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b/s/irb_exit.html">IRB.irb_exit</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FILE_INPUT--3F"><code>file_input? -&gt; bool</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/file_input=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-file_input-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_IGNORE_EOF"><code>ignore_eof -&gt; bool</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/ignore_eof.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-ignore_eof">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ignore_eof? -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+Ctrl-D(EOF) が入力された時に irb を終了するかどうかを返します。
+</p>
+<p>
+true の時は Ctrl-D を無視します。false の時は irb を終了します。
+</p>
+<p>
+デフォルト値は false です。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/ignore_eof=3d.html">IRB::Context#ignore_eof=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_IGNORE_EOF--3D"><code>ignore_eof=(val)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/ignore_eof=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-ignore_eof-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Ctrl-D(EOF) が入力された時に irb を終了するかどうかを val に設定します。
+</p>
+<p>
+.irbrc ファイル中で IRB.conf[:IGNORE_EOF] を設定する事でも同様の操作が
+行えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+true を指定した場合、 Ctrl-D を無視します。false を指定した
+場合は Ctrl-D の入力時に irb を終了します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/ignore_eof.html">IRB::Context#ignore_eof</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_IGNORE_SIGINT"><code>ignore_sigint -&gt; bool</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/ignore_sigint.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-ignore_sigint">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ignore_sigint? -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+Ctrl-C が入力された時に irb を終了するかどうかを返します。
+</p>
+<p>
+false の時は irb を終了します。true の時は以下のように動作します。
+</p>
+<dl>
+<dt>入力中</dt>
+<dd>
+<p>
+これまで入力したものをキャンセルしトップレベルに戻る.
+</p>
+</dd>
+<dt>実行中</dt>
+<dd>
+<p>
+実行を中止する.
+</p>
+</dd>
+</dl>
+<p>
+デフォルト値は true です。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/ignore_sigint=3d.html">IRB::Context#ignore_sigint=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_IGNORE_SIGINT--3D"><code>ignore_sigint=(val)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/ignore_sigint=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-ignore_sigint-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Ctrl-C が入力された時に irb を終了するかどうかを val に設定します。
+</p>
+<p>
+.irbrc ファイル中で IRB.conf[:IGNORE_SIGINT] を設定する事でも同様の操作
+が行えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+false を指定した場合、Ctrl-C の入力時に irb を終了します。
+true を指定した場合、Ctrl-C の入力時に以下のように動作します。
+</dd>
+</dl>
+<dl>
+<dt>入力中</dt>
+<dd>
+<p>
+これまで入力したものをキャンセルしトップレベルに戻る.
+</p>
+</dd>
+<dt>実行中</dt>
+<dd>
+<p>
+実行を中止する.
+</p>
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/ignore_sigint.html">IRB::Context#ignore_sigint</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/inspect.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-inspect">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_s -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+自身を人間に読みやすい文字列にして返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT--3F"><code>inspect? -&gt; bool</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/inspect=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-inspect-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-i-r-b=3a=3a-context=23inspect_mode.html">IRB::Context#inspect_mode</a> が有効かどうかを返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+出力結果に to_s したものを表示する場合は false を返します。それ
+以外の場合は true を返します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../class/-i-r-b=3a=3a-context=23inspect_mode.html">IRB::Context#inspect_mode</a>, <a href="../class/-i-r-b=3a=3a-context=23inspect_mode=3d.html">IRB::Context#inspect_mode=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT_MODE"><code>inspect_mode -&gt; object | nil</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/inspect_mode.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-inspect_mode">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+実行結果の出力方式を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/inspect_mode=3d.html">IRB::Context#inspect_mode=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT_MODE--3D"><code>inspect_mode=(opt)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/inspect_mode=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-inspect_mode-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+実行結果の出力方式を opt に設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] opt:</dt>
+<dd>
+以下のいずれかを指定します。
+</dd>
+</dl>
+<dl>
+<dt>false, :to_s, :raw</dt>
+<dd>
+<p>
+出力結果を to_s したものを表示します。
+</p>
+</dd>
+<dt>true, :p, :inspect</dt>
+<dd>
+<p>
+出力結果を inspect したものを表示します。
+</p>
+</dd>
+<dt>:pp, :pretty_inspect</dt>
+<dd>
+<p>
+出力結果を pretty_inspect したものを表示します。
+</p>
+</dd>
+<dt>:yaml, :YAML</dt>
+<dd>
+<p>
+出力結果を YAML 形式にしたものを表示します。
+</p>
+</dd>
+<dt>:marshal, :Marshal, :MARSHAL, <a href="../class/-marshal.html">Marshal</a></dt>
+<dd>
+<p>
+出力結果を <a href="../method/-marshal/m/dump.html">Marshal.#dump</a> したものを表示します。
+</p>
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../library/irb.html#inspect_mode">irb/実行結果の出力方式</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_IO"><code>io -&gt; IRB::InputMethod</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/io.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-io">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_IO--3D"><code>io=(val)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/io=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-io-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_IRB"><code>irb -&gt; IRB::Irb</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/irb.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-irb">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_IRB--3D"><code>irb=(val)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/irb=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-irb-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_IRB_NAME"><code>irb_name -&gt; String</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/irb_name.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-irb_name">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+起動しているコマンド名を文字列で返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/irb_name=3d.html">IRB::Context#irb_name=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_IRB_NAME--3D"><code>irb_name=(val)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/irb_name=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-irb_name-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+起動しているコマンド名を val に設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+コマンド名を <a href="../class/-string.html">String</a> で指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/irb_name.html">IRB::Context#irb_name</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_IRB_PATH"><code>irb_path -&gt; String</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/irb_path.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-irb_path">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_IRB_PATH--3D"><code>irb_path=(val)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/irb_path=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-irb_path-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LAST_VALUE"><code>last_value -&gt; object</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/last_value.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-last_value">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+irb 中での最後の実行結果を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LOAD_MODULES"><code>load_modules -&gt; [String]</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/load_modules.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-load_modules">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+irb の起動時に -r オプション指定で読み込まれたライブラリ、~/.irbrc など
+の設定ファイル内で IRB.conf[:LOAD_MODULES] 指定で読み込まれたライブラリ
+の名前の配列を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_MAIN"><code>main -&gt; object</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/main.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-main">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self に設定されたオブジェクトを返します。
+</p>
+<p>
+[SEE_ALSO] cwws コマンド
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PROMPT_C"><code>prompt_c -&gt; String</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/prompt_c.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-prompt_c">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+式が継続している時のプロンプトを表現するフォーマット文字列を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/prompt_c=3d.html">IRB::Context#prompt_c=</a>, <a href="../library/irb.html#customize_prompt">irb/プロンプトのカスタマイズ</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PROMPT_C--3D"><code>prompt_c=(val)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/prompt_c=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-prompt_c-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+式が継続している時のプロンプトを表現するフォーマット文字列を val に設定
+します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+フォーマットを文字列で指定します。指定できる内容については、
+<a href="../library/irb.html#customize_prompt">irb/プロンプトのカスタマイズ</a> を参照してください。
+</dd>
+</dl>
+<p>
+<a href="../method/-i-r-b=3a=3a-context/i/prompt_mode.html">IRB::Context#prompt_mode</a> の変更に影響を受ける事に注意してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/prompt_mode.html">IRB::Context#prompt_mode</a>, <a href="../method/-i-r-b=3a=3a-context/i/prompt_mode=3d.html">IRB::Context#prompt_mode=</a>,
+     <a href="../method/-i-r-b=3a=3a-context/i/prompt_c.html">IRB::Context#prompt_c</a>, <a href="../library/irb.html#customize_prompt">irb/プロンプトのカスタマイズ</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PROMPT_I"><code>prompt_i -&gt; String</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/prompt_i.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-prompt_i">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+通常のプロンプトを表現するフォーマット文字列を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/prompt_i=3d.html">IRB::Context#prompt_i=</a>,<a href="../library/irb.html#customize_prompt">irb/プロンプトのカスタマイズ</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PROMPT_I--3D"><code>prompt_i=(val)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/prompt_i=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-prompt_i-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+通常のプロンプトを表現するフォーマット文字列を val に設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+フォーマットを文字列で指定します。指定できる内容については、
+<a href="../library/irb.html#customize_prompt">irb/プロンプトのカスタマイズ</a> を参照してください。
+</dd>
+</dl>
+<p>
+<a href="../method/-i-r-b=3a=3a-context/i/prompt_mode.html">IRB::Context#prompt_mode</a> の変更に影響を受ける事に注意してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/prompt_mode.html">IRB::Context#prompt_mode</a>, <a href="../method/-i-r-b=3a=3a-context/i/prompt_mode=3d.html">IRB::Context#prompt_mode=</a>,
+     <a href="../method/-i-r-b=3a=3a-context/i/prompt_i.html">IRB::Context#prompt_i</a>, <a href="../library/irb.html#customize_prompt">irb/プロンプトのカスタマイズ</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PROMPT_MODE"><code>prompt_mode -&gt; Symbol</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/prompt_mode.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-prompt_mode">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在のプロンプトモードを <a href="../class/-symbol.html">Symbol</a> で返します。
+</p>
+<p>
+オリジナルのプロンプトモードを定義していた場合はそのモードを返します。
+そうでない場合は、:DEFAULT、:CLASSIC、:SIMPLE、:INF_RUBY、:XMP、:NULL
+のいずれかを返します。
+</p>
+<p>
+定義済みのプロンプトモードの内容については、IRB.conf[:PROMPT][mode] を
+参照してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/prompt_mode=3d.html">IRB::Context#prompt_mode=</a>, <a href="../library/irb.html#customize_prompt">irb/プロンプトのカスタマイズ</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PROMPT_MODE--3D"><code>prompt_mode=(mode)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/prompt_mode=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-prompt_mode-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+プロンプトモードを mode に設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+プロンプトモードを <a href="../class/-symbol.html">Symbol</a> で指定します。オリジナルの
+プロンプトモードか、:DEFAULT、:CLASSIC、:SIMPLE、:INF_RUBY、
+:XMP、:NULL のいずれを指定してください。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/prompt_mode.html">IRB::Context#prompt_mode</a>, <a href="../library/irb.html#customize_prompt">irb/プロンプトのカスタマイズ</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PROMPT_N"><code>prompt_n -&gt; String</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/prompt_n.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-prompt_n">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+継続行のプロンプトを表現するフォーマット文字列を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/prompt_n=3d.html">IRB::Context#prompt_n=</a>, <a href="../library/irb.html#customize_prompt">irb/プロンプトのカスタマイズ</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PROMPT_N--3D"><code>prompt_n=(val)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/prompt_n=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-prompt_n-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+継続行のプロンプトを表現するフォーマット文字列を val に設定します。
+</p>
+<p>
+<a href="../method/-i-r-b=3a=3a-context/i/prompt_mode.html">IRB::Context#prompt_mode</a> の変更に影響を受ける事に注意してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/prompt_mode.html">IRB::Context#prompt_mode</a>, <a href="../method/-i-r-b=3a=3a-context/i/prompt_mode=3d.html">IRB::Context#prompt_mode=</a>,
+     <a href="../method/-i-r-b=3a=3a-context/i/prompt_n.html">IRB::Context#prompt_n</a>, <a href="../library/irb.html#customize_prompt">irb/プロンプトのカスタマイズ</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PROMPT_S"><code>prompt_s -&gt; String</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/prompt_s.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-prompt_s">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中のプロンプトを表現するフォーマット文字列を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/prompt_s=3d.html">IRB::Context#prompt_s=</a>, <a href="../library/irb.html#customize_prompt">irb/プロンプトのカスタマイズ</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PROMPT_S--3D"><code>prompt_s=(val)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/prompt_s=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-prompt_s-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中のプロンプトを表現するフォーマット文字列を val に設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+フォーマットを文字列で指定します。指定できる内容については、
+<a href="../library/irb.html#customize_prompt">irb/プロンプトのカスタマイズ</a> を参照してください。
+</dd>
+</dl>
+<p>
+<a href="../method/-i-r-b=3a=3a-context/i/prompt_mode.html">IRB::Context#prompt_mode</a> の変更に影響を受ける事に注意してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/prompt_mode.html">IRB::Context#prompt_mode</a>, <a href="../method/-i-r-b=3a=3a-context/i/prompt_mode=3d.html">IRB::Context#prompt_mode=</a>,
+     <a href="../method/-i-r-b=3a=3a-context/i/prompt_s.html">IRB::Context#prompt_s</a>, <a href="../library/irb.html#customize_prompt">irb/プロンプトのカスタマイズ</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PROMPTING--3F"><code>prompting? -&gt; bool</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/prompting=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-prompting-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_RC"><code>rc -&gt; bool</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/rc.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-rc">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>rc? -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+~/.irbrc などの設定ファイルがあれば読み込みを行うかどうかを返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+設定ファイルの読み込みを行う場合は true を返します。行わない場
+合(irb の起動時に -f オプションを指定した場合)は false を返しま
+す。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_RETURN_FORMAT"><code>return_format -&gt; String</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/return_format.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-return_format">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+irb のプロンプトでの評価結果を表示する際のフォーマットを文字列で返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/return_format=3d.html">IRB::Context#return_format=</a>, <a href="../doc/print_format.html">sprintf フォーマット</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_RETURN_FORMAT--3D"><code>return_format=(val)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/return_format=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-return_format-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+irb のプロンプトでの評価結果を表示する際のフォーマットに val を設定します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/return_format.html">IRB::Context#return_format</a>, <a href="../doc/print_format.html">sprintf フォーマット</a>
+</p>
+<p>
+<a href="../method/-i-r-b=3a=3a-context/i/prompt_mode.html">IRB::Context#prompt_mode</a> の変更に影響を受ける事に注意してください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SET_LAST_VALUE"><code>set_last_value(value) -&gt; object</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/set_last_value.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-set_last_value">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_THREAD"><code>thread -&gt; Thread</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/thread.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-thread">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在のスレッドを返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-thread/s/current.html">Thread.current</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_USE_READLINE"><code>use_readline -&gt; bool | nil</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/use_readline.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-use_readline">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>use_readline? -&gt; bool | nil</code></dt>
+<dd class="method-description">
+<p>
+<a href="../library/readline.html">readline</a> を使うかどうかを返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+戻り値よって以下のように動作します。
+</dd>
+</dl>
+<dl>
+<dt>true</dt>
+<dd>
+<p>
+readline ライブラリを使う
+</p>
+</dd>
+<dt>false</dt>
+<dd>
+<p>
+readline ライブラリを使わない
+</p>
+</dd>
+<dt>nil</dt>
+<dd>
+<p>
+inf-ruby-mode 以外で readline ライブラリを利用しようとする (デフォルト)
+</p>
+</dd>
+</dl>
+<p>
+動作を変更するためには .irbrc ファイル中で IRB.conf[:USE_READLINE] の設
+定や irb 起動時に --readline オプション、--noreadline オプションの指定
+を行います。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_VERBOSE"><code>verbose -&gt; bool | nil</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/verbose.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-verbose">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+標準出力に詳細なメッセージを出力するように設定されているかどうかを返し
+ます。
+</p>
+<p>
+<a href="../method/-i-r-b=3a=3a-context/i/verbose=3f.html">IRB::Context#verbose?</a> とは別のメソッドである事に注意してください。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+詳細なメッセージを出力するように設定されている場合は true を返
+します。そうでない場合は false か nil を返します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/verbose=3f.html">IRB::Context#verbose?</a>, <a href="../method/-i-r-b=3a=3a-context/i/verbose=3d.html">IRB::Context#verbose=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_VERBOSE--3D"><code>verbose=(val)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/verbose=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-verbose-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+標準出力に詳細なメッセージを出力するかどうかを val に設定します。
+</p>
+<p>
+.irbrc ファイル中で IRB.conf[:VERBOSE] を設定する事でも同様の操作が行え
+ます。
+</p>
+<p>
+false や nil を指定した場合でも、<a href="../method/-i-r-b=3a=3a-context/i/verbose=3f.html">IRB::Context#verbose?</a> が true を
+返す場合は詳細なメッセージを出力する事に注意してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+true を指定した場合、詳細なメッセージを出力します。false や
+nil を指定した場合、詳細なメッセージを出力しません。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/verbose.html">IRB::Context#verbose</a>, <a href="../method/-i-r-b=3a=3a-context/i/verbose=3f.html">IRB::Context#verbose?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_VERBOSE--3F"><code>verbose? -&gt; bool | nil</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/verbose=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-verbose-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+標準出力に詳細なメッセージを出力するかどうかを返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+詳細なメッセージを出力する場合は true を返します。そうでない場
+合は false か nil を返します。
+</dd>
+</dl>
+<p>
+設定を行っていた場合(<a href="../method/-i-r-b=3a=3a-context/i/verbose.html">IRB::Context#verbose</a> が true か false を返す
+場合)は設定した通りに動作します。設定を行っていない場合は、ファイルを指
+定して irb を実行した場合などに true を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-r-b=3a=3a-context/i/verbose.html">IRB::Context#verbose</a>, <a href="../method/-i-r-b=3a=3a-context/i/verbose=3d.html">IRB::Context#verbose=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_WORKSPACE"><code>workspace -&gt; IRB::WorkSpace</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/workspace.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-workspace">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_WORKSPACE--3D"><code>workspace=(val)</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/i/workspace=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-i-workspace-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-I-D-N-A-M-E_-I-V-A-R-S"><code>IDNAME_IVARS -&gt; [String]</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/c/-i-d-n-a-m-e_-i-v-a-r-s.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-c-IDNAME_IVARS">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-N-O-P-R-I-N-T-I-N-G_-I-V-A-R-S"><code>NOPRINTING_IVARS -&gt; [String]</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/c/-n-o-p-r-i-n-t-i-n-g_-i-v-a-r-s.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-c-NOPRINTING_IVARS">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-N-O_-I-N-S-P-E-C-T-I-N-G_-I-V-A-R-S"><code>NO_INSPECTING_IVARS -&gt; [String]</code><span class="permalink">[<a href="../method/-i-r-b=3a=3a-context/c/-n-o_-i-n-s-p-e-c-t-i-n-g_-i-v-a-r-s.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/irb/context/rdoc/IRB/Context.html#method-c-NO_INSPECTING_IVARS">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ライブラリ内部で使用します。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

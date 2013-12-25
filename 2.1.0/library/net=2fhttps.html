@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library net/https</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; net/httpsライブラリ
+</p>
+
+<h1>library net/https</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+<a href="../library/net=2fhttp.html">net/http</a> に SSL/TLS 拡張を実装するライブラリです。
+</p>
+<p>
+<a href="../class/-net=3a=3a-h-t-t-p.html">Net::HTTP</a> を再オープンし、SSL/TLS 拡張を追加します。
+</p>
+<h2 >デフォルトパラメータについて</h2>
+<p>
+net/https は <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context/i/set_params.html">OpenSSL::SSL::SSLContext#set_params</a> で
+SSLContext を初期化します。そのため
+指定されなかったパラメータは <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context/c/-d-e-f-a-u-l-t_-p-a-r-a-m-s.html">OpenSSL::SSL::SSLContext::DEFAULT_PARAMS</a>
+の値で初期化されます。
+<a href="../method/-net=3a=3a-h-t-t-p/i/ca_file=3d.html">Net::HTTP#ca_file=</a> も <a href="../method/-net=3a=3a-h-t-t-p/i/ca_path=3d.html">Net::HTTP#ca_path=</a> も
+<a href="../method/-net=3a=3a-h-t-t-p/i/cert_store.html">Net::HTTP#cert_store</a> も設定しなかった場合は
+<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context/c/-d-e-f-a-u-l-t_-c-e-r-t_-s-t-o-r-e.html">OpenSSL::SSL::SSLContext::DEFAULT_CERT_STORE</a>
+が証明書ストアとして用いられます。
+</p>
+<h2 >Example</h2>
+<p>
+簡単な例を挙げます。
+verify_mode に指定する定数に関しては <a href="../class/-open-s-s-l=3a=3a-s-s-l.html">OpenSSL::SSL</a> を参照してください。
+必ず use_ssl = true を呼ばなければいけないところに注意してください。
+</p>
+<pre>
+require 'net/https'
+https = Net::HTTP.new('www.example.com',443)
+https.use_ssl = true
+https.ca_file = '/usr/share/ssl/cert.pem'
+https.verify_mode = OpenSSL::SSL::VERIFY_PEER
+https.verify_depth = 5
+https.start {
+  response = https.get('/')
+  puts response.body
+}
+</pre>
+<p>
+以下は HTTPS プロクシ経由でアクセスする例です。
+プロクシ経由でも通信路は暗号化されます。
+</p>
+<pre>
+require 'net/https'
+proxy_addr = 'proxy.example.com'
+proxy_port = 3128
+https = Net::HTTP::Proxy(proxy_addr, proxy_port).new('www.example.com',443)
+https.use_ssl = true
+https.ca_file = '/usr/share/ssl/cert.pem'
+https.verify_mode = OpenSSL::SSL::VERIFY_PEER
+https.verify_depth = 5
+https.start {
+  response = https.get('/')
+  puts response.body
+}
+</pre>
+
+
+
+
+<h2>追加・再定義されるメソッド</h2>
+<p><code>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/ca_file.html">Net::HTTP#ca_file</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/ca_file=3d.html">Net::HTTP#ca_file=</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/ca_path.html">Net::HTTP#ca_path</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/ca_path=3d.html">Net::HTTP#ca_path=</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/cert.html">Net::HTTP#cert</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/cert=3d.html">Net::HTTP#cert=</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/cert_store.html">Net::HTTP#cert_store</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/cert_store=3d.html">Net::HTTP#cert_store=</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/ciphers.html">Net::HTTP#ciphers</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/ciphers=3d.html">Net::HTTP#ciphers=</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/key.html">Net::HTTP#key</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/key=3d.html">Net::HTTP#key=</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/peer_cert.html">Net::HTTP#peer_cert</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/ssl_timeout.html">Net::HTTP#ssl_timeout</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/ssl_timeout=3d.html">Net::HTTP#ssl_timeout=</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/ssl_version.html">Net::HTTP#ssl_version</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/ssl_version=3d.html">Net::HTTP#ssl_version=</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/use_ssl=3d.html">Net::HTTP#use_ssl=</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/use_ssl=3f.html">Net::HTTP#use_ssl?</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/verify_callback.html">Net::HTTP#verify_callback</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/verify_callback=3d.html">Net::HTTP#verify_callback=</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/verify_depth.html">Net::HTTP#verify_depth</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/verify_depth=3d.html">Net::HTTP#verify_depth=</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/verify_mode.html">Net::HTTP#verify_mode</a>
+
+<a href="../method/-net=3a=3a-h-t-t-p/i/verify_mode=3d.html">Net::HTTP#verify_mode=</a>
+
+</code></p>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

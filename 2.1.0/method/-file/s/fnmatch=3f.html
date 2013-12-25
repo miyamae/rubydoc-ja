@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>singleton method File.fnmatch</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-file.html">Fileクラス</a>
+&gt; fnmatch
+
+</p>
+
+
+<h1>singleton method File.fnmatch</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_FNMATCH"><code>fnmatch(pattern, path, flags = 0) -&gt; bool</code><span class="permalink">[<a href="../../../method/-file/s/fnmatch.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/File.html#method-c-fnmatch">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>fnmatch?(pattern, path, flags = 0) -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+ファイル名のパターンマッチ <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fnmatch.html">fnmatch(3)</a> を行います。
+path が pattern にマッチすれば真を返します。そうでない場合には false を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+パターンを文字列で指定します。ワイルドカードとして `*',
+`?', `[]', `{}' が使用できます。
+<a href="../../../method/-dir/s/glob.html">Dir.glob</a> とは違って `**/' は使用できません。
+<pre>
+    %w(foo foobar bar).each {|f|
+      p File.fnmatch(&quot;foo*&quot;, f)
+    }
+    # =&gt; true
+         true
+         false
+</pre>
+</dd>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+パスを表す文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] flags:</dt>
+<dd>
+パターンマッチの動作を以下で述べる定数の論理和で指定します。
+flags のデフォルト値は0(フラグ指定なし)です。
+</dd>
+</dl>
+<p>
+引数 flags に指定できる定数は以下のとおりです。
+これらの定数は <a href="../../../class/-file=3a=3a-constants.html">File::Constants</a> で定義されていますが、
+<a href="../../../class/-file.html">File</a> クラスの親クラスの IO が <a href="../../../class/-file=3a=3a-constants.html">File::Constants</a> をインクルードしているので、
+これらの定数は File::FNM_NOESCAPE などとして参照可能です。
+</p>
+<dl>
+<dt>FNM_NOESCAPE</dt>
+<dd>
+<p>
+エスケープ文字 `\' を普通の文字とみなします。
+</p>
+<p>
+デフォルトでは \ を伴う任意の文字はその文字にマッチしますが、
+このフラグをつけると、\ が普通の文字として扱われます。
+</p>
+<pre>
+  p File.fnmatch('\a', 'a')                       # =&gt; true
+  p File.fnmatch('\a', '\a', File::FNM_NOESCAPE)  # =&gt; true
+</pre>
+<p>
+前者で * は、エスケープされているので &quot;*&quot; そのものにマッチ
+します。
+</p>
+<pre>
+  p File.fnmatch('\*', 'a')                       # =&gt; false
+  p File.fnmatch('\*', '\a', File::FNM_NOESCAPE)  # =&gt; true
+</pre>
+<p>
+単体の \ は、このフラグの有無に関わらず \ にマッチします。
+(シングルクォート文字列中では \\ は、\ であることに注意)
+</p>
+<pre>
+  p File.fnmatch('\\', '\\')                      # =&gt; true
+  p File.fnmatch('\\', '\\', File::FNM_NOESCAPE)  # =&gt; true
+</pre>
+</dd>
+<dt>FNM_PATHNAME</dt>
+<dd>
+<p>
+ワイルドカード `*', `?', `[]' が `/' にマッチしなくなります。
+シェルのパターンマッチにはこのフラグが使用されています。
+</p>
+<pre>
+  p File.fnmatch('*', '/', File::FNM_PATHNAME)   # =&gt; false
+  p File.fnmatch('?', '/', File::FNM_PATHNAME)   # =&gt; false
+  p File.fnmatch('[/]', '/', File::FNM_PATHNAME) # =&gt; false
+</pre>
+</dd>
+<dt>FNM_CASEFOLD</dt>
+<dd>
+<p>
+アルファベットの大小文字を区別せずにパターンマッチを行います。
+</p>
+<pre>
+  p File.fnmatch('A', 'a', File::FNM_CASEFOLD)   # =&gt; true
+</pre>
+</dd>
+<dt>FNM_DOTMATCH</dt>
+<dd>
+<p>
+ワイルドカード `*', `?', `[]' が先頭の `.' にマッチするようになります。
+</p>
+<pre>
+  p File.fnmatch('*', '.', File::FNM_DOTMATCH)           # =&gt; true
+  p File.fnmatch('?', '.', File::FNM_DOTMATCH)           # =&gt; true
+  p File.fnmatch('[.]', '.', File::FNM_DOTMATCH)         # =&gt; true
+  p File.fnmatch('foo/*', 'foo/.', File::FNM_DOTMATCH)   # =&gt; true
+</pre>
+</dd>
+<dt>FNM_EXTGLOB</dt>
+<dd>
+<p>
+{} 内のコンマで区切られた文字列の組合せにマッチするようになります。
+例えば、foo{a,b,c} は fooa, foob, fooc に展開されそれぞれに対してマッ
+チ判定を行います。
+</p>
+<p>
+括弧は入れ子にすることができます。例えば、 {foo,bar{foo,bar}} は foo,
+barfoo, barbar のそれぞれにマッチします。
+</p>
+<pre>
+  p File.fnmatch('foo{a,b,c}', 'fooa', File::FNM_EXTGLOB)           # =&gt; true
+  p File.fnmatch('{foo,bar{foo,bar}}', 'barfoo', File::FNM_EXTGLOB) # =&gt; true
+</pre>
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

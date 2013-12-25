@@ -12,7 +12,7 @@
 <p>
 <a href="../doc/index.html">Ruby 1.9.3 リファレンスマニュアル</a>
 &gt; <a href="../library/index.html">ライブラリ一覧</a>
-&gt; <a href="../library/rexml.html">rexmlライブラリ</a>
+&gt; <a href="../library/rexml=2fparsers=2fpullparser.html">rexml/parsers/pullparserライブラリ</a>
 &gt; REXML::Parsers::PullParserクラス
 </p>
 
@@ -49,172 +49,6 @@
 <p>
 プル方式の XML パーサクラス。
 </p>
-<p>
-<a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-stream-parser.html">REXML::Parsers::StreamParser</a> はパースした結果をコールバックによって
-受動的に受け取りますが、このパーサは <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/pull.html">REXML::Parsers::PullParser#pull</a>
-によってパーサから結果をイベントという形で順に能動的に取り出します。
-外部的にはこのクラスのオブジェクトはイベントのキューと見なせます。
-pull はそのキューの先頭を取り出し、キューから取り除きます。
-</p>
-<p>
-pull は <a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event.html">REXML::Parsers::PullEvent</a> オブジェクトを返します。
-このオブジェクトの
-<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event/i/event_type.html">REXML::Parsers::PullEvent#event_type</a> で「開始タグ」「終了タグ」
-といったイベントの種類を取得します。
-<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event/i/=5b=5d.html">REXML::Parsers::PullEvent#[]</a> でそのイベントのパラメータ
-(例えば開始タグなら要素名と属性)を得ることができます。
-</p>
-<h2 id='event_type'>イベントの種類とパラメータ</h2>
-<p>
-<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event/i/event_type.html">REXML::Parsers::PullEvent#event_type</a> で得られるイベントの種類の
-シンボルを列挙しています。
-</p>
-<p>
-これらのうちのいくつかは、
-<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event/i/start_element=3f.html">REXML::Parsers::PullEvent#start_element?</a> などのメソッドで
-判定することが可能です。
-</p>
-<dl>
-<dt>start_element (要素名, 属性)</dt>
-<dd>
-<p>
-XML要素の開始タグ。属性は { 属性名文字列 =&gt; 属性値文字列 } という <a href="../class/-hash.html">Hash</a>
-</p>
-</dd>
-<dt>end_element (要素名)</dt>
-<dd>
-<p>
-XML要素の終了タグ
-</p>
-</dd>
-<dt>text (正規化文字列, 非正規化文字列)</dt>
-<dd>
-<p>
-テキストノード
-</p>
-</dd>
-<dt>processing_instruction (ターゲット文字列, 内容文字列 | nil)</dt>
-<dd>
-<p>
-XML処理命令(Processing Instruction, PI)
-</p>
-</dd>
-<dt>comment (コメント文字列)</dt>
-<dd>
-<p>
-コメント
-</p>
-</dd>
-<dt>start_doctype (ルート要素名, &quot;SYSTEM&quot; | &quot;PUBLIC&quot; | nil, システム識別子 | nil, 公開識別子 | nil)</dt>
-<dd>
-<p>
-DTD 開始。判定は <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event/i/doctype=3f.html">REXML::Parsers::PullEvent#doctype?</a> メソッドで、
-start_doctype? ではない
-</p>
-</dd>
-<dt>end_doctype ()</dt>
-<dd>
-<p>
-DTD 終了
-</p>
-</dd>
-<dt>attlistdecl (要素名, 属性名とデフォルト値, 宣言文字列)</dt>
-<dd>
-<p>
-DTDの属性リスト宣言。属性名とデフォルト値 は { 属性名文字列 =&gt; デフォルト値文字列(なければnil) } という <a href="../class/-hash.html">Hash</a>
-</p>
-</dd>
-<dt>elementdecl (宣言文字列)</dt>
-<dd>
-<p>
-DTDの要素宣言
-</p>
-</dd>
-<dt>entitydecl</dt>
-<dd>
-<p>
-DTDの実体宣言
-</p>
-</dd>
-<dt>notationdecl (記法名文字列, &quot;PUBLIC&quot; | &quot;SYSTEM&quot; | nil, 公開識別子文字列 | nil, URI文字列 | nil)</dt>
-<dd>
-<p>
-DTDの記法宣言
-</p>
-</dd>
-<dt>cdata (テキスト文字列)</dt>
-<dd>
-<p>
-cdata セクション
-</p>
-</dd>
-<dt>xmldecl (バージョン文字列, エンコーディング文字列 | nil, standalone (&quot;yes&quot; | &quot;no&quot; | nil))</dt>
-<dd>
-<p>
-XML宣言
-</p>
-</dd>
-<dt>externalentity (エンティティ文字列)</dt>
-<dd>
-<p>
-doctype内のパラメータ実体参照。
-
-</p>
-</dd>
-</dl>
-<h2 >例</h2>
-<pre>
-require 'rexml/parsers/pullparser'
-xml = &lt;&lt;EOS
-&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;?xml-stylesheet type=&quot;text/css&quot; href=&quot;style.css&quot;?&gt;
-&lt;!DOCTYPE root SYSTEM &quot;foo&quot; [
-  &lt;!ELEMENT root (a+)&gt;
-  &lt;!ELEMENT a&gt;
-  &lt;!ENTITY bar &quot;barbarbarbar&quot;&gt;
-  &lt;!ATTLIST a att CDATA #REQUIRED xyz CDATA &quot;foobar&quot;&gt;
-  &lt;!NOTATION foobar SYSTEM &quot;http://example.org/foobar.dtd&quot;&gt;
-  &lt;!ENTITY % HTMLsymbol PUBLIC
-     &quot;-//W3C//ENTITIES Symbols for XHTML//EN&quot;
-     &quot;xhtml-symbol.ent&quot;&gt;
-  %HTMLsymbol;
-]&gt;
-&lt;root xmlns:foo=&quot;http://example.org/foo&quot;
-      xmlns:bar=&quot;http://example.org/bar&quot;&gt;&lt;![CDATA[cdata is here]]&gt;
-  &lt;a foo:att='1' bar:att='2' att='&amp;lt;'/&gt;
-  &amp;amp;&amp;amp; &lt;!-- comment here--&gt; &amp;bar;
-&lt;/root&gt;
-EOS
-
-parser = REXML::Parsers::PullParser.new(xml)
-while parser.has_next?
-  p parser.pull
-end
-# &gt;&gt; xmldecl: [&quot;1.0&quot;, &quot;UTF-8&quot;, nil]
-# &gt;&gt; text: [&quot;\n&quot;, &quot;\n&quot;]
-# &gt;&gt; processing_instruction: [&quot;xml-stylesheet&quot;, &quot; type=\&quot;text/css\&quot; href=\&quot;style.css\&quot;&quot;]
-# &gt;&gt; text: [&quot;\n&quot;, &quot;\n&quot;]
-# &gt;&gt; start_doctype: [&quot;root&quot;, &quot;SYSTEM&quot;, &quot;foo&quot;, nil]
-# &gt;&gt; elementdecl: [&quot;&lt;!ELEMENT root (a+)&quot;]
-# &gt;&gt; elementdecl: [&quot;&lt;!ELEMENT a&quot;]
-# &gt;&gt; entitydecl: [&quot;bar&quot;, &quot;barbarbarbar&quot;]
-# &gt;&gt; attlistdecl: [&quot;a&quot;, {&quot;att&quot;=&gt;nil, &quot;xyz&quot;=&gt;&quot;foobar&quot;}, &quot; \n  &lt;!ATTLIST a att CDATA #REQUIRED xyz CDATA \&quot;foobar\&quot;&gt;&quot;]
-# &gt;&gt; notationdecl: [&quot;foobar&quot;, &quot;SYSTEM&quot;, nil, &quot;http://example.org/foobar.dtd&quot;]
-# &gt;&gt; entitydecl: [&quot;HTMLsymbol&quot;, &quot;PUBLIC&quot;, &quot;-//W3C//ENTITIES Symbols for XHTML//EN&quot;, &quot;xhtml-symbol.ent&quot;, &quot;%&quot;]
-# &gt;&gt; externalentity: [&quot;%HTMLsymbol;&quot;]
-# &gt;&gt; end_doctype: []
-# &gt;&gt; text: [&quot;\n&quot;, &quot;\n&quot;]
-# &gt;&gt; start_element: [&quot;root&quot;, {&quot;xmlns:foo&quot;=&gt;&quot;http://example.org/foo&quot;, &quot;xmlns:bar&quot;=&gt;&quot;http://example.org/bar&quot;}]
-# &gt;&gt; cdata: [&quot;cdata is here&quot;]
-# &gt;&gt; text: [&quot;\n  &quot;, &quot;\n  &quot;]
-# &gt;&gt; start_element: [&quot;a&quot;, {&quot;foo:att&quot;=&gt;&quot;1&quot;, &quot;bar:att&quot;=&gt;&quot;2&quot;, &quot;att&quot;=&gt;&quot;&amp;lt;&quot;}]
-# &gt;&gt; end_element: [&quot;a&quot;]
-# &gt;&gt; text: [&quot;\n  &amp;amp;&amp;amp; &quot;, &quot;\n  &amp;&amp; &quot;]
-# &gt;&gt; comment: [&quot; comment here&quot;]
-# &gt;&gt; text: [&quot; &amp;bar;\n&quot;, &quot; barbarbarbar\n&quot;]
-# &gt;&gt; end_element: [&quot;root&quot;]
-# &gt;&gt; text: [&quot;\n&quot;, &quot;\n&quot;]
-</pre>
 
 
 
@@ -251,7 +85,7 @@ end
 <h2>特異メソッド</h2>
 <dl>
 
-<dt class="method-heading" id="S_NEW"><code>new(stream) -&gt; REXML::Parsers::PullParser</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/rexml/rdoc/REXML/Parsers/PullParser.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading" id="S_NEW"><code>new(stream) -&gt; REXML::Parsers::PullParser</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/rexml/parsers/pullparser/rdoc/REXML/Parsers/PullParser.html#method-c-new">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 新たな PullParser オブジェクトを生成して返します。
@@ -270,15 +104,26 @@ end
 <h2>インスタンスメソッド</h2>
 <dl>
 
-<dt class="method-heading" id="I_EACH"><code>each {|event| ... } -&gt; ()</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/each.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/rexml/rdoc/REXML/Parsers/PullParser.html#method-i-each">rdoc</a>]</span></dt>
+<dt class="method-heading" id="I_EACH"><code>each {|event| ... } -&gt; ()</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/each.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/rexml/parsers/pullparser/rdoc/REXML/Parsers/PullParser.html#method-i-each">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 XMLをパースし、得られたイベント列を引数として順にブロックを呼び出します。
 </p>
+<dl>
+<dt>[EXCEPTION] REXML::ParseException:</dt>
+<dd>
+XML文書のパースに失敗した場合に発生します
+</dd>
+<dt>[EXCEPTION] REXML::UndefinedNamespaceException:</dt>
+<dd>
+XML文書のパース中に、定義されていない名前空間
+が現れた場合に発生します
+</dd>
+</dl>
 </dd>
 
 
-<dt class="method-heading" id="I_EMPTY--3F"><code>empty? -&gt; bool</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/empty=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/rexml/rdoc/REXML/Parsers/PullParser.html#method-i-empty-3F">rdoc</a>]</span></dt>
+<dt class="method-heading" id="I_EMPTY--3F"><code>empty? -&gt; bool</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/empty=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/rexml/parsers/pullparser/rdoc/REXML/Parsers/PullParser.html#method-i-empty-3F">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 未処理のイベントが残っていない場合に真を返します。
@@ -289,7 +134,7 @@ XMLをパースし、得られたイベント列を引数として順にブロ�
 </dd>
 
 
-<dt class="method-heading" id="I_HAS_NEXT--3F"><code>has_next? -&gt; bool</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/has_next=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/rexml/rdoc/REXML/Parsers/PullParser.html#method-i-has_next-3F">rdoc</a>]</span></dt>
+<dt class="method-heading" id="I_HAS_NEXT--3F"><code>has_next? -&gt; bool</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/has_next=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/rexml/parsers/pullparser/rdoc/REXML/Parsers/PullParser.html#method-i-has_next-3F">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 未処理のイベントが残っている場合に真を返します。
@@ -300,7 +145,7 @@ XMLをパースし、得られたイベント列を引数として順にブロ�
 </dd>
 
 
-<dt class="method-heading" id="I_PEEK"><code>peek(depth = 0) -&gt; REXML::Parsers::PullEvent | nil</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/peek.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/rexml/rdoc/REXML/Parsers/PullParser.html#method-i-peek">rdoc</a>]</span></dt>
+<dt class="method-heading" id="I_PEEK"><code>peek(depth = 0) -&gt; REXML::Parsers::PullEvent | nil</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/peek.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/rexml/parsers/pullparser/rdoc/REXML/Parsers/PullParser.html#method-i-peek">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 イベントキューの先頭から depth 番目のイベントを取り出します。
@@ -320,19 +165,39 @@ XMLをパースし、得られたイベント列を引数として順にブロ�
 <dd>
 先頭から depth 番目のイベントを取り出します
 </dd>
+<dt>[EXCEPTION] REXML::ParseException:</dt>
+<dd>
+XML文書のパースに失敗した場合に発生します
+</dd>
+<dt>[EXCEPTION] REXML::UndefinedNamespaceException:</dt>
+<dd>
+XML文書のパース中に、定義されていない名前空間
+が現れた場合に発生します
+</dd>
 </dl>
 </dd>
 
 
-<dt class="method-heading" id="I_PULL"><code>pull -&gt; REXML::Parsers::PullEvent</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/pull.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/rexml/rdoc/REXML/Parsers/PullParser.html#method-i-pull">rdoc</a>]</span></dt>
+<dt class="method-heading" id="I_PULL"><code>pull -&gt; REXML::Parsers::PullEvent</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/pull.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/rexml/parsers/pullparser/rdoc/REXML/Parsers/PullParser.html#method-i-pull">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 イベントキューの先頭のイベントを取り出し、キューからそれを取り除きます。
 </p>
+<dl>
+<dt>[EXCEPTION] REXML::ParseException:</dt>
+<dd>
+XML文書のパースに失敗した場合に発生します
+</dd>
+<dt>[EXCEPTION] REXML::UndefinedNamespaceException:</dt>
+<dd>
+XML文書のパース中に、定義されていない名前空間
+が現れた場合に発生します
+</dd>
+</dl>
 </dd>
 
 
-<dt class="method-heading" id="I_UNSHIFT"><code>unshift(token) -&gt; ()</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/unshift.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/rexml/rdoc/REXML/Parsers/PullParser.html#method-i-unshift">rdoc</a>]</span></dt>
+<dt class="method-heading" id="I_UNSHIFT"><code>unshift(token) -&gt; ()</code><span class="permalink">[<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/unshift.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-1.9.3/libdoc/rexml/parsers/pullparser/rdoc/REXML/Parsers/PullParser.html#method-i-unshift">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 イベントキューの先頭に token を追加します。

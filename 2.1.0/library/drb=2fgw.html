@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library drb/gw</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; drb/gwライブラリ
+</p>
+
+<h1>library drb/gw</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+drb 通信を中継するゲートウェイ(<a href="../class/-d-rb=3a=3a-g-w.html">DRb::GW</a>)と、
+中継に必要なオブジェクト識別子変換クラス(<a href="../class/-d-rb=3a=3a-g-w-id-conv.html">DRb::GWIdConv</a>)、
+および <a href="../class/-d-rb=3a=3a-d-rb-object.html">DRb::DRbObject</a> への拡張が含まれています。
+</p>
+<p>
+このライブラリを利用することで直接通信することが不可能であるような
+2つのプロセスが中継プロセスを経て drb によりやりとりできるようになります。
+</p>
+<p>
+drb による通信とは、オブジェクトをプロセス間でやりとりすること、
+およびそのメソッドを呼び出すことです。
+中継プロセスが保持している DRb::GW オブジェクトに
+それ以外のプロセスがオブジェクトを登録したり、登録済みの
+オブジェクトを取り出すことでオブジェクトをやりとりします。
+そしてそのオブジェクトのメソッドを呼び出すことで
+中継プロセスを経由した通信ができます。
+</p>
+<p>
+以下の URL も参照してください。
+</p>
+<ul>
+<li><a class="external" href="http://www2a.biglobe.ne.jp/~seki/ruby/drbssh.html">http://www2a.biglobe.ne.jp/~seki/ruby/drbssh.html</a></li>
+</ul>
+<h2 >Example</h2>
+<p>
+この例は drb/gw.rb に含まれているものです。
+</p>
+<p>
+foo.rb
+</p>
+<pre>
+require 'drb/drb'
+
+class Foo
+  include DRbUndumped
+  def initialize(name, peer=nil)
+    @name = name
+    @peer = peer
+  end
+
+  def ping(obj)
+    puts &quot;#{@name}: ping: #{obj.inspect}&quot;
+    @peer.ping(self) if @peer
+  end
+end
+</pre>
+<p>
+gw_b.rb
+</p>
+<pre>
+require 'drb/drb'
+require 'drb/gw'
+require 'drb/unix'
+
+DRb.install_id_conv(DRb::GWIdConv.new)
+
+front = DRb::GW.new
+
+s1 = DRb::DRbServer.new('drbunix:/tmp/gw_b_a', front)
+s2 = DRb::DRbServer.new('drbunix:/tmp/gw_b_c', front)
+
+s1.thread.join
+s2.thread.join
+</pre>
+<p>
+gw_a.rb
+</p>
+<pre>
+require 'drb/unix'
+require_relative 'foo'
+
+obj = Foo.new('a')
+DRb.start_service(&quot;drbunix:/tmp/gw_a&quot;, obj)
+
+robj = DRbObject.new_with_uri('drbunix:/tmp/gw_b_a')
+robj[:a] = obj
+
+DRb.thread.join
+</pre>
+<p>
+gw_c.rb
+</p>
+<pre>
+require 'drb/unix'
+require_relative 'foo'
+
+foo = Foo.new('c', nil)
+
+DRb.start_service(&quot;drbunix:/tmp/gw_c&quot;, nil)
+
+robj = DRbObject.new_with_uri(&quot;drbunix:/tmp/gw_b_c&quot;)
+
+puts &quot;c-&gt;b&quot;
+a = robj[:a]
+sleep 2
+
+a.ping(foo)
+
+DRb.thread.join
+</pre>
+<p>
+これを、gw_b, gw_a, gw_c の順に起動すると、gw_b を経由して
+gw_a と gw_c が通信します。
+</p>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-rb=3a=3a-g-w.html">DRb::GW</a>
+</td>
+<td class="description"><p>
+drb 通信中継のためのゲートウェイです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-rb=3a=3a-g-w-id-conv.html">DRb::GWIdConv</a>
+</td>
+<td class="description"><p>
+DRb::DRbIdConv に drb 通信の中継に必要な拡張をしたもの。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

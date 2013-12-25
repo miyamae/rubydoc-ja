@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library rexml/document</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 1.8.7 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; rexml/documentライブラリ
+</p>
+
+<h1>library rexml/document</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+DOM スタイルの XML パーサ。
+</p>
+<p>
+<a href="../method/-r-e-x-m-l=3a=3a-document/s/new.html">REXML::Document.new</a> で XML 文書から DOM ツリーを
+構築し、ツリーのノードの各メソッドで文書の内容にアクセスします。
+</p>
+<h2 >例</h2>
+<p>
+以下のプログラムではブックマークの XML からデータを取り出します。
+</p>
+<pre>
+require 'rexml/document'
+require 'pp'
+
+Bookmark = Struct.new(:href, :title, :desc)
+
+doc = REXML::Document.new(&lt;&lt;XML)
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;xbel version=&quot;1.0&quot;&gt;
+  &lt;bookmark href=&quot;http://www.ruby-lang.org/ja/&quot;&gt;
+    &lt;title&gt;オブジェクト指向スクリプト言語 Ruby&lt;/title&gt;
+    &lt;desc&gt;Rubyの公式サイト&lt;/desc&gt;
+  &lt;/bookmark&gt;
+  &lt;bookmark href=&quot;http://rurema.clear-code.com/&quot;&gt;
+    &lt;title&gt;最速Rubyリファレンスマニュアル検索！ | るりまサーチ&lt;/title&gt;
+    &lt;desc&gt;Rubyリファレンスマニュアルを全文検索できる。
+とても便利。
+    &lt;/desc&gt;
+  &lt;/bookmark&gt;
+  &lt;bookmark href=&quot;https://github.com/rurema/bitclust&quot;&gt;
+    &lt;title&gt;rurema/bitclust · GitHub&lt;/title&gt;
+  &lt;/bookmark&gt;
+  &lt;bookmark href=&quot;https://rubygems.org/gems/bitclust-core&quot; /&gt;
+&lt;/xbel&gt;
+XML
+
+bookmarks = REXML::XPath.match(doc, &quot;/xbel/bookmark&quot;).map do |bookmark|
+  href = bookmark.attribute(&quot;href&quot;).value
+  title_element =  bookmark.elements[&quot;title&quot;]
+  title = title_element ? title_element.text : nil
+  desc_element = bookmark.elements[&quot;desc&quot;]
+  desc = desc_element ? desc_element.text : nil
+  Bookmark.new(href, title, desc)
+end
+pp bookmarks
+# &gt;&gt; [#&lt;struct Bookmark
+# &gt;&gt;   href=&quot;http://www.ruby-lang.org/ja/&quot;,
+# &gt;&gt;   title=&quot;オブジェクト指向スクリプト言語 Ruby&quot;,
+# &gt;&gt;   desc=&quot;Rubyの公式サイト&quot;&gt;,
+# &gt;&gt;  #&lt;struct Bookmark
+# &gt;&gt;   href=&quot;http://rurema.clear-code.com/&quot;,
+# &gt;&gt;   title=&quot;最速Rubyリファレンスマニュアル検索！ | るりまサーチ&quot;,
+# &gt;&gt;   desc=&quot;Rubyリファレンスマニュアルを全文検索できる。\nとても便利。\n    &quot;&gt;,
+# &gt;&gt;  #&lt;struct Bookmark
+# &gt;&gt;   href=&quot;https://github.com/rurema/bitclust&quot;,
+# &gt;&gt;   title=&quot;rurema/bitclust · GitHub&quot;,
+# &gt;&gt;   desc=nil&gt;,
+# &gt;&gt;  #&lt;struct Bookmark
+# &gt;&gt;   href=&quot;https://rubygems.org/gems/bitclust-core&quot;,
+# &gt;&gt;   title=nil,
+# &gt;&gt;   desc=nil&gt;]
+</pre>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-attribute.html">REXML::Attribute</a>
+</td>
+<td class="description"><p>
+要素(<a href="../class/-r-e-x-m-l=3a=3a-element.html">REXML::Element</a>)の属性を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-child.html">REXML::Child</a>
+</td>
+<td class="description"><p>
+あるノード(親ノード)に子ノードとして保持されている
+ノードを表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-r-e-x-m-l=3a=3a-attlist-decl.html">REXML::AttlistDecl</a>
+</td>
+<td class="description"><p>
+DTD の属性リスト宣言を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-r-e-x-m-l=3a=3a-comment.html">REXML::Comment</a>
+</td>
+<td class="description"><p>
+XML コメントを表すクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-r-e-x-m-l=3a=3a-declaration.html">REXML::Declaration</a>
+</td>
+<td class="description"><p>
+DTD に含まれる各種宣言ノードを表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-r-e-x-m-l=3a=3a-element-decl.html">REXML::ElementDecl</a>
+</td>
+<td class="description"><p>
+DTD の要素宣言(Element Decleration)を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-r-e-x-m-l=3a=3a-entity.html">REXML::Entity</a>
+</td>
+<td class="description"><p>
+XML における実体(エンティティ、entity)の宣言(declaration)を表わすクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-r-e-x-m-l=3a=3a-external-entity.html">REXML::ExternalEntity</a>
+</td>
+<td class="description"><p>
+DTD 内の宣言でパラメータ実体参照を使って宣言が
+されているものを表わすクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-r-e-x-m-l=3a=3a-instruction.html">REXML::Instruction</a>
+</td>
+<td class="description"><p>
+XML 処理命令(XML Processing Instruction, XML PI)を表すクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-r-e-x-m-l=3a=3a-notation-decl.html">REXML::NotationDecl</a>
+</td>
+<td class="description"><p>
+DTD の記法宣言を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-r-e-x-m-l=3a=3a-parent.html">REXML::Parent</a>
+</td>
+<td class="description"><p>
+あるノードの親ノードとなりうるノードを表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-r-e-x-m-l=3a=3a-doc-type.html">REXML::DocType</a>
+</td>
+<td class="description"><p>
+XML の DTD(文書型定義、Document Type Definition)を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-r-e-x-m-l=3a=3a-element.html">REXML::Element</a>
+</td>
+<td class="description"><p>
+XML の要素(エレメント、element)を表すクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 3.0em;">
+<span style="display:none">&nbsp;&nbsp;&nbsp;</span>
+<a href="../class/-r-e-x-m-l=3a=3a-document.html">REXML::Document</a>
+</td>
+<td class="description"><p>
+XMLの完全な文書(ドキュメント)を表すクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-r-e-x-m-l=3a=3a-text.html">REXML::Text</a>
+</td>
+<td class="description"><p>
+XML のテキストノードを表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-r-e-x-m-l=3a=3a-c-data.html">REXML::CData</a>
+</td>
+<td class="description"><p>
+XML の cdata セクションを表すクラス
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-r-e-x-m-l=3a=3a-x-m-l-decl.html">REXML::XMLDecl</a>
+</td>
+<td class="description"><p>
+XML 宣言を表すクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-elements.html">REXML::Elements</a>
+</td>
+<td class="description"><p>
+要素の集合を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-formatters=3a=3a-default.html">REXML::Formatters::Default</a>
+</td>
+<td class="description"><p>
+XMLドキュメントを(文字列として)出力するクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-r-e-x-m-l=3a=3a-formatters=3a=3a-pretty.html">REXML::Formatters::Pretty</a>
+</td>
+<td class="description"><p>
+XMLドキュメントを(文字列として)見た目良く出力するクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-r-e-x-m-l=3a=3a-formatters=3a=3a-transitive.html">REXML::Formatters::Transitive</a>
+</td>
+<td class="description"><p>
+XMLドキュメントをテキストの内容を変えずに
+多少の整形を加えて出力するクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-output.html">REXML::Output</a>
+</td>
+<td class="description"><p>
+出力先を wrap するクラスです。
+内部用なのでユーザは使わないでください。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-base-parser.html">REXML::Parsers::BaseParser</a>
+</td>
+<td class="description"><p>
+内部用です。使わないでください。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-tree-parser.html">REXML::Parsers::TreeParser</a>
+</td>
+<td class="description"><p>
+内部用です。使わないでください。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-x-path-parser.html">REXML::Parsers::XPathParser</a>
+</td>
+<td class="description"><p>
+XPath 文字列をパースするための内部的なクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-source.html">REXML::Source</a>
+</td>
+<td class="description"><p>
+内部用なのでユーザは使わないでください。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-r-e-x-m-l=3a=3a-i-o-source.html">REXML::IOSource</a>
+</td>
+<td class="description"><p>
+内部用なのでユーザは使わないでください。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-source-factory.html">REXML::SourceFactory</a>
+</td>
+<td class="description"><p>
+内部用なのでユーザは使わないでください。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-x-path.html">REXML::XPath</a>
+</td>
+<td class="description"><p>
+XPath を取り扱うためのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-attributes.html">REXML::Attributes</a>
+</td>
+<td class="description"><p>
+属性の集合を表すクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>モジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-encoding.html">REXML::Encoding</a>
+</td>
+<td class="description"><p>
+rexml ライブラリでエンコーディングを取り扱うための内部的なモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-entity-const.html">REXML::EntityConst</a>
+</td>
+<td class="description"><p>
+XML の標準的な実体(エンティティ)を保持しているモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-functions.html">REXML::Functions</a>
+</td>
+<td class="description"><p>
+内部用なのでユーザは使わないでください。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-namespace.html">REXML::Namespace</a>
+</td>
+<td class="description"><p>
+XML 名前空間によって管理される「名前」を持つようなノードを
+表すモジュール。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-node.html">REXML::Node</a>
+</td>
+<td class="description"><p>
+XML tree 上のノードを表すモジュール。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-x-m-l-tokens.html">REXML::XMLTokens</a>
+</td>
+<td class="description"><p>
+XML をパースするための正規表現を保持しているモジュールです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

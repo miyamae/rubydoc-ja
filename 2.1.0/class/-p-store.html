@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class PStore</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/pstore.html">pstoreライブラリ</a>
+&gt; PStoreクラス
+</p>
+
+
+<h1>class PStore</h1>
+<p>
+
+
+クラスの継承リスト: PStore
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+Rubyのオブジェクトを外部ファイルに格納するためのクラスです。
+内部で <a href="../class/-marshal.html">Marshal</a> を使っています。
+</p>
+<h2 >使い方</h2>
+<p>
+データベースにアクセスするためには、
+transaction のブロック内である必要があります。
+インターフェースは <a href="../class/-hash.html">Hash</a> に似ています。
+</p>
+<pre>
+require 'pstore'
+db = PStore.new(&quot;/tmp/foo&quot;)
+db.transaction do
+  p db.roots       # =&gt; []
+  ary = db[&quot;root&quot;] = [1,2,3,4]
+  ary[0] = [1,1.5]
+end
+
+db.transaction do
+  p db[&quot;root&quot;]     # =&gt; [[1, 1.5], 2, 3, 4]
+end
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--5B--5D">[]</a>
+
+<a href="#I_--5B--5D--3D">[]=</a>
+
+<a href="#I_ABORT">abort</a>
+
+<a href="#I_COMMIT">commit</a>
+
+<a href="#I_DELETE">delete</a>
+
+<a href="#I_FETCH">fetch</a>
+
+<a href="#I_PATH">path</a>
+
+<a href="#I_ROOT--3F">root?</a>
+
+<a href="#I_ROOTS">roots</a>
+
+<a href="#I_TRANSACTION">transaction</a>
+
+<a href="#I_ULTRA_SAFE">ultra_safe</a>
+
+<a href="#I_ULTRA_SAFE--3D">ultra_safe=</a>
+
+</dd>
+
+<dt>privateメソッド</dt>
+<dd>
+
+<a href="#I_IN_TRANSACTION">in_transaction</a>
+
+</dd>
+
+<dt>定数</dt>
+<dd>
+
+<a href="#C_-E-M-P-T-Y_-M-A-R-S-H-A-L_-C-H-E-C-K-S-U-M">EMPTY_MARSHAL_CHECKSUM</a>
+
+<a href="#C_-E-M-P-T-Y_-M-A-R-S-H-A-L_-D-A-T-A">EMPTY_MARSHAL_DATA</a>
+
+<a href="#C_-E-M-P-T-Y_-S-T-R-I-N-G">EMPTY_STRING</a>
+
+<a href="#C_-R-D-W-R_-A-C-C-E-S-S">RDWR_ACCESS</a>
+
+<a href="#C_-R-D_-A-C-C-E-S-S">RD_ACCESS</a>
+
+<a href="#C_-W-R_-A-C-C-E-S-S">WR_ACCESS</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(file, thread_safe = false) -&gt; PStore</code><span class="permalink">[<a href="../method/-p-store/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ファイル名 file に対してデータベースを読み書きします。
+</p>
+<p>
+データベースを更新するときにバックアップファイルが作成されるため、
+file のあるディレクトリは書き込み可能である必要があります。
+データベースの更新が成功すると、バックアップファイルは削除されます。バックアップファイル名は
+ファイル名に &quot;.tmp&quot; および &quot;.new&quot; を付けたものです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file:</dt>
+<dd>
+データベースファイル名。
+</dd>
+<dt class='method-param'>[PARAM] thread_safe:</dt>
+<dd>
+真を指定すると <a href="../class/-mutex.html">Mutex</a> を用いてスレッドセーフになります。デフォルトは偽です。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--5B--5D"><code>self[name] -&gt; object</code><span class="permalink">[<a href="../method/-p-store/i/=5b=5d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ルートnameに対応する値を得ます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+探索するルート。
+</dd>
+<dt>[EXCEPTION] PStore::Error:</dt>
+<dd>
+トランザクション外でこのメソッドが呼び出された場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/=5b=5d.html">Hash#[]</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_--5B--5D--3D"><code>self[name] = value</code><span class="permalink">[<a href="../method/-p-store/i/=5b=5d=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-i-5B-5D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ルート name に対応する値 value をセットします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+ルート。
+</dd>
+<dt class='method-param'>[PARAM] value:</dt>
+<dd>
+格納する値。
+</dd>
+<dt>[EXCEPTION] PStore::Error:</dt>
+<dd>
+トランザクション外でこのメソッドが呼び出された場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/=5b=5d=3d.html">Hash#[]=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ABORT"><code>abort -&gt; ()</code><span class="permalink">[<a href="../method/-p-store/i/abort.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-i-abort">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+データベースの読み書きを終了します。
+</p>
+<p>
+transaction ブロックから抜けますが、データベースの変更は反映されません。
+</p>
+<dl>
+<dt>[EXCEPTION] PStore::Error:</dt>
+<dd>
+トランザクション外でこのメソッドが呼び出された場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'pstore'
+db = PStore.new(&quot;/tmp/foo&quot;)
+db.transaction do
+  p db.roots       # =&gt; []
+  ary = db[&quot;root&quot;] = [1,2,3,4]
+  db.abort
+  ary[0] = [1,1.5] # =&gt; ここは実行されない。
+end
+
+db.transaction do |pstore|
+  pstore[&quot;root&quot;]       # =&gt; nil
+end
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_COMMIT"><code>commit -&gt; ()</code><span class="permalink">[<a href="../method/-p-store/i/commit.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-i-commit">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+データベースの読み書きを終了します。
+</p>
+<p>
+transaction ブロックから抜け、データベースの変更が反映されます。
+</p>
+<dl>
+<dt>[EXCEPTION] PStore::Error:</dt>
+<dd>
+トランザクション外でこのメソッドが呼び出された場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'pstore'
+db = PStore.new(&quot;/tmp/foo&quot;)
+db.transaction do
+  p db.roots       # =&gt; []
+  ary = db[&quot;root&quot;] = [1,2,3,4]
+  db.commit
+  ary[0] = [1,1.5] # =&gt; ここは実行されない。
+end
+
+db.transaction do |pstore|
+  pstore[&quot;root&quot;]       # =&gt; [[1, 2, 3, 4]
+end
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_DELETE"><code>delete(name) -&gt; object</code><span class="permalink">[<a href="../method/-p-store/i/delete.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-i-delete">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ルートnameに対応する値を削除します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+探索するルート。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+削除した値を返します。
+</dd>
+<dt>[EXCEPTION] PStore::Error:</dt>
+<dd>
+トランザクション外でこのメソッドが呼び出された場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'pstore'
+db = PStore.new(&quot;/tmp/foo&quot;)
+db.transaction do
+  p db.roots       # =&gt; []
+  ary = db[&quot;root&quot;] = [1,2,3,4]
+  ary[0] = [1,1.5]
+end
+
+db.transaction do |pstore|
+  pstore.delete(&quot;root&quot;)       # =&gt; [[1, 1.5], 2, 3, 4]
+  pstore.delete(&quot;root&quot;)       # =&gt; nil
+end
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/delete.html">Hash#delete</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FETCH"><code>fetch(name, default = PStore::Error) -&gt; object</code><span class="permalink">[<a href="../method/-p-store/i/fetch.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-i-fetch">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ルートnameに対応する値を得ます。
+</p>
+<p>
+該当するルートが登録されていない時には、
+引数 default が与えられていればその値を返し、
+与えられていなければ例外 <a href="../class/-p-store=3a=3a-error.html">PStore::Error</a> が発生します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+探索するルート。
+</dd>
+<dt class='method-param'>[PARAM] default:</dt>
+<dd>
+name に対応するルートが登録されていない場合に返す値を指定する。
+</dd>
+<dt>[EXCEPTION] PStore::Error:</dt>
+<dd>
+name に対応するルートが登録されていないかつ、
+default が与えられていない場合に発生します。
+また、トランザクション外でこのメソッドが呼び出された場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'pstore'
+db = PStore.new(&quot;/tmp/foo&quot;)
+db.transaction do
+  p db.roots       # =&gt; []
+  ary = db[&quot;root&quot;] = [1,2,3,4]
+  ary[0] = [1,1.5]
+end
+
+db.transaction(true) do |pstore|
+  pstore.fetch(&quot;root&quot;)        # =&gt; [[1, 1.5], 2, 3, 4]
+  pstore.fetch(&quot;root&quot;, 'aaa') # =&gt; [[1, 1.5], 2, 3, 4]
+  pstore.fetch(&quot;not_root&quot;)    # =&gt; 例外発生
+end
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/fetch.html">Hash#fetch</a>, <a href="../method/-p-store/i/=5b=5d.html">PStore#[]</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PATH"><code>path -&gt; String</code><span class="permalink">[<a href="../method/-p-store/i/path.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-i-path">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+データベースのファイル名を得ます。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ROOT--3F"><code>root?(name) -&gt; bool</code><span class="permalink">[<a href="../method/-p-store/i/root=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-i-root-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ルート name がデータベースに格納されている場合に真を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+探索するルート。
+</dd>
+<dt>[EXCEPTION] PStore::Error:</dt>
+<dd>
+トランザクション外でこのメソッドが呼び出された場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/key=3f.html">Hash#key?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ROOTS"><code>roots -&gt; Array</code><span class="permalink">[<a href="../method/-p-store/i/roots.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-i-roots">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ルートの集合を配列で返します。
+</p>
+<dl>
+<dt>[EXCEPTION] PStore::Error:</dt>
+<dd>
+トランザクション外でこのメソッドが呼び出された場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/keys.html">Hash#keys</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TRANSACTION"><code>transaction(read_only = false) {|pstore| ... } -&gt; object</code><span class="permalink">[<a href="../method/-p-store/i/transaction.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-i-transaction">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+トランザクションに入ります。
+このブロックの中でのみデータベースの読み書きができます。
+</p>
+<p>
+読み込み専用のトランザクションが使用可能です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] read_only:</dt>
+<dd>
+真を指定すると、読み込み専用のトランザクションになります。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+ブロックで最後に評価した値を返します。
+</dd>
+<dt>[EXCEPTION] PStore::Error:</dt>
+<dd>
+read_only を真にしたときに、データベースを変更しようした場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'pstore'
+db = PStore.new(&quot;/tmp/foo&quot;)
+db.transaction do
+  p db.roots       # =&gt; []
+  ary = db[&quot;root&quot;] = [1,2,3,4]
+  ary[0] = [1,1.5]
+end
+
+db.transaction(true) do |pstore|
+  pstore[&quot;root&quot;] = 'aaa' # =&gt; ここで例外発生
+end
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ULTRA_SAFE"><code>ultra_safe -&gt; bool</code><span class="permalink">[<a href="../method/-p-store/i/ultra_safe.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-i-ultra_safe">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+真であれば、パフォーマンスと引き換えにファイル更新の衝突を避けることができます。
+デフォルトは偽です。
+</p>
+<p>
+このフラグの効果があるのは一部のプラットフォームだけです。
+(e.g. all POSIX platforms: Linux, Mac OS X, FreeBSD, etc)
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ULTRA_SAFE--3D"><code>ultra_safe=(flag)</code><span class="permalink">[<a href="../method/-p-store/i/ultra_safe=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-i-ultra_safe-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+真をセットすると、パフォーマンスと引き換えにファイル更新の衝突を避けることができます。
+</p>
+<p>
+このフラグの効果があるのは一部のプラットフォームだけです。
+(e.g. all POSIX platforms: Linux, Mac OS X, FreeBSD, etc)
+</p>
+<dl>
+<dt class='method-param'>[PARAM] flag:</dt>
+<dd>
+真偽値を指定します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>privateメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_IN_TRANSACTION"><code>in_transaction -&gt; ()</code><span class="permalink">[<a href="../method/-p-store/i/in_transaction.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-i-in_transaction">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+トランザクションの中でなければ例外を発生させます。
+</p>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-E-M-P-T-Y_-M-A-R-S-H-A-L_-C-H-E-C-K-S-U-M"><code>EMPTY_MARSHAL_CHECKSUM -&gt; String</code><span class="permalink">[<a href="../method/-p-store/c/-e-m-p-t-y_-m-a-r-s-h-a-l_-c-h-e-c-k-s-u-m.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-c-EMPTY_MARSHAL_CHECKSUM">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+内部で利用する定数です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-E-M-P-T-Y_-M-A-R-S-H-A-L_-D-A-T-A"><code>EMPTY_MARSHAL_DATA -&gt; String</code><span class="permalink">[<a href="../method/-p-store/c/-e-m-p-t-y_-m-a-r-s-h-a-l_-d-a-t-a.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-c-EMPTY_MARSHAL_DATA">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+内部で利用する定数です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-E-M-P-T-Y_-S-T-R-I-N-G"><code>EMPTY_STRING -&gt; String</code><span class="permalink">[<a href="../method/-p-store/c/-e-m-p-t-y_-s-t-r-i-n-g.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-c-EMPTY_STRING">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+内部で利用する定数です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-R-D-W-R_-A-C-C-E-S-S"><code>RDWR_ACCESS -&gt; Fixnum</code><span class="permalink">[<a href="../method/-p-store/c/-r-d-w-r_-a-c-c-e-s-s.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-c-RDWR_ACCESS">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+内部で利用する定数です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-R-D_-A-C-C-E-S-S"><code>RD_ACCESS -&gt; Fixnum</code><span class="permalink">[<a href="../method/-p-store/c/-r-d_-a-c-c-e-s-s.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-c-RD_ACCESS">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+内部で利用する定数です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-W-R_-A-C-C-E-S-S"><code>WR_ACCESS -&gt; Fixnum</code><span class="permalink">[<a href="../method/-p-store/c/-w-r_-a-c-c-e-s-s.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/pstore/rdoc/PStore.html#method-c-WR_ACCESS">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+内部で利用する定数です。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

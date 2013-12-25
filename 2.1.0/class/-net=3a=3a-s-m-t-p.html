@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class Net::SMTP</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/net=2fsmtp.html">net/smtpライブラリ</a>
+&gt; Net::SMTPクラス
+</p>
+
+
+<h1>class Net::SMTP</h1>
+<p>
+
+
+クラスの継承リスト: Net::SMTP
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+<br>aliases: Net::SMTPSession
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+SMTP のセッションを表現したクラスです。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_DEFAULT_PORT">default_port</a>
+
+<a href="#S_DEFAULT_SSL_CONTEXT">default_ssl_context</a>
+
+<a href="#S_DEFAULT_SSL_PORT">default_ssl_port</a>
+
+<a href="#S_DEFAULT_SSL_PORT">default_tls_port</a>
+
+<a href="#S_DEFAULT_SUBMISSION_PORT">default_submission_port</a>
+
+<a href="#S_NEW">new</a>
+
+<a href="#S_START">start</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_ADDRESS">address</a>
+
+<a href="#I_AUTH_CRAM_MD5">auth_cram_md5</a>
+
+<a href="#I_AUTH_LOGIN">auth_login</a>
+
+<a href="#I_AUTH_PLAIN">auth_plain</a>
+
+<a href="#I_AUTHENTICATE">authenticate</a>
+
+<a href="#I_CAPABLE_AUTH_TYPES">capable_auth_types</a>
+
+<a href="#I_CAPABLE_CRAM_MD5_AUTH--3F">capable_cram_md5_auth?</a>
+
+<a href="#I_CAPABLE_LOGIN_AUTH--3F">capable_login_auth?</a>
+
+<a href="#I_CAPABLE_PLAIN_AUTH--3F">capable_plain_auth?</a>
+
+<a href="#I_CAPABLE_STARTTLS--3F">capable_starttls?</a>
+
+<a href="#I_DATA">data</a>
+
+<a href="#I_DEBUG_OUTPUT--3D">debug_output=</a>
+
+<a href="#I_DEBUG_OUTPUT--3D">set_debug_output</a>
+
+<a href="#I_DISABLE_SSL">disable_ssl</a>
+
+<a href="#I_DISABLE_SSL">disable_tls</a>
+
+<a href="#I_DISABLE_STARTTLS">disable_starttls</a>
+
+<a href="#I_EHLO">ehlo</a>
+
+<a href="#I_ENABLE_SSL">enable_ssl</a>
+
+<a href="#I_ENABLE_SSL">enable_tls</a>
+
+<a href="#I_ENABLE_STARTTLS">enable_starttls</a>
+
+<a href="#I_ENABLE_STARTTLS_AUTO">enable_starttls_auto</a>
+
+<a href="#I_ESMTP">esmtp</a>
+
+<a href="#I_ESMTP">esmtp?</a>
+
+<a href="#I_ESMTP--3D">esmtp=</a>
+
+<a href="#I_FINISH">finish</a>
+
+<a href="#I_HELO">helo</a>
+
+<a href="#I_INSPECT">inspect</a>
+
+<a href="#I_MAILFROM">mailfrom</a>
+
+<a href="#I_OPEN_MESSAGE_STREAM">open_message_stream</a>
+
+<a href="#I_OPEN_MESSAGE_STREAM">ready</a>
+
+<a href="#I_OPEN_TIMEOUT">open_timeout</a>
+
+<a href="#I_OPEN_TIMEOUT--3D">open_timeout=</a>
+
+<a href="#I_PORT">port</a>
+
+<a href="#I_QUIT">quit</a>
+
+<a href="#I_RCPTTO">rcptto</a>
+
+<a href="#I_RCPTTO_LIST">rcptto_list</a>
+
+<a href="#I_READ_TIMEOUT">read_timeout</a>
+
+<a href="#I_READ_TIMEOUT--3D">read_timeout=</a>
+
+<a href="#I_SEND_MAIL">send_mail</a>
+
+<a href="#I_SEND_MAIL">send_message</a>
+
+<a href="#I_SEND_MAIL">sendmail</a>
+
+<a href="#I_SSL--3F">ssl?</a>
+
+<a href="#I_SSL--3F">tls?</a>
+
+<a href="#I_START">start</a>
+
+<a href="#I_STARTED--3F">started?</a>
+
+<a href="#I_STARTTLS">starttls</a>
+
+<a href="#I_STARTTLS--3F">starttls?</a>
+
+<a href="#I_STARTTLS_ALWAYS--3F">starttls_always?</a>
+
+<a href="#I_STARTTLS_AUTO--3F">starttls_auto?</a>
+
+</dd>
+
+<dt>定数</dt>
+<dd>
+
+<a href="#C_-D-E-F-A-U-L-T_-A-U-T-H_-T-Y-P-E">DEFAULT_AUTH_TYPE</a>
+
+<a href="#C_-REVISION">Revision</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_DEFAULT_PORT"><code>default_port -&gt; Integer</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/s/default_port.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-c-default_port">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+SMTPのデフォルトのポート番号(25)を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_DEFAULT_SSL_CONTEXT"><code>default_ssl_context -&gt; OpenSSL::SSL::SSLContext</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/s/default_ssl_context.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-c-default_ssl_context">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+SSL 通信に使われる SSL のコンテキストのデフォルト値を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_DEFAULT_SSL_PORT"><code>default_tls_port -&gt; Integer</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/s/default_ssl_port.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-c-default_ssl_port">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>default_ssl_port -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+デフォルトのSMTPSのポート番号(465)を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_DEFAULT_SUBMISSION_PORT"><code>default_submission_port -&gt; Integer</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/s/default_submission_port.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-c-default_submission_port">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+デフォルトのサブミッションポート番号(587)を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_NEW"><code>new(address, port = Net::SMTP.default_port) -&gt; Net::SMTP</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+新しい SMTP オブジェクトを生成します。
+address はSMTPサーバーのFQDNで、
+port は接続するポート番号です。
+ただし、このメソッドではまだTCPの接続はしません。
+<a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a> で接続します。
+</p>
+<p>
+オブジェクトの生成と接続を同時にしたい場合には
+<a href="../method/-net=3a=3a-s-m-t-p/s/start.html">Net::SMTP.start</a> を代わりに使ってください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] address:</dt>
+<dd>
+接続先のSMTPサーバの文字列
+</dd>
+<dt class='method-param'>[PARAM] port:</dt>
+<dd>
+接続ポート番号
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/s/start.html">Net::SMTP.start</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_START"><code>start(address, port = Net::SMTP.default_port, helo_domain = 'localhost', account = nil, password = nil, authtype = DEFAULT_AUTH_TYPE) -&gt; Net::SMTP</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/s/start.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-c-start">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>start(address, port = Net::SMTP.default_port, helo_domain = 'localhost', account = nil, password = nil, authtype = DEFAULT_AUTH_TYPE) {|smtp| .... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+新しい SMTP オブジェクトを生成し、サーバに接続し、セッションを開始します。
+</p>
+<p>
+以下と同じです。
+</p>
+<pre>
+Net::SMTP.new(address, port).start(helo_domain, account, password, authtype)
+</pre>
+<p>
+このメソッドにブロックを与えた場合には、新しく作られた <a href="../class/-net=3a=3a-s-m-t-p.html">Net::SMTP</a> オブジェクト
+を引数としてそのブロックを呼び、ブロック終了時に自動的に接続を閉じます。
+ブロックを与えなかった場合には新しく作られた <a href="../class/-net=3a=3a-s-m-t-p.html">Net::SMTP</a> オブジェクトが
+返されます。この場合終了時に <a href="../method/-net=3a=3a-s-m-t-p/i/finish.html">Net::SMTP#finish</a> を呼ぶのは利用者の責任と
+なります。
+</p>
+<p>
+account と password の両方が与えられた場合、
+SMTP AUTH コマンドによって認証を行います。
+authtype は使用する認証のタイプで、
+シンボルで :plain, :login, :cram_md5 を指定します。
+</p>
+<p>
+Example:
+</p>
+<pre>
+require 'net/smtp'
+
+Net::SMTP.start('smtp.example.com') {|smtp|
+  smtp.send_message mail_string, 'from@example.jp', 'to@example.jp'
+}
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] address:</dt>
+<dd>
+接続するサーバをホスト名もしくはIPアドレスで指定します
+</dd>
+<dt class='method-param'>[PARAM] port:</dt>
+<dd>
+ポート番号、デフォルトは 25 です
+</dd>
+<dt class='method-param'>[PARAM] helo_domain:</dt>
+<dd>
+HELO で名乗るドメイン名です
+</dd>
+<dt class='method-param'>[PARAM] account:</dt>
+<dd>
+認証で使うアカウント名
+</dd>
+<dt class='method-param'>[PARAM] password:</dt>
+<dd>
+認証で使うパスワード
+</dd>
+<dt class='method-param'>[PARAM] authtype:</dt>
+<dd>
+認証の種類(:plain, :login, :cram_md5 のいずれか)
+</dd>
+<dt>[EXCEPTION] TimeoutError:</dt>
+<dd>
+接続時にタイムアウトした場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::SMTPUnsupportedCommand:</dt>
+<dd>
+TLSをサポートしていないサーバでTLSを使おうとした場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::SMTPServerBusy:</dt>
+<dd>
+SMTPエラーコード420,450の場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::SMTPSyntaxError:</dt>
+<dd>
+SMTPエラーコード500の場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::SMTPFatalError:</dt>
+<dd>
+SMTPエラーコード5xxの場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a>, <a href="../method/-net=3a=3a-s-m-t-p/s/new.html">Net::SMTP.new</a>
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_ADDRESS"><code>address -&gt; String</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/address.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-address">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+接続先のアドレスを返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_AUTH_CRAM_MD5"><code>auth_cram_md5(user, secret) -&gt; ()</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/auth_cram_md5.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-auth_cram_md5">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+CRAM-MD5 認証を行います。
+</p>
+<p>
+このメソッドはセッション開始(<a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a>)後、
+メールを送る前に呼びだしてください。
+</p>
+<p>
+通常は <a href="../method/-net=3a=3a-s-m-t-p/s/start.html">Net::SMTP.start</a> や <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a> で認証を
+行うためこれを利用する必要はないはずです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] user:</dt>
+<dd>
+認証で使うアカウント名
+</dd>
+<dt class='method-param'>[PARAM] secret:</dt>
+<dd>
+認証で使うパスワード
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_AUTH_LOGIN"><code>auth_login(user, secret) -&gt; ()</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/auth_login.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-auth_login">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+LOGIN 認証を行います。
+</p>
+<p>
+このメソッドはセッション開始(<a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a>)後、
+メールを送る前に呼びだしてください。
+</p>
+<p>
+通常は <a href="../method/-net=3a=3a-s-m-t-p/s/start.html">Net::SMTP.start</a> や <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a> で認証を
+行うためこれを利用する必要はないはずです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] user:</dt>
+<dd>
+認証で使うアカウント名
+</dd>
+<dt class='method-param'>[PARAM] secret:</dt>
+<dd>
+認証で使うパスワード
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_AUTH_PLAIN"><code>auth_plain(user, secret) -&gt; ()</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/auth_plain.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-auth_plain">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+PLAIN 認証を行います。
+</p>
+<p>
+このメソッドはセッション開始(<a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a>)後、
+メールを送る前に呼びだしてください。
+</p>
+<p>
+通常は <a href="../method/-net=3a=3a-s-m-t-p/s/start.html">Net::SMTP.start</a> や <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a> で認証を
+行うためこれを利用する必要はないはずです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] user:</dt>
+<dd>
+認証で使うアカウント名
+</dd>
+<dt class='method-param'>[PARAM] secret:</dt>
+<dd>
+認証で使うパスワード
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_AUTHENTICATE"><code>authenticate(user, secret, authtype) -&gt; ()</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/authenticate.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-authenticate">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+認証を行います。
+</p>
+<p>
+このメソッドはセッション開始(<a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a>)後、
+メールを送る前に呼びだしてください。
+</p>
+<p>
+通常は <a href="../method/-net=3a=3a-s-m-t-p/s/start.html">Net::SMTP.start</a> や <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a> で認証を
+行うためこれを利用する必要はないはずです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] user:</dt>
+<dd>
+認証で使うアカウント名
+</dd>
+<dt class='method-param'>[PARAM] secret:</dt>
+<dd>
+認証で使うパスワード
+</dd>
+<dt class='method-param'>[PARAM] authtype:</dt>
+<dd>
+認証の種類(:plain, :login, :cram_md5 のいずれか)
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/s/start.html">Net::SMTP.start</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/auth_plain.html">Net::SMTP#auth_plain</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/auth_login.html">Net::SMTP#auth_login</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/auth_cram_md5.html">Net::SMTP#auth_cram_md5</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CAPABLE_AUTH_TYPES"><code>capable_auth_types -&gt; [String]</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/capable_auth_types.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-capable_auth_types">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+接続したサーバで利用可能な認証を配列で返します。
+</p>
+<p>
+返り値の配列の要素は、 'PLAIN', 'LOGIN', 'CRAM-MD5' です。
+</p>
+<p>
+このメソッドは <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a> などでセッションを開始
+した以降にしか正しい値を返しません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CAPABLE_CRAM_MD5_AUTH--3F"><code>capable_cram_md5_auth? -&gt; bool</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/capable_cram_md5_auth=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-capable_cram_md5_auth-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+サーバが AUTH CRAM-MD5 を広告してきた場合に真を返します。
+</p>
+<p>
+このメソッドは <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a> などでセッションを開始
+した以降にしか正しい値を返しません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CAPABLE_LOGIN_AUTH--3F"><code>capable_login_auth? -&gt; bool</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/capable_login_auth=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-capable_login_auth-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+サーバが AUTH LOGIN を広告してきた場合に真を返します。
+</p>
+<p>
+このメソッドは <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a> などでセッションを開始
+した以降にしか正しい値を返しません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CAPABLE_PLAIN_AUTH--3F"><code>capable_plain_auth? -&gt; bool</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/capable_plain_auth=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-capable_plain_auth-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+サーバが AUTH PLAIN を広告してきた場合に真を返します。
+</p>
+<p>
+このメソッドは <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a> などでセッションを開始
+した以降にしか正しい値を返しません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CAPABLE_STARTTLS--3F"><code>capable_starttls? -&gt; bool</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/capable_starttls=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-capable_starttls-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+サーバが STARTTLS を広告してきた場合に真を返します。
+</p>
+<p>
+このメソッドは <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a> などでセッションを開始
+した以降にしか正しい値を返しません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DATA"><code>data(message) -&gt; Net::SMTP::Response</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/data.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-data">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>data {|f| .... } -&gt; Net::SMTP::Response</code></dt>
+<dd class="method-description">
+<p>
+DATA コマンドを送ります。
+</p>
+<p>
+文字列を引数に与えた場合はそれを本文として送ります。
+ブロックを与えた場合にはそのブロックにストリームオブジェクトが渡されます
+(<a href="../method/-net=3a=3a-s-m-t-p/i/open_message_stream.html">Net::SMTP#open_message_stream</a>参考)。
+</p>
+<p>
+通常は <a href="../method/-net=3a=3a-s-m-t-p/i/send_message.html">Net::SMTP#send_message</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/open_message_stream.html">Net::SMTP#open_message_stream</a> で
+DATA が送られるため利用する必要はないはずです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] message:</dt>
+<dd>
+メールの本文
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_DEBUG_OUTPUT--3D"><code>set_debug_output(f) -&gt; ()</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/debug_output=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-debug_output-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>debug_output=(f)</code></dt>
+<dd class="method-description">
+<p>
+デバッグ出力の出力先を指定します。
+このメソッドは深刻なセキュリティホールの原因となりえます。
+デバッグ用にのみ利用してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] f:</dt>
+<dd>
+デバッグ出力先を <a href="../class/-i-o.html">IO</a> (もしくは &lt;&lt; というメソッドを持つクラス)で指定します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_DISABLE_SSL"><code>disable_ssl -&gt; ()</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/disable_ssl.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-disable_ssl">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>disable_tls -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+その Net::SMTP オブジェクトが SMTPS を利用しないよう設定します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/disable_tls.html">Net::SMTP#disable_tls</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/tls=3f.html">Net::SMTP#tls?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DISABLE_STARTTLS"><code>disable_starttls -&gt; ()</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/disable_starttls.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-disable_starttls">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+その Net::SMTP オブジェクトがSTARTTLSを常に使わないよう設定します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/starttls=3f.html">Net::SMTP#starttls?</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/enable_starttls.html">Net::SMTP#enable_starttls</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/enable_starttls_auto.html">Net::SMTP#enable_starttls_auto</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EHLO"><code>ehlo(domain) -&gt; Net::SMTP::Response</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/ehlo.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-ehlo">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+EHLO コマンドを送ります(ESMTP を使います)。
+</p>
+<p>
+通常は <a href="../method/-net=3a=3a-s-m-t-p/s/start.html">Net::SMTP.start</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a> で EHLO が
+送られるため利用する必要はないはずです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] domain:</dt>
+<dd>
+EHLOで送るドメイン名
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_ENABLE_SSL"><code>enable_ssl(context = Net::SMTP.default_ssl_context) -&gt; ()</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/enable_ssl.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-enable_ssl">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>enable_tls(context = Net::SMTP.default_ssl_context) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+その Net::SMTP オブジェクトが SMTPS を利用するよう設定します。
+</p>
+<p>
+このメソッドは <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a> を呼ぶ前に呼ぶ必要があります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] context:</dt>
+<dd>
+SSL接続で利用する <a href="../class/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context.html">OpenSSL::SSL::SSLContext</a>
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/tls=3f.html">Net::SMTP#tls?</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/disable_tls.html">Net::SMTP#disable_tls</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ENABLE_STARTTLS"><code>enable_starttls(context = Net::SMTP.default_ssl_context) -&gt; ()</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/enable_starttls.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-enable_starttls">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+その Net::SMTP オブジェクトが 常にSTARTTLSを利用する
+(利用できない場合には例外を発生する)ように設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] context:</dt>
+<dd>
+SSL接続で利用する <a href="../class/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context.html">OpenSSL::SSL::SSLContext</a>
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/starttls=3f.html">Net::SMTP#starttls?</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/starttls_always=3f.html">Net::SMTP#starttls_always?</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/enable_starttls_auto.html">Net::SMTP#enable_starttls_auto</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ENABLE_STARTTLS_AUTO"><code>enable_starttls_auto(context = Net::SMTP.default_ssl_context) -&gt; ()</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/enable_starttls_auto.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-enable_starttls_auto">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+その Net::SMTP オブジェクトがSTARTTLSが利用可能な場合
+(つまりサーバがSTARTTLSを広告した場合)のみにSTARTTLSを利用する
+ように設定します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/starttls=3f.html">Net::SMTP#starttls?</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/starttls_auto=3f.html">Net::SMTP#starttls_auto?</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/enable_starttls_auto.html">Net::SMTP#enable_starttls_auto</a>
+</p>
+<dl>
+<dt class='method-param'>[PARAM] context:</dt>
+<dd>
+SSL接続で利用する <a href="../class/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context.html">OpenSSL::SSL::SSLContext</a>
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/starttls=3f.html">Net::SMTP#starttls?</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/starttls_auto=3f.html">Net::SMTP#starttls_auto?</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/enable_starttls.html">Net::SMTP#enable_starttls</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ESMTP"><code>esmtp? -&gt; bool</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/esmtp.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-esmtp">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>esmtp -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+その Net::SMTP オブジェクトが ESMTP を使う場合に真を返します。
+デフォルトは真です。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/esmtp=3d.html">Net::SMTP#esmtp=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ESMTP--3D"><code>esmtp=(bool)</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/esmtp=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-esmtp-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+その Net::SMTP オブジェクトが ESMTP を使うかどうかを指定します。
+</p>
+<p>
+この指定は <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a> を呼ぶ前にする必要があります。
+ESMTPモードで <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a> を呼び、うまくいかなかった
+場合には 普通の SMTP モードに切り替えてやりなおします
+(逆はしません)。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/esmtp=3f.html">Net::SMTP#esmtp?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FINISH"><code>finish -&gt; ()</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/finish.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-finish">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+SMTP セッションを終了します。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+セッション開始前にこのメソッドが呼ばれた場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_HELO"><code>helo(domain) -&gt; Net::SMTP::Response</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/helo.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-helo">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+HELO コマンドを送ります(標準的な SMTP を使います)。
+</p>
+<p>
+通常は <a href="../method/-net=3a=3a-s-m-t-p/s/start.html">Net::SMTP.start</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a> で HELO が
+送られるため利用する必要はないはずです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] domain:</dt>
+<dd>
+HELOで送るドメイン名
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/inspect.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-inspect">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+[SEE_ALSO] <a href="../method/-object/i/inspect.html">Object#inspect</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_MAILFROM"><code>mailfrom(from_addr) -&gt; Net::SMTP::Response</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/mailfrom.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-mailfrom">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+MAILFROM コマンドを送ります。
+</p>
+<p>
+通常は <a href="../method/-net=3a=3a-s-m-t-p/i/send_message.html">Net::SMTP#send_message</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/open_message_stream.html">Net::SMTP#open_message_stream</a> で
+MAILFROM が送られるため利用する必要はないはずです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] from_addr:</dt>
+<dd>
+送信元メールアドレス
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_OPEN_MESSAGE_STREAM"><code>open_message_stream(from_addr, *to_addrs) {|f| .... } -&gt; ()</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/open_message_stream.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-open_message_stream">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ready(from_addr, *to_addrs) {|f| .... } -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+メール書き込みの準備をし、書き込み先のストリームオブジェクトを
+ブロックに渡します。ブロック終了後、書きこんだ結果が
+送られます。
+</p>
+<p>
+渡されるストリームオブジェクトは以下のメソッドを持っています。
+</p>
+<ul>
+<li>puts(str = '') strを出力して CR LFを出力</li>
+<li>print(str)     strを出力</li>
+<li>printf(fmt, *args)   sprintf(fmt,*args) を出力</li>
+<li>write(str)::         str を出力して書き込んだバイト数を返す</li>
+<li>&lt;&lt;(str)::            str を出力してストリームオブジェクト自身を返す</li>
+</ul>
+<p>
+from_domain は送り主のメールアドレス ('...@...'のかたち) 、
+to_addrs には送信先メールアドレスを文字列で渡します。
+</p>
+<pre>
+require 'net/smtp'
+
+Net::SMTP.start('smtp.exmaple.com', 25) {|smtp|
+  smtp.open_message_stream('from@example.com', 'to@example.net') {|f|
+    f.puts 'From: from@example.com'
+    f.puts 'To: to@example.net'
+    f.puts 'Subject: test mail'
+    f.puts
+    f.puts 'This is test mail.'
+  }
+}
+</pre>
+<p>
+ready は obsolete です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] from_addr:</dt>
+<dd>
+送信元のメールアドレス
+</dd>
+<dt class='method-param'>[PARAM] to_addrs:</dt>
+<dd>
+送信先のメールアドレス(複数可、少なくとも1個)
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+すでにセッションが終了している場合に発生します
+</dd>
+<dt>[EXCEPTION] TimeoutError:</dt>
+<dd>
+接続がタイムアウトした場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::SMTPServerBusy:</dt>
+<dd>
+SMTPエラーコード420,450の場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::SMTPSyntaxError:</dt>
+<dd>
+SMTPエラーコード500の場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::SMTPFatalError:</dt>
+<dd>
+SMTPエラーコード5xxの場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::SMTPAuthenticationError:</dt>
+<dd>
+送信に必要な認証を行っていなかった場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::SMTPUnknownError:</dt>
+<dd>
+SMTPエラーコードがプロトコル上不正な場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/send_message.html">Net::SMTP#send_message</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OPEN_TIMEOUT"><code>open_timeout -&gt; Integer</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/open_timeout.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-open_timeout">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+接続時に待つ最大秒数を返します。
+</p>
+<p>
+デフォルトは30(秒)です。
+この秒数たってもコネクションが
+開かなければ例外 TimeoutError を発生します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/open_timeout=3d.html">Net::SMTP#open_timeout=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OPEN_TIMEOUT--3D"><code>open_timeout=(n)</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/open_timeout=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-open_timeout-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+接続時に待つ最大秒数を設定します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/open_timeout.html">Net::SMTP#open_timeout</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PORT"><code>port -&gt; Integer</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/port.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-port">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+接続先のポート番号を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_QUIT"><code>quit -&gt; Net::SMTP::Response</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/quit.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-quit">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+QUIT コマンドを送ります。
+</p>
+<p>
+通常は <a href="../method/-net=3a=3a-s-m-t-p/i/finish.html">Net::SMTP#finish</a> で
+QUIT が送られるため利用する必要はないはずです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_RCPTTO"><code>rcptto(to_addr) -&gt; Net::SMTP::Response</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/rcptto.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-rcptto">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+RCPTTO コマンドを送ります。
+</p>
+<p>
+通常は <a href="../method/-net=3a=3a-s-m-t-p/i/send_message.html">Net::SMTP#send_message</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/open_message_stream.html">Net::SMTP#open_message_stream</a> で
+RCPTTO が送られるため利用する必要はないはずです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] to_addr:</dt>
+<dd>
+送信先メールアドレス
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_RCPTTO_LIST"><code>rcptto_list(to_addrs) { ... } -&gt; object</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/rcptto_list.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-rcptto_list">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+RCPTTO コマンドを to_addrs のすべてのメールアドレスに対して送ります。
+</p>
+<p>
+コマンドを送った後、ブロックを呼び出します。
+このメソッドの返り値はブロックの返り値になります。
+</p>
+<p>
+通常は <a href="../method/-net=3a=3a-s-m-t-p/i/send_message.html">Net::SMTP#send_message</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/open_message_stream.html">Net::SMTP#open_message_stream</a> で
+RCPTTO が送られるため利用する必要はないはずです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] to_addrs:</dt>
+<dd>
+送信先メールアドレスの配列
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_READ_TIMEOUT"><code>read_timeout -&gt; Integer</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/read_timeout.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-read_timeout">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+読みこみ (<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/read.html">read(2)</a> 一回) でブロックしてよい最大秒数を返します。
+</p>
+<p>
+デフォルトは60(秒)です。
+この秒数たっても読みこめなければ例外 TimeoutError を発生します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/read_timeout=3d.html">Net::SMTP#read_timeout=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_READ_TIMEOUT--3D"><code>read_timeout=(n)</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/read_timeout=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-read_timeout-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+読み込みでブロックしてよい最大秒数を設定します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/read_timeout.html">Net::SMTP#read_timeout</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SEND_MAIL"><code>send_message(mailsrc, from_addr, *to_addrs) -&gt; ()</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/send_mail.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-send_mail">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>send_mail(mailsrc, from_addr, *to_addrs) -&gt; ()</code></dt>
+<dt class="method-heading"><code>sendmail(mailsrc, from_addr, *to_addrs) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+メールを送信します。
+</p>
+<p>
+mailsrc をメールとして送信します。
+mailsrc は each イテレータを持つ
+オブジェクトならなんでも構いません(たとえば String や File)。
+</p>
+<p>
+from_domain は送り主のメールアドレス ('...@...'のかたち) 、
+to_addrs には送信先メールアドレスを文字列で渡します。
+</p>
+<pre>
+require 'net/smtp'
+
+Net::SMTP.start('smtp.example.com') {|smtp|
+  smtp.send_message mail_string,
+                    'from@example.com',
+                    'to1@example.net', 'to2@example.net'
+}
+</pre>
+<p>
+sendmail は obsolete です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] mailsrc:</dt>
+<dd>
+メールの内容
+</dd>
+<dt class='method-param'>[PARAM] from_addr:</dt>
+<dd>
+送信元のメールアドレス
+</dd>
+<dt class='method-param'>[PARAM] to_addrs:</dt>
+<dd>
+送信先のメールアドレス(複数可、少なくとも1個)
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+すでにセッションが終了している場合に発生します
+</dd>
+<dt>[EXCEPTION] TimeoutError:</dt>
+<dd>
+接続がタイムアウトした場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::SMTPServerBusy:</dt>
+<dd>
+SMTPエラーコード420,450の場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::SMTPSyntaxError:</dt>
+<dd>
+SMTPエラーコード500の場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::SMTPFatalError:</dt>
+<dd>
+SMTPエラーコード5xxの場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::SMTPUnknownError:</dt>
+<dd>
+SMTPエラーコードがプロトコル上不正な場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_SSL--3F"><code>tls? -&gt; bool</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/ssl=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-ssl-3F">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ssl? -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+その Net::SMTP オブジェクトが SMTPS を利用するならば真を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/enable_tls.html">Net::SMTP#enable_tls</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/disable_tls.html">Net::SMTP#disable_tls</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_START"><code>start(helo_domain = 'localhost', account = nil, password = nil, authtype = DEFAULT_AUTH_TYPE) -&gt; Net::SMTP</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/start.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-start">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>start(helo_domain = 'localhost', account = nil, password = nil, authtype = DEFAULT_AUTH_TYPE) {|smtp| .... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+サーバにコネクションを張り、同時に SMTP セッションを開始します。
+</p>
+<p>
+もしすでにセッションが開始していたら IOError が発生します。
+</p>
+<p>
+account と password の両方が与えられた場合、
+SMTP AUTH コマンドによって認証を行います。
+authtype は使用する認証のタイプで、
+シンボルで :plain, :login, :cram_md5 を指定します。
+</p>
+<p>
+このメソッドにブロックを与えた場合には、そのオブジェクト
+を引数としてそのブロックを呼び、ブロック終了時に自動的に接続を閉じます。
+ブロックを与えなかった場合には自分自身を返します。
+この場合終了時に <a href="../method/-net=3a=3a-s-m-t-p/i/finish.html">Net::SMTP#finish</a> を呼ぶのは利用者の責任と
+なります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] helo_domain:</dt>
+<dd>
+HELO で名乗るドメイン名です
+</dd>
+<dt class='method-param'>[PARAM] account:</dt>
+<dd>
+認証で使うアカウント名
+</dd>
+<dt class='method-param'>[PARAM] password:</dt>
+<dd>
+認証で使うパスワード
+</dd>
+<dt class='method-param'>[PARAM] authtype:</dt>
+<dd>
+認証の種類(:plain, :login, :cram_md5 のいずれか)
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+すでにセッションを開始している場合に発生します
+</dd>
+<dt>[EXCEPTION] TimeoutError:</dt>
+<dd>
+接続がタイムアウトした場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::SMTPUnsupportedCommand:</dt>
+<dd>
+STARTTLSをサポートしていないサーバでSTARTTLSを利用しようとした場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::SMTPServerBusy:</dt>
+<dd>
+SMTPエラーコード420,450の場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::SMTPSyntaxError:</dt>
+<dd>
+SMTPエラーコード500の場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::SMTPFatalError:</dt>
+<dd>
+SMTPエラーコード5xxの場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_STARTED--3F"><code>started? -&gt; bool</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/started=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-started-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+SMTP セッションが開始されていたら真を返します。
+</p>
+<p>
+セッションがまだ開始していない、もしくは終了している場合には偽を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/finish.html">Net::SMTP#finish</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_STARTTLS"><code>starttls -&gt; Net::SMTP::Response</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/starttls.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-starttls">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+STARTTLS コマンドを送ります。
+</p>
+<p>
+通常は <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a> で STARTTLS が送られるため
+利用する必要はないはずです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_STARTTLS--3F"><code>starttls? -&gt; Symbol/nil</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/starttls=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-starttls-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+その Net::SMTP オブジェクトが STARTTLSを利用するかどうかを返します。
+</p>
+<p>
+常に利用する(利用できないときは <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a> で例外
+<a href="../class/-net=3a=3a-s-m-t-p-unsupported-command.html">Net::SMTPUnsupportedCommand</a> を発生) するときは :always を、
+利用可能な場合のみ利用する場合は :auto を、
+常に利用しない場合には nil を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/start.html">Net::SMTP#start</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_STARTTLS_ALWAYS--3F"><code>starttls_always? -&gt; bool</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/starttls_always=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-starttls_always-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+その Net::SMTP オブジェクトが 常にSTARTTLSを利用する
+(利用できない場合には例外を発生する)ならば
+真を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/starttls=3f.html">Net::SMTP#starttls?</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/starttls_auto=3f.html">Net::SMTP#starttls_auto?</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/enable_starttls.html">Net::SMTP#enable_starttls</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_STARTTLS_AUTO--3F"><code>starttls_auto? -&gt; bool</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/i/starttls_auto=3f.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-i-starttls_auto-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+その Net::SMTP オブジェクトが利用可能な場合にのみにSTARTTLSを利用するならば
+真を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-s-m-t-p/i/starttls=3f.html">Net::SMTP#starttls?</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/starttls_always=3f.html">Net::SMTP#starttls_always?</a>, <a href="../method/-net=3a=3a-s-m-t-p/i/enable_starttls_auto.html">Net::SMTP#enable_starttls_auto</a>
+</p>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-D-E-F-A-U-L-T_-A-U-T-H_-T-Y-P-E"><code>DEFAULT_AUTH_TYPE -&gt; Symbol</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/c/-d-e-f-a-u-l-t_-a-u-t-h_-t-y-p-e.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-c-DEFAULT_AUTH_TYPE">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+デフォルトの認証スキーム(:plain)です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-REVISION"><code>Revision -&gt; String</code><span class="permalink">[<a href="../method/-net=3a=3a-s-m-t-p/c/-revision.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/net/smtp/rdoc/Net/SMTP.html#method-c-Revision">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ファイルのリビジョンです。使わないでください。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

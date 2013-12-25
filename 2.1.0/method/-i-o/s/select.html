@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>singleton method IO.select</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-i-o.html">IOクラス</a>
+&gt; select
+
+</p>
+
+
+<h1>singleton method IO.select</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_SELECT"><code>select(reads, writes = [], excepts = [], timeout = nil) -&gt; [[IO]] | nil</code><span class="permalink">[<a href="../../../method/-i-o/s/select.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/IO.html#method-c-select">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/select.html">select(2)</a> を実行します。
+</p>
+<p>
+与えられた入力/出力/例外待ちの  IO オブジェクトの中から準備ができたものを
+それぞれ配列にして、配列の配列として返します。
+タイムアウトした時には nil を返します。
+</p>
+<p>
+<a href="../../../method/-kernel/m/select.html">Kernel.#select</a> と同じです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] reads:</dt>
+<dd>
+入力待ちする <a href="../../../class/-i-o.html">IO</a> オブジェクトの配列を渡します。
+</dd>
+<dt class='method-param'>[PARAM] writes:</dt>
+<dd>
+出力待ちする <a href="../../../class/-i-o.html">IO</a> オブジェクトの配列を渡します。
+</dd>
+<dt class='method-param'>[PARAM] excepts:</dt>
+<dd>
+例外待ちする <a href="../../../class/-i-o.html">IO</a> オブジェクトの配列を渡します。
+</dd>
+<dt class='method-param'>[PARAM] timeout:</dt>
+<dd>
+タイムアウトまでの時間を表す数値または nil を指定します。数値で指定したときの単位は秒です。nil を指定した時には IO がどれかひとつレディ状態になるまで待ち続けます。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+与えられた IO オブジェクトが閉じられていた時に発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/select.html">select(2)</a> に失敗した場合に発生します。
+</dd>
+</dl>
+<pre>
+rp, wp = IO.pipe
+mesg = &quot;ping &quot;
+100.times{
+  rs, ws, = IO.select([rp], [wp])
+  if r = rs[0]
+    ret = r.read(5)
+    print ret
+    case ret
+    when /ping/
+      mesg = &quot;pong\n&quot;
+    when /pong/
+      mesg = &quot;ping &quot;
+    end
+  end
+  if w = ws[0]
+    w.write(mesg)
+  end
+}
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

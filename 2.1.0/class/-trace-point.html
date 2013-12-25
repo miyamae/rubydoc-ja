@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class TracePoint</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; TracePointクラス
+</p>
+
+
+<h1>class TracePoint</h1>
+<p>
+
+
+クラスの継承リスト: TracePoint
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+<a href="../method/-kernel/m/set_trace_func.html">Kernel.#set_trace_func</a> と同様の機能をオブジェクト指向的な API で
+提供するクラスです。
+</p>
+<p>
+例:例外に関する情報を収集する
+</p>
+<pre>
+trace = TracePoint.new(:raise) do |tp|
+  p [tp.lineno, tp.event, tp.raised_exception]
+end
+# =&gt; #&lt;TracePoint:0x007f786a452448&gt;
+
+trace.enable
+# =&gt; false
+
+0 / 0
+# =&gt; [5, :raise, #&lt;ZeroDivisionError: divided by 0&gt;]
+</pre>
+<p>
+<a href="../method/-trace-point/s/new.html">TracePoint.new</a> または、<a href="../method/-trace-point/s/trace.html">TracePoint.trace</a> で指定したブロック
+は、メソッドの引数(上記の例では :raise)に対応するイベントが発生した時に
+呼び出されます。
+</p>
+<p>
+発生するイベントの詳細については、<a href="../method/-trace-point/s/new.html">TracePoint.new</a> を参照してくださ
+い。
+</p>
+<h2 >参考</h2>
+<ul>
+<li>Ruby VM アドベントカレンダー #12 TracePoint の紹介 (1): <a class="external" href="http://www.atdot.net/~ko1/diary/201212.html#d12">http://www.atdot.net/~ko1/diary/201212.html#d12</a></li>
+<li>Ruby VM アドベントカレンダー #13 TracePoint の紹介 (2): <a class="external" href="http://www.atdot.net/~ko1/diary/201212.html#d13">http://www.atdot.net/~ko1/diary/201212.html#d13</a></li>
+<li>Ruby VM アドベントカレンダー #14 TracePoint の紹介 (3): <a class="external" href="http://www.atdot.net/~ko1/diary/201212.html#d14">http://www.atdot.net/~ko1/diary/201212.html#d14</a></li>
+</ul>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+<a href="#S_TRACE">trace</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_BINDING">binding</a>
+
+<a href="#I_DEFINED_CLASS">defined_class</a>
+
+<a href="#I_DISABLE">disable</a>
+
+<a href="#I_ENABLE">enable</a>
+
+<a href="#I_ENABLED--3F">enabled?</a>
+
+<a href="#I_EVENT">event</a>
+
+<a href="#I_INSPECT">inspect</a>
+
+<a href="#I_LINENO">lineno</a>
+
+<a href="#I_METHOD_ID">method_id</a>
+
+<a href="#I_PATH">path</a>
+
+<a href="#I_RAISED_EXCEPTION">raised_exception</a>
+
+<a href="#I_RETURN_VALUE">return_value</a>
+
+<a href="#I_SELF">self</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(*events) {|obj| ... } -&gt; TracePoint</code><span class="permalink">[<a href="../method/-trace-point/s/new.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/TracePoint.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+新しい <a href="../class/-trace-point.html">TracePoint</a> オブジェクトを作成して返します。トレースを有効
+にするには <a href="../method/-trace-point/i/enable.html">TracePoint#enable</a> を実行してください。
+</p>
+<p>
+例:irb で実行した場合
+</p>
+<pre>
+trace = TracePoint.new(:call) do |tp|
+    p [tp.lineno, tp.defined_class, tp.method_id, tp.event]
+end
+# =&gt; #&lt;TracePoint:0x007f17372cdb20&gt;
+
+trace.enable
+# =&gt; false
+
+puts &quot;Hello, TracePoint!&quot;
+# ...
+# [69, IRB::Notifier::AbstractNotifier, :printf, :call]
+# ...
+</pre>
+<p>
+トレースを無効にするには <a href="../method/-trace-point/i/disable.html">TracePoint#disable</a> を実行してください。
+</p>
+<pre>
+trace.disable
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] events:</dt>
+<dd>
+トレースするイベントを <a href="../class/-string.html">String</a> か <a href="../class/-symbol.html">Symbol</a> で任
+意の数指定します。
+</dd>
+</dl>
+<dl>
+<dt>:line</dt>
+<dd>
+<p>
+式の評価。
+</p>
+</dd>
+<dt>:class</dt>
+<dd>
+<p>
+クラス定義、特異クラス定義、モジュール定義への突入。
+</p>
+</dd>
+<dt>:end</dt>
+<dd>
+<p>
+クラス定義、特異クラス定義、モジュール定義の終了。
+</p>
+</dd>
+<dt>:call</dt>
+<dd>
+<p>
+Ruby で記述されたメソッドの呼び出し。
+</p>
+</dd>
+<dt>:return</dt>
+<dd>
+<p>
+Ruby で記述されたメソッド呼び出しからのリターン。
+</p>
+</dd>
+<dt>:c_call</dt>
+<dd>
+<p>
+C で記述されたメソッドの呼び出し。
+</p>
+</dd>
+<dt>:c_return</dt>
+<dd>
+<p>
+C で記述されたメソッド呼び出しからのリターン。
+</p>
+</dd>
+<dt>:raise</dt>
+<dd>
+<p>
+例外の発生。
+</p>
+</dd>
+<dt>:b_call</dt>
+<dd>
+<p>
+ブロックの開始。
+</p>
+</dd>
+<dt>:b_return</dt>
+<dd>
+<p>
+ブロックの終了。
+</p>
+</dd>
+<dt>:thread_begin</dt>
+<dd>
+<p>
+スレッドの開始。
+</p>
+</dd>
+<dt>:thread_end</dt>
+<dd>
+<p>
+スレッドの終了。
+</p>
+</dd>
+</dl>
+<p>
+指定イベントに関連しない情報を取得するメソッドを実行した場合には
+<a href="../class/-runtime-error.html">RuntimeError</a> が発生します。
+</p>
+<pre>
+TracePoint.trace(:line) do |tp|
+    p tp.raised_exception
+end
+# =&gt; RuntimeError: 'raised_exception' not supported by this event
+</pre>
+<p>
+イベントフックの外側で、発生したイベントに関連する情報を取得するメソッ
+ドを実行した場合には <a href="../class/-runtime-error.html">RuntimeError</a> が発生します。
+</p>
+<pre>
+TracePoint.trace(:line) do |tp|
+  $tp = tp
+end
+$tp.line # =&gt; access from outside (RuntimeError)
+</pre>
+<p>
+他のスレッドから参照する事も禁じられています。
+</p>
+<dl>
+<dt>[EXCEPTION] ThreadError:</dt>
+<dd>
+ブロックを指定しなかった場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_TRACE"><code>trace(*events) {|obj| ... } -&gt; TracePoint</code><span class="permalink">[<a href="../method/-trace-point/s/trace.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/TracePoint.html#method-c-trace">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+新しい <a href="../class/-trace-point.html">TracePoint</a> オブジェクトを作成して自動的にトレースを開始し
+ます。<a href="../method/-trace-point/s/new.html">TracePoint.new</a> のコンビニエンスメソッドです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] events:</dt>
+<dd>
+トレースするイベントを <a href="../class/-string.html">String</a> か <a href="../class/-symbol.html">Symbol</a> で任
+意の数指定します。指定できる値については
+<a href="../method/-trace-point/s/new.html">TracePoint.new</a> を参照してください。
+</dd>
+</dl>
+<pre>
+trace = TracePoint.trace(:call) { |tp| [tp.lineno, tp.event] }
+# =&gt; #&lt;TracePoint:0x007f786a452448&gt;
+
+trace.enabled? # =&gt; true
+</pre>
+<dl>
+<dt>[EXCEPTION] ThreadError:</dt>
+<dd>
+ブロックを指定しなかった場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_BINDING"><code>binding -&gt; Binding</code><span class="permalink">[<a href="../method/-trace-point/i/binding.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/TracePoint.html#method-i-binding">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+発生したイベントによって生成された <a href="../class/-binding.html">Binding</a> オブジェクトを返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DEFINED_CLASS"><code>defined_class -&gt; Class | module</code><span class="permalink">[<a href="../method/-trace-point/i/defined_class.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/TracePoint.html#method-i-defined_class">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+メソッドを定義したクラスかモジュールを返します。
+</p>
+<pre>
+class C; def foo; end; end
+trace = TracePoint.new(:call) do |tp|
+  p tp.defined_class # =&gt; C
+end.enable do
+  C.new.foo
+end
+</pre>
+<p>
+メソッドがモジュールで定義されていた場合も(include に関係なく)モジュー
+ルを返します。
+</p>
+<pre>
+module M; def foo; end; end
+class C; include M; end;
+trace = TracePoint.new(:call) do |tp|
+  p tp.defined_class # =&gt; M
+end.enable do
+  C.new.foo
+end
+</pre>
+<p>
+[注意] 特異メソッドを実行した場合は TracePoint#defined_class は特異クラ
+スを返します。また、<a href="../method/-kernel/m/set_trace_func.html">Kernel.#set_trace_func</a> の 6 番目のブロックパ
+ラメータは特異クラスではなく元のクラスを返します。
+</p>
+<pre>
+class C; def self.foo; end; end
+trace = TracePoint.new(:call) do |tp|
+  p tp.defined_class # =&gt; #&lt;Class:C&gt;
+end.enable do
+  C.foo
+end
+</pre>
+<p>
+<a href="../method/-kernel/m/set_trace_func.html">Kernel.#set_trace_func</a> と <a href="../class/-trace-point.html">TracePoint</a> の上記の差分に注意して
+ください。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-core/50864">[ruby-core:50864]</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DISABLE"><code>disable -&gt; bool</code><span class="permalink">[<a href="../method/-trace-point/i/disable.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/TracePoint.html#method-i-disable">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>disable { ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+self のトレースを無効にします。
+</p>
+<p>
+実行前の <a href="../method/-trace-point/i/enabled=3f.html">TracePoint#enabled?</a> を返します。(トレースが既に有効であっ
+た場合は true を返します。そうでなければ false を返します)
+</p>
+<pre>
+trace.enabled? # =&gt; true
+trace.disable  # =&gt; false (実行前の状態)
+trace.enabled? # =&gt; false
+trace.disable  # =&gt; false
+</pre>
+<p>
+ブロックが与えられた場合、ブロック内でのみトレースが無効になります。
+この場合はブロックの評価結果を返します。
+</p>
+<pre>
+trace.enabled?   # =&gt; true
+
+trace.disable do
+  trace.enabled? # =&gt; false
+end
+
+trace.enabled?   # =&gt; true
+</pre>
+<p>
+[注意] イベントフックのためのメソッドに、ブロックの外側で参照した場合は
+<a href="../class/-runtime-error.html">RuntimeError</a> が発生する事に注意してください。
+</p>
+<pre>
+trace.enable { p trace.lineno }
+# =&gt; RuntimeError: access from outside
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-trace-point/i/enable.html">TracePoint#enable</a>, <a href="../method/-trace-point/i/enabled=3f.html">TracePoint#enabled?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ENABLE"><code>enable -&gt; bool</code><span class="permalink">[<a href="../method/-trace-point/i/enable.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/TracePoint.html#method-i-enable">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>enable { ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+self のトレースを有効にします。
+</p>
+<p>
+実行前の <a href="../method/-trace-point/i/enabled=3f.html">TracePoint#enabled?</a> を返します。(トレースが既に有効であっ
+た場合は true を返します。そうでなければ false を返します)
+</p>
+<pre>
+trace.enabled?  # =&gt; false
+trace.enable    # =&gt; false (実行前の状態)
+
+# トレースが有効
+
+trace.enabled?  # =&gt; true
+trace.enable    # =&gt; true (実行前の状態)
+
+# 引き続きトレースが有効
+</pre>
+<p>
+ブロックが与えられた場合、ブロック内でのみトレースが有効になります。
+この場合はブロックの評価結果を返します。
+</p>
+<pre>
+trace.enabled?   # =&gt; false
+
+trace.enable do
+  trace.enabled? # =&gt; true
+end
+
+trace.enabled?   # =&gt; false
+</pre>
+<p>
+[注意] イベントフックのためのメソッドにブロックの外側で参照した場合は
+<a href="../class/-runtime-error.html">RuntimeError</a> が発生する事に注意してください。
+</p>
+<pre>
+trace.enable { p trace.lineno }
+# =&gt; RuntimeError: access from outside
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-trace-point/i/disable.html">TracePoint#disable</a>, <a href="../method/-trace-point/i/enabled=3f.html">TracePoint#enabled?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ENABLED--3F"><code>enabled? -&gt; bool</code><span class="permalink">[<a href="../method/-trace-point/i/enabled=3f.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/TracePoint.html#method-i-enabled-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self のトレースが有効な場合に true を、そうでない場合に false を返しま
+す。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-trace-point/i/enable.html">TracePoint#enable</a>, <a href="../method/-trace-point/i/disable.html">TracePoint#disable</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EVENT"><code>event -&gt; Symbol</code><span class="permalink">[<a href="../method/-trace-point/i/event.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/TracePoint.html#method-i-event">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+発生したイベントの種類を <a href="../class/-symbol.html">Symbol</a> で返します。
+</p>
+<p>
+発生するイベントの詳細については、<a href="../method/-trace-point/s/new.html">TracePoint.new</a> を参照してくださ
+い。
+</p>
+<dl>
+<dt>[EXCEPTION] RuntimeError:</dt>
+<dd>
+イベントフックの外側で実行した場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-trace-point/i/inspect.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/TracePoint.html#method-i-inspect">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の状態を人間に読みやすい文字列にして返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LINENO"><code>lineno -&gt; Integer</code><span class="permalink">[<a href="../method/-trace-point/i/lineno.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/TracePoint.html#method-i-lineno">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+発生したイベントの行番号を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] RuntimeError:</dt>
+<dd>
+イベントフックの外側で実行した場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_METHOD_ID"><code>method_id -&gt; Symbol | nil</code><span class="permalink">[<a href="../method/-trace-point/i/method_id.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/TracePoint.html#method-i-method_id">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+イベントが発生したメソッド名を <a href="../class/-symbol.html">Symbol</a> で返します。トップレベルで
+あった場合は nil を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] RuntimeError:</dt>
+<dd>
+イベントフックの外側で実行した場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_PATH"><code>path -&gt; String</code><span class="permalink">[<a href="../method/-trace-point/i/path.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/TracePoint.html#method-i-path">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+イベントが発生したファイルのパスを返します。
+</p>
+<dl>
+<dt>[EXCEPTION] RuntimeError:</dt>
+<dd>
+イベントフックの外側で実行した場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_RAISED_EXCEPTION"><code>raised_exception -&gt; Exception</code><span class="permalink">[<a href="../method/-trace-point/i/raised_exception.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/TracePoint.html#method-i-raised_exception">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+発生した例外を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] RuntimeError:</dt>
+<dd>
+:raise イベントのためのイベントフックの外側で実行し
+た場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_RETURN_VALUE"><code>return_value -&gt; object</code><span class="permalink">[<a href="../method/-trace-point/i/return_value.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/TracePoint.html#method-i-return_value">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+メソッドやブロックの戻り値を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] RuntimeError:</dt>
+<dd>
+:return、:c_return、:b_return イベントのためのイベ
+ントフックの外側で実行した場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_SELF"><code>self -&gt; object</code><span class="permalink">[<a href="../method/-trace-point/i/self.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/TracePoint.html#method-i-self">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+イベントを発生させたオブジェクトを返します。
+</p>
+<p>
+以下のようにする事で同じ値を取得できます。
+</p>
+<pre>
+trace.binding.eval('self')
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-trace-point/i/binding.html">TracePoint#binding</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

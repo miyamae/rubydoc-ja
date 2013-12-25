@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method String#crypt</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-string.html">Stringクラス</a>
+&gt; crypt
+
+</p>
+
+
+<h1>instance method String#crypt</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_CRYPT"><code>crypt(salt) -&gt; String</code><span class="permalink">[<a href="../../../method/-string/i/crypt.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/String.html#method-i-crypt">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self と salt から暗号化された文字列を生成して返します。
+salt には英数字、ドット (「.」)、スラッシュ (「/」) から構成される、
+2 バイト以上の文字列を指定します。
+</p>
+<p>
+暗号化された文字列から暗号化前の文字列 (self) を求めることは一般に困難で、
+self を知っている者のみが同じ暗号化された文字列を生成できます。
+このことから self を知っているかどうかの認証に使うことが出来ます。
+</p>
+<p>
+salt には、以下の様になるべくランダムな文字列を選ぶべきです。
+他にも <a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-list/29297">[ruby-list:29297]</a> などがあります。
+</p>
+<p>
+注意:
+</p>
+<ul>
+<li>crypt の処理は <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/crypt.html">crypt(3)</a> の実装に依存しています。
+従って、crypt で処理される内容の詳細や salt の与え方については、
+利用環境の <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/crypt.html">crypt(3)</a> 等を見て確認してください。</li>
+<li>crypt の結果は利用環境が異なると変わる場合があります。
+crypt の結果を、異なる利用環境間で使用する場合には注意して下さい。</li>
+<li>典型的な DES を使用した <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/crypt.html">crypt(3)</a> の場合、
+self の最初の 8 バイト、salt の最初の 2 バイトだけが使用されます。</li>
+</ul>
+<dl>
+<dt class='method-param'>[PARAM] salt:</dt>
+<dd>
+文字列を暗号化するための鍵となる文字列。
+英数字・「.」・「/」のいずれかで構成される 2 バイト以上の文字列
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+# パスワードの暗号化
+salt = [rand(64),rand(64)].pack(&quot;C*&quot;).tr(&quot;\x00-\x3f&quot;,&quot;A-Za-z0-9./&quot;)
+passwd.crypt(salt)
+
+# UNIX のログイン認証
+require 'etc'
+
+def valid_login?(user, password)
+  ent = Etc.getpwnam(user)
+  password.crypt(ent.passwd) == ent.passwd
+end
+
+p valid_login?(&quot;taro&quot;, &quot;password&quot;)   # =&gt; 真偽値が得られる
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class WIN32OLE_VARIANT</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/win32ole.html">win32oleライブラリ</a>
+&gt; WIN32OLE_VARIANTクラス
+</p>
+
+
+<h1>class WIN32OLE_VARIANT</h1>
+<p>
+
+
+クラスの継承リスト: WIN32OLE_VARIANT
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+OLEオートメーションの標準型のVARIANTオブジェクトをRubyで利用するための
+クラスです。
+</p>
+<p>
+VARIANT型とは、型情報と値のペアから構成されるデータ型で、元はVBの形無し
+変数のための構造体です。OLEオートメーションのメソッド呼び出しには汎用型
+として引数にはVARIANT型を利用します。
+</p>
+<ul>
+<li>型情報は、<a href="../method/-w-i-n32-o-l-e_-v-a-r-i-a-n-t/i/vartype.html">WIN32OLE_VARIANT#vartype</a>で取得できます。</li>
+<li>値は、<a href="../method/-w-i-n32-o-l-e_-v-a-r-i-a-n-t/i/value.html">WIN32OLE_VARIANT#value</a>で取得できます。</li>
+</ul>
+<p>
+OLEオートメーションのメソッド呼び出し規約では、引数はVARIANT型の配列と
+して定義されています。
+</p>
+<p>
+この規約に対して、WIN32OLEでは、VARIANT型の値に対する参照を引数配列の各
+要素に設定します。この実装は、ほとんどのOLEオートメーションサーバで正し
+く処理されます。
+</p>
+<p>
+しかし、一部のOLEオートメーションサーバは、引数配列の要素にVARIANT型の
+値そのものを要求します。この場合、WIN32OLEの実装は正しく処理されません。
+</p>
+<p>
+WIN32OLE_VARIANTオブジェクトを利用すると、このようなOLEオートメーション
+サーバのメソッド呼び出しに対して、VARIANT型の値を引数配列に設定すること
+をWIN32OLEへ指示できます。
+</p>
+<p>
+なお、WIN32OLE_VARIANTを利用する必要の有無は、呼び出し対象のOLEオートメー
+ションサーバの仕様または実装に依存します。
+</p>
+<h2 >サンプルコード</h2>
+<pre>
+shell = WIN32OLE.new('Shell.Application')
+folder = shell.NameSpace('C:\\Users\\Public\\Documents')
+item = folder.ParseName('test.txt')
+v = WIN32OLE_VARIANT.new('Delete')
+item.invokeVerb(v)     # =&gt; ゴミ箱への移動ダイアログを表示
+</pre>
+<p>
+上記サンプルの最後の行を
+</p>
+<pre>
+item.invokeVerb('Delete')
+</pre>
+<p>
+とすると、FolderItemオブジェクトは引数を認識できず、既定の動作として
+Openを実行します。
+</p>
+<p>
+プログラムの見た目と異なり、後者のコードに対してWIN32OLEは、'Delete'と
+いう文字列を格納したVARIANT型への参照を引数として与えるためです。それに
+対して前者では、'Delete'という文字列を格納したVARIANT型を引数として与え
+ます。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_ARRAY">array</a>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--5B--5D">[]</a>
+
+<a href="#I_--5B--5D--3D">[]=</a>
+
+<a href="#I_VALUE">value</a>
+
+<a href="#I_VALUE--3D">value=</a>
+
+<a href="#I_VARTYPE">vartype</a>
+
+</dd>
+
+<dt>定数</dt>
+<dd>
+
+<a href="#C_-EMPTY">Empty</a>
+
+<a href="#C_-NOTHING">Nothing</a>
+
+<a href="#C_-NULL">Null</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_ARRAY"><code>array(dims, vt) -&gt; WIN32OLE_VARIANT</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e_-v-a-r-i-a-n-t/s/array.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/win32ole/rdoc/WIN32OLE_VARIANT.html#method-c-array">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+配列用のVARIANTオブジェクトを生成します。
+</p>
+<p>
+オートメーションメソッド呼び出し用の配列を生成します。なお、OLEオートメー
+ションの配列の次元と添え字の関係はVB型だという点に注意してください。こ
+れはCと逆順の並びです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] dims:</dt>
+<dd>
+各次元の要素数を示す配列を与えます。たとえば4要素のベクター
+であれば[4]、各3要素の2次元配列であれば[3, 3]とします。
+</dd>
+<dt class='method-param'>[PARAM] vt:</dt>
+<dd>
+配列要素の型を<a href="../class/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t.html">WIN32OLE::VARIANT</a>の定数で指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+指定された次元/要素数を持つWIN32OLE_VARIANTオブジェクト。
+</dd>
+</dl>
+<p>
+次の例は、最初の次元が3要素、次の次元が4要素の2次元配列を生成する例です。
+</p>
+<pre>
+ole_ary = WIN32OLE_VARIANT.array([3,4], WIN32OLE::VARIANT::VT_I4)
+ruby_ary = ole_ary.value # =&gt; [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-w-i-n32-o-l-e_-v-a-r-i-a-n-t/i/value.html">WIN32OLE_VARIANT#value</a>, <a href="../class/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t.html">WIN32OLE::VARIANT</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_NEW"><code>new(val, vartype = nil) -&gt; WIN32OLE_VARIANT</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e_-v-a-r-i-a-n-t/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/win32ole/rdoc/WIN32OLE_VARIANT.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+指定したオブジェクトを値とするWIN32OLE_VARIANTオブジェクトを生成します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+ラップするRubyオブジェクトを指定します。
+</dd>
+<dt class='method-param'>[PARAM] vartype:</dt>
+<dd>
+省略時はWIN32OLEが自動型変換を行います。指定する場合は
+<a href="../class/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t.html">WIN32OLE::VARIANT</a>の定数を指定してください。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+val引数を値として持つWIN32OLE_VARIANTオブジェクトを返します。
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+val引数の型がArray、String、Integer、Float、Time、
+WIN32OLE、WIN32OLE_VARIANT、TrueClass、FalseClass、
+NilClass のいずれでもありません。
+</dd>
+</dl>
+<pre>
+shell = WIN32OLE.new('Shell.Application')
+folder = shell.NameSpace('C:\\Users\\Public\\Documents')
+item = folder.ParseName('test.txt')
+v = WIN32OLE_VARIANT.new('Delete')
+item.invokeVerb(v)     # =&gt; ゴミ箱への移動ダイアログを表示
+</pre>
+<p>
+バイト配列を生成するには、以下のようにvartype引数にVT_UI1 | VT_ARRAYを
+設定します。バイト配列の値のRuby表現はエンコーディングをASCII-8BITに設
+定した文字列となります。
+</p>
+<pre>
+include WIN32OLE::VARIANT
+bytes = WIN32OLE_VARIANT.new([1,2,3,4,5], VT_UI1 | VT_ARRAY)
+bytes.value          #=&gt; &quot;\x01\x02\x03\x04\x05&quot;
+bytes.value.encoding #=&gt; #&lt;Encoding:ASCII-8BIT&gt;
+</pre>
+<p>
+[SEE_ALSO] <a href="../class/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t.html">WIN32OLE::VARIANT</a>
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--5B--5D"><code>self[i...] -&gt; object</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e_-v-a-r-i-a-n-t/i/=5b=5d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/win32ole/rdoc/WIN32OLE_VARIANT.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+配列型のWIN32OLE_VARIANTの要素を取得します。
+</p>
+<p>
+selfは、<a href="../method/-w-i-n32-o-l-e_-v-a-r-i-a-n-t/s/array.html">WIN32OLE_VARIANT.array</a>または引数に配列を指定して
+<a href="../method/-w-i-n32-o-l-e_-v-a-r-i-a-n-t/s/new.html">WIN32OLE_VARIANT.new</a>で作成したインスタンスの必要があります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] i:</dt>
+<dd>
+各次元の0からのインデックスを「,」で区切って次元数分指定します。
+インデックスは0から要素数-1までのIntegerで指定してください。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+引数で指定したインデックスの要素を返します。
+</dd>
+<dt>[EXCEPTION] ArgError:</dt>
+<dd>
+引数の数が次元数と一致していません。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+selfが配列型のWIN32OLE_VARIANTではありませ
+ん。あるいはインデックスが0未満または要素数
+以上を指定しています。
+</dd>
+</dl>
+<pre>
+obj = WIN32OLE_VARIANT.new([[1,2,3],[4,5,6]])
+p obj[0,0] # =&gt; 1
+p obj[1,0] # =&gt; 4
+p obj[2,0] # =&gt; WIN32OLERuntimeError
+p obj[0, -1] # =&gt; WIN32OLERuntimeError
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--5B--5D--3D"><code>self[i...] = val</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e_-v-a-r-i-a-n-t/i/=5b=5d=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/win32ole/rdoc/WIN32OLE_VARIANT.html#method-i-5B-5D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+配列型のWIN32OLE_VARIANTの要素を設定します。
+</p>
+<p>
+selfは、<a href="../method/-w-i-n32-o-l-e_-v-a-r-i-a-n-t/s/array.html">WIN32OLE_VARIANT.array</a>または引数に配列を指定して
+<a href="../method/-w-i-n32-o-l-e_-v-a-r-i-a-n-t/s/new.html">WIN32OLE_VARIANT.new</a>で作成したインスタンスの必要があります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] i:</dt>
+<dd>
+各次元の0からのインデックスを「,」で区切って次元数分指定します。
+インデックスは0から要素数-1までのIntegerで指定してください。
+</dd>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+設定値を指定します。Array、String、Integer、Float、
+TrueClass、FalseClass、NilClass以外のオブジェクトはオートメー
+ションオブジェクト（WIN32OLEオブジェクト）に変換します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+引数で指定したインデックスの要素を返します。
+</dd>
+<dt>[EXCEPTION] ArgError:</dt>
+<dd>
+引数の数が次元数と一致していません。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+selfが配列型のWIN32OLE_VARIANTではありませ
+ん。あるいはインデックスが0未満または要素数
+以上を指定しています。
+</dd>
+</dl>
+<pre>
+obj = WIN32OLE_VARIANT.new([[1,2,3],[4,5,6]])
+obj[0,0] = 7
+obj[1,0] = 8
+p obj.value # =&gt; [[7,2,3], [8,5,6]]
+obj[2,0] = 9 # =&gt; WIN32OLERuntimeError
+obj[0, -1] = 9 # =&gt; WIN32OLERuntimeError
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_VALUE"><code>value -&gt; object</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e_-v-a-r-i-a-n-t/i/value.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/win32ole/rdoc/WIN32OLE_VARIANT.html#method-i-value">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+値に対応するRubyオブジェクトを取得します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+値に対応するRubyのオブジェクトを返します。
+</dd>
+</dl>
+<pre>
+obj = WIN32OLE_VARIANT.new(1, WIN32OLE::VARIANT::VT_BSTR)
+obj.value # =&gt; &quot;1&quot; (VT_BSTRを指定して生成したので、Stringオブジェクトとなる)
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_VALUE--3D"><code>value=(val) -&gt; ()</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e_-v-a-r-i-a-n-t/i/value=3d.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/win32ole/rdoc/WIN32OLE_VARIANT.html#method-i-value-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+WIN32OLE_VARIANTの値を再設定します。
+</p>
+<p>
+指定した値でselfを再設定します。指定値が元のVARIANT型に合わない場合は元
+のVARIANT型に合うように引数を変換します。変換は、引数を一度VARIANT型に
+変換してからCOMのVARIANT型変換関数（VariantChangeTypeEx）を呼び出すこと
+で実現します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+設定値を指定します。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+selfが配列型です。あるいは、型変換に失敗し
+ました。
+</dd>
+</dl>
+<pre>
+obj = WIN32OLE_VARIANT.new(1) # VARIANT型にWIN32OLE::VARIANT::VT_I4を設定
+obj.value = 3.2      # 3.2から新たなVARIANT型を作成し、それをVT_I4に変換
+p obj.value # =&gt; 3   # VT_I4に変換した結果が設定される
+</pre>
+<p>
+selfが配列型のWIN32OLE_VARIANTの場合、バイト配列かつ引数が文字列の場合
+を除いて<a href="../class/-w-i-n32-o-l-e-runtime-error.html">WIN32OLERuntimeError</a>を通知します。配列型の場合は、
+<a href="../method/-w-i-n32-o-l-e_-v-a-r-i-a-n-t/i/=5b=5d=3d.html">WIN32OLE_VARIANT#[]=</a>を利用してください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_VARTYPE"><code>vartype -&gt; Integer</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e_-v-a-r-i-a-n-t/i/vartype.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/win32ole/rdoc/WIN32OLE_VARIANT.html#method-i-vartype">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+selfの型情報を取得します。
+</p>
+<p>
+型情報は、<a href="../class/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t.html">WIN32OLE::VARIANT</a>の定数値の組み合わせです。
+</p>
+<pre>
+obj = WIN32OLE_VARIANT.new(&quot;string&quot;)
+obj.vartype   # =&gt; 8 (WIN32OLE::VARIANT::VT_BSTR)
+bytes = WIN32OLE_VARIANT.new([1,2,3,4,5], VT_UI1 | VT_ARRAY)
+bytes.vartype # =&gt; 8209 (WIN32OLE::VARIANT::VT_ARRAY | VT_UI1)
+</pre>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-EMPTY"><code>Empty -&gt; WIN32OLE_VARIANT</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e_-v-a-r-i-a-n-t/c/-empty.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/win32ole/rdoc/WIN32OLE_VARIANT.html#method-c-Empty">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+EMPTY型のWIN32OLE_VARIANTオブジェクトです。
+</p>
+<p>
+このオブジェクトは、VOID型の戻り値や、値が空なことを明示しなければなら
+ない特殊な引数に利用します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t/c/-v-t_-e-m-p-t-y.html">WIN32OLE::VARIANT::VT_EMPTY</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-NOTHING"><code>Nothing -&gt; WIN32OLE_VARIANT</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e_-v-a-r-i-a-n-t/c/-nothing.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/win32ole/rdoc/WIN32OLE_VARIANT.html#method-c-Nothing">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+DISPATCH型の空のオブジェクトです。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t/c/-v-t_-d-i-s-p-a-t-c-h.html">WIN32OLE::VARIANT::VT_DISPATCH</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-NULL"><code>Null -&gt; WIN32OLE_VARIANT</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e_-v-a-r-i-a-n-t/c/-null.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/win32ole/rdoc/WIN32OLE_VARIANT.html#method-c-Null">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+NULL型のWIN32OLE_VARIANTオブジェクトです。
+</p>
+<p>
+このオブジェクトは、ADOなどのデータベースインターフェイスでNULLを指定す
+るのに利用可能です。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t/c/-v-t_-n-u-l-l.html">WIN32OLE::VARIANT::VT_NULL</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

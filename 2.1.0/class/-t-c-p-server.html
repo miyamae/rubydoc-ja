@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class TCPServer</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/socket.html">socketライブラリ</a>
+&gt; TCPServerクラス
+</p>
+
+
+<h1>class TCPServer</h1>
+<p>
+
+
+クラスの継承リスト: TCPServer
+
+      &lt; <a href="../class/-t-c-p-socket.html">TCPSocket</a>
+      
+
+      &lt; <a href="../class/-i-p-socket.html">IPSocket</a>
+      
+
+      &lt; <a href="../class/-basic-socket.html">BasicSocket</a>
+      
+
+      &lt; <a href="../class/-i-o.html">IO</a>
+      
+
+      &lt; <a href="../class/-enumerable.html">Enumerable</a>
+      
+
+      &lt; <a href="../class/-file=3a=3a-constants.html">File::Constants</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+TCP/IP ストリーム型接続のサーバ側のソケットのクラスです。
+</p>
+<p>
+このクラスによって簡単にソケットを利用したサーバのプログラミングができます。
+</p>
+<p>
+例えば echo サーバは以下のようになります。
+</p>
+<pre>
+require &quot;socket&quot;
+
+gs = TCPServer.open(0)
+socks = [gs]
+addr = gs.addr
+addr.shift
+printf(&quot;server is on %s\n&quot;, addr.join(&quot;:&quot;))
+
+while true
+  nsock = select(socks)
+  next if nsock == nil
+  for s in nsock[0]
+    if s == gs
+      socks.push(s.accept)
+      print(s, &quot; is accepted\n&quot;)
+    else
+      if s.eof?
+        print(s, &quot; is gone\n&quot;)
+        s.close
+        socks.delete(s)
+      else
+        str = s.gets
+        s.write(str)
+      end
+    end
+  end
+end
+</pre>
+<p>
+Thread を使えばもっと短くなります。
+</p>
+<pre>
+require &quot;socket&quot;
+
+gs = TCPServer.open(0)
+addr = gs.addr
+addr.shift
+printf(&quot;server is on %s\n&quot;, addr.join(&quot;:&quot;))
+
+while true
+  Thread.start(gs.accept) do |s|       # save to dynamic variable
+    print(s, &quot; is accepted\n&quot;)
+    while s.gets
+      s.write($_)
+    end
+    print(s, &quot; is gone\n&quot;)
+    s.close
+  end
+end
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+<a href="#S_NEW">open</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_ACCEPT">accept</a>
+
+<a href="#I_ACCEPT_NONBLOCK">accept_nonblock</a>
+
+<a href="#I_LISTEN">listen</a>
+
+<a href="#I_SYSACCEPT">sysaccept</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(host=nil, service) -&gt; TCPServer</code><span class="permalink">[<a href="../method/-t-c-p-server/s/new.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/socket/rdoc/TCPServer.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>open(host=nil, service) -&gt; TCPServer</code></dt>
+<dd class="method-description">
+<p>
+新しいサーバー接続をオープンします。service は
+/etc/services (または NIS) に登録されているサービ
+ス名かポート番号で指定します。host を指定した時は
+指定したホストに対しての接続だけを受け付けます。省略時は全てのホ
+スト(インタフェース)への接続要求を受け付けることになります。
+</p>
+<p>
+host に指定できる形式は<a href="../library/socket.html#host_format">socket/ホスト指定形式</a>を見てください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] host:</dt>
+<dd>
+接続したいホストを指定します。
+host に指定できる形式は<a href="../library/socket.html#host_format">socket/ホスト指定形式</a>を見てください。
+</dd>
+<dt class='method-param'>[PARAM] service:</dt>
+<dd>
+/etc/services (または NIS) に登録されているサービ
+ス名かポート番号で指定します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_ACCEPT"><code>accept -&gt; TCPSocket</code><span class="permalink">[<a href="../method/-t-c-p-server/i/accept.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/socket/rdoc/TCPServer.html#method-i-accept">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+クライアントからの接続要求を受け付け、接続した
+<a href="../class/-t-c-p-socket.html">TCPSocket</a> のインスタンスを返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+TCPServer.open(&quot;&quot;, 0) {|serv|
+  c = TCPSocket.new(*serv.addr.values_at(3,1))
+  s = serv.accept
+  c.write &quot;foo&quot;
+  p s.recv(10)  #=&gt; &quot;foo&quot;
+}
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ACCEPT_NONBLOCK"><code>accept_nonblock -&gt; TCPSocket</code><span class="permalink">[<a href="../method/-t-c-p-server/i/accept_nonblock.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/socket/rdoc/TCPServer.html#method-i-accept_nonblock">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ソケットをノンブロッキングモードに設定した後、
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/accept.html">accept(2)</a> を呼び出します。
+</p>
+<p>
+返り値は <a href="../method/-t-c-p-server/i/accept.html">TCPServer#accept</a> と同じです。
+</p>
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/accept.html">accept(2)</a> がエラーになった場合、
+EAGAIN, EINTR を含め例外 <a href="../class/-errno=3a=3a-e-x-x-x.html">Errno::EXXX</a> が発生します。
+</p>
+<dl>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/accept.html">accept(2)</a> がエラーになった場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_LISTEN"><code>listen(backlog) -&gt; 0</code><span class="permalink">[<a href="../method/-t-c-p-server/i/listen.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/socket/rdoc/TCPServer.html#method-i-listen">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/listen.html">listen(2)</a> を実行します。
+(<a href="../method/-socket/i/listen.html">Socket#listen</a>と同じ)
+</p>
+<p>
+backlog は、クライアントからの接続要求を保留できる数です。
+TCPServer のインスタンスは最初は backlog の値は 5 で生成されます。
+</p>
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/listen.html">listen(2)</a> が成功すれば 0 を返します。
+失敗すれば 例外 <a href="../class/-errno=3a=3a-e-x-x-x.html">Errno::EXXX</a> が発生します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] backlog:</dt>
+<dd>
+backlog は、クライアントからの接続要求を保留できる数です。
+TCPServer のインスタンスは最初は backlog の値は 5 で生成されます。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/listen.html">listen(2)</a> が失敗すれば 例外 <a href="../class/-errno=3a=3a-e-x-x-x.html">Errno::EXXX</a> が発生します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/listen.html">listen(2)</a> が成功すれば 0 を返します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_SYSACCEPT"><code>sysaccept -&gt; Fixnum</code><span class="permalink">[<a href="../method/-t-c-p-server/i/sysaccept.html">permalink</a>][<a href="http://ruby-doc.org/stdlib-2.1.0/libdoc/socket/rdoc/TCPServer.html#method-i-sysaccept">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+接続したクライアントのソケットをファイル記述子で返すことを除けば
+<a href="../method/-t-c-p-server/i/accept.html">TCPServer#accept</a> と同じです。
+</p>
+<p>
+例:
+</p>
+<pre>
+TCPServer.open(&quot;&quot;, 0) {|serv|
+  c = TCPSocket.new(*serv.addr.values_at(3,1))
+  p serv.sysaccept        #=&gt; 6
+}
+</pre>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

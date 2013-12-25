@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method Object#initialize_copy</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.1.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-object.html">Objectクラス</a>
+&gt; initialize_copy
+(private)
+</p>
+
+
+<h1>instance method Object#initialize_copy</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_INITIALIZE_COPY"><code>initialize_copy(obj) -&gt; object</code><span class="permalink">[<a href="../../../method/-object/i/initialize_copy.html">permalink</a>][<a href="http://ruby-doc.org/core-2.1.0/Object.html#method-i-initialize_copy">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+(拡張ライブラリによる) ユーザ定義クラスのオブジェクトコピーの初期化メソッド。
+</p>
+<p>
+このメソッドは self を obj の内容で置き換えます。ただ
+し、self のインスタンス変数や特異メソッドは変化しません。
+<a href="../../../method/-object/i/clone.html">Object#clone</a>, <a href="../../../method/-object/i/dup.html">Object#dup</a>の内部で使われています。
+</p>
+<p>
+initialize_copy は、Ruby インタプリタが知り得ない情報をコピーするた
+めに使用(定義)されます。例えば C 言語でクラスを実装する場合、情報
+をインスタンス変数に保持させない場合がありますが、そういった内部情
+報を initialize_copy でコピーするよう定義しておくことで、dup や clone
+を再定義する必要がなくなります。
+</p>
+<p>
+デフォルトの Object#initialize_copy は、 freeze チェックおよび型のチェックを行い self
+を返すだけのメソッドです。
+</p>
+<p>
+initialize_copy という名前のメソッドは
+自動的に private に設定されます。
+</p>
+<dl>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+レシーバが freeze されているか、obj のクラスがレシーバ
+のクラスと異なる場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-object/i/clone.html">Object#clone</a>,<a href="../../../method/-object/i/dup.html">Object#dup</a>
+</p>
+<p>
+以下に例として、dup や clone がこのメソッドをどのように利用しているかを示します。
+</p>
+<p>
+obj.dup は、新たに生成したオブジェクトに対して
+initialize_copy を呼び
+</p>
+<pre>
+obj2 = obj.class.allocate
+obj2.initialize_copy(obj)
+</pre>
+<p>
+obj2 に対してさらに obj の汚染状態、インスタンス変数、ファイナライ
+ザをコピーすることで複製を作ります。 obj.clone は、さらに
+特異メソッドのコピーも行います。
+</p>
+<pre>
+obj = Object.new
+class &lt;&lt;obj
+  attr_accessor :foo
+  def bar
+    :bar
+  end
+end
+
+def check(obj)
+  puts &quot;instance variables: #{obj.inspect}&quot;
+  puts &quot;tainted?: #{obj.tainted?}&quot;
+  print &quot;singleton methods: &quot;
+  begin
+    p obj.bar
+  rescue NameError
+    p $!
+  end
+end
+
+obj.foo = 1
+obj.taint
+
+check Object.new.send(:initialize_copy, obj)
+        #=&gt; instance variables: #&lt;Object:0x4019c9d4&gt;
+        #   tainted?: false
+        #   singleton methods: #&lt;NoMethodError: ...&gt;
+check obj.dup
+        #=&gt; instance variables: #&lt;Object:0x4019c9c0 @foo=1&gt;
+        #   tainted?: true
+        #   singleton methods: #&lt;NoMethodError: ...&gt;
+check obj.clone
+        #=&gt; instance variables: #&lt;Object:0x4019c880 @foo=1&gt;
+        #   tainted?: true
+        #   singleton methods: :bar
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>
