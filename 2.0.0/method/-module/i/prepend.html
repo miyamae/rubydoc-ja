@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method Module#prepend (Ruby 2.0.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.0.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-module.html">Moduleクラス</a>
+&gt; prepend
+
+</p>
+
+
+<h1>instance method Module#prepend</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_PREPEND"><code>prepend(*modules) -&gt; self</code><span class="permalink">[<a href="../../../method/-module/i/prepend.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/Module.html#method-i-prepend">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+指定したモジュールを self の継承チェインの先頭に「追加する」ことで
+self の定数、メソッド、モジュール変数を「上書き」します。
+</p>
+<p>
+継承チェイン上で、self のモジュール/クラスよりも「手前」に
+追加されるため、結果として self で定義されたメソッドは
+override されます。
+</p>
+<p>
+modules で指定したモジュールは後ろから順に処理されるため、
+modules の先頭が最も優先されます。
+</p>
+<p>
+また、継承によってこの「上書き」を処理するため、prependの引数として
+渡したモジュールのインスタンスメソッドでsuperを呼ぶことで
+self のモジュール/クラスのメソッドを呼び出すことができます。
+</p>
+<p>
+実際の処理は modules の各要素の prepend_features を後ろから順に呼びだすだけです。
+<a href="../../../method/-module/i/prepend_features.html">Module#prepend_features</a> が継承チェインの改変を実行し、結果として上のような
+処理が実現されます。そのため、prepend_features を override することで
+prepend の処理を追加/変更できます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] modules:</dt>
+<dd>
+prepend する <a href="../../../class/-module.html">Module</a> を指定します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-module/i/prepend_features.html">Module#prepend_features</a>
+</p>
+<pre>
+# super と prepend の組み合わせの例
+module X
+  def foo
+    puts &quot;X1&quot; # (1x)
+    super # (2x)
+    puts &quot;X2&quot; # (3x)
+  end
+end
+
+class A
+  prepend X
+
+  def foo
+    puts &quot;A&quot; #(1a)
+  end
+end
+
+A.new.foo
+# (1x) (2x)(ここの super で A#foo を呼びだす) (1a) (3x) の順に実行される
+# &gt;&gt; X1
+# &gt;&gt; A
+# &gt;&gt; X2
+
+# 2つのモジュールを X, Y を prepend X, Y という順で指定したもの
+module Y
+  def foo
+    puts &quot;Y1&quot; #(1y)
+    super #(2y)
+    puts &quot;Y2&quot; #(3y)
+  end
+end
+
+class B
+  prepend X, Y
+  def foo
+    puts &quot;B&quot; # (1b)
+  end
+end
+
+B.new.foo
+# (1x) (2x) (1y) (2y) (1b) (3y) (3x) の順に実行される
+# X#foo のほうが Y#foo より継承チェインの手前側にあり、そちらが優先される
+# &gt;&gt; X1
+# &gt;&gt; Y1
+# &gt;&gt; B
+# &gt;&gt; Y2
+# &gt;&gt; X2
+# prepend Y, X とすると Y1 X1 B X2 Y2 の順で表示される
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>
