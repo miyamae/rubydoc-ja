@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
-  <title>library rinda/rinda</title>
+  <title>library rinda/rinda (Ruby 1.9.2)</title>
 </head>
 <body>
 
@@ -22,12 +22,174 @@
 
 <h2>要約</h2>
 <p>
-Rubyで実装されたタプル空間(Tuple Space)を扱うためのライブラリです。
+Rubyで実装されたタプルスペース(Tuple Space)を扱うためのライブラリです。
 </p>
+<p>
+タプルスペースとは並列プログラムにおける一つのパターンです。
+並列プログラミングにおいては、ロックのような同期処理が必須ですが、
+適切な同期処理を実現することは困難をともないます。
+このパターンにおいては、複数の並列単位(スレッド/プロセス)間の通信をすべて
+タプルスペースという領域を経由して行います。これによって
+プロセス間の通信トポロジーを単純化し、問題を簡単化します。
+タプルスペースに対しては、タプルを書き込む(write)、取り出す(take)、
+タプルの要素を覗き見る(read)
+という操作のみが利用できます。可能な操作を限定し、定型化することで
+安全な同期処理を実現します。rinda においてはタプルとは
+配列もしくはハッシュテーブルを意味します。
+タプルを取り出すときにはパターンを指定して、それにマッチした
+もののみを取り出すことができます。特にタプルの第1要素最初の要素を
+限定することで必要なタプルのみを取り出します。
+</p>
+<p>
+タプルスペースそのものの実装は <a href="../library/rinda=2ftuplespace.html">rinda/tuplespace</a> でなされています。
+このライブラリはタプルスペースへのアクセス機能等を提供します。
+</p>
+<h2 >参考</h2>
 <ul>
 <li><a class="external" href="http://www.druby.org/ilikeruby/rinda.html">http://www.druby.org/ilikeruby/rinda.html</a></li>
 <li><a class="external" href="http://www2a.biglobe.ne.jp/~seki/ruby/d208.html">http://www2a.biglobe.ne.jp/~seki/ruby/d208.html</a></li>
 </ul>
+<h2 id='tuplepattern'>タプルのパターンについて</h2>
+<p>
+<a href="../method/-rinda=3a=3a-tuple-space/i/take.html">Rinda::TupleSpace#take</a> や <a href="../method/-rinda=3a=3a-tuple-space-proxy/i/take.html">Rinda::TupleSpaceProxy#take</a> などでは
+取り出したいタプルを指定するため、パターンをメソッドの引数に渡す必要があります。
+</p>
+<p>
+パターンは配列、もしくはハッシュテーブルのいずれかです。
+配列によるパターンは配列によるタプルにのみ、
+ハッシュテーブルによるパターンはハッシュテーブルによるタプルにのみ、
+それぞれマッチします。
+</p>
+<p>
+パターンが配列の場合は、長さが同じ配列タプルにのみマッチします。
+そしてパターン配列の各要素が対応する配列タプルの各要素にマッチする
+場合にパターンがタプルにマッチします。
+各要素に関しては以下が成立する場合にマッチします。
+</p>
+<ul>
+<li>パターン側の要素が nil である (つまり nil はワイルドカード)</li>
+<li>「パターン側の要素 == タプル側の要素」 が成立する(例えば2つの文字列が等しい)</li>
+<li>「パターン側の要素 === タプル側の要素」 が成立する(例えばパターン側に正規表現を指定し、
+タプル側がマッチする文字列である場合。別の例としてパターン側にクラスを指定し、
+タプル側がそのインスタンスである場合)</li>
+</ul>
+<p>
+パターンがハッシュテーブルの場合、キーと値のペアの個数が一致し、
+キーの集合が一致し、それぞれのキーに対応する値がマッチする
+場合にパターンがタプルにマッチします。値のマッチのルールは
+配列の各要素に関するマッチのルールと同じです。
+</p>
+<h2 >例</h2>
+<p>
+この例では、rinda_ts.rb を起動したプロセスがタプルスペースを提供します。
+</p>
+<p>
+rindas.rb はタプルスペースに書き込まれたクエリ('sum' というキーのタプル)
+を取り出し、それを2倍したものを応答として('ans'というキーのタプル)
+タプルスペースに書き込みます。
+</p>
+<p>
+一方 rindac.rb はクエリ('sum' というキーのタプル)をタプルスペースに書き込み、
+その応答('ans'というキーのタプル)をタプルスペースから取り出して表示します。
+</p>
+<p>
+例の動かしかたは以下の通りです。
+</p>
+<pre>
+# まず、rinda_ts.rb を動かす
+ruby rinda_ts.rb druby://localhost:40121
+
+# rinda_ts.rb を動かしたまま、rindas.rbを動かす
+# 複数の rindas.rb を同時に動かしてもよい。
+# 別のターミナルで:
+ruby rindas.rb druby://localhost:40121
+
+# rindac.rb を動かし、クエリをタプルスペースに書き込む
+ruby rindac.rb druby://localhost:40121
+# on rindas.rb terminal
+do_it(1)
+do_it(2)
+do_it(3)
+do_it(4)
+do_it(5)
+do_it(6)
+do_it(7)
+do_it(8)
+do_it(9)
+do_it(10)
+# on rindac.rb terminal
+[1, 2]
+[2, 4]
+[3, 6]
+[4, 8]
+[5, 10]
+[6, 12]
+[7, 14]
+[8, 16]
+[9, 18]
+[10, 20]
+</pre>
+<p>
+rindas.rb や rindac.rb を同時に複数動かすと、タプルスペースの並列性の問題に
+ついてのよりよい理解が得られます。例えば rindas.rb を複数動かすと、
+rindac.rb からのクエリを複数の rindas.rb が分散して処理します。
+複数の rindac.rb を動かしても、応答が混ざったりせず、rindac.rb に適切に
+応答が返されます。これは DRb.uri を使うことで rindac.rb のプロセスを
+一意に同定しているからです。
+</p>
+<pre>
+# rinda_ts.rb
+require 'drb/drb'
+require 'rinda/tuplespace'
+
+uri = ARGV.shift
+DRb.start_service(uri, Rinda::TupleSpace.new)
+puts DRb.uri
+DRb.thread.join
+
+
+# rindas.rb
+require 'drb/drb'
+require 'rinda/rinda'
+
+def do_it(v)
+  puts &quot;do_it(#{v})&quot;
+  v + v
+end
+
+uri = ARGV.shift || raise(&quot;usage: #{$0} &lt;server_uri&gt;&quot;)
+
+DRb.start_service
+ts = Rinda::TupleSpaceProxy.new(DRbObject.new(nil, uri))
+
+while true
+  r = ts.take(['sum', nil, nil])
+  v = do_it(r[2])
+  ts.write(['ans', r[1], r[2], v])
+end
+
+
+# rindac.rb
+require 'drb/drb'
+require 'rinda/rinda'
+
+uri = ARGV.shift || raise(&quot;usage: #{$0} &lt;server_uri&gt;&quot;)
+
+DRb.start_service
+ts = Rinda::TupleSpaceProxy.new(DRbObject.new(nil, uri))
+
+(1..10).each do |n|
+  ts.write(['sum', DRb.uri, n])
+end
+
+(1..10).each do |n|
+  ans = ts.take(['ans', DRb.uri, n, nil])
+  p [ans[2], ans[3]]
+end
+</pre>
+<p>
+この例は ruby の配布物の sample/drb/rinda{_ts,s,c}.rb と同じものです。
+</p>
 
 
 <h2>クラス</h2>
@@ -59,7 +221,7 @@ still alive.
 <a href="../class/-rinda=3a=3a-tuple.html">Rinda::Tuple</a>
 </td>
 <td class="description"><p>
-Tuple のためのクラスです。
+Tuple のためのクラスです。ユーザがこのクラスを直接使うことはありません。
 </p>
 </td>
 </tr>
@@ -81,9 +243,10 @@ Tuple のためのクラスです。
 <span style="display:none"></span>
 <a href="../class/-rinda=3a=3a-tuple-space-proxy.html">Rinda::TupleSpaceProxy</a>
 </td>
-<td class="description"><pre>
-TupleSpaceProxy allows a remote Tuplespace to appear as local.
-</pre>
+<td class="description"><p>
+リモートの <a href="../class/-rinda=3a=3a-tuple-space.html">Rinda::TupleSpace</a> オブジェクトを包む
+プロクシクラスです。
+</p>
 </td>
 </tr>
 
@@ -97,7 +260,11 @@ TupleSpaceProxy allows a remote Tuplespace to appear as local.
 <span style="display:none"></span>
 <a href="../class/-rinda.html">Rinda</a>
 </td>
-<td class="description"></td>
+<td class="description"><p>
+<a href="../library/rinda=2frinda.html">rinda/rinda</a> および <a href="../library/rinda=2ftuplespace.html">rinda/tuplespace</a> の名前空間を提供する
+モジュール。
+</p>
+</td>
 </tr>
 
 </table>
@@ -111,7 +278,8 @@ TupleSpaceProxy allows a remote Tuplespace to appear as local.
 <a href="../class/-rinda=3a=3a-request-canceled-error.html">Rinda::RequestCanceledError</a>
 </td>
 <td class="description"><p>
-Raised when trying to use a canceled tuple.
+rinda で take などのリクエストが何らかの理由でキャンセルされた
+ことを意味する例外クラス。
 </p>
 </td>
 </tr>
@@ -122,7 +290,8 @@ Raised when trying to use a canceled tuple.
 <a href="../class/-rinda=3a=3a-request-expired-error.html">Rinda::RequestExpiredError</a>
 </td>
 <td class="description"><p>
-Raised when trying to use an expired tuple.
+rinda で take などのリクエストがタイムアウトしたことを
+意味する例外クラス。
 </p>
 </td>
 </tr>
@@ -133,7 +302,7 @@ Raised when trying to use an expired tuple.
 <a href="../class/-rinda=3a=3a-rinda-error.html">Rinda::RindaError</a>
 </td>
 <td class="description"><p>
-Rinda error base class
+rinda ライブラリの基底例外クラス
 </p>
 </td>
 </tr>
