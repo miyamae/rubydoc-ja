@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>メソッド呼び出し(super・ブロック付き・yield) (Ruby 2.2.0)</title>
+</head>
+<body>
+
+<p>
+
+<a href="../doc/index.html">Ruby 2.2.0 リファレンスマニュアル</a>
+&gt; メソッド呼び出し(super・ブロック付き・yield)
+
+</p>
+
+<h1>メソッド呼び出し(super・ブロック付き・yield)</h1>
+
+<ul>
+<li><a href="#super">super</a></li>
+<li><a href="#block">ブロック付きメソッド呼び出し</a></li>
+<li><a href="#yield">yield</a></li>
+<li><a href="#block_arg">ブロックパラメータの挙動</a></li>
+</ul>
+<p>
+例:
+</p>
+<pre>
+foo.bar()
+foo.bar
+bar()
+print &quot;hello world\n&quot;
+print
+Class.new
+Class::new
+</pre>
+<p>
+文法:
+</p>
+<pre>
+[式  `.'] 識別子 [`(' 式 ... [`*' [式]],[`&amp;' 式] `)']
+[式 `::'] 識別子 [`(' 式 ... [`*' [式]],[`&amp;' 式] `)']
+</pre>
+<p>
+メソッド呼び出し式はレシーバ(`.' の左側の式の値)のメソッドを呼び
+出します。レシーバが指定されない時は self のメソッドを呼び出しま
+す。
+</p>
+<p>
+`.' と `::' とはほぼ同じ意味です。但し、定数を表す場合は、
+`::' を使わなければいけません(例: <a href="../method/-math/c/-p-i.html">Math::PI</a>)。逆に、
+</p>
+<pre>
+Klass::Foo
+</pre>
+<p>
+とした場合、常に定数と見なされるという制限があります。
+`::' を、クラスメソッド呼び出しに使うという流儀がありますが、
+この点は要注意です。大文字で始まるメソッド名を使用する場合は
+</p>
+<pre>
+Klass.Foo
+</pre>
+<p>
+と `.' を使うか、
+</p>
+<pre>
+Klass::Foo()
+</pre>
+<p>
+と括弧でメソッド呼び出しであることを明示する必要があります。
+</p>
+<p>
+メソッド名には通常の識別子の他、識別子に ? または ! の続い
+たものが許されます。慣習として、述語(真偽値を返すメソッド)には ?
+を、同名の(! の無い)メソッドに比べてより破壊的な作用をもつメソッ
+ド(例: tr と tr!)には ! をつけるようになっています。
+</p>
+<p>
+最後の引数の直前に * がついている場合、その引数の値が展開されて
+渡されます。展開はメソッド to_a を経由して行なわれます。つまり:
+</p>
+<pre>
+foo(1,*[2,3,4])
+foo(1,*[])
+</pre>
+<p>
+は、それぞれ
+</p>
+<pre>
+foo(1,2,3,4)
+foo(1)
+</pre>
+<p>
+と同じです。
+</p>
+<p>
+最後の引数の直前に &amp; がついている場合、その引数で指定した手続き
+オブジェクト(<a href="../class/-proc.html">Proc</a>)やメソッドオブジェクト(<a href="../class/-method.html">Method</a>)がブロック
+としてメソッドに渡されます。詳細は <a href="#block">ブロック付きメソッド呼び出し</a> を参照してください。
+</p>
+<p>
+メソッド呼び出しの際、private なメソッドは関数形式(レシーバを省
+略した形式)でしか呼び出すことができません。また protected なメソッ
+ドはそのメソッドを持つオブジェクトのメソッド定義式内でなければ呼び出せ
+ません。<a href="../doc/spec=2fdef.html#limit">クラス／メソッドの定義/呼び出し制限</a> を参照して下さい。
+</p>
+<h2 id='super'>super</h2>
+<p>
+例:
+</p>
+<pre>
+super
+super(1,2,3)
+</pre>
+<p>
+文法:
+</p>
+<pre>
+super
+super(式, ... )
+</pre>
+<p>
+super は現在のメソッドがオーバーライドしているメソッドを呼び出し
+ます。括弧と引数が省略された場合には現在のメソッドの引数がそのまま引き
+渡されます。引数を渡さずにオーバーライドしたメソッドを呼び出すには
+super() と括弧を明示します。
+</p>
+<p>
+例:
+</p>
+<pre>
+class Foo
+  def foo(arg=nil)
+    p arg
+  end
+end
+
+class Bar &lt; Foo
+  def foo(arg)
+    super(5)       # 5 を引数にして呼び出す
+    super(arg)     # 5 を引数にして呼び出す
+    super          # 5 を引数にして呼び出す super(arg) の略記法
+    arg = 1
+    super          # 1 を引数にして呼び出す super(arg) の略記法
+    super()        # 引数なしで呼び出す
+  end
+end
+Bar.new.foo 5
+</pre>
+<h2 id='block'>ブロック付きメソッド呼び出し</h2>
+<p>
+例:
+</p>
+<pre>
+[1,2,3].each do |i| print i*2, &quot;\n&quot; end
+[1,2,3].each {|i| print i*2, &quot;\n&quot; }
+</pre>
+<p>
+文法:
+</p>
+<pre>
+method(arg1, arg2, ...)  do [`|' 式 ... `|'] 式 ... end
+method(arg1, arg2, ...) `{' [`|' 式 ... `|'] 式 ... `}'
+method(arg1, arg2, ..., `&amp;' proc_object)
+</pre>
+<p>
+ブロック付きメソッドとは制御構造の抽象化のために用いられる
+メソッドです。最初はループの抽象化のために用いられていたため、
+特にイテレータと呼ばれることもあります。
+do ... end または { ... }  で囲まれたコードの断片
+(ブロックと呼ばれる)を後ろに付けてメソッドを呼び出すと、その
+メソッドの内部からブロックを評価できます。
+ブロック付きメソッドを自分で定義するには yield 式を使います。
+</p>
+<p>
+{ ...  } の方が do ...  end ブロックよりも強く結合します。
+次に例を挙げますが、このような違いが影響するコードは読み辛いので避けましょう:
+</p>
+<pre>
+foobar a, b do .. end   # foobarの引数はa, bの値とブロック
+foobar a, b { .. }      # ブロックはメソッドbの引数、aの値とbの返り値とがfoobarの引数
+</pre>
+<p>
+ブロックの中で初めて代入された(宣言された)ローカル変数はその
+ブロックの中でだけ有効です。例えば:
+</p>
+<pre>
+foobar {
+  i = 20                # ローカル変数 `i' が宣言された
+   ...
+}
+print defined? i        # `i' はここでは未定義なので false
+foobar a, b do
+  i = 11                # まったく別の変数 i の宣言
+   ...
+end
+</pre>
+<p>
+以下は逆にブロック外でも有効な例です。
+</p>
+<pre>
+i = 10
+[1,2,3].each do |m|
+  p i * m               # いきなり i を使える
+end
+</pre>
+<p>
+ブロックの部分だけを先に定義して変数に保存しておき、後からブロック付きメソッドに渡すことも出来ます。
+それを実現するのが手続きオブジェクト(<a href="../class/-proc.html">Proc</a>)です。
+それをブロックとして渡すにはブロック付きメソッドの最後の引数として `&amp;' で修飾した手続きオブジェクトを渡
+します。Proc の代わりにメソッドオブジェクト(<a href="../class/-method.html">Method</a>)を渡す
+ことも出来ます。この場合、そのメソッドを呼ぶ手続きオブジェクトが生成さ
+れ渡されます。
+</p>
+<pre>
+# 1引数の手続き(その働きは引数をpで印字すること)を生成し、変数pobjに格納
+pobj = proc {|v|
+  p v
+}
+
+[1,2,3].each(&amp;pobj) # 手続きオブジェクトをブロックの代わりに渡している
+=&gt; 1
+   2
+   3
+</pre>
+<p>
+to_proc メソッドを持つオブジェクトならば、`&amp;'
+修飾した引数として渡すことができます。デフォルトで Proc、Method オブジェ
+クトは共に to_proc メソッドを持ちます。to_proc はメソッド呼び出し時に実
+行され、Proc オブジェクトを返すことが期待されます。
+</p>
+<pre>
+class Foo
+  def to_proc
+    Proc.new {|v| p v}
+  end
+end
+
+[1,2,3].each(&amp;Foo.new)
+
+=&gt; 1
+   2
+   3
+</pre>
+<p>
+ブロック付きメソッドの戻り値は、通常のメソッドと同様ですが、ブロックの中から
+<a href="../doc/spec=2fcontrol.html#break">制御構造/break</a> により中断された場合は nil を返します。
+</p>
+<p>
+break に引数を指定した場合はその値がブロック付きメソッドの戻り値になります。
+</p>
+<h2 id='yield'>yield</h2>
+<p>
+自分で定義したブロック付きメソッドでブロックを呼び出すときに使います。
+yield に渡された値はブロック記法において | と | の間にはさまれた
+変数(ブロックパラメータ)に代入されます。
+</p>
+<p>
+例:
+</p>
+<pre>
+yield data
+</pre>
+<p>
+文法:
+</p>
+<pre>
+yield `(' [式 [`,' 式 ... ]] `)'
+yield [式 [`,' 式 ... ]]
+</pre>
+<p>
+引数をブロックパラメータとして渡してブロックを評価します。yield は
+イテレータを定義するために <a href="../doc/spec=2fdef.html#method">クラス／メソッドの定義/メソッド定義</a> 内で使用します。
+</p>
+<pre>
+# ブロック付きメソッドの定義、
+# その働きは与えられたブロック(手続き)に引数1, 2を渡して実行すること
+def foo
+  yield(1,2)
+end
+
+# fooに「2引数手続き、その働きは引数を配列に括ってpで印字する」というものを渡して実行させる
+foo {|a,b|
+  p [a, b]
+}  # =&gt; [1, 2] (要するに p [1, 2] を実行した)
+
+# 今度は「2引数手続き、その働きは足し算をしてpで印字する」というものを渡して実行させる
+foo {|a, b|
+  p a + b
+}  # =&gt; 3 (要するに p 1 + 2 を実行した)
+
+# 今度のブロック付きメソッドの働きは、
+# 与えられたブロックに引数10を渡して起動し、続けざまに引数20を渡して起動し、
+# さらに引数30を渡して起動すること
+def bar
+  yield 10
+  yield 20
+  yield 30
+end
+
+# barに「1引数手続き、その働きは引数に3を足してpで印字する」というものを渡して実行させる
+bar {|v|
+  p v + 3
+}
+# =&gt; 13
+#    23
+#    33 (同じブロックが3つのyieldで3回起動された。
+#        具体的には p 10 + 3; p 20 + 3; p 30 + 3 を実行した)
+
+# Array#eachの(粗製乱造の)類似品
+def iich(arr) # 引数に配列を取る
+  idx = 0
+  while idx &lt; arr.size
+    yield(arr[idx]) # 引数の各要素毎に、その要素を引数にしてブロックを起動
+    idx += 1
+  end
+end
+
+sum = 0
+iich([1, 4, 9, 16, 25]) {|elem|
+  sum += elem
+}
+p sum # =&gt; 55
+</pre>
+<p>
+ブロックパラメータの代入は<a href="../doc/spec=2foperator.html#multiassign">演算子式/多重代入</a>と同じルールで行われます。
+また yield を実行したメソッドにブロックが渡されていない
+(ブロック付きメソッド呼び出しではない)時は例外 <a href="../class/-local-jump-error.html">LocalJumpError</a> が発生します。
+</p>
+<p>
+yield はブロック内で最後に評価した式の値を返します。また、
+<a href="../doc/spec=2fcontrol.html#next">制御構造/next</a> によりブロックの実行が中断された場合は nil
+を返します。
+</p>
+<p>
+next に引数を指定した場合はその値が yield の戻り値になります。
+</p>
+<h3 id='block_arg'>ブロックパラメータの挙動</h3>
+<p>
+メソッド呼び出しと挙動が異なります。
+lambda でないブロックを呼び出したとき
+</p>
+<ul>
+<li>引数の数が違ってもエラーになりません。</li>
+<li>配列をひとつ渡したときにそれが引数の並びとして展開されることがあります。</li>
+</ul>
+<pre>
+def foo
+  yield 1,2,3
+end
+
+foo{|v| p v}       #=&gt; 1
+
+def bar
+  yield [1,2,3]
+end
+
+bar{|a, b, c| p a} #=&gt; 1
+
+def hoge
+  yield [1,2,3],4,5
+end
+
+hoge{|a, b, c| p a} #=&gt; [1,2,3]
+</pre>
+<p>
+<a class="external" href="http://www.a-k-r.org/d/2007-08.html#a2007_08_16_1">http://www.a-k-r.org/d/2007-08.html#a2007_08_16_1</a>
+</p>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

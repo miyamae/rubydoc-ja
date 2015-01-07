@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>module Benchmark (Ruby 2.2.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.2.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/benchmark.html">benchmarkライブラリ</a>
+&gt; Benchmarkモジュール
+</p>
+
+
+<h1>module Benchmark</h1>
+<p>
+
+
+クラスの継承リスト: Benchmark
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+ベンチマークを取るためのモジュールです。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>モジュール関数</dt>
+<dd>
+
+<a href="#M_BENCHMARK">benchmark</a>
+
+<a href="#M_BM">bm</a>
+
+<a href="#M_BMBM">bmbm</a>
+
+<a href="#M_MEASURE">measure</a>
+
+<a href="#M_REALTIME">realtime</a>
+
+</dd>
+
+<dt>定数</dt>
+<dd>
+
+<a href="#C_-B-E-N-C-H-M-A-R-K_-V-E-R-S-I-O-N">BENCHMARK_VERSION</a>
+
+<a href="#C_-C-A-P-T-I-O-N">CAPTION</a>
+
+<a href="#C_-F-O-R-M-A-T">FORMAT</a>
+
+</dd>
+
+</dl>
+
+
+<h2>モジュール関数</h2>
+<dl>
+
+<dt class="method-heading" id="M_BENCHMARK"><code>benchmark(caption = &quot;&quot;, label_width = nil, fmtstr = nil, *labels) {|rep| ...} -&gt; bool</code><span class="permalink">[<a href="../method/-benchmark/m/benchmark.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Benchmark.html#method-c-benchmark">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-benchmark=3a=3a-report.html">Benchmark::Report</a> オブジェクトを生成し、それを引数として与えられたブロックを実行します。
+</p>
+<p>
+基本的には以下のように使います。
+ブロックが <a href="../class/-benchmark=3a=3a-tms.html">Benchmark::Tms</a> オブジェクトの配列を返した場合は、
+それらの数値も追加の行に表示されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] caption:</dt>
+<dd>
+レポートの一行目に表示する文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] label_width:</dt>
+<dd>
+ラベルの幅を指定します。
+</dd>
+<dt class='method-param'>[PARAM] fmtstr:</dt>
+<dd>
+フォーマット文字列を指定します。
+この引数を省略すると <a href="../method/-benchmark/c/-f-o-r-m-a-t.html">Benchmark::FORMAT</a> が使用されます。
+</dd>
+<dt class='method-param'>[PARAM] labels:</dt>
+<dd>
+ブロックが <a href="../class/-benchmark=3a=3a-tms.html">Benchmark::Tms</a> オブジェクトの配列を返す場合に指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+STDIN.sync の値を返すだけなので返り値に意味はありません。
+</dd>
+</dl>
+<h5 >フォーマット文字列</h5>
+<p>
+フォーマット文字列として以下が使用できます。
+</p>
+<dl>
+<dt>%u</dt>
+<dd>
+<p>
+user CPU time で置き換えられます。<a href="../method/-benchmark=3a=3a-tms/i/utime.html">Benchmark::Tms#utime</a>
+</p>
+</dd>
+<dt>%y</dt>
+<dd>
+<p>
+system CPU time で置き換えられます(Mnemonic: y of &quot;s*y*stem&quot;)。<a href="../method/-benchmark=3a=3a-tms/i/stime.html">Benchmark::Tms#stime</a>
+</p>
+</dd>
+<dt>%U</dt>
+<dd>
+<p>
+子プロセスの user CPU time で置き換えられます。<a href="../method/-benchmark=3a=3a-tms/i/cutime.html">Benchmark::Tms#cutime</a>
+</p>
+</dd>
+<dt>%Y</dt>
+<dd>
+<p>
+子プロセスの system CPU time で置き換えられます。<a href="../method/-benchmark=3a=3a-tms/i/cstime.html">Benchmark::Tms#cstime</a>
+</p>
+</dd>
+<dt>%t</dt>
+<dd>
+<p>
+total CPU time で置き換えられます。<a href="../method/-benchmark=3a=3a-tms/i/total.html">Benchmark::Tms#total</a>
+</p>
+</dd>
+<dt>%r</dt>
+<dd>
+<p>
+実経過時間で置き換えられます。<a href="../method/-benchmark=3a=3a-tms/i/real.html">Benchmark::Tms#real</a>
+</p>
+</dd>
+<dt>%n</dt>
+<dd>
+<p>
+ラベルで置き換えられます(Mnemonic: n of &quot;*n*ame&quot;)。<a href="../method/-benchmark=3a=3a-tms/i/label.html">Benchmark::Tms#label</a>
+</p>
+</dd>
+</dl>
+<h5 >例</h5>
+<pre>
+require 'benchmark'
+
+n = 50000
+
+# これは
+#    Benchmark.bm(7, &quot;&gt;total:&quot;, &quot;&gt;avg:&quot;) do |x| ... end
+# と同じ
+Benchmark.benchmark(&quot; &quot;*7 + Benchmark::CAPTION,
+                    7,
+                    Benchmark::FMTSTR,
+                    &quot;&gt;total:&quot;,
+                    &quot;&gt;avg:&quot;) do |x|
+
+  tf = x.report(&quot;for:&quot;)   { for i in 1..n; a = &quot;1&quot;; end }
+  tt = x.report(&quot;times:&quot;) { n.times do   ; a = &quot;1&quot;; end }
+  tu = x.report(&quot;upto:&quot;)  { 1.upto(n) do ; a = &quot;1&quot;; end }
+
+  [tf+tt+tu, (tf+tt+tu)/3]
+end
+
+#=&gt;
+
+             user     system      total        real
+for:     1.016667   0.016667   1.033333 (  0.485749)
+times:   1.450000   0.016667   1.466667 (  0.681367)
+upto:    1.533333   0.000000   1.533333 (  0.722166)
+&gt;total:  4.000000   0.033333   4.033333 (  1.889282)
+&gt;avg:    1.333333   0.011111   1.344444 (  0.629761)
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="M_BM"><code>bm(label_width = 0, *labels) {|rep| ... } -&gt; bool</code><span class="permalink">[<a href="../method/-benchmark/m/bm.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Benchmark.html#method-c-bm">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-benchmark/m/benchmark.html">Benchmark.#benchmark</a> メソッドの引数を簡略化したものです。
+</p>
+<p>
+<a href="../method/-benchmark/m/benchmark.html">Benchmark.#benchmark</a> メソッドと同様に働きます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] label_width:</dt>
+<dd>
+ラベルの幅を指定します。
+</dd>
+<dt class='method-param'>[PARAM] labels:</dt>
+<dd>
+ブロックが <a href="../class/-benchmark=3a=3a-tms.html">Benchmark::Tms</a> オブジェクトの配列を返す場合に指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+STDIN.sync の値を返すだけなので返り値に意味はありません。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'benchmark'
+
+n = 50000
+Benchmark.bm do |x|
+  x.report { for i in 1..n; a = &quot;1&quot;; end }
+  x.report { n.times do   ; a = &quot;1&quot;; end }
+  x.report { 1.upto(n) do ; a = &quot;1&quot;; end }
+end
+
+#=&gt;
+
+      user     system      total        real
+  1.033333   0.016667   1.016667 (  0.492106)
+  1.483333   0.000000   1.483333 (  0.694605)
+  1.516667   0.000000   1.516667 (  0.711077)
+</pre>
+<p>
+以下のようにも書けます。
+</p>
+<pre>
+require 'benchmark'
+
+n = 50000
+Benchmark.bm(7) do |x|
+  x.report(&quot;for:&quot;)   { for i in 1..n; a = &quot;1&quot;; end }
+  x.report(&quot;times:&quot;) { n.times do   ; a = &quot;1&quot;; end }
+  x.report(&quot;upto:&quot;)  { 1.upto(n) do ; a = &quot;1&quot;; end }
+end
+
+#=&gt;
+             user     system      total        real
+for:     1.050000   0.000000   1.050000 (  0.503462)
+times:   1.533333   0.016667   1.550000 (  0.735473)
+upto:    1.500000   0.016667   1.516667 (  0.711239)
+</pre>
+<p>
+集計を付けた場合
+</p>
+<pre>
+require 'benchmark'
+
+n = 50000
+Benchmark.bm(7) do |x|
+  tf = x.report(&quot;for:&quot;)   { for i in 1..n; a = &quot;1&quot;; end }
+  tt = x.report(&quot;times:&quot;) { n.times do   ; a = &quot;1&quot;; end }
+  tu = x.report(&quot;upto:&quot;)  { 1.upto(n) do ; a = &quot;1&quot;; end }
+  [tf + tt + tu, (tf + tt + tu) / 3]
+end
+
+#=&gt;
+             user     system      total        real
+for:     0.040000   0.000000   0.040000 (  0.141902)
+times:   0.010000   0.000000   0.010000 (  0.043335)
+upto:    0.020000   0.000000   0.020000 (  0.089806)
+&gt;total:  0.070000   0.000000   0.070000 (  0.275044)
+&gt;avg:    0.023333   0.000000   0.023333 (  0.091681)
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-benchmark/m/benchmark.html">Benchmark.#benchmark</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_BMBM"><code>bmbm(width = 0) {|job| ... } -&gt; [Benchmark::Tms]</code><span class="permalink">[<a href="../method/-benchmark/m/bmbm.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Benchmark.html#method-c-bmbm">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-benchmark=3a=3a-job.html">Benchmark::Job</a> オブジェクトを生成して、それを引数として与えられたブロックを
+実行します。
+</p>
+<p>
+ベンチマークの結果は GC の影響によって歪められてしまうことがあります。
+このメソッドは与えられたブロックを二度実行する事によってこの影響を最小化します。
+一回目は実行環境を安定化するためにリハーサルとして実行します。二回目は本番として
+実行します。
+</p>
+<p>
+二回目のブロック実行の前に <a href="../method/-g-c/s/start.html">GC.start</a> を実行しますが、この実行時間は計測には
+含まれません。しかし、実際にはこのメソッドを使用しても、GC などの影響を分離する
+ことは保証されません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] width:</dt>
+<dd>
+ラベルの幅を指定します。
+</dd>
+</dl>
+<pre>
+require 'benchmark'
+
+array = (1..1000000).map { rand }
+
+Benchmark.bmbm do |x|
+  x.report(&quot;sort!&quot;) { array.dup.sort! }
+  x.report(&quot;sort&quot;)  { array.dup.sort  }
+end
+
+#=&gt;
+
+Rehearsal -----------------------------------------
+sort!  11.928000   0.010000  11.938000 ( 12.756000)
+sort   13.048000   0.020000  13.068000 ( 13.857000)
+------------------------------- total: 25.006000sec
+
+            user     system      total        real
+sort!  12.959000   0.010000  12.969000 ( 13.793000)
+sort   12.007000   0.000000  12.007000 ( 12.791000)
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="M_MEASURE"><code>measure(label = &quot;&quot;) { ... } -&gt; Benchmark::Tms</code><span class="permalink">[<a href="../method/-benchmark/m/measure.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Benchmark.html#method-c-measure">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+与えられたブロックを実行して、経過した時間を <a href="../method/-process/m/times.html">Process.#times</a> で計り、
+<a href="../class/-benchmark=3a=3a-tms.html">Benchmark::Tms</a> オブジェクトを生成して返します。
+</p>
+<p>
+Benchmark::Tms オブジェクトには to_s が定義されているので、
+基本的には以下のように使います。
+</p>
+<pre>
+require 'benchmark'
+
+puts Benchmark::CAPTION
+puts Benchmark.measure { &quot;a&quot;*1_000_000 }
+
+#=&gt;
+
+    user     system      total        real
+1.166667   0.050000   1.216667 (  0.571355)
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="M_REALTIME"><code>realtime { ... } -&gt; Float</code><span class="permalink">[<a href="../method/-benchmark/m/realtime.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Benchmark.html#method-c-realtime">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+与えられたブロックを評価して実行時間を計測して返します。
+</p>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-B-E-N-C-H-M-A-R-K_-V-E-R-S-I-O-N"><code>BENCHMARK_VERSION -&gt; String</code><span class="permalink">[<a href="../method/-benchmark/c/-b-e-n-c-h-m-a-r-k_-v-e-r-s-i-o-n.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Benchmark.html#method-c-BENCHMARK_VERSION">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+benchmark ライブラリのバージョンを表します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-A-P-T-I-O-N"><code>CAPTION -&gt; String</code><span class="permalink">[<a href="../method/-benchmark/c/-c-a-p-t-i-o-n.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Benchmark.html#method-c-CAPTION">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-benchmark/m/bm.html">Benchmark.#bm</a> の内部などで使用されます。
+</p>
+<p>
+実際の定義は <a href="../method/-benchmark=3a=3a-tms/c/-c-a-p-t-i-o-n.html">Benchmark::Tms::CAPTION</a> でされています。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-benchmark=3a=3a-tms/c/-c-a-p-t-i-o-n.html">Benchmark::Tms::CAPTION</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-F-O-R-M-A-T"><code>FORMAT -&gt; String</code><span class="permalink">[<a href="../method/-benchmark/c/-f-o-r-m-a-t.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Benchmark.html#method-c-FORMAT">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-benchmark/m/benchmark.html">Benchmark.#benchmark</a> の第三引数のデフォルト値。
+</p>
+<dl>
+<dt>%u</dt>
+<dd>
+<p>
+user CPU time で置き換えられます。<a href="../method/-benchmark=3a=3a-tms/i/utime.html">Benchmark::Tms#utime</a>
+</p>
+</dd>
+<dt>%y</dt>
+<dd>
+<p>
+system CPU time で置き換えられます(Mnemonic: y of &quot;s*y*stem&quot;)。<a href="../method/-benchmark=3a=3a-tms/i/stime.html">Benchmark::Tms#stime</a>
+</p>
+</dd>
+<dt>%U</dt>
+<dd>
+<p>
+子プロセスの user CPU time で置き換えられます。<a href="../method/-benchmark=3a=3a-tms/i/cutime.html">Benchmark::Tms#cutime</a>
+</p>
+</dd>
+<dt>%Y</dt>
+<dd>
+<p>
+子プロセスの system CPU time で置き換えられます。<a href="../method/-benchmark=3a=3a-tms/i/cstime.html">Benchmark::Tms#cstime</a>
+</p>
+</dd>
+<dt>%t</dt>
+<dd>
+<p>
+total CPU time で置き換えられます。<a href="../method/-benchmark=3a=3a-tms/i/total.html">Benchmark::Tms#total</a>
+</p>
+</dd>
+<dt>%r</dt>
+<dd>
+<p>
+実経過時間で置き換えられます。<a href="../method/-benchmark=3a=3a-tms/i/real.html">Benchmark::Tms#real</a>
+</p>
+</dd>
+<dt>%n</dt>
+<dd>
+<p>
+ラベルで置き換えられます(Mnemonic: n of &quot;*n*ame&quot;)。<a href="../method/-benchmark=3a=3a-tms/i/label.html">Benchmark::Tms#label</a>
+</p>
+</dd>
+</dl>
+<p>
+上記のフォーマット文字列を使用しています。
+この定数の内容は以下の通りです。
+</p>
+<pre>
+&quot;%10.6u %10.6y %10.6t %10.6r\n&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-benchmark/m/benchmark.html">Benchmark.#benchmark</a>, <a href="../method/-benchmark=3a=3a-tms/c/-f-o-r-m-a-t.html">Benchmark::Tms::FORMAT</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

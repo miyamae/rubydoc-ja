@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>singleton method Regexp.union (Ruby 2.2.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.2.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-regexp.html">Regexpクラス</a>
+&gt; union
+
+</p>
+
+
+<h1>singleton method Regexp.union</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_UNION"><code>union(*pattern) -&gt; Regexp</code><span class="permalink">[<a href="../../../method/-regexp/s/union.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Regexp.html#method-c-union">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数として与えた pattern を選択 | で連結し、Regexp として返します。
+結果の Regexp は与えた pattern のどれかにマッチする場合にマッチするものになります。
+</p>
+<pre>
+p Regexp.union(/a/, /b/, /c/) #=&gt; /(?-mix:a)|(?-mix:b)|(?-mix:c)/
+</pre>
+<p>
+引数を一つだけ与える場合は、<a href="../../../class/-array.html">Array</a> を与えても Regexp を生成します。
+つまり、以下のように書くことができます。
+</p>
+<pre>
+arr = [/a/, /b/, /c/]
+p Regexp.union(arr)  #=&gt; /(?-mix:a)|(?-mix:b)|(?-mix:c)/
+# 1.8.7 より前は、以下のように書く必要があった
+p Regexp.union(*arr) #=&gt; /(?-mix:a)|(?-mix:b)|(?-mix:c)/
+</pre>
+<p>
+pattern は Regexp または String で与えます。
+String で与えた場合、それ自身と等しい文字列にマッチするものと解釈され、
+エスケープされて結果の Regexp に組み込まれます。
+</p>
+<pre>
+p Regexp.union(&quot;a&quot;, &quot;?&quot;, &quot;b&quot;) # =&gt; /a|\?|b/
+p Regexp.union(/a/, &quot;*&quot;) # =&gt; /(?-mix:a)|\*/
+</pre>
+<p>
+引数をひとつも与えなかった場合、決してマッチしない Regexp を返します。
+</p>
+<pre>
+p Regexp.union() # =&gt; /(?!)/
+</pre>
+<p>
+結果の Regexp が対応する文字コードは引数として与えた Regexp が扱う文字コードに
+一致します。
+固定コードに対してコンパイルされている Regexp を複数与える場合、
+それらのコードは一致していなければなりません。
+異なる固定コードに対してコンパイルされている Regexp が存在する場合、
+<a href="../../../class/-argument-error.html">ArgumentError</a> が発生します。
+</p>
+<pre>
+p Regexp.union(/a/e, /b/e) # =&gt; /(?-mix:a)|(?-mix:b)/e
+p Regexp.union(/a/e, /b/s) # =&gt; ArgumentError
+</pre>
+<p>
+コードが固定されている Regexp とコードが固定されていない Regexp を混ぜた場合、
+結果の Regexp は固定されているコードに対応するものになります。
+</p>
+<pre>
+p Regexp.union(/a/e, /b/) # =&gt; /(?-mix:a)|(?-mix:b)/e
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+| で連結したい正規表現を指定します
+</dd>
+</dl>
+<pre>
+# オプションは合成されない
+p Regexp.union(/foo/i, /bar/x, /hoge/m) #=&gt; /(?i-mx:foo)|(?x-mi:bar)|(?m-ix:hoge)/
+
+# 文字列そのものにマッチする
+rep1 = [ &quot;foo&quot;, &quot;bar&quot;, &quot;hoge&quot;]
+p Regexp.union(*rep1) #=&gt; /foo|bar|hoge/
+p Regexp.union(rep1)  #=&gt; /foo|bar|hoge/
+
+# 下記の場合オプションがつくのは最初だけ
+rep2 = [ /foo/x, &quot;bar&quot;, &quot;hoge&quot;]
+p Regexp.union(*rep2) #=&gt; /(?x-mi:foo)|bar|hoge/
+p Regexp.union(rep2)  #=&gt; /(?x-mi:foo)|bar|hoge/
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

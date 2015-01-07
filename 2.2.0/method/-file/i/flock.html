@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method File#flock (Ruby 2.2.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.2.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-file.html">Fileクラス</a>
+&gt; flock
+
+</p>
+
+
+<h1>instance method File#flock</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_FLOCK"><code>flock(operation) -&gt; 0 | false</code><span class="permalink">[<a href="../../../method/-file/i/flock.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/File.html#method-i-flock">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ファイルをロックします。
+</p>
+<p>
+ロックを取得するまでブロックされます。
+ロックの取得に成功した場合は 0 を返します。
+File::LOCK_NB (ノンブロッキング) を指定すると、本来ならブロックされる場合に
+ブロックされずに false を返すようになります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] operation:</dt>
+<dd>
+ロックに対する操作の種類を示す定数を指定します。
+どのような定数が利用可能かは以下を参照して下さい。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が close されている場合に発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+operation に不正な整数を与えた場合などに発生します。
+</dd>
+</dl>
+<p>
+引数 operation に有効な定数は以下の通りです。定数は <a href="../../../class/-file=3a=3a-constants.html">File::Constants</a> で定義されていますが、
+<a href="../../../class/-file.html">File</a> クラスの親クラスの IO が <a href="../../../class/-file=3a=3a-constants.html">File::Constants</a> をインクルードしているので、
+これらの定数は File::LOCK_SH などとして参照可能です。
+</p>
+<dl>
+<dt>LOCK_SH</dt>
+<dd>
+<p>
+共有ロック。複数のプロセスが同時にロックを共有できます。
+システムによってはロック対象のファイルは読み込みモード
+(&quot;r&quot;, &quot;r+&quot; など)でオープンされている必要があります。そのよ
+うなシステムでは読み込み可能でないファイルに対するロックは例外
+<a href="../../../class/-errno=3a=3a-e-x-x-x.html">Errno::EXXX</a> が発生するかもしれません。
+</p>
+</dd>
+<dt>LOCK_EX</dt>
+<dd>
+<p>
+排他ロック。同時にはただひとつのプロセスだけがロックを保持できます。
+システムによってはロック対象のファイルは書き込みモード
+(&quot;w&quot;, &quot;r+&quot; など)でオープンされている必要があります。そのよ
+うなシステムでは書き込み可能でないファイルに対するロックは例外
+<a href="../../../class/-errno=3a=3a-e-x-x-x.html">Errno::EXXX</a> が発生するかもしれません。
+</p>
+</dd>
+<dt>LOCK_UN</dt>
+<dd>
+<p>
+アンロック。
+この明示的なアンロック以外に、ファイルのcloseやRubyインタプリタの終了
+(プロセスの終了)によっても自動的にロック状態は解除されます。
+</p>
+</dd>
+<dt>LOCK_NB</dt>
+<dd>
+<p>
+ノンブロックモード。
+File::LOCK_SH | File::LOCK_NB のように他の指定と or することで指
+定します。この指定がない場合、ブロックされる条件での flock
+の呼び出しはロックが解除されるまでブロックされます。
+</p>
+</dd>
+</dl>
+<p>
+File::LOCK_NB の指定がある場合、ブロックされる条件での
+flock は false を返します。
+</p>
+<p>
+「ブロックされる条件」とは以下のいずれかです。
+</p>
+<ul>
+<li>他のプロセスが排他ロックをすでに行っている場合にロックを行う</li>
+<li>他のプロセスがロックしている状態で排他ロックを行う</li>
+</ul>
+<p>
+例1:
+</p>
+<pre>
+# 書き込みロック(write lock)を使用してカウンタを更新。
+# ロック前にファイルを切り詰めてしまうので、
+# モードに&quot;w&quot;を使ってはいけません。
+File.open(&quot;counter&quot;, File::RDWR|File::CREAT, 0644) {|f|
+  f.flock(File::LOCK_EX)
+  value = f.read.to_i + 1
+  f.rewind
+  f.write(&quot;#{value}\n&quot;)
+  f.flush
+  f.truncate(f.pos)
+}
+
+# 読み込みロック(read lock)を使用してカウンタを読み込み。
+File.open(&quot;counter&quot;, &quot;r&quot;) {|f|
+  f.flock(File::LOCK_SH)
+  p f.read
+}
+</pre>
+<p>
+例2:
+</p>
+<pre>
+f = File.open(&quot;/tmp/foo&quot;, &quot;w&quot;)
+
+f.flock(File::LOCK_EX)
+puts &quot;locked by process1&quot;
+
+fork {
+  f = File.open(&quot;/tmp/foo&quot;, &quot;r&quot;)
+  f.flock(File::LOCK_SH)
+  puts &quot;locked by process2&quot;
+  sleep 5
+  puts &quot;unlocked by process2&quot;
+}
+
+sleep 5
+
+f.flock(File::LOCK_UN)
+puts &quot;unlocked by process1&quot;
+sleep 1 # &lt;- 子プロセスが確実に先にロックするための sleep
+f.flock(File::LOCK_EX)
+puts &quot;re-locked by process1&quot;
+
+=&gt; locked by process1
+   unlocked by process1
+   locked by process2
+   unlocked by process2
+   re-locked by process1
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

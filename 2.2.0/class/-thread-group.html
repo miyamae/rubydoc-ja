@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class ThreadGroup (Ruby 2.2.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.2.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; ThreadGroupクラス
+</p>
+
+
+<h1>class ThreadGroup</h1>
+<p>
+
+
+クラスの継承リスト: ThreadGroup
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+スレッドグループを表すクラスです。グループに属する <a href="../class/-thread.html">Thread</a> をまとめて
+操作することができます。
+</p>
+<p>
+<a href="../class/-thread.html">Thread</a> は必ずいずれかひとつのスレッドグループに属します。
+生成されたばかりの Thread は、生成した Thread のグループを引き継ぎます。
+メインスレッドはデフォルトでは <a href="../method/-thread-group/c/-default.html">ThreadGroup::Default</a> に属します。
+</p>
+<dl>
+<dt>例:</dt>
+<dd>
+</dd>
+</dl>
+<p>
+生成したすべてのThreadが終了するのを待つ
+</p>
+<pre>
+5.times {
+   Thread.new { sleep 1; puts &quot;#{Thread.current} finished&quot; }
+}
+
+(ThreadGroup::Default.list - [Thread.current]).each {|th| th.join}
+
+puts &quot;all threads finished&quot;
+</pre>
+<p>
+対象の Thread が Thread を起こす可能性がある場合
+(<a href="../method/-thread/s/exclusive.html">Thread.exclusive</a>参照)
+</p>
+<pre>
+Thread.exclusive do
+  (ThreadGroup::Default.list - [Thread.current]).each {|th| th.join}
+end
+</pre>
+<h2 >ThreadGroup#freeze と ThreadGroup#enclose の違い</h2>
+<p>
+どちらのメソッドでも <a href="../method/-thread-group/i/add.html">ThreadGroup#add</a> によるスレッドの追加ができなくなる点は同じですが、
+<a href="../method/-thread/s/new.html">Thread.new</a> に関して違いがあります。現在のスレッドが属する ThreadGroup が freeze
+されている場合、Thread.new{ ... } はエラーになります。ThreadGroup が enclose されているだけでは、
+Thread.new{ ... } はエラーになりません。生成されたスレッドは従来通り 親スレッドの ThreadGroup に属します。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_ADD">add</a>
+
+<a href="#I_ENCLOSE">enclose</a>
+
+<a href="#I_ENCLOSED--3F">enclosed?</a>
+
+<a href="#I_LIST">list</a>
+
+</dd>
+
+<dt>定数</dt>
+<dd>
+
+<a href="#C_-DEFAULT">Default</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new -&gt; ThreadGroup</code><span class="permalink">[<a href="../method/-thread-group/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/ThreadGroup.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+新たな ThreadGroup を生成して返します。
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_ADD"><code>add(thread) -&gt; self</code><span class="permalink">[<a href="../method/-thread-group/i/add.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/ThreadGroup.html#method-i-add">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+スレッド thread が属するグループを自身に変更します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] thread:</dt>
+<dd>
+自身に加えたいスレッドを指定します。
+</dd>
+<dt>[EXCEPTION] ThreadError:</dt>
+<dd>
+自身が freeze されているか enclose されている場合に、発生します。また引数 thread が属する ThreadGroup が freeze されているか enclose されている場合にも発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_ENCLOSE"><code>enclose -&gt; self</code><span class="permalink">[<a href="../method/-thread-group/i/enclose.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/ThreadGroup.html#method-i-enclose">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身への <a href="../method/-thread-group/i/add.html">ThreadGroup#add</a> によるスレッドの追加・削除を禁止します。
+enclose された ThreadGroup に追加や削除を行うと例外 <a href="../class/-thread-error.html">ThreadError</a> が発生します。
+</p>
+<p>
+ただし、<a href="../method/-thread/s/new.html">Thread.new</a> によるスレッドの追加は禁止されません。enclose されたスレッドグループ A に
+属するスレッドが新たにスレッドを生成した場合、生成されたスレッドはスレッドグループ A に属します。
+</p>
+<p>
+追加の例:
+</p>
+<pre>
+thg = ThreadGroup.new.enclose
+thg.add Thread.new {}
+
+=&gt; -:2:in `add': can't move to the enclosed thread group (ThreadError)
+</pre>
+<p>
+削除の例:
+</p>
+<pre>
+thg1 = ThreadGroup.new
+thg2 = ThreadGroup.new
+
+th = Thread.new {sleep 1}
+
+thg1.add th
+thg1.enclose
+thg2.add th
+
+=&gt; -:8:in `add': can't move from the enclosed thread group (ThreadError)
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ENCLOSED--3F"><code>enclosed? -&gt; bool</code><span class="permalink">[<a href="../method/-thread-group/i/enclosed=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/ThreadGroup.html#method-i-enclosed-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身が enclose されているなら true を返します。そうでないなら false を返します。デフォルトは false です。
+</p>
+<p>
+freeze された ThreadGroup には Thread の追加/削除ができませんが、enclosed? は false を返します。
+</p>
+<pre>
+thg = ThreadGroup.new
+p thg.enclosed?         # =&gt; false
+thg.enclose
+p thg.enclosed?         # =&gt; true
+
+thg = ThreadGroup.new
+p thg.enclosed?         # =&gt; false
+thg.freeze
+p thg.enclosed?         # =&gt; false
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-thread-group/i/enclose.html">ThreadGroup#enclose</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LIST"><code>list -&gt; [Thread]</code><span class="permalink">[<a href="../method/-thread-group/i/list.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/ThreadGroup.html#method-i-list">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self に属するスレッドの配列を返します。
+version 1.8 では、aborting 状態であるスレッド
+も要素に含まれます。つまり「生きている」スレッドの配列を返します。
+</p>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-DEFAULT"><code>Default -&gt; ThreadGroup</code><span class="permalink">[<a href="../method/-thread-group/c/-default.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/ThreadGroup.html#method-c-Default">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+デフォルトで定義されている <a href="../class/-thread-group.html">ThreadGroup</a> です。メインスレッド
+は最初このグループに属します。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -36,6 +36,11 @@ Windows での <a href="../../../method/-process/s/fork.html">Process.fork</a> �
 ような <a href="../../../class/-not-implemented-error.html">NotImplementedError</a> が発生する場合は false を返します。
 </p>
 <p>
+※ NotImplementedError が発生する場合に false を返すのは
+Rubyの組み込みライブラリや標準ライブラリなど、C言語で実装されているメソッドのみです。
+Rubyで実装されたメソッドで NotImplementedError が発生する場合は true を返します。
+</p>
+<p>
 メソッドが定義されていない場合は、<a href="../../../method/-object/i/respond_to_missing=3f.html">Object#respond_to_missing?</a> を呼
 び出してその結果を返します。
 </p>
@@ -72,6 +77,45 @@ list.each{|it| puts it.hello if it.respond_to?(:hello)}
 list.each{|it| it.instance_eval(&quot;puts hello if it.respond_to?(:hello, true)&quot;)}
 #=&gt; Bonjour
 #   Guten Tag
+
+module Template
+  def main
+    start
+    template_method
+    finish
+  end
+
+  def start
+    puts &quot;start&quot;
+  end
+
+  def template_method
+    raise NotImplementedError.new
+  end
+
+  def finish
+    puts &quot;finish&quot;
+  end
+end
+
+class ImplTemplateMethod
+  include Template
+  def template_method
+    &quot;implement template_method&quot;
+  end
+end
+
+class NotImplTemplateMethod
+  include Template
+
+  # not implement template_method
+end
+
+puts ImplTemplateMethod.new.respond_to?(:template_method) # =&gt; true
+# NotImplementedError が発生しているが、Rubyによる実装部のため true を返却
+puts NotImplTemplateMethod.new.respond_to?(:template_method) # =&gt; true
+# GNU/Linux で実行。C言語による実装部のため false を返却
+puts File.respond_to?(:lchmod)         # =&gt; false
 </pre>
 <p>
 [SEE_ALSO] <a href="../../../method/-module/i/method_defined=3f.html">Module#method_defined?</a>

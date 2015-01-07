@@ -39,8 +39,7 @@ Rubyではオブジェクトは「汚染されている」とみなされるこ�
 </p>
 <p>
 もうひとつは、信用しているオブジェクト(汚染されていないオブジェクト)を
-信用できないプログラムから守るという使い方です。セーフレベル4で汚染されて
-いないオブジェクトへの操作が大幅に制限されるのはこの事を意図しています。
+信用できないプログラムから守るという使い方です。
 </p>
 <p>
 オブジェクトの汚染に関連するメソッド
@@ -152,7 +151,7 @@ CGI等でユーザからの入力を処理するのに適しています。
 <ul>
 <li>ファイルテスト演算子の使用、ファイルの更新時刻比較</li>
 <li>外部コマンド実行 (<a href="../method/-kernel/m/system.html">Kernel.#system</a>, <a href="../method/-kernel/m/exec.html">Kernel.#exec</a>, <a href="../method/-kernel/m/=60.html">Kernel.#`</a>, <a href="../method/-kernel/m/spawn.html">Kernel.#spawn</a> など)</li>
-<li><a href="../method/-kernel/m/eval.html">Kernel.#eval</a> (<a href="#level4">レベル 4</a>の説明も参照)</li>
+<li><a href="../method/-kernel/m/eval.html">Kernel.#eval</a></li>
 <li>トップレベルへの <a href="../method/-kernel/m/load.html">Kernel.#load</a> (第二引数を指定してラップすれば実行可能)</li>
 <li><a href="../method/-kernel/m/require.html">Kernel.#require</a></li>
 <li><a href="../method/-kernel/m/trap.html">Kernel.#trap</a></li>
@@ -183,8 +182,7 @@ CGI等でユーザからの入力を処理するのに適しています。
 </ul>
 <h3 >レベル 3</h3>
 <p>
-生成される全てのオブジェクトが汚染されます。レベル4でプログラムを実行す
-る環境を作り上げるのに適しています。
+生成される全てのオブジェクトが汚染されます。
 </p>
 <h4 >汚染されるオブジェクト</h4>
 <ul>
@@ -199,42 +197,8 @@ CGI等でユーザからの入力を処理するのに適しています。
 </ul>
 <h3 id='level4'>レベル 4</h3>
 <p>
-信用することのできないプログラムを実行するためのレベルです。
+廃止されました。
 </p>
-<p>
-レベル4は信頼できないプログラムによる危険な操作をほぼ全て検出できますが、
-完全な安全性は保証されません。
-</p>
-<p>
-このレベルではレベル3では禁止されている「汚染された文字列のeval」が許可
-されています。(<a href="../method/-kernel/m/eval.html">Kernel.#eval</a> で実行すると危険な操作は全て禁止されているからです。)
-</p>
-<h4 >汚染されるオブジェクト</h4>
-<ul>
-<li>レベル3と同様</li>
-</ul>
-<h4 >禁止される操作</h4>
-<p>
-レベル3の制限(上記のとおりevalは除く)に加え、以下の操作が禁止されます。
-</p>
-<ul>
-<li><a href="../method/-object/i/taint.html">Object#taint</a></li>
-<li>トップレベルの定義の変更(<a href="../method/-kernel/m/autoload.html">Kernel.#autoload</a>, <a href="../method/-kernel/m/load.html">Kernel.#load</a>, <a href="../method/-module/i/include.html">Module#include</a>)</li>
-<li>既存のメソッドの再定義</li>
-<li><a href="../class/-object.html">Object</a> クラスの定義の変更</li>
-<li>汚染されていないクラスやモジュールの定義の変更およびクラス変数の変更</li>
-<li>汚染されていないオブジェクトの状態の変更</li>
-<li>グローバル変数の変更</li>
-<li>汚染されていない <a href="../class/-i-o.html">IO</a> や <a href="../class/-file.html">File</a> を使用する処理</li>
-<li><a href="../class/-i-o.html">IO</a> への出力</li>
-<li>プログラムの終了(<a href="../method/-kernel/m/exit.html">Kernel.#exit</a>, <a href="../method/-kernel/m/abort.html">Kernel.#abort</a>)
-(なお out of memory でも fatal にならない)</li>
-<li>他のスレッドに影響が出る <a href="../class/-thread.html">Thread</a> クラスの操作および他のスレッドの <a href="../method/-thread/i/=5b=5d.html">Thread#[]</a></li>
-<li><a href="../method/-object-space/m/_id2ref.html">ObjectSpace.#_id2ref</a></li>
-<li><a href="../method/-object-space/m/each_object.html">ObjectSpace.#each_object</a></li>
-<li>環境変数の変更</li>
-<li><a href="../method/-kernel/m/srand.html">Kernel.#srand</a></li>
-</ul>
 <h2 >セーフレベルに関するその他の詳細</h2>
 <ul>
 <li>requireは$SAFE = 0で実行される</li>
@@ -242,7 +206,6 @@ CGI等でユーザからの入力を処理するのに適しています。
 </ul>
 <pre>
       * 環境変数 RUBYLIB を $: に加えない
-      * カレントディレクトリを $: に加えない
       * 環境変数 RUBYOPT を処理しない
       * 以下のスイッチを使用できない
         -s -S -e -r -i -I -x
@@ -254,10 +217,8 @@ CGI等でユーザからの入力を処理するのに適しています。
 <li>setuid, setgid されたスクリプトは $SAFE = 1 以上で実行される。</li>
 <li><a href="../class/-proc.html">Proc</a> はその時点でのセーフレベルを記憶する。
 その <a href="../class/-proc.html">Proc</a> オブジェクトが call されると、記憶していたセーフレベルで実行される。</li>
-<li>汚染された <a href="../class/-method.html">Method</a> オブジェクトが call されるとレベル4で実行される。</li>
 <li>汚染された文字列を第二引数に指定して <a href="../method/-kernel/m/trap.html">Kernel.#trap</a>/<a href="../method/-kernel/m/trace_var.html">Kernel.#trace_var</a> を
 実行するとその時点で例外 <a href="../class/-security-error.html">SecurityError</a> が発生する。</li>
-<li>レベル4以上では out of memory でも <a href="../class/fatal.html">fatal</a> にならない。</li>
 <li>実装の都合上 <a href="../class/-fixnum.html">Fixnum</a>, <a href="../class/-symbol.html">Symbol</a>, true, false, nil は汚染されない。
 なお <a href="../class/-bignum.html">Bignum</a>, <a href="../class/-float.html">Float</a> は汚染されることは注意が必要。</li>
 </ul>
@@ -280,8 +241,9 @@ def safe(level)
   result
 end
 
-safe(4) { puts &quot;hello&quot; }    # $SAFEなので例外
-puts &quot;world&quot;                # 外側は影響を受けない
+lib = &quot;insecure_library&quot;.taint # 外部から受け取った文字列(仮)
+safe(1) { require lib }        # $SAFE が 1 なので例外
+require lib                    # 外側は影響を受けない
 </pre>
 <h2 >拡張ライブラリでの扱い</h2>
 <ul>

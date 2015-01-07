@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method Object#singleton_methods (Ruby 2.2.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.2.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-object.html">Objectクラス</a>
+&gt; singleton_methods
+
+</p>
+
+
+<h1>instance method Object#singleton_methods</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_SINGLETON_METHODS"><code>singleton_methods(inherited_too = true) -&gt; [Symbol]</code><span class="permalink">[<a href="../../../method/-object/i/singleton_methods.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Object.html#method-i-singleton_methods">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+そのオブジェクトに対して定義されている特異メソッド名
+(public あるいは protected メソッド) の一覧を返します。
+</p>
+<p>
+inherited_too が真のときは継承した特異メソッドを含みます。
+継承した特異メソッドとは <a href="../../../method/-object/i/extend.html">Object#extend</a> によって追加された特異メソッドや、
+self がクラスの場合はスーパークラスのクラスメソッド(<a href="../../../class/-class.html">Class</a>のインスタンスの特異メソッド)などです。
+</p>
+<p>
+singleton_methods(false) は、<a href="../../../method/-object/i/methods.html">Object#methods</a>(false) と同じです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] inherited_too:</dt>
+<dd>
+継承した特異メソッドを含める場合は真を、
+そうでない場合は偽を指定します。
+</dd>
+</dl>
+<pre>
+#例1:
+
+Parent = Class.new
+
+class &lt;&lt;Parent
+  private;   def private_class_parent() end
+  protected; def protected_class_parent() end
+  public;    def public_class_parent() end
+end
+
+Foo = Class.new(Parent)
+
+class &lt;&lt;Foo
+  private;   def private_class_foo() end
+  protected; def protected_class_foo() end
+  public;    def public_class_foo() end
+end
+
+module Bar
+  private;   def private_bar()   end
+  protected; def protected_bar() end
+  public;    def public_bar()    end
+end
+
+obj = Foo.new
+class &lt;&lt;obj
+  include Bar
+  private;   def private_self()   end
+  protected; def protected_self() end
+  public;    def public_self()    end
+end
+
+# あるオブジェクトの特異メソッドの一覧を得る。
+p obj.singleton_methods(false)
+p obj.methods(false)
+p Foo.singleton_methods(false)
+
+#実行結果
+
+[:protected_self, :public_self]
+[:protected_self, :public_self]
+[:protected_class_foo, :public_class_foo]
+
+
+#例2:
+
+# あるオブジェクトの特異メソッドの一覧を得る。
+# 親クラスのクラスメソッドも含まれるよう true を指定したが、
+# Object のクラスメソッドは一覧から排除している。
+
+p obj.singleton_methods(true)
+p Foo.singleton_methods(true) - Object.singleton_methods(true)
+
+#実行結果
+
+[:protected_self, :public_self, :protected_bar, :public_bar]
+[:protected_class_foo, :public_class_foo, :protected_class_parent, :public_class_parent]
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-object/i/methods.html">Object#methods</a>,<a href="../../../method/-object/i/extend.html">Object#extend</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

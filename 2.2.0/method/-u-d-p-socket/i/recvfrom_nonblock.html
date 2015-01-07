@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method UDPSocket#recvfrom_nonblock (Ruby 2.2.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.2.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/socket.html">socketライブラリ</a>
+&gt; <a href="../../../class/-u-d-p-socket.html">UDPSocketクラス</a>
+&gt; recvfrom_nonblock
+
+</p>
+
+
+<h1>instance method UDPSocket#recvfrom_nonblock</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_RECVFROM_NONBLOCK"><code>recvfrom_nonblock(maxlen, flags=0) -&gt; [String, Array]</code><span class="permalink">[<a href="../../../method/-u-d-p-socket/i/recvfrom_nonblock.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/UDPSocket.html#method-i-recvfrom_nonblock">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ソケットをノンブロッキングモードに設定した後、
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/recvfrom.html">recvfrom(2)</a> でソケットからデータを受け取ります。
+</p>
+<p>
+maxlen で受け取るデータの最大バイト数を指定します。
+</p>
+<p>
+flags はフラグで、Socket::MSG_* の bitwise OR を渡します。
+詳しくは <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/recvfrom.html">recvfrom(2)</a> を参照してください。
+</p>
+<p>
+返り値はデータの文字列と送り元のアドレス情報の
+2要素の配列となります。
+</p>
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/recvfrom.html">recvfrom(2)</a> がエラーになった場合、
+Errno::EAGAIN, Errno::EINTR を含め例外 <a href="../../../class/-errno=3a=3a-e-x-x-x.html">Errno::EXXX</a> が発生します。
+Errno::EWOULDBLOCK、Errno::EAGAIN のような待ってからリトライすることが
+可能であることを意味する例外には、<a href="../../../class/-i-o=3a=3a-wait-readable.html">IO::WaitReadable</a> が extend
+されています。
+</p>
+<pre>
+require 'socket'
+s1 = UDPSocket.new
+s1.bind(&quot;127.0.0.1&quot;, 0)
+s2 = UDPSocket.new
+s2.bind(&quot;127.0.0.1&quot;, 0)
+s2.connect(*s1.addr.values_at(3,1))
+s1.connect(*s2.addr.values_at(3,1))
+s1.send &quot;aaa&quot;, 0
+begin # emulate blocking recvfrom
+  p s2.recvfrom_nonblock(10)
+  #=&gt; [&quot;aaa&quot;, [&quot;AF_INET&quot;, 33302, &quot;localhost.localdomain&quot;, &quot;127.0.0.1&quot;]]
+rescue IO::WaitReadable
+  IO.select([s2])
+  retry
+end
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] maxlen:</dt>
+<dd>
+受け取るデータの最大バイト数
+</dd>
+<dt class='method-param'>[PARAM] flags:</dt>
+<dd>
+フラグ
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-i-p-socket/i/recvfrom.html">IPSocket#recvfrom</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

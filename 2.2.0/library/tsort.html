@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>library tsort (Ruby 2.2.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.2.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; tsortライブラリ
+</p>
+
+<h1>library tsort</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+tsort はトポロジカルソートと強連結成分に関するモジュールを提供します。
+</p>
+<h2 >Example</h2>
+<pre>
+require 'tsort'
+
+class Hash
+  include TSort
+  alias tsort_each_node each_key
+  def tsort_each_child(node, &amp;block)
+    fetch(node).each(&amp;block)
+  end
+end
+
+{1=&gt;[2, 3], 2=&gt;[3], 3=&gt;[], 4=&gt;[]}.tsort
+#=&gt; [3, 2, 1, 4]
+
+{1=&gt;[2], 2=&gt;[3, 4], 3=&gt;[2], 4=&gt;[]}.strongly_connected_components
+#=&gt; [[4], [2, 3], [1]]
+</pre>
+<h2 >より現実的な例</h2>
+<p>
+非常に単純な `make' に似たツールは以下のように実装できます。
+</p>
+<pre>
+require 'tsort'
+
+class Make
+  def initialize
+    @dep = {}
+    @dep.default = []
+  end
+
+  def rule(outputs, inputs=[], &amp;block)
+    triple = [outputs, inputs, block]
+    outputs.each {|f| @dep[f] = [triple]}
+    @dep[triple] = inputs
+  end
+
+  def build(target)
+    each_strongly_connected_component_from(target) {|ns|
+      if ns.length != 1
+        fs = ns.delete_if {|n| Array === n}
+        raise TSort::Cyclic.new(&quot;cyclic dependencies: #{fs.join ', '}&quot;)
+      end
+      n = ns.first
+      if Array === n
+        outputs, inputs, block = n
+        inputs_time = inputs.map {|f| File.mtime f}.max
+        begin
+          outputs_time = outputs.map {|f| File.mtime f}.min
+        rescue Errno::ENOENT
+          outputs_time = nil
+        end
+        if outputs_time == nil ||
+           inputs_time != nil &amp;&amp; outputs_time &lt;= inputs_time
+          sleep 1 if inputs_time != nil &amp;&amp; inputs_time.to_i == Time.now.to_i
+          block.call
+        end
+      end
+    }
+  end
+
+  def tsort_each_child(node, &amp;block)
+    @dep[node].each(&amp;block)
+  end
+  include TSort
+end
+
+def command(arg)
+  print arg, &quot;\n&quot;
+  system arg
+end
+
+m = Make.new
+m.rule(%w[t1]) { command 'date &gt; t1' }
+m.rule(%w[t2]) { command 'date &gt; t2' }
+m.rule(%w[t3]) { command 'date &gt; t3' }
+m.rule(%w[t4], %w[t1 t3]) { command 'cat t1 t3 &gt; t4' }
+m.rule(%w[t5], %w[t4 t2]) { command 'cat t4 t2 &gt; t5' }
+m.build('t5')
+</pre>
+<h2 >Bugs</h2>
+<p>
+tsort という名前は正確ではありません。なぜなら
+このライブラリは Tarjan の強連結成分に関するアルゴリズムを使っているからです。
+とはいえ strongly_connected_components という正確な名前は長過ぎます。
+</p>
+<h2 >References</h2>
+<p>
+R. E. Tarjan,
+Depth First Search and Linear Graph Algorithms,
+SIAM Journal on Computing, Vol. 1, No. 2, pp. 146-160, June 1972.
+</p>
+
+
+<h2>モジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-t-sort.html">TSort</a>
+</td>
+<td class="description"><p>
+TSort は強連結成分に関する Tarjan のアルゴリズムを用いた
+トポロジカルソートの実装です。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-t-sort=3a=3a-cyclic.html">TSort::Cyclic</a>
+</td>
+<td class="description"><p>
+閉路が存在する時、発生します。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

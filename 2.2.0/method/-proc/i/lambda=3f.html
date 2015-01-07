@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method Proc#lambda? (Ruby 2.2.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.2.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-proc.html">Procクラス</a>
+&gt; lambda?
+
+</p>
+
+
+<h1>instance method Proc#lambda?</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_LAMBDA--3F"><code>lambda? -&gt; bool</code><span class="permalink">[<a href="../../../method/-proc/i/lambda=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Proc.html#method-i-lambda-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+手続きオブジェクトの引数の取扱が厳密であるならば true を返します。
+</p>
+<p>
+引数の取扱の厳密さの意味は以下の例を参考にしてください。
+例:
+</p>
+<pre>
+# lambda で生成した Proc オブジェクトでは true
+lambda{}.lambda? # =&gt; true
+# proc で生成した Proc オブジェクトでは false
+proc{}.lambda?   # =&gt; false
+# Proc.new で生成した Proc オブジェクトでは false
+Proc.new{}.lambda? # =&gt; false
+
+# 以下、lambda?が偽である場合
+# 余分な引数を無視する
+proc{|a,b| [a,b]}.call(1,2,3) # =&gt; [1,2]
+# 足りない引数には nil が渡される
+proc{|a,b| [a,b]}.call(1) # =&gt; [1, nil]
+# 配列1つだと展開される
+proc{|a,b| [a,b]}.call([1,2]) =&gt; [1,2]
+# lambdaの場合これらはすべて ArgumentError となる
+
+# &amp;が付いた仮引数で生成される Proc は lambda? が偽となる
+def n(&amp;b) b.lambda? end
+n {} # =&gt; false
+
+# &amp;が付いた実引数によるものは、lambda?が元の Procオブジェクトから
+# 引き継がれる
+lambda(&amp;lambda {}).lambda?   #=&gt; true
+proc(&amp;lambda {}).lambda?     #=&gt; true
+Proc.new(&amp;lambda {}).lambda? #=&gt; true
+
+lambda(&amp;proc {}).lambda?     #=&gt; false
+proc(&amp;proc {}).lambda?       #=&gt; false
+Proc.new(&amp;proc {}).lambda?   #=&gt; false
+
+n(&amp;lambda {})                #=&gt; true
+n(&amp;proc {})                  #=&gt; false
+n(&amp;Proc.new {})              #=&gt; false
+
+# Method#to_proc によるものは lambda?が真となる
+def m() end
+method(:m).to_proc.lambda? #=&gt; true
+
+# Module#define_method は特別扱いで、
+# これで定義されたメソッドの引数は常に厳密に取り扱われる
+class C
+  define_method(:d) {}
+end
+C.new.d(1,2)       #=&gt; ArgumentError
+C.new.method(:d).to_proc.lambda?   #=&gt; true
+
+class C
+  define_method(:e, &amp;proc {})
+end
+C.new.e(1,2)       #=&gt; ArgumentError
+C.new.method(:e).to_proc.lambda?   #=&gt; true
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>
