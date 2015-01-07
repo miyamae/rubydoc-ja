@@ -39,8 +39,9 @@ Rubyではオブジェクトは「汚染されている」とみなされるこ�
 </p>
 <p>
 もうひとつは、信用しているオブジェクト(汚染されていないオブジェクト)を
-信用できないプログラムから守るという使い方です。セーフレベル4で汚染されて
-いないオブジェクトへの操作が大幅に制限されるのはこの事を意図しています。
+信用できないプログラムから守るという使い方です。
+セーフレベル4で汚染されていないオブジェクトへの操作が大幅に制限されるの
+はこの事を意図しています。
 </p>
 <p>
 オブジェクトの汚染に関連するメソッド
@@ -152,7 +153,8 @@ CGI等でユーザからの入力を処理するのに適しています。
 <ul>
 <li>ファイルテスト演算子の使用、ファイルの更新時刻比較</li>
 <li>外部コマンド実行 (<a href="../method/-kernel/m/system.html">Kernel.#system</a>, <a href="../method/-kernel/m/exec.html">Kernel.#exec</a>, <a href="../method/-kernel/m/=60.html">Kernel.#`</a>, <a href="../method/-kernel/m/spawn.html">Kernel.#spawn</a> など)</li>
-<li><a href="../method/-kernel/m/eval.html">Kernel.#eval</a> (<a href="#level4">レベル 4</a>の説明も参照)</li>
+<li><a href="../method/-kernel/m/eval.html">Kernel.#eval</a>
+(<a href="#level4">レベル 4</a>の説明も参照)</li>
 <li>トップレベルへの <a href="../method/-kernel/m/load.html">Kernel.#load</a> (第二引数を指定してラップすれば実行可能)</li>
 <li><a href="../method/-kernel/m/require.html">Kernel.#require</a></li>
 <li><a href="../method/-kernel/m/trap.html">Kernel.#trap</a></li>
@@ -183,8 +185,8 @@ CGI等でユーザからの入力を処理するのに適しています。
 </ul>
 <h3 >レベル 3</h3>
 <p>
-生成される全てのオブジェクトが汚染されます。レベル4でプログラムを実行す
-る環境を作り上げるのに適しています。
+生成される全てのオブジェクトが汚染されます。
+レベル4でプログラムを実行する環境を作り上げるのに適しています。
 </p>
 <h4 >汚染されるオブジェクト</h4>
 <ul>
@@ -242,7 +244,6 @@ CGI等でユーザからの入力を処理するのに適しています。
 </ul>
 <pre>
       * 環境変数 RUBYLIB を $: に加えない
-      * カレントディレクトリを $: に加えない
       * 環境変数 RUBYOPT を処理しない
       * 以下のスイッチを使用できない
         -s -S -e -r -i -I -x
@@ -280,8 +281,9 @@ def safe(level)
   result
 end
 
-safe(4) { puts &quot;hello&quot; }    # $SAFEなので例外
-puts &quot;world&quot;                # 外側は影響を受けない
+lib = &quot;insecure_library&quot;.taint # 外部から受け取った文字列(仮)
+safe(1) { require lib }        # $SAFE が 1 なので例外
+require lib                    # 外側は影響を受けない
 </pre>
 <h2 >拡張ライブラリでの扱い</h2>
 <ul>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>object ARGF (Ruby 2.2.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.2.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; ARGFオブジェクト
+</p>
+
+
+<h1>object ARGF</h1>
+<p>
+
+
+クラスの継承リスト: ARGF
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+スクリプトに指定した引数
+(<a href="../method/-object/c/-a-r-g-v.html">Object::ARGV</a> を参照) をファイル名とみなして、
+それらのファイルを連結した 1 つの仮想ファイルを表すオブジェクトです。
+ARGV が空なら標準入力を対象とします。
+ARGV を変更すればこのオブジェクトの動作に影響します。
+</p>
+<pre>
+while line = ARGF.gets
+  ....
+end
+</pre>
+<p>
+は、
+</p>
+<pre>
+while argv = ARGV.shift
+  File.open(argv) {|file|
+    while line = file.gets
+      ....
+    end
+  }
+end
+</pre>
+<p>
+のように動作します。
+</p>
+<p>
+ARGF を処理するごとに ARGV の要素は一つずつ取り除かれます。
+最後まで ARGF を読み込んだ後、再度 ARGF から内容を読むと
+(ARGV が空なので)標準入力からの読み込みとなります。
+</p>
+<pre>
+ARGV.replace %w(/tmp/foo /tmp/bar)
+ARGF.each {|line|
+    # 処理中の ARGV の内容を表示
+    p [ARGF.filename, ARGV]
+    ARGF.skip
+}
+    # =&gt; [&quot;/tmp/foo&quot;, [&quot;/tmp/bar&quot;]]
+    #    [&quot;/tmp/bar&quot;, []]
+# 最後まで読んだ後 (ARGV が空) の動作
+p ARGF.gets      # =&gt; nil
+p ARGF.filename  # =&gt; &quot;-&quot;
+</pre>
+<p>
+<a href="../method/-kernel/m/gets.html">Kernel.#gets</a> など一部の組み込み関数は
+ARGF.gets などこのオブジェクトをレシーバとしたメソッドの省略形です。
+</p>
+<p>
+また、ARGF は <a href="../class/-a-r-g-f=2eclass.html">ARGF.class</a> クラスのインスタンスです。
+各メソッドの詳細は <a href="../class/-a-r-g-f=2eclass.html">ARGF.class</a> を参照してください。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+</dl>
+
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

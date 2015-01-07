@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class DL::Handle (Ruby 2.2.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.2.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/dl.html">dlライブラリ</a>
+&gt; DL::Handleクラス
+</p>
+
+
+<h1>class DL::Handle</h1>
+<p>
+
+
+クラスの継承リスト: DL::Handle
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+オープンされたダイナミックライブラリを表すクラスです。
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/dlopen.html">dlopen(3)</a> が返すハンドラーのラッパーです。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_--5B--5D">[]</a>
+
+<a href="#S_--5B--5D">sym</a>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--5B--5D">[]</a>
+
+<a href="#I_--5B--5D">sym</a>
+
+<a href="#I_CLOSE">close</a>
+
+<a href="#I_CLOSE_ENABLED--3F">close_enabled?</a>
+
+<a href="#I_DISABLE_CLOSE">disable_close</a>
+
+<a href="#I_ENABLE_CLOSE">enable_close</a>
+
+<a href="#I_TO_I">to_i</a>
+
+</dd>
+
+<dt>定数</dt>
+<dd>
+
+<a href="#C_-D-E-F-A-U-L-T">DEFAULT</a>
+
+<a href="#C_-N-E-X-T">NEXT</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_--5B--5D"><code>sym(func) -&gt; Integer</code><span class="permalink">[<a href="../method/-d-l=3a=3a-handle/s/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/DL/Handle.html#method-c-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>self[func] -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+ライブラリのデフォルトの検索順序に従い、現在のライブラリ以降の
+シンボルを探します。
+</p>
+<p>
+DL::Handle::NEXT.sym(func) と同じです。詳しくは <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/dlsym.html">dlsym(3)</a> の
+RTLD_NEXT を見てください。
+</p>
+<dl>
+<dt>[EXCEPTION] DL::DLError:</dt>
+<dd>
+シンボルが見つからなかった時に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_NEW"><code>new(lib, flags=DL::RTLD_LAZY|DL::RTLD_GLOBAL) -&gt; DL::Handle</code><span class="permalink">[<a href="../method/-d-l=3a=3a-handle/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/DL/Handle.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>new(lib, flags=DL::RTLD_LAZY|DL::RTLD_GLOBAL) {|handle| ... } -&gt; DL::Handle</code></dt>
+<dd class="method-description">
+<p>
+ライブラリ lib をオープンし、Handle オブジェクトとして返します。
+</p>
+<p>
+ブロックを指定すれば、生成した Handle を引数としてブロックを実行します。
+Handle はブロックの終りで自動的にクローズされます。
+</p>
+<p>
+flags で <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/dlopen.html">dlopen(3)</a> の第2引数として渡すフラグを指定できます。
+<a href="../method/-d-l/c/-r-t-l-d_-l-a-z-y.html">DL::RTLD_LAZY</a>、<a href="../method/-d-l/c/-r-t-l-d_-n-o-w.html">DL::RTLD_NOW</a> のどちらか一方を指定する必要があり、
+またそれに <a href="../method/-d-l/c/-r-t-l-d_-g-l-o-b-a-l.html">DL::RTLD_GLOBAL</a> と OR を取ることができます。
+詳しい意味は manpage(<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/dlopen.html">dlopen(3)</a>) を参照してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] lib:</dt>
+<dd>
+ライブラリを文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] flags:</dt>
+<dd>
+フラグ
+</dd>
+<dt>[EXCEPTION] DL::DLError:</dt>
+<dd>
+ライブラリのオープンに失敗した場合に発生します
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'dl'
+
+h = DL::Handle.new('libc.so.6')
+i = h.sym('strlen') #=&gt; 3085201584
+cfunc = DL::CFunc.new(i, DL::TYPE_INT, 'strlen')
+p cfunc.call(['abcde'].pack('p*').unpack('l!*'))   #=&gt; 5
+</pre>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--5B--5D"><code>sym(func) -&gt; Integer</code><span class="permalink">[<a href="../method/-d-l=3a=3a-handle/i/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/DL/Handle.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>self[func] -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+関数やグローバル変数 func へのポインタを取得し、整数として返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] func:</dt>
+<dd>
+得たいシンボルの名前を文字列で与えます。
+</dd>
+<dt>[EXCEPTION] DL::DLError:</dt>
+<dd>
+シンボルが見つからなかった時に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'dl'
+
+h = DL::Handle.new('libc.so.6')
+i = h.sym('strlen')
+p i                                                #=&gt; 3085201584
+cfunc = DL::CFunc.new(i, DL::TYPE_INT, 'strlen')
+p cfunc.call(['abcde'].pack('p*').unpack('l!*'))   #=&gt; 5
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CLOSE"><code>close -&gt; Integer</code><span class="permalink">[<a href="../method/-d-l=3a=3a-handle/i/close.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/DL/Handle.html#method-i-close">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身をクローズします。成功した場合は 0 を返します。そうでない場合は、
+0 以外の整数を返します。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/dlclose.html">dlclose(3)</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CLOSE_ENABLED--3F"><code>close_enabled? -&gt; bool</code><span class="permalink">[<a href="../method/-d-l=3a=3a-handle/i/close_enabled=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/DL/Handle.html#method-i-close_enabled-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+GC によるオブジェクトの回収時に self をクローズする(<a href="../method/-d-l=3a=3a-handle/i/close.html">DL::Handle#close</a>)
+かどうかを真偽値で返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-d-l=3a=3a-handle/i/enable_close.html">DL::Handle#enable_close</a>, <a href="../method/-d-l=3a=3a-handle/i/disable_close.html">DL::Handle#disable_close</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DISABLE_CLOSE"><code>disable_close -&gt; nil</code><span class="permalink">[<a href="../method/-d-l=3a=3a-handle/i/disable_close.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/DL/Handle.html#method-i-disable_close">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+GC によるオブジェクトの回収時に self をクローズしない(<a href="../method/-d-l=3a=3a-handle/i/close.html">DL::Handle#close</a>)
+ように設定します。
+</p>
+<p>
+デフォルトでは close しません。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-d-l=3a=3a-handle/i/enable_close.html">DL::Handle#enable_close</a>, <a href="../method/-d-l=3a=3a-handle/i/close_enabled=3f.html">DL::Handle#close_enabled?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ENABLE_CLOSE"><code>enable_close -&gt; nil</code><span class="permalink">[<a href="../method/-d-l=3a=3a-handle/i/enable_close.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/DL/Handle.html#method-i-enable_close">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+GC によるオブジェクトの回収時に self をクローズする(<a href="../method/-d-l=3a=3a-handle/i/close.html">DL::Handle#close</a>)
+ように設定します。
+</p>
+<p>
+デフォルトでは close しません。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-d-l=3a=3a-handle/i/disable_close.html">DL::Handle#disable_close</a>, <a href="../method/-d-l=3a=3a-handle/i/close_enabled=3f.html">DL::Handle#close_enabled?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_I"><code>to_i -&gt; Integer</code><span class="permalink">[<a href="../method/-d-l=3a=3a-handle/i/to_i.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/DL/Handle.html#method-i-to_i">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身が表すハンドル(<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/dlopen.html">dlopen(3)</a> が返したもの)のアドレスを返します。
+</p>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-D-E-F-A-U-L-T"><code>DEFAULT -&gt; DL::Handle</code><span class="permalink">[<a href="../method/-d-l=3a=3a-handle/c/-d-e-f-a-u-l-t.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/DL/Handle.html#method-c-DEFAULT">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+RTLD_DEFAULT で表わされる疑似ハンドルを表します。
+</p>
+<p>
+詳しくは <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/dlsym.html">dlsym(3)</a> を参照してください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-N-E-X-T"><code>NEXT -&gt; DL::Handle</code><span class="permalink">[<a href="../method/-d-l=3a=3a-handle/c/-n-e-x-t.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/DL/Handle.html#method-c-NEXT">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+RTLD_NEXT で表わされる疑似ハンドルを表します。
+</p>
+<p>
+詳しくは <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/dlsym.html">dlsym(3)</a> を参照してください。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

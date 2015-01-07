@@ -1,4 +1,4 @@
-version = ENV["VERSION"] || "2.0.0"
+version = ENV["VERSION"] || "2.2.0"
 
 task :default => "build/html/#{version}/json/index.json"
 task :install => "#{version}"

@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>module Open3 (Ruby 2.2.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.2.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/open3.html">open3ライブラリ</a>
+&gt; Open3モジュール
+</p>
+
+
+<h1>module Open3</h1>
+<p>
+
+
+クラスの継承リスト: Open3
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+プログラムを実行し、そのプロセスの標準入力・標準出力・
+標準エラー出力にパイプをつなぎます。
+</p>
+<h2 >使用例</h2>
+<p>
+nroff を実行してその標準入力に man ページを送り込み処理させる。
+nroff プロセスの標準出力から処理結果を受け取る。
+</p>
+<pre>
+require &quot;open3&quot;
+
+stdin, stdout, stderr = *Open3.popen3('nroff -man')
+# こちらから書く
+Thread.fork {
+  File.foreach('/usr/man/man1/ruby.1') do |line|
+    stdin.print line
+  end
+  stdin.close    # または close_write
+}
+# こちらから読む
+stdout.each do |line|
+  print line
+end
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>モジュール関数</dt>
+<dd>
+
+<a href="#M_CAPTURE2">capture2</a>
+
+<a href="#M_CAPTURE2E">capture2e</a>
+
+<a href="#M_CAPTURE3">capture3</a>
+
+<a href="#M_PIPELINE">pipeline</a>
+
+<a href="#M_PIPELINE_R">pipeline_r</a>
+
+<a href="#M_PIPELINE_RW">pipeline_rw</a>
+
+<a href="#M_PIPELINE_START">pipeline_start</a>
+
+<a href="#M_PIPELINE_W">pipeline_w</a>
+
+<a href="#M_POPEN2">popen2</a>
+
+<a href="#M_POPEN2E">popen2e</a>
+
+<a href="#M_POPEN3">popen3</a>
+
+</dd>
+
+</dl>
+
+
+<h2>モジュール関数</h2>
+<dl>
+
+<dt class="method-heading" id="M_CAPTURE2"><code>capture2(*cmd) -&gt; [String, Process::Status]</code><span class="permalink">[<a href="../method/-open3/m/capture2.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Open3.html#method-c-capture2">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+cmdで指定されたコマンドを実行し、そのプロセスの標準出力とプロセスの終了
+ステータスを表すオブジェクトを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] cmd:</dt>
+<dd>
+実行するコマンドを指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+実行したコマンドの標準出力と終了ステータスを表すオブジェクトを
+配列で返します。
+</dd>
+</dl>
+<p>
+指定された引数はopts[:stdin_data]とopts[:binmode]以外は全て
+<a href="../method/-open3/m/popen3.html">Open3.#popen3</a>に渡されます。opts[:stdin_data]は実行するコマンドの
+標準出力に渡されます。opts[:binmode]を真に指定されると内部で使用される
+パイプをバイナリモードに指定します。
+</p>
+<p>
+例:
+</p>
+<pre>
+require &quot;open3&quot;
+
+# factorコマンドで与えられた数値(42)を素因数分解する。
+o, s = Open3.capture2(&quot;factor&quot;, :stdin_data=&gt;&quot;42&quot;)
+p o #=&gt; &quot;42: 2 3 7\n&quot;
+</pre>
+<p>
+<a href="../method/-open3/m/popen3.html">Open3.#popen3</a>と同様に引数に環境変数とオプションを指定してコマンド
+を実行する事ができます。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-open3/m/popen3.html">Open3.#popen3</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_CAPTURE2E"><code>capture2e(*cmd) -&gt; [String, Process::Status]</code><span class="permalink">[<a href="../method/-open3/m/capture2e.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Open3.html#method-c-capture2e">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+cmdで指定されたコマンドを実行し、そのプロセスの標準出力と標準エラーを1
+つの文字列にしたものとプロセスの終了ステータスを表すオブジェクトを返し
+ます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] cmd:</dt>
+<dd>
+実行するコマンドを指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+実行したコマンドの標準出力と標準エラーを1つの文字列にしたものと
+終了ステータスを表すオブジェクトを配列で返します。
+</dd>
+</dl>
+<p>
+指定された引数はopts[:stdin_data]とopts[:binmode]以外は全て
+<a href="../method/-open3/m/popen3.html">Open3.#popen3</a>に渡されます。opts[:stdin_data]は実行するコマンドの
+標準出力に渡されます。opts[:binmode]を真に指定されると内部で使用される
+パイプをバイナリモードに指定します。
+</p>
+<p>
+例:
+</p>
+<pre>
+require &quot;open3&quot;
+
+o, s = Open3.capture2e(&quot;echo a; sort &gt;&amp;2&quot;, :stdin_data=&gt;&quot;foo\nbar\nbaz\n&quot;)
+p o #=&gt; &quot;a\nbar\nbaz\nfoo\n&quot;
+p s #=&gt; #&lt;Process::Status: pid 20574 exit 0&gt;
+</pre>
+<p>
+<a href="../method/-open3/m/popen3.html">Open3.#popen3</a>と同様に引数に環境変数とオプションを指定してコマンド
+を実行する事ができます。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-open3/m/popen3.html">Open3.#popen3</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_CAPTURE3"><code>capture3(*cmd) -&gt; [String, String, Process::Status]</code><span class="permalink">[<a href="../method/-open3/m/capture3.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Open3.html#method-c-capture3">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+cmdで指定されたコマンドを実行し、そのプロセスの標準出力と標準エラー、プ
+ロセスの終了ステータスを表すオブジェクトを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] cmd:</dt>
+<dd>
+実行するコマンドを指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+実行したコマンドの標準出力と標準エラー、プロセスの終了ステータ
+スを表すオブジェクトを配列で返します。
+</dd>
+</dl>
+<p>
+指定された引数はopts[:stdin_data]とopts[:binmode]以外は全て
+<a href="../method/-open3/m/popen3.html">Open3.#popen3</a>に渡されます。opts[:stdin_data]は実行するコマンドの
+標準出力に渡されます。opts[:binmode]を真に指定されると内部で使用される
+パイプをバイナリモードに指定します。
+</p>
+<p>
+例:
+</p>
+<pre>
+require &quot;open3&quot;
+
+o, e, s = Open3.capture3(&quot;echo a; sort &gt;&amp;2&quot;, :stdin_data=&gt;&quot;foo\nbar\nbaz\n&quot;)
+p o #=&gt; &quot;a\n&quot;
+p e #=&gt; &quot;bar\nbaz\nfoo\n&quot;
+p s #=&gt; #&lt;Process::Status: pid 32682 exit 0&gt;
+</pre>
+<p>
+<a href="../method/-open3/m/popen3.html">Open3.#popen3</a>と同様に引数に環境変数とオプションを指定してコマンド
+を実行する事ができます。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-open3/m/popen3.html">Open3.#popen3</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_PIPELINE"><code>pipeline(*cmds) -&gt; [Process::Status]</code><span class="permalink">[<a href="../method/-open3/m/pipeline.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Open3.html#method-c-pipeline">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+指定したコマンドのリストをパイプで繋いで順番に実行します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] cmds:</dt>
+<dd>
+実行するコマンドのリストを指定します。それぞれのコマンドは
+以下のように <a href="../class/-string.html">String</a> か <a href="../class/-array.html">Array</a> で指定します。
+commandline にはコマンド全体(例. &quot;nroff -man&quot;)を表す
+<a href="../class/-string.html">String</a> を指定します。
+options には <a href="../class/-hash.html">Hash</a> で指定します。
+env には環境変数を <a href="../class/-hash.html">Hash</a> で指定します。
+cmdname にはコマンド名を表す <a href="../class/-string.html">String</a> を指定します。
+1、2、3 は shell 経由で実行されます。
+</dd>
+</dl>
+<ol>
+<li>commandline</li>
+<li>[commandline, options]</li>
+<li>[env, commandline, options]</li>
+<li>[env, cmdname, arg1, arg2, ..., options]</li>
+<li>[env, [cmdname, argv0], arg1, ..., options]</li>
+</ol>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+実行したコマンドの終了ステータスを配列で返します。
+</dd>
+</dl>
+<p>
+例1:
+</p>
+<pre>
+require &quot;open3&quot;
+
+fname = &quot;/usr/share/man/man1/ruby.1.gz&quot;
+p Open3.pipeline([&quot;zcat&quot;, fname], &quot;nroff -man&quot;, &quot;less&quot;)
+#=&gt; [#&lt;Process::Status: pid 11817 exit 0&gt;,
+#    #&lt;Process::Status: pid 11820 exit 0&gt;,
+#    #&lt;Process::Status: pid 11828 exit 0&gt;]
+</pre>
+<p>
+例2:
+</p>
+<pre>
+require &quot;open3&quot;
+
+Open3.pipeline([{&quot;LANG&quot;=&gt;&quot;C&quot;}, &quot;env&quot;], [&quot;grep&quot;, &quot;LANG&quot;], &quot;less&quot;)
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-open3/m/popen3.html">Open3.#popen3</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_PIPELINE_R"><code>pipeline_r(*cmds) -&gt; [IO, [Thread]]</code><span class="permalink">[<a href="../method/-open3/m/pipeline_r.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Open3.html#method-c-pipeline_r">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>pipeline_r(*cmds) {|last_stdout, wait_thrs| ... } -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+指定したコマンドのリストをパイプで繋いで順番に実行します。最後の
+コマンドの標準出力を受けとる事ができます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] cmds:</dt>
+<dd>
+実行するコマンドのリストを指定します。それぞれのコマンドは
+以下のように <a href="../class/-string.html">String</a> か <a href="../class/-array.html">Array</a> で指定します。
+commandline にはコマンド全体(例. &quot;nroff -man&quot;)を表す
+<a href="../class/-string.html">String</a> を指定します。
+options には <a href="../class/-hash.html">Hash</a> で指定します。
+env には環境変数を <a href="../class/-hash.html">Hash</a> で指定します。
+cmdname にはコマンド名を表す <a href="../class/-string.html">String</a> を指定します。
+1、2、3 は shell 経由で実行されます。
+</dd>
+</dl>
+<ol>
+<li>commandline</li>
+<li>[commandline, options]</li>
+<li>[env, commandline, options]</li>
+<li>[env, cmdname, arg1, arg2, ..., options]</li>
+<li>[env, [cmdname, argv0], arg1, ..., options]</li>
+</ol>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+ブロックを指定した場合はブロックの最後に評価された値を返します。
+ブロックを指定しなかった場合は最後に実行するコマンドの標準出力、
+実行したプロセスを待つためのスレッドの配列を配列で返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require &quot;open3&quot;
+
+Open3.pipeline_r(&quot;yes&quot;, &quot;head -10&quot;) {|r, ts|
+  p r.read      #=&gt; &quot;y\ny\ny\ny\ny\ny\ny\ny\ny\ny\n&quot;
+  p ts[0].value #=&gt; #&lt;Process::Status: pid 24910 SIGPIPE (signal 13)&gt;
+  p ts[1].value #=&gt; #&lt;Process::Status: pid 24913 exit 0&gt;
+}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-open3/m/popen3.html">Open3.#popen3</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_PIPELINE_RW"><code>pipeline_rw(*cmds) -&gt; [IO, IO, [Thread]]</code><span class="permalink">[<a href="../method/-open3/m/pipeline_rw.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Open3.html#method-c-pipeline_rw">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>pipeline_rw(*cmds) {|first_stdin, last_stdout, wait_thrs| ... } -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+指定したコマンドのリストをパイプで繋いで順番に実行します。最初の
+コマンドの標準入力に書き込む事も最後のコマンドの標準出力を受けとる事も
+できます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] cmds:</dt>
+<dd>
+実行するコマンドのリストを指定します。それぞれのコマンドは
+以下のように <a href="../class/-string.html">String</a> か <a href="../class/-array.html">Array</a> で指定します。
+commandline にはコマンド全体(例. &quot;nroff -man&quot;)を表す
+<a href="../class/-string.html">String</a> を指定します。
+options には <a href="../class/-hash.html">Hash</a> で指定します。
+env には環境変数を <a href="../class/-hash.html">Hash</a> で指定します。
+cmdname にはコマンド名を表す <a href="../class/-string.html">String</a> を指定します。
+1、2、3 は shell 経由で実行されます。
+</dd>
+</dl>
+<ol>
+<li>commandline</li>
+<li>[commandline, options]</li>
+<li>[env, commandline, options]</li>
+<li>[env, cmdname, arg1, arg2, ..., options]</li>
+<li>[env, [cmdname, argv0], arg1, ..., options]</li>
+</ol>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+ブロックを指定した場合はブロックの最後に評価された値を返します。
+ブロックを指定しなかった場合は最初に実行するコマンドの標準入力
+と最後に実行するコマンドの標準出力、実行したプロセスを待つため
+のスレッドの配列を配列で返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require &quot;open3&quot;
+
+Open3.pipeline_rw(&quot;sort&quot;, &quot;cat -n&quot;) {|stdin, stdout, wait_thrs|
+  stdin.puts &quot;foo&quot;
+  stdin.puts &quot;bar&quot;
+  stdin.puts &quot;baz&quot;
+
+  # sortコマンドにEOFを送る。
+  stdin.close
+
+  # stdinに渡した文字列をsortコマンドが並べ替えたものに、catコマンド
+  # が行番号を付けた文字列が表示される。
+  p stdout.read   #=&gt; &quot;     1\tbar\n     2\tbaz\n     3\tfoo\n&quot;
+}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-open3/m/popen3.html">Open3.#popen3</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_PIPELINE_START"><code>pipeline_start(*cmds) -&gt; [Thread]</code><span class="permalink">[<a href="../method/-open3/m/pipeline_start.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Open3.html#method-c-pipeline_start">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>pipeline_start(*cmds) {|wait_thrs| ... } -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+指定したコマンドのリストをパイプで繋いで順番に実行します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] cmds:</dt>
+<dd>
+実行するコマンドのリストを指定します。それぞれのコマンドは
+以下のように <a href="../class/-string.html">String</a> か <a href="../class/-array.html">Array</a> で指定します。
+commandline にはコマンド全体(例. &quot;nroff -man&quot;)を表す
+<a href="../class/-string.html">String</a> を指定します。
+options には <a href="../class/-hash.html">Hash</a> で指定します。
+env には環境変数を <a href="../class/-hash.html">Hash</a> で指定します。
+cmdname にはコマンド名を表す <a href="../class/-string.html">String</a> を指定します。
+1、2、3 は shell 経由で実行されます。
+</dd>
+</dl>
+<ol>
+<li>commandline</li>
+<li>[commandline, options]</li>
+<li>[env, commandline, options]</li>
+<li>[env, cmdname, arg1, arg2, ..., options]</li>
+<li>[env, [cmdname, argv0], arg1, ..., options]</li>
+</ol>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+ブロックを指定した場合はブロックの最後に評価された値を返します。
+ブロックを指定しなかった場合は実行したプロセスを待つためのスレッ
+ドの配列を返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require &quot;open3&quot;
+
+# xeyesを10秒だけ実行する。
+Open3.pipeline_start(&quot;xeyes&quot;) {|ts|
+  sleep 10
+  t = ts[0]
+  Process.kill(&quot;TERM&quot;, t.pid)
+  p t.value #=&gt; #&lt;Process::Status: pid 911 SIGTERM (signal 15)&gt;
+}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-open3/m/popen3.html">Open3.#popen3</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_PIPELINE_W"><code>pipeline_w(*cmds) -&gt; [IO, [Thread]]</code><span class="permalink">[<a href="../method/-open3/m/pipeline_w.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Open3.html#method-c-pipeline_w">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>pipeline_w(*cmds) {|first_stdin, wait_thrs| ... } -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+指定したコマンドのリストをパイプで繋いで順番に実行します。最初の
+コマンドの標準入力に書き込む事ができます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] cmds:</dt>
+<dd>
+実行するコマンドのリストを指定します。それぞれのコマンドは
+以下のように <a href="../class/-string.html">String</a> か <a href="../class/-array.html">Array</a> で指定します。
+commandline にはコマンド全体(例. &quot;nroff -man&quot;)を表す
+<a href="../class/-string.html">String</a> を指定します。
+options には <a href="../class/-hash.html">Hash</a> で指定します。
+env には環境変数を <a href="../class/-hash.html">Hash</a> で指定します。
+cmdname にはコマンド名を表す <a href="../class/-string.html">String</a> を指定します。
+1、2、3 は shell 経由で実行されます。
+</dd>
+</dl>
+<ol>
+<li>commandline</li>
+<li>[commandline, options]</li>
+<li>[env, commandline, options]</li>
+<li>[env, cmdname, arg1, arg2, ..., options]</li>
+<li>[env, [cmdname, argv0], arg1, ..., options]</li>
+</ol>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+ブロックを指定した場合はブロックの最後に評価された値を返します。
+ブロックを指定しなかった場合は最初に実行するコマンドの標準入力、
+実行したプロセスを待つためのスレッドの配列を配列で返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require &quot;open3&quot;
+
+Open3.pipeline_w(&quot;bzip2 -c&quot;, :out=&gt;&quot;/tmp/hello.bz2&quot;) {|w, ts|
+  w.puts &quot;hello&quot;
+}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-open3/m/popen3.html">Open3.#popen3</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_POPEN2"><code>popen2(*cmd) -&gt; [IO, IO, Thread]</code><span class="permalink">[<a href="../method/-open3/m/popen2.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Open3.html#method-c-popen2">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>popen2(*cmd) {|stdin, stdout, wait_thr| ... } -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+cmdで指定されたコマンドを実行し、そのプロセスの標準入力・標準出力にパイ
+プをつなぎます。Open3.popen3に似ていますが、標準エラーを扱いません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] cmd:</dt>
+<dd>
+実行するコマンドを指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+ブロックを指定した場合はブロックの最後に評価された値を返します。
+ブロックを指定しなかった場合は標準入力、標準出力に接続されたパ
+イプと実行したプロセスを待つためのスレッドを返します。
+</dd>
+</dl>
+<p>
+<a href="../method/-open3/m/popen3.html">Open3.#popen3</a>と同様に引数に環境変数とオプションを指定してコマンド
+を実行する事ができます。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-open3/m/popen3.html">Open3.#popen3</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_POPEN2E"><code>popen2e(*cmd) -&gt; [IO, IO, Thread]</code><span class="permalink">[<a href="../method/-open3/m/popen2e.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Open3.html#method-c-popen2e">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>popen2e(*cmd) {|stdin, stdout_and_stderr, wait_thr| ... } -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+cmdで指定されたコマンドを実行し、そのプロセスの標準入力・標準出力と標準
+エラーにパイプをつなぎます。Open3.popen3に似ていますが、標準出力と標準
+エラーが1つの変数で扱われます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] cmd:</dt>
+<dd>
+実行するコマンドを指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+ブロックを指定した場合はブロックの最後に評価された値を返します。
+ブロックを指定しなかった場合は標準入力、標準出力と標準エラーに
+接続されたパイプと実行したプロセスを待つためのスレッドを返しま
+す。
+</dd>
+</dl>
+<p>
+<a href="../method/-open3/m/popen3.html">Open3.#popen3</a>と同様に引数に環境変数とオプションを指定してコマンド
+を実行する事ができます。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-open3/m/popen3.html">Open3.#popen3</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_POPEN3"><code>popen3(*cmd) -&gt; [IO, IO, IO, Thread]</code><span class="permalink">[<a href="../method/-open3/m/popen3.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Open3.html#method-c-popen3">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>popen3(*cmd) {|stdin, stdout, stderr, wait_thr| ... } -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+外部プログラム cmd を実行し、そのプロセスの標準入力、標準出力、標準エラー
+出力に接続されたパイプと実行したプロセスを待つためのスレッドを 4 要素の
+配列で返します。
+</p>
+<pre>
+stdin, stdout, stderr, wait_thr = *Open3.popen3(&quot;/usr/bin/nroff -man&quot;)
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] cmd:</dt>
+<dd>
+実行するコマンドを指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+ブロックを指定した場合はブロックの最後に評価された値を返します。
+ブロックを指定しなかった場合は標準入力、標準出力、標準エラー出
+力と実行したプロセスを待つためのスレッドに接続されたパイプを返
+します。
+</dd>
+</dl>
+<p>
+ブロックを指定するとパイプの配列を引数にブロックを実行し、最後にパイプ
+を close します。この場合はブロックの最後の式の結果を返します。
+</p>
+<pre>
+require 'open3'
+
+Open3.popen3(&quot;read stdin; echo stdout; echo stderr &gt;&amp;2&quot;) {|stdin, stdout, stderr, wait_thr|
+  stdin.puts &quot;stdin&quot;
+  stdin.close     # または close_write
+  p stdout.read
+  p stderr.read
+}
+#=&gt; &quot;stdout\n&quot;
+    &quot;stderr\n&quot;
+</pre>
+<p>
+stdin への入力が終わったらできる限り早く close か close_write
+で閉じるべきです。
+</p>
+<p>
+[UNIX系OS固有の注意] Open3 で作成した子プロセスは
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/wait.html">wait(2)</a> しなくてもゾンビになりません。
+</p>
+<p>
+引数 cmd はそのまま <a href="../method/-kernel/m/spawn.html">Kernel.#spawn</a> に渡されます。
+<a href="../method/-kernel/m/spawn.html">Kernel.#spawn</a>と同様に、引数リストの最初に環境変数をハッシュ形式で
+指定する事ができます。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'open3'
+
+Open3.popen3({&quot;foo&quot; =&gt; &quot;1&quot;, &quot;bar&quot; =&gt; &quot;2&quot;}, &quot;env&quot;) {|i, o, e, t|
+  i.close
+  print o.read
+}
+#=&gt; ...
+    foo=1
+    bar=2
+</pre>
+<p>
+<a href="../method/-kernel/m/spawn.html">Kernel.#spawn</a>と同様に、引数リストの最後にオプションをハッシュ形式
+で指定する事ができます。
+</p>
+<p>
+例:
+</p>
+<pre>
+require &quot;open3&quot;
+
+# オプションを指定した場合。
+Dir.chdir(&quot;/tmp&quot;)
+Open3.popen3(&quot;pwd&quot;, :chdir=&gt; &quot;/&quot;) {|i,o,e,t|
+  p o.read.chomp #=&gt; &quot;/&quot;
+}
+
+# オプションを指定しない場合。
+Dir.chdir(&quot;/tmp&quot;)
+Open3.popen3(&quot;pwd&quot;) {|i,o,e,t|
+  p o.read.chomp #=&gt; &quot;/tmp&quot;
+}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/m/spawn.html">Kernel.#spawn</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

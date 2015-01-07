@@ -64,6 +64,45 @@ list.each{|it| puts it.hello if it.respond_to?(:hello)}
 list.each{|it| it.instance_eval(&quot;puts hello if it.respond_to?(:hello, true)&quot;)}
 #=&gt; Bonjour
 #   Guten Tag
+
+module Template
+  def main
+    start
+    template_method
+    finish
+  end
+
+  def start
+    puts &quot;start&quot;
+  end
+
+  def template_method
+    raise NotImplementedError.new
+  end
+
+  def finish
+    puts &quot;finish&quot;
+  end
+end
+
+class ImplTemplateMethod
+  include Template
+  def template_method
+    &quot;implement template_method&quot;
+  end
+end
+
+class NotImplTemplateMethod
+  include Template
+
+  # not implement template_method
+end
+
+puts ImplTemplateMethod.new.respond_to?(:template_method) # =&gt; true
+# NotImplementedError が発生しているが、Rubyによる実装部のため true を返却
+puts NotImplTemplateMethod.new.respond_to?(:template_method) # =&gt; true
+# GNU/Linux で実行。C言語による実装部のため false を返却
+puts File.respond_to?(:lchmod)         # =&gt; false
 </pre>
 <p>
 [SEE_ALSO] <a href="../../../method/-module/i/method_defined=3f.html">Module#method_defined?</a>

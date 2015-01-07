@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>constant WIN32OLE::ARGV (Ruby 2.2.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.2.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/win32ole.html">win32oleライブラリ</a>
+&gt; <a href="../../../class/-w-i-n32-o-l-e.html">WIN32OLEクラス</a>
+&gt; ARGV
+
+</p>
+
+
+<h1>constant WIN32OLE::ARGV</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="C_-A-R-G-V"><code>ARGV -&gt; [object]</code><span class="permalink">[<a href="../../../method/-w-i-n32-o-l-e/c/-a-r-g-v.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/WIN32OLE.html#method-c-ARGV">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+直前のメソッド呼び出しの引数を格納した配列です。
+</p>
+<p>
+OLEオートメーションでは呼び出し先が引数に対して値を設定できます。しかし、
+Rubyのメソッド引数は値のみを取るため、そのままでは呼び出し先が設定した
+値を参照できません。このような場合、ARGVを参照することで呼び出し先の設
+定値を参照できます。
+</p>
+<p>
+以下のリストは、VBで開発したオブジェクトのメソッド呼び出しを例としてい
+ます。このメソッド（Accm）は、第1引数で指定した演算を第2引数と第3引数に
+適用し、結果を第2引数に設定します。
+</p>
+<pre>
+' VB (OLE Automation server)
+Public Sub Accm(ByVal Operator, ByRef Accumulator, ByVal Operand)
+    If Operator = &quot;*&quot; Then
+        Accmulator = Accmulator * Operand
+    Else If Operator = &quot;+&quot; Then
+        Accmulator = Accmulator + Operand
+    End If
+End Sub
+
+# Ruby
+x = 10
+obj.Accm '*', x, 11
+p x               # =&gt; 10 …… 呼び出しによって影響を受けない
+p WIN32OLE::ARGV  # =&gt; ['*', 110, 11] …… 結果はARGVの対応する引数に反映される
+obj.Accm '+', 10, 11
+p WIN32OLE::ARGV  # =&gt; ['+', 21, 11]
+</pre>
+<p>
+直前のメソッド呼び出しが例外となった場合、ARGVの設定内容は呼び出し前の
+状態が保たれます。つまり、WIN32OLE自身がARGVの内容を消去するのは、メソッ
+ド呼び出しに成功した場合のみです。このため最後のメソッド呼び出しが引数
+にオブジェクトを返すタイプのメソッドだった場合、GCにオブジェクトを回収
+させるために、呼び出し側でARGVを消去してください。
+</p>
+<pre>
+' VB (OLE Automation server)
+Public Sub GetInterface(ByRef obj)
+    Set Obj = New OleObject
+End Sub
+
+# Ruby
+obj.GetInterface nil   # 引数の数を合わせるためダミー引数を指定
+WIN32OLE::ARGV.clear   # 通常は、後続のメソッド呼び出しによって消去される
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  <title>class Net::POPMail (Ruby 2.2.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.2.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/net=2fpop.html">net/popライブラリ</a>
+&gt; Net::POPMailクラス
+</p>
+
+
+<h1>class Net::POPMail</h1>
+<p>
+
+
+クラスの継承リスト: Net::POPMail
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+POP サーバー上のメール一通を表現するクラス。
+</p>
+<p>
+メールの取得や消去といった操作をカプセル化します。
+<a href="../class/-net=3a=3a-p-o-p3.html">Net::POP3</a> クラスが生成するもので、ユーザが直接は生成しません。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_ALL">all</a>
+
+<a href="#I_ALL">mail</a>
+
+<a href="#I_ALL">pop</a>
+
+<a href="#I_DELETE">delete</a>
+
+<a href="#I_DELETE">delete!</a>
+
+<a href="#I_DELETED--3F">deleted?</a>
+
+<a href="#I_HEADER">header</a>
+
+<a href="#I_LENGTH">length</a>
+
+<a href="#I_LENGTH">size</a>
+
+<a href="#I_NUMBER">number</a>
+
+<a href="#I_TOP">top</a>
+
+<a href="#I_UIDL">uidl</a>
+
+<a href="#I_UIDL">unique_id</a>
+
+</dd>
+
+</dl>
+
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_ALL"><code>pop -&gt; String</code><span class="permalink">[<a href="../method/-net=3a=3a-p-o-p-mail/i/all.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Net/POPMail.html#method-i-all">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>all -&gt; String</code></dt>
+<dt class="method-heading"><code>mail -&gt; String</code></dt>
+<dt class="method-heading"><code>pop {|str| .... } -&gt; nil</code></dt>
+<dt class="method-heading"><code>all {|str| .... } -&gt; nil</code></dt>
+<dt class="method-heading"><code>mail {|str| .... } -&gt; nil</code></dt>
+<dt class="method-heading"><code>pop(io) -&gt; object</code></dt>
+<dt class="method-heading"><code>all(io) -&gt; object</code></dt>
+<dt class="method-heading"><code>mail(io) -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+メールを受信します。
+</p>
+<p>
+引数もブロックも与えられなかった場合にはメール
+の内容を文字列で返します。
+</p>
+<p>
+ブロックが渡されたときは、メールの内容を
+少しずつ読み込み、読みこんだ文字列を
+引数としてブロックを呼びだします。
+</p>
+<p>
+ブロックなしで、オブジェクトを
+引数として渡すとそのオブジェクトに
+メールの内容を &lt;&lt; メソッドで順次書き込みます。
+通常 <a href="../class/-i-o.html">IO</a> オブジェクトを渡します。
+この場合引数として渡したオブジェクトを返します。
+</p>
+<p>
+pop, all, mail はすべて同じ効果ですが、
+all と mail は obsolete です。
+</p>
+<p>
+使用例:
+</p>
+<pre>
+require 'net/pop'
+
+Net::POP3.start('pop.example.com', 110,
+                'YourAccount, 'YourPassword') {|pop|
+  pop.mails.each do |m|
+    puts m.pop
+  end
+}
+</pre>
+<p>
+ブロックを利用する例:
+</p>
+<pre>
+require 'net/pop'
+
+Net::POP3.start('pop.example.com', 110) {|pop|
+  pop.each_mail do |m|
+    m.pop do |str|
+      print str
+    end
+  end
+}
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] io:</dt>
+<dd>
+メールの内容を書きこむオブジェクト
+</dd>
+<dt>[EXCEPTION] TimeoutError:</dt>
+<dd>
+通信がタイムアウトした場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::POPError:</dt>
+<dd>
+サーバが認証失敗以外のエラーを報告した場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::POPBadResponse:</dt>
+<dd>
+サーバからの応答がプロトコル上不正であった場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_DELETE"><code>delete -&gt; ()</code><span class="permalink">[<a href="../method/-net=3a=3a-p-o-p-mail/i/delete.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Net/POPMail.html#method-i-delete">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>delete! -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+メールに削除マークを付けます。
+</p>
+<p>
+削除マークを付けたメールは読み出せなくなります。
+セッション終了時に実際に削除されます。
+<a href="../method/-net=3a=3a-p-o-p3/i/reset.html">Net::POP3#reset</a> を呼ぶと削除マークは取り消されます。
+</p>
+<p>
+delete! は obsolete です。
+</p>
+<dl>
+<dt>[EXCEPTION] TimeoutError:</dt>
+<dd>
+通信がタイムアウトした場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::POPError:</dt>
+<dd>
+サーバが認証失敗以外のエラーを報告した場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::POPBadResponse:</dt>
+<dd>
+サーバからの応答がプロトコル上不正であった場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-p-o-p-mail/i/deleted=3f.html">Net::POPMail#deleted?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DELETED--3F"><code>deleted? -&gt; bool</code><span class="permalink">[<a href="../method/-net=3a=3a-p-o-p-mail/i/deleted=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Net/POPMail.html#method-i-deleted-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+メールに削除マークが付けられている場合に真を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-p-o-p-mail/i/delete.html">Net::POPMail#delete</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_HEADER"><code>header(dest='') -&gt; String</code><span class="permalink">[<a href="../method/-net=3a=3a-p-o-p-mail/i/header.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Net/POPMail.html#method-i-header">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+メールヘッダを受信し、文字列として返します。
+</p>
+<p>
+destを渡すとそのオブジェクトにデータを書き込みますが、これは
+obsolete なので使わないでください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] dest:</dt>
+<dd>
+ヘッダを書き込む先(obsoleteなので使わないでください)
+</dd>
+<dt>[EXCEPTION] TimeoutError:</dt>
+<dd>
+通信がタイムアウトした場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::POPError:</dt>
+<dd>
+サーバが認証失敗以外のエラーを報告した場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::POPBadResponse:</dt>
+<dd>
+サーバからの応答がプロトコル上不正であった場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_LENGTH"><code>size -&gt; Integer</code><span class="permalink">[<a href="../method/-net=3a=3a-p-o-p-mail/i/length.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Net/POPMail.html#method-i-length">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>length -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+メールのサイズ (単位はバイト) をかえします。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_NUMBER"><code>number -&gt; Integer</code><span class="permalink">[<a href="../method/-net=3a=3a-p-o-p-mail/i/number.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Net/POPMail.html#method-i-number">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+メールに対して振られた、そのメールボックスで一意な番号を返します。
+</p>
+<p>
+サーバに接続しなおすとこの番号は変化する場合があります。
+メールごとに一意な識別子が必要なときは
+<a href="../method/-net=3a=3a-p-o-p-mail/i/uidl.html">Net::POPMail#uidl</a> を使ってください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TOP"><code>top(lines, dest='') -&gt; String</code><span class="permalink">[<a href="../method/-net=3a=3a-p-o-p-mail/i/top.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Net/POPMail.html#method-i-top">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+メールヘッダと本文 lines 行を受信し、文字列として返します。
+</p>
+<p>
+destを渡すとそのオブジェクトにデータを書き込みますが、これは
+obsolete なので使わないでください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] lines:</dt>
+<dd>
+本文を読みだす行数
+</dd>
+<dt class='method-param'>[PARAM] dest:</dt>
+<dd>
+データを書き込む先(obsoleteなので使わないでください)
+</dd>
+<dt>[EXCEPTION] TimeoutError:</dt>
+<dd>
+通信がタイムアウトした場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::POPError:</dt>
+<dd>
+サーバが認証失敗以外のエラーを報告した場合に発生します
+</dd>
+<dt>[EXCEPTION] Net::POPBadResponse:</dt>
+<dd>
+サーバからの応答がプロトコル上不正であった場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_UIDL"><code>uidl -&gt; String</code><span class="permalink">[<a href="../method/-net=3a=3a-p-o-p-mail/i/uidl.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Net/POPMail.html#method-i-uidl">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>unique_id -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+メールに対して振られた、サーバ上で一意な識別子 (UIDL) をかえします。
+</p>
+<p>
+<a href="../method/-net=3a=3a-p-o-p-mail/i/number.html">Net::POPMail#number</a> と違い、
+この UIDL は接続しなおしても変化しません。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

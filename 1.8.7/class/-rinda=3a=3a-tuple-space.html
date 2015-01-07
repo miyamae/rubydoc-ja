@@ -57,6 +57,33 @@ Tuple Space を表すクラスです。
 <a href="../method/-d-rb=3a=3a-d-rb-object/s/new_with_uri.html">DRb::DRbObject.new_with_uri</a> などでこのオブジェクトのリモートオブジェクトを
 取得し、<a href="../class/-rinda=3a=3a-tuple-space-proxy.html">Rinda::TupleSpaceProxy</a> をかぶせることで利用します。
 </p>
+<h2 id='renewer'>タプルの寿命と renewer</h2>
+<p>
+タプルを <a href="../method/-rinda=3a=3a-tuple-space/i/write.html">Rinda::TupleSpace#write</a> などで追加するときにその寿命を
+秒数で指定することができます。
+タプルをタプルスペースに追加してからその秒数過ぎるとタプルは削除されます。
+</p>
+<p>
+ただし、指定秒数を過ぎてもすぐには削除されず、<a href="../method/-rinda=3a=3a-tuple-space/s/new.html">Rinda::TupleSpace.new</a> の
+引数で指定した秒数ごとに「掃除用スレッド」が動き、それによって
+cancel されたタプルや期限切れになったタプルが削除されます。
+</p>
+<p>
+sec には秒数の代わりに renewer を指定することもできます。
+これは renew という名前を持つオブジェクトで、上で説明した掃除用スレッドに
+よって renew メソッドが呼び出されます。renew が 正の秒数を返した
+場合、有効期限がその秒数に更新されます。ただし、renew はタプルの有効期限が
+切れていない場合のみ呼び出されます(有効期限切れのタプルは削除されます)。
+</p>
+<p>
+<a href="../class/-rinda=3a=3a-simple-renewer.html">Rinda::SimpleRenewer</a> はシンプルな renewer で renewer のサンプル実装でも
+あります。このクラスはデフォルトで寿命を180秒後に変更します。つまり
+このクラスのインスタンスを renewer に指定すると無限に renew され続けるよう
+に思われますが、そうではありません。このクラスは
+<a href="../class/-d-rb=3a=3a-d-rb-undumped.html">DRb::DRbUndumped</a> を include しているので、オブジェクトが生成された
+プロセスが止まるとそのオブジェクトは無効になります。その時点でrenewの呼び出しに失敗
+するようになるので、そこからしばらく(数分)するとそのタプルは有効期限切れとなります。
+</p>
 
 
 
@@ -313,6 +340,11 @@ nil は無限を意味し、この場合にはタプルは経過時間によっ�
 <dt class='method-param'>[PARAM] sec:</dt>
 <dd>
 有効期限(秒数)
+</dd>
+<dt>[EXCEPTION] Rinda::InvalidHashTupleKey:</dt>
+<dd>
+不正な Hash tuple (キーが文字列以外のもの)を
+追加しようとすると発生します
 </dd>
 <dt>[RETURN]</dt>
 <dd>

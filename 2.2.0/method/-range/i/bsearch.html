@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  <title>instance method Range#bsearch (Ruby 2.2.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.2.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-range.html">Rangeクラス</a>
+&gt; bsearch
+
+</p>
+
+
+<h1>instance method Range#bsearch</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_BSEARCH"><code>bsearch {|obj| ... } -&gt; object | nil</code><span class="permalink">[<a href="../../../method/-range/i/bsearch.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Range.html#method-i-bsearch">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ブロックの評価結果で範囲内の各要素の大小判定を行い、条件を満たす値を二
+分探索(計算量は O(log n))で検索します。要素が見つからない場合は nil を
+返します。
+</p>
+<p>
+本メソッドはブロックを評価した結果により以下のいずれかのモードで動作し
+ます。
+</p>
+<ul>
+<li>find-minimum モード</li>
+<li>find-any モード</li>
+</ul>
+<p>
+find-minimum モード(特に理由がない限りはこのモードを使う方がいいでしょ
+う)では、条件判定の結果を以下のようにする必要があります。
+</p>
+<ul>
+<li>求める値がブロックパラメータの値か前の要素の場合: true を返す</li>
+<li>求める値がブロックパラメータより後の要素の場合: false を返す</li>
+</ul>
+<p>
+ブロックの評価結果が true になる最初の要素を返すか、nil を返します。
+</p>
+<pre>
+ary = [0, 4, 7, 10, 12]
+(0...ary.size).bsearch {|i| ary[i] &gt;= 4 } # =&gt; 1
+(0...ary.size).bsearch {|i| ary[i] &gt;= 6 } # =&gt; 2
+(0...ary.size).bsearch {|i| ary[i] &gt;= 8 } # =&gt; 3
+(0...ary.size).bsearch {|i| ary[i] &gt;= 100 } # =&gt; nil
+
+(0.0...Float::INFINITY).bsearch {|x| Math.log(x) &gt;= 0 } # =&gt; 1.0
+</pre>
+<p>
+find-any モードは <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/bsearch.html">bsearch(3)</a> のように動作します。ブロックは真偽値
+ではなく、以下のような数値を返す必要があります。求める値の範囲がx...y
+（x &lt;= y）であるとします。また、ブロックパラメータの値を v とします。
+</p>
+<ul>
+<li>ブロックパラメータの値が求める値の範囲よりも小さい（v &lt; x）場合: 正の数を返す</li>
+<li>ブロックパラメータの値が求める値の範囲に合致する（x &lt;= v &lt; y）場合: 0 を返す</li>
+<li>ブロックパラメータの値が求める値の範囲よりも大きい（y &lt;= v）場合: 負の数を返す</li>
+</ul>
+<p>
+ブロックの評価結果が 0 になるいずれかの要素を返すか、nil を返します。
+</p>
+<pre>
+ary = [0, 100, 100, 100, 200]
+(0..4).bsearch {|i| 100 - ary[i] } # =&gt; 1, 2 or 3
+(0..4).bsearch {|i| 300 - ary[i] } # =&gt; nil
+(0..4).bsearch {|i|  50 - ary[i] } # =&gt; nil
+</pre>
+<p>
+上記の 2 つのモードを混在して使用しないでください(ブロックの評価結果は
+常に true/false、数値のいずれかを一貫して返すようにしてください)。
+また、二分探索の各イテレーションで値がどのような順序で選ばれるかは
+未規定です。
+</p>
+<dl>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+ブロックの評価結果が true、false、nil、数値以外であっ
+た場合に発生します。
+</dd>
+<dt>[EXCEPTION] LocalJumpError:</dt>
+<dd>
+ブロックを指定しなかった場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-array/i/bsearch.html">Array#bsearch</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

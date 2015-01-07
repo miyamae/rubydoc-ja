@@ -64,7 +64,7 @@
 <dt>インスタンスメソッド</dt>
 <dd>
 
-<a href="#I_--21">!</a>
+<a href="#I_--21--7E">!~</a>
 
 <a href="#I_--3C--3D--3E"><=></a>
 
@@ -265,7 +265,7 @@ p some #=&gt; #&lt;Object:0x2b696d8&gt;
 <h2>インスタンスメソッド</h2>
 <dl>
 
-<dt class="method-heading" id="I_--21"><code>self !~ other -&gt; bool</code><span class="permalink">[<a href="../method/-object/i/=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/Object.html#method-i-21">rdoc</a>]</span></dt>
+<dt class="method-heading" id="I_--21--7E"><code>self !~ other -&gt; bool</code><span class="permalink">[<a href="../method/-object/i/=21=7e.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/Object.html#method-i-21-7E">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 自身が other とマッチしない事を判定します。
@@ -1639,6 +1639,11 @@ Windows での <a href="../method/-process/s/fork.html">Process.fork</a> や GNU
 ような <a href="../class/-not-implemented-error.html">NotImplementedError</a> が発生する場合は false を返します。
 </p>
 <p>
+※ NotImplementedError が発生する場合に false を返すのは
+Rubyの組み込みライブラリや標準ライブラリなど、C言語で実装されているメソッドのみです。
+Rubyで実装されたメソッドで NotImplementedError が発生する場合は true を返します。
+</p>
+<p>
 メソッドが定義されていない場合は、<a href="../method/-object/i/respond_to_missing=3f.html">Object#respond_to_missing?</a> を呼
 び出してその結果を返します。
 </p>
@@ -1675,6 +1680,45 @@ list.each{|it| puts it.hello if it.respond_to?(:hello)}
 list.each{|it| it.instance_eval(&quot;puts hello if it.respond_to?(:hello, true)&quot;)}
 #=&gt; Bonjour
 #   Guten Tag
+
+module Template
+  def main
+    start
+    template_method
+    finish
+  end
+
+  def start
+    puts &quot;start&quot;
+  end
+
+  def template_method
+    raise NotImplementedError.new
+  end
+
+  def finish
+    puts &quot;finish&quot;
+  end
+end
+
+class ImplTemplateMethod
+  include Template
+  def template_method
+    &quot;implement template_method&quot;
+  end
+end
+
+class NotImplTemplateMethod
+  include Template
+
+  # not implement template_method
+end
+
+puts ImplTemplateMethod.new.respond_to?(:template_method) # =&gt; true
+# NotImplementedError が発生しているが、Rubyによる実装部のため true を返却
+puts NotImplTemplateMethod.new.respond_to?(:template_method) # =&gt; true
+# GNU/Linux で実行。C言語による実装部のため false を返却
+puts File.respond_to?(:lchmod)         # =&gt; false
 </pre>
 <p>
 [SEE_ALSO] <a href="../method/-module/i/method_defined=3f.html">Module#method_defined?</a>
