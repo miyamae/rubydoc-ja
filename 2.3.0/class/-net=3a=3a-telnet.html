@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class Net::Telnet (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/net=2ftelnet.html">net/telnetライブラリ</a>
+&gt; Net::Telnetクラス
+</p>
+
+
+<h1>class Net::Telnet</h1>
+<p>
+
+
+クラスの継承リスト: Net::Telnet
+
+      &lt; <a href="../class/-simple-delegator.html">SimpleDelegator</a>
+      
+
+      &lt; <a href="../class/-delegator.html">Delegator</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+このクラスは telnet のクライアント機能を提供します。
+</p>
+<p>
+telnet でリモートホストにログインしてシェル経由で
+コマンドを実行することを考えてみましょう。
+これを Net::Telnet で実現するためには、
+まず <a href="../method/-net=3a=3a-telnet/s/new.html">Net::Telnet.new</a> に &quot;Host&quot; オプションを
+与えてオブジェクトを作り、 <a href="../method/-net=3a=3a-telnet/i/login.html">Net::Telnet#login</a> で
+ユーザ名とパスワードを送ってログインし、
+<a href="../method/-net=3a=3a-telnet/i/cmd.html">Net::Telnet#cmd</a> でコマンドを
+実行、最後に IO#close で接続を閉じます。
+<a href="../method/-net=3a=3a-telnet/i/waitfor.html">Net::Telnet#waitfor</a>, <a href="../method/-net=3a=3a-telnet/i/print.html">Net::Telnet#print</a>,
+<a href="../method/-net=3a=3a-telnet/i/puts.html">Net::Telnet#puts</a>, <a href="../method/-net=3a=3a-telnet/i/write.html">Net::Telnet#write</a> などと
+いったメソッドはより複雑なことをする場合にのみ使ってください。
+</p>
+<p>
+Net::Telnet のオブジェクトは SMTP や HTTP のような telnet で
+ないサービスにも利用できます。この場合には
+<a href="../method/-net=3a=3a-telnet/s/new.html">Net::Telnet.new</a> に &quot;Port&quot; オプションを与えることで
+ポートを指定する必要があるでしょう。また、
+&quot;Telnetmode&quot; オプションに false を
+渡すことで telnet のコマンド列を解釈しないように
+しなければなりません。<a href="../method/-net=3a=3a-telnet/i/login.html">Net::Telnet#login</a> は普通
+うまく動かないので、認証をプログラマ自身が実装
+する必要があります。
+</p>
+<p>
+通信プロトコルによっては、<a href="../method/-net=3a=3a-telnet/s/new.html">Net::Telnet.new</a> に&quot;Prompt&quot;
+を渡しておいて <a href="../method/-net=3a=3a-telnet/i/cmd.html">Net::Telnet#cmd</a> をうまく動作させることが
+できるかもしれません。
+また、<a href="../method/-net=3a=3a-telnet/i/cmd.html">Net::Telnet#cmd</a> を呼ぶごとに &quot;Match&quot; を
+指定しても同様のことができます。
+また、<a href="../method/-net=3a=3a-telnet/i/puts.html">Net::Telnet#puts</a> や <a href="../method/-net=3a=3a-telnet/i/waitfor.html">Net::Telnet#waitfor</a> を
+直接使ってやりとりすることもできます。
+それでうまくいかない場合は、
+<a href="../method/-i-o/i/sysread.html">IO#sysread</a> を直接呼ぶ必要があるかもしれません。
+</p>
+<p>
+<a href="../method/-net=3a=3a-telnet/s/new.html">Net::Telnet.new</a> には &quot;Proxy&quot; オプションで指定した
+オブジェクトを通して通信をすることができます。
+&quot;Proxy&quot; オプションに <a href="../class/-net=3a=3a-telnet.html">Net::Telnet</a> のオブジェクトを
+渡した場合には、通信路が共用されます。<a href="../class/-socket.html">Socket</a>
+のような読み書き可能な <a href="../class/-i-o.html">IO</a> オブジェクトを渡した場合には、
+そのオブジェクトを通してやり取りが行われます。
+この機能はユニットテストをする場合などに便利でしょう。
+</p>
+<h2 >使用例</h2>
+<p>
+ログインしてコマンドを送る例、リモートホストから返ってきた文字列は
+すべて標準出力に表示する
+</p>
+<pre>
+require 'net/telnet'
+
+# リモートホスト &quot;foobar&quot; に接続
+# タイムアウトは 10 秒
+localhost = Net::Telnet.new(&quot;Host&quot; =&gt; &quot;localhost&quot;,
+                            &quot;Timeout&quot; =&gt; 10)
+
+# ログインし、プロンプトが出るまで待ち合わせる
+telnet.login(&quot;your name&quot;, &quot;your password&quot;) {|c| print c}
+
+# ls コマンドを実行し、実行後、プロンプトが出るまで待ち合わせる
+telnet.cmd(&quot;ls&quot;) {|c| print c}
+
+# sleep で 5 秒
+telnet.cmd(&quot;sleep 5 &amp;&amp; echo foobar &amp;&quot;) {|c| print c}
+
+STDOUT.flush # &lt;- これがないとここまで処理が来てることがわかりにくい
+
+# 前のコマンドの出力を待ち合わせる
+telnet.waitfor(/foobar\Z/) {|c| print c}
+
+# ログインセッションの終了
+telnet.cmd(&quot;exit&quot;) {|c| print c}
+telnet.close
+</pre>
+<p>
+POP サーバにメールが来ているかどうかを見る。リモートホストからきた文字列は
+すべて標準出力に表示
+</p>
+<pre>
+require 'net/telnet'
+
+# リモートホスト(POPサーバ) &quot;foobar&quot; に接続
+# ポート番号は110(POPのwell-knownポート)、
+# &quot;Telnetmode&quot; は off (telnet用の特殊なバイト列を解釈しない)、
+# Prompt (コマンドの区切り) は POP の仕様により /^\+OK/n とする
+pop = Net::Telnet::new(&quot;Host&quot; =&gt; &quot;foobar&quot;,
+                       &quot;Port&quot; =&gt; 110,
+                       &quot;Telnetmode&quot; =&gt; false,
+                       &quot;Prompt&quot; =&gt; /^\+OK/n)
+# 認証をする
+# Net::Telnet#login は使えない(ログインのコマンドが異なる)ので
+# Net::Telnet#cmd でユーザ名とパスワードを送る
+pop.cmd(&quot;user &quot; + &quot;your_username&quot;) { |c| print c }
+pop.cmd(&quot;pass &quot; + &quot;your_password&quot;) { |c| print c }
+
+# list コマンドで来ているメールを表示する
+pop.cmd(&quot;list&quot;) { |c| print c }
+
+# 終了する
+pop.close
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_BINMODE">binmode</a>
+
+<a href="#I_BINMODE--3D">binmode=</a>
+
+<a href="#I_CLOSE">close</a>
+
+<a href="#I_CMD">cmd</a>
+
+<a href="#I_LOGIN">login</a>
+
+<a href="#I_PREPROCESS">preprocess</a>
+
+<a href="#I_PRINT">print</a>
+
+<a href="#I_PUTS">puts</a>
+
+<a href="#I_SOCK">sock</a>
+
+<a href="#I_TELNETMODE">telnetmode</a>
+
+<a href="#I_TELNETMODE--3D">telnetmode=</a>
+
+<a href="#I_WAITFOR">waitfor</a>
+
+<a href="#I_WRITE">write</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(opts) -&gt; Net::Telnet</code><span class="permalink">[<a href="../method/-net=3a=3a-telnet/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Net/Telnet.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>new(opts) {|message| ... } -&gt; Net::Telnet</code></dt>
+<dd class="method-description">
+<p>
+Telnet オブジェクトを生成します。
+</p>
+<p>
+このときリモートホストへの接続も行います(&quot;Proxy&quot;を指定しない場合)。
+opts には Telnet オブジェクトに設定する以下のオプションをハッシュで指定します。
+オプションは省略時にはそれぞれ右に示すデフォルト値が適用されます。
+</p>
+<pre>
+&quot;Host&quot;       =&gt; &quot;localhost&quot;
+&quot;Port&quot;       =&gt; 23
+&quot;Prompt&quot;     =&gt; /[$%#&gt;] \z/n
+&quot;Timeout&quot;    =&gt; 10  # 接続待ちタイムアウト値(sec)
+&quot;Waittime&quot;   =&gt; 0   # Prompt を待ち合わせる時間。この値を nil にしてはいけません
+&quot;Binmode&quot;    =&gt; false
+&quot;Telnetmode&quot; =&gt; true
+&quot;Output_log&quot; =&gt; nil # ログの出力ファイル名
+&quot;Dump_log&quot;   =&gt; nil # 出力ファイル名
+&quot;Proxy&quot;      =&gt; nil # Net::Telnet または IO のオブジェクトを指定する
+</pre>
+<p>
+それぞれの意味は以下の通りです。
+</p>
+<p>
+&quot;Host&quot; 接続するホストのホスト名もしくはIPアドレスを文字列で指定します。
+デフォルトは &quot;localhost&quot; です。
+</p>
+<p>
+&quot;Port&quot; 接続するポート番号です。デフォルトは23です。
+</p>
+<p>
+&quot;Binmode&quot; これを偽にすると、改行を変換します。ホストへの
+LF は CRLF に変換され、ホストからの CRLF は LF に変換されます。
+これを真にすると、変換をしません。この変換は
+<a href="../method/-net=3a=3a-telnet/i/binmode.html">Net::Telnet#binmode</a> でも無効化できます。
+ホストへ送る文字列の変換は <a href="../method/-net=3a=3a-telnet/i/puts.html">Net::Telnet#puts</a> と
+<a href="../method/-net=3a=3a-telnet/i/puts.html">Net::Telnet#puts</a> に適用され、<a href="../method/-net=3a=3a-telnet/i/write.html">Net::Telnet#write</a> には適用され
+ません。改行の変換に関しては telnet の SGA と BIN オプションにも
+影響されることに注意してください。
+</p>
+<p>
+&quot;Prompt&quot; コマンドライン上のプロンプトを表わす正規表現を指定します。
+これはホストからの出力が終了し、ホストが新しい入力を
+待っているかどうかを判断するために必要となります。
+</p>
+<p>
+&quot;Output_log&quot; 接続状態メッセージや受け取った通信を記録する
+ファイル名を指定します。通常の Telnet セッションでは、ログには
+サーバ側からエコーされたクライアントからの入力を含みます。
+エコーがないようなプロトコルの場合はクライアントからの入力は
+ログに含まれません。ログは指定したファイルの後ろに追記されます。
+デフォルトではログは出力されません。
+</p>
+<p>
+&quot;Dump_log&quot; &quot;Output_log&quot;と同様にログを出力するファイル名を指定します。
+ただしこのログは hexdump 形式 (1行に 16byte の 16進文字列と、
+対応する ASCII 文字列)。ログの各行の1行目には以下のような文字が
+付加されます。
+ステータスメッセージの前には「#」、
+クライアントからサーバへの通信の前には「&gt;」、
+サーバからクライアントへの通信の前には「&lt;」が出力されます。
+</p>
+<p>
+&quot;Telnetmode&quot; これに真を指定した場合には、ホストからの通信
+を解釈して telnet の特殊なバイト列をエスケープします。
+<a href="../method/-net=3a=3a-telnet/i/puts.html">Net::Telnet#puts</a> や <a href="../method/-net=3a=3a-telnet/i/print.html">Net::Telnet#print</a> で送られる文字列も
+エスケープされます。<a href="../method/-net=3a=3a-telnet/i/write.html">Net::Telnet#write</a> ではエスケープされません。
+<a href="../class/-net=3a=3a-telnet.html">Net::Telnet</a> を telnet プロトコル以外(SMPTやPOPなど)で利用したい
+場合には、この値を偽にしてエスケープを止めてください。この
+値は <a href="../method/-net=3a=3a-telnet/i/telnetmode.html">Net::Telnet#telnetmode</a> でも指定できます。
+</p>
+<p>
+&quot;Timeout&quot; 接続時やホストからのデータの読み込みを待つときに、
+ここで指定した秒数でタイムアウト(<a href="../class/-timeout-error.html">TimeoutError</a>が発生)します
+(<a href="../method/-net=3a=3a-telnet/i/login.html">Net::Telnet#login</a>、<a href="../method/-net=3a=3a-telnet/i/waitfor.html">Net::Telnet#waitfor</a>、<a href="../method/-net=3a=3a-telnet/i/cmd.html">Net::Telnet#cmd</a>で
+有効になります)。デフォルトは10(秒)です。
+falseを指定することでタイムアウトが無効になります。その場合には
+接続できない場合には <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/connect.html">connect(2)</a> で Errno::ETIMEOUT が出て
+止まります(通常数分待つことになりますが)が、
+それ以外の点ではホストからデータが来ないといつまでも待ちつづけることに
+なります。
+</p>
+<p>
+&quot;Waittime&quot; は <a href="../method/-net=3a=3a-telnet/i/waitfor.html">Net::Telnet#waitfor</a> メソッドの &quot;Waittime&quot; のデフォ
+ルト値になります。<a href="../method/-net=3a=3a-telnet/i/waitfor.html">Net::Telnet#waitfor</a>
+メソッドのプロンプト待ち合わせの処理は、リモートホストからの出力が
+&quot;Prompt&quot; で指定した正規表現にマッチしてから
+&quot;Waittime&quot; 秒待っても出力がないかどうかで判断されます。
+&quot;Prompt&quot; で指定した正規表現が本当のプロンプト以外の文字列にマッチしてしまう場合に
+この値が意味を持ちます。
+<a href="../method/-net=3a=3a-telnet/i/waitfor.html">Net::Telnet#waitfor</a> メソッドは <a href="../method/-net=3a=3a-telnet/i/cmd.html">Net::Telnet#cmd</a> や <a href="../method/-net=3a=3a-telnet/i/login.html">Net::Telnet#login</a>
+の内部でも使用されています。
+デフォルトは0(秒)で、正規表現にマッチしたら直ちに待合せ処理に入ります。
+</p>
+<p>
+&quot;Proxy&quot; ホストに直接接続するかわりにこれで指定したオブジェクトを
+経由して通信します。<a href="../class/-i-o.html">IO</a>オブジェクトか <a href="../class/-net=3a=3a-telnet.html">Net::Telnet</a> のオブジェクト
+を指定しなければなりません。<a href="../class/-net=3a=3a-telnet.html">Net::Telnet</a>オブジェクトを指定した場合には
+それが持っているソケットを経由して通信します。<a href="../class/-i-o.html">IO</a>オブジェクトを
+指定した場合には、それを直接使って通信します。それ以外のオブジェクトを
+指定するとエラーとなります。
+</p>
+<p>
+ブロックを指定した場合、サーバに繋ぐときに
+表示されるステータスメッセージをそのブロックに渡します。
+通常は、接続前に
+</p>
+<pre>
+&quot;Trying #{ホスト名} ...\n&quot;
+</pre>
+<p>
+接続後に
+</p>
+<pre>
+&quot;Connected to #{ホスト名}.\n&quot;
+</pre>
+<p>
+という文字列がブロックに渡されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] opts:</dt>
+<dd>
+各種オプションを指定します。全てのオプションをデフォルト値で指定したい場合には、{}(空のハッシュ)を指定してください。
+</dd>
+<dt>[EXCEPTION] TimeoutError:</dt>
+<dd>
+接続時にタイムアウトすると発生します。タイムアウトの時間はオプションで指定します。
+
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_BINMODE"><code>binmode(mode=nil) -&gt; bool</code><span class="permalink">[<a href="../method/-net=3a=3a-telnet/i/binmode.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Net/Telnet.html#method-i-binmode">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数を指定しない場合には&quot;Binmode&quot;の値を返します。
+引数を与えた場合は&quot;Binmode&quot;の値を変更します。
+</p>
+<p>
+これは改行文字の変換をするかどうかを意味します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+設定する値をtrue/falseで与えます
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-telnet/s/new.html">Net::Telnet.new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_BINMODE--3D"><code>binmode=(mode)</code><span class="permalink">[<a href="../method/-net=3a=3a-telnet/i/binmode=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Net/Telnet.html#method-i-binmode-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+&quot;Binmode&quot; を設定します。これは改行文字の変換をするかどうかを意味します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+設定する値をtrue/falseで与えます
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-telnet/s/new.html">Net::Telnet.new</a>, <a href="../method/-net=3a=3a-telnet/i/binmode.html">Net::Telnet#binmode</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CLOSE"><code>close -&gt; ()</code><span class="permalink">[<a href="../method/-net=3a=3a-telnet/i/close.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Net/Telnet.html#method-i-close">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+通信路を閉じます。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CMD"><code>cmd(opts) -&gt; String</code><span class="permalink">[<a href="../method/-net=3a=3a-telnet/i/cmd.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Net/Telnet.html#method-i-cmd">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>cmd(opts) {|mesg| ...} -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+コマンドをホストに送ります。
+</p>
+<p>
+より正確にいうと、文字列をホストに送り、プロンプト、もしくは指定した
+正規表現にマッチするまでホストからのデータを読み込みます。
+</p>
+<p>
+ブロックを指定した場合、ホストからの文字列を引数にブロックを逐次実行します。
+</p>
+<p>
+ホストから受け取った文字列を返します。
+</p>
+<p>
+opts が文字列であれば、その文字列をホストに送り、
+デフォルトオプションでプロンプトを待ちます。
+</p>
+<p>
+opts がハッシュである場合には、送る文字列とオプションを指定することができます。
+その場合には以下の
+</p>
+<p>
+&quot;String&quot; 送る文字列です。必ず指定する必要があります。
+</p>
+<p>
+&quot;Match&quot; ホストからのデータをどこまで読みこむかを指定する正規表現を
+指定します。デフォルトは <a href="../method/-net=3a=3a-telnet/s/new.html">Net::Telnet.new</a> で &quot;Prompt&quot; で指定した
+正規表現となります。
+</p>
+<p>
+&quot;Timeout&quot; タイムアウトまでの時間です。デフォルトは <a href="../method/-net=3a=3a-telnet/s/new.html">Net::Telnet.new</a> で
+指定した値となります。
+</p>
+<p>
+コマンド文字列には改行が付加されてホストに送られます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] opts:</dt>
+<dd>
+ホストに送るコマンドを文字列で指定します。もしくは送る文字列とオプションをハッシュで指定します。
+</dd>
+<dt>[EXCEPTION] TimeoutError:</dt>
+<dd>
+タイムアウトしたときに発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_LOGIN"><code>login(opts, password=nil) -&gt; String</code><span class="permalink">[<a href="../method/-net=3a=3a-telnet/i/login.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Net/Telnet.html#method-i-login">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>login(opts, password=nil) {|mesg| ...} -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+指定したユーザ名とパスワードでログインします。
+</p>
+<p>
+opts が文字列である場合は、 それをユーザ名、passwordをパスワードと
+してログインします。
+opts がハッシュである場合には、&quot;Name&quot; と &quot;Password&quot; をキーとする文字列を
+ユーザ名、パスワードとしてログインします。
+また、opts がハッシュの場合には以下のオプションが利用できます。
+</p>
+<p>
+&quot;LoginPrompt&quot; ログインプロンプトを正規表現で指定します。
+デフォルト値は /[Ll]ogin[: ]*\z/n です。
+</p>
+<p>
+&quot;PasswordPrompt&quot; パスワード入力プロンプトを正規表現で指定します。
+デフォルト値は /[Pp]ass(?:word|phrase)[: ]*\z/n です。
+</p>
+<p>
+パスワードを省略した場合には、パスワード入力プロンプトを
+待ちません。<a href="../method/-net=3a=3a-telnet/s/new.html">Net::Telnet.new</a>の&quot;Prompt&quot;で指定した
+正規表現でプロンプトを待ちます。
+</p>
+<p>
+ログイン処理が終わるまでにホストから送られた文字列を返します。
+通常はユーザ名はエコーされるためそこに含まれているはずです。また
+パスワードはエコーされないため含まれいはずです。
+</p>
+<p>
+ブロックを指定した場合、ホストからの文字列を引数にブロックを逐次実行します。
+</p>
+<p>
+例
+</p>
+<pre>
+# 1つめの引数が文字列の場合
+telnet.login(&quot;your name&quot;, &quot;your password&quot;)
+# 1つめの引数がハッシュの場合
+telnet.login(&quot;Name&quot; =&gt; &quot;your name&quot;, &quot;Password&quot; =&gt; your password&quot;)
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_PREPROCESS"><code>preprocess(string) -&gt; String</code><span class="permalink">[<a href="../method/-net=3a=3a-telnet/i/preprocess.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Net/Telnet.html#method-i-preprocess">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ホストから受け取った文字列の前処理をします。
+</p>
+<p>
+受け取った文字列に改行の変換とtelnetコマンドの検出をします。
+通常は <a href="../method/-net=3a=3a-telnet/i/waitfor.html">Net::Telnet#waitfor</a> から呼びだされます。
+&quot;Telnetmode&quot; を利用している場合、
+<a href="../method/-i-o/i/sysread.html">IO#sysread</a> などで直接ホストからのデータを読みこんだ場合にのみ
+このメソッドを呼ぶ必要があるでしょう。
+</p>
+<p>
+前処理の内容は <a href="../method/-net=3a=3a-telnet/i/telnetmode.html">Net::Telnet#telnetmode</a> や
+<a href="../method/-net=3a=3a-telnet/i/binmode.html">Net::Telnet#binmode</a> によって変わります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+前処理対象の文字列
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+変換後の文字列
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-telnet/s/new.html">Net::Telnet.new</a>, <a href="../method/-net=3a=3a-telnet/i/telnetmode.html">Net::Telnet#telnetmode</a>, <a href="../method/-net=3a=3a-telnet/i/binmode.html">Net::Telnet#binmode</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PRINT"><code>print(string) -&gt; ()</code><span class="permalink">[<a href="../method/-net=3a=3a-telnet/i/print.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Net/Telnet.html#method-i-print">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ホストに文字列を送ります。
+</p>
+<p>
+改行は付加されません。文字列中の改行は変換されます。telnetコマンドはエスケープされます。
+これらの変換は<a href="../method/-net=3a=3a-telnet/i/telnetmode.html">Net::Telnet#telnetmode</a>, <a href="../method/-net=3a=3a-telnet/i/binmode.html">Net::Telnet#binmode</a>,
+およびホストから設定された telnet オプションによって(変換するしないなどが)
+制御されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+ホストに送る文字列
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-telnet/i/write.html">Net::Telnet#write</a>, <a href="../method/-net=3a=3a-telnet/i/puts.html">Net::Telnet#puts</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PUTS"><code>puts(string) -&gt; ()</code><span class="permalink">[<a href="../method/-net=3a=3a-telnet/i/puts.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Net/Telnet.html#method-i-puts">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+改行を付加した文字列をホストに送ります。
+</p>
+<p>
+改行の付加以外は <a href="../method/-net=3a=3a-telnet/i/print.html">Net::Telnet#print</a> と同じです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+ホストに送る文字列
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-telnet/i/write.html">Net::Telnet#write</a>, <a href="../method/-net=3a=3a-telnet/i/print.html">Net::Telnet#print</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SOCK"><code>sock -&gt; IO</code><span class="permalink">[<a href="../method/-net=3a=3a-telnet/i/sock.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Net/Telnet.html#method-i-sock">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+リモートホストに接続している <a href="../class/-i-o.html">IO</a> オブジェクトを返します。
+</p>
+<p>
+Telnet オブジェクトのメソッドはこのオブジェクトに
+移譲されているので、Telnetオブジェクトは <a href="../class/-i-o.html">IO</a> オブジェクト
+オブジェクトのメソッドを持ち、それらを呼ぶと IO オブジェクトに
+転送されます。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TELNETMODE"><code>telnetmode(mode=nil) -&gt; bool|()</code><span class="permalink">[<a href="../method/-net=3a=3a-telnet/i/telnetmode.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Net/Telnet.html#method-i-telnetmode">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数を指定しない場合には&quot;Telnetmode&quot;の値を返します。
+引数を与えた場合は&quot;Telnetmode&quot;の値を変更します。
+</p>
+<p>
+これは telnet の特殊なバイト列を解釈するかどうかを
+意味します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-telnet/s/new.html">Net::Telnet.new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TELNETMODE--3D"><code>telnetmode=(mode)</code><span class="permalink">[<a href="../method/-net=3a=3a-telnet/i/telnetmode=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Net/Telnet.html#method-i-telnetmode-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+&quot;Telnetmode&quot; を設定します。これは telnet の特殊なバイト列を解釈するかどうかを
+意味します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+設定する値を真偽値で与えます
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-telnet/i/new.html">Net::Telnet#new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_WAITFOR"><code>waitfor(opt) -&gt; String|nil</code><span class="permalink">[<a href="../method/-net=3a=3a-telnet/i/waitfor.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Net/Telnet.html#method-i-waitfor">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>waitfor(opt) {|buf| ...} -&gt; String|nil</code></dt>
+<dd class="method-description">
+<p>
+指定した正規表現にマッチする文字列がホストから来るまでデータを読み込みます。
+</p>
+<p>
+opt に正規表現を指定した場合には、それにマッチするまで読みこみます。
+opt にハッシュを指定した場合には、以下のオプションを指定できます。
+</p>
+<p>
+&quot;Match&quot; 待ち合わせたい正規表現を指定します。
+</p>
+<p>
+&quot;Prompt&quot; &quot;Match&quot;と同じです。&quot;Match&quot;が指定されなかった場合にのみ使われます。
+</p>
+<p>
+&quot;String&quot; &quot;Match&quot;と似ていますが、与えられた <a href="../class/-string.html">String</a> のインスタンスに
+完全に一致するデータを待ち合わせます。&quot;Match&quot;も&quot;Prompt&quot;も指定されなかった
+場合にのみ利用されます。
+</p>
+<p>
+&quot;Timeout&quot; タイムアウトの秒数を指定します。指定しない場合は <a href="../method/-net=3a=3a-telnet/s/new.html">Net::Telnet.new</a> で
+指定した&quot;Timeout&quot;の値をデフォルト値として利用します。
+</p>
+<p>
+&quot;Waittime&quot; 指定した正規表現にマッチしてからこれで指定した秒数だけホストからの
+通信がない場合にこのメソッドが終わります。指定しない場合は <a href="../method/-net=3a=3a-telnet/s/new.html">Net::Telnet.new</a> で
+指定した&quot;Waittime&quot;の値をデフォルト値として利用します。
+</p>
+<p>
+&quot;FailEOF&quot; これを真にすると、ホスト側から接続を切られた場合には例外 <a href="../class/-i-o-error.html">IOError</a>
+が発生するようになります。偽だとホスト側から接続を切られた場合にはブロックに
+nil が渡されます。さらにこのオプションが偽で、ホストからのデータが
+一切来なかった場合には nil を返します。デフォルトは偽です。
+</p>
+<p>
+&quot;Match&quot; &quot;Prompt&quot; &quot;String&quot; のいずれかは必ず指定する必要があります。
+</p>
+<p>
+ブロックを指定した場合、ホストからの文字列を引数にブロックを逐次呼びだします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] opt:</dt>
+<dd>
+待ち合わせに必要な情報を指定します。正規表現を指定するとそれにマッチするデータまで待ち、ハッシュを指定すると正規表現とオプションを指定できます。
+</dd>
+<dt>[EXCEPTION] TimeoutError:</dt>
+<dd>
+タイムアウトした場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-telnet/s/new.html">Net::Telnet.new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_WRITE"><code>write(string) -&gt; ()</code><span class="permalink">[<a href="../method/-net=3a=3a-telnet/i/write.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Net/Telnet.html#method-i-write">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ホストに文字列を送ります。
+文字列に変換は一切施しません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+ホストに送る文字列
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-net=3a=3a-telnet/i/print.html">Net::Telnet#print</a>, <a href="../method/-net=3a=3a-telnet/i/puts.html">Net::Telnet#puts</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

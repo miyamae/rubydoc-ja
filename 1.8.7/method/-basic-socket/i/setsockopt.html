@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../../../style.css">
   <link rel="icon" type="image/png" href="../../../rurema.png">
+  
   <title>instance method BasicSocket#setsockopt (Ruby 1.8.7)</title>
 </head>
 <body>
@@ -23,6 +24,7 @@
 <dl class="methodlist">
 
 <dt class="method-heading" id="I_SETSOCKOPT"><code>setsockopt(level, optname, optval) -&gt; 0</code><span class="permalink">[<a href="../../../method/-basic-socket/i/setsockopt.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/BasicSocket.html#method-i-setsockopt">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>setsockopt(socketoption) -&gt; 0</code></dt>
 <dd class="method-description">
 <p>
 ソケットのオプションを設定します。<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/setsockopt.html">setsockopt(2)</a>
@@ -30,7 +32,8 @@
 </p>
 <p>
 level, optname には Socket::SOL_SOCKET や Socket::SO_REUSEADDR
-といった整数値を用います。
+といった整数値の他、文字列(&quot;SOL_SOCKET&quot;, prefixなしの &quot;SOCKET&quot;)や
+シンボル(:SO_REUSEADDR, :REUSEADDR)を用いることができます。
 </p>
 <p>
 optval には文字列、整数、真偽値(true or false)を渡すことができます。
@@ -39,6 +42,27 @@ optval には文字列、整数、真偽値(true or false)を渡すことがで�
 true/falseの場合は0/1という整数と解釈され、そのメモリ領域の
 intポインタを渡します。
 </p>
+<p>
+引数が1つの場合は <a href="../../../class/-socket=3a=3a-option.html">Socket::Option</a> で設定値を表現します。
+</p>
+<pre>
+# 真偽値の場合
+#setsockopt could be called like this:
+sock.setsockopt(:SOCKET, :REUSEADDR, true)
+sock.setsockopt(Socket::SOL_SOCKET,Socket::SO_REUSEADDR, true)
+sock.setsockopt(Socket::Option.bool(:INET, :SOCKET, :REUSEADDR, true))
+
+# 整数値の場合
+#setsockopt could be called like this:
+sock.setsockopt(:IP, :TTL, 255)
+sock.setsockopt(Socket::IPPROTO_IP, Socket::IP_TTL, 255)
+sock.setsockopt(Socket::Option.int(:INET, :IP, :TTL, 255))
+
+# より複雑な場合
+optval = IPAddr.new(&quot;224.0.0.251&quot;).hton +
+         IPAddr.new(Socket::INADDR_ANY, Socket::AF_INET).hton
+sock.setsockopt(Socket::IPPROTO_IP, Socket::IP_ADD_MEMBERSHIP, optval)
+</pre>
 <dl>
 <dt class='method-param'>[PARAM] level:</dt>
 <dd>
@@ -51,6 +75,10 @@ intポインタを渡します。
 <dt class='method-param'>[PARAM] optval:</dt>
 <dd>
 設定値
+</dd>
+<dt class='method-param'>[PARAM] socketoption:</dt>
+<dd>
+設定値を表す <a href="../../../class/-socket=3a=3a-option.html">Socket::Option</a> オブジェクト
 </dd>
 <dt>[EXCEPTION] Errno::EXXX:</dt>
 <dd>
@@ -67,8 +95,8 @@ intポインタを渡します。
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

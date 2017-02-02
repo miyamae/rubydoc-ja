@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>module function Readline.#readline (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/readline.html">readlineライブラリ</a>
+&gt; <a href="../../../class/-readline.html">Readlineモジュール</a>
+&gt; readline
+
+</p>
+
+
+<h1>module function Readline.#readline</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_READLINE"><code>readline(prompt = &quot;&quot;, add_hist = false) -&gt; String | nil</code><span class="permalink">[<a href="../../../method/-readline/m/readline.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Readline.html#method-c-readline">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+prompt を出力し、ユーザからのキー入力を待ちます。
+エンターキーの押下などでユーザが文字列を入力し終えると、
+入力した文字列を返します。
+このとき、add_hist が true であれば、入力した文字列を入力履歴に追加します。
+何も入力していない状態で EOF(UNIX では ^D) を入力するなどで、
+ユーザからの入力がない場合は nil を返します。
+</p>
+<p>
+本メソッドはスレッドに対応しています。
+入力待ち状態のときはスレッドコンテキストの切替えが発生します。
+</p>
+<p>
+入力時には行内編集が可能で、vi モードと Emacs モードが用意されています。
+デフォルトは Emacs モードです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] prompt:</dt>
+<dd>
+カーソルの前に表示する文字列を指定します。デフォルトは&quot;&quot;です。
+</dd>
+<dt class='method-param'>[PARAM] add_hist:</dt>
+<dd>
+真ならば、入力した文字列をヒストリに記録します。デフォルトは偽です。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+標準入力が tty でない、かつ、標準入力をクローズしている
+(<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/isatty.html">isatty(2)</a> の errno が EBADF である。) 場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require &quot;readline&quot;
+
+input = Readline.readline
+(プロンプトなどは表示せずに、入力待ちの状態になります。
+ ここでは「abc」を入力後、エンターキーを押したと想定します。)
+abc
+
+p input # =&gt; &quot;abc&quot;
+
+input = Readline.readline(&quot;&gt; &quot;)
+(&quot;&gt;&quot;を表示し、入力待ちの状態になります。
+ ここでは「ls」を入力後、エンターキーを押したと想定します。)
+&gt; ls
+
+p input # =&gt; &quot;ls&quot;
+
+input = Readline.readline(&quot;&gt; &quot;, true)
+(&quot;&gt;&quot;を表示し、入力待ちの状態になります。
+ ここでは「cd」を入力後、エンターキーを押したと想定します。)
+&gt; cd
+
+p input # =&gt; &quot;cd&quot;
+
+input = Readline.readline(&quot;&gt; &quot;, true)
+(&quot;&gt;&quot;を表示し、入力待ちの状態になります。
+ ここで、カーソルの上キー、または ^P を押すと、
+ 先ほど入力した「cd」が表示されます。
+ そして、エンターキーを押したと想定します。)
+&gt; cd
+
+p input # =&gt; &quot;cd&quot;
+</pre>
+<p>
+本メソッドには注意事項があります。
+入力待ちの状態で ^C すると ruby インタプリタが終了し、端末状態を復帰しません。
+これを回避するための例を2つ挙げます。
+</p>
+<p>
+例: ^CによるInterrupt例外を捕捉して、端末状態を復帰する。
+</p>
+<pre>
+stty_save = `stty -g`.chomp
+begin
+  while buf = Readline.readline
+      p buf
+      end
+    rescue Interrupt
+      system(&quot;stty&quot;, stty_save)
+      exit
+    end
+  end
+end
+</pre>
+<p>
+例: INTシグナルを捕捉して、端末状態を復帰する。
+</p>
+<pre>
+stty_save = `stty -g`.chomp
+trap(&quot;INT&quot;) { system &quot;stty&quot;, stty_save; exit }
+
+while buf = Readline.readline
+  p buf
+end
+</pre>
+<p>
+また、単に ^C を無視する方法もあります。
+</p>
+<pre>
+trap(&quot;INT&quot;, &quot;SIG_IGN&quot;)
+
+while buf = Readline.readline
+  p buf
+end
+</pre>
+<p>
+入力履歴 Readline::HISTORY を使用して、次のようなこともできます。
+</p>
+<p>
+例: 空行や直前の入力と同じ内容は入力履歴に残さない。
+</p>
+<pre>
+while buf = Readline.readline(&quot;&gt; &quot;, true)
+  # p Readline::HISTORY.to_a
+  Readline::HISTORY.pop if /^\s*$/ =~ buf
+
+  begin
+    if Readline::HISTORY[Readline::HISTORY.length-2] == buf
+      Readline::HISTORY.pop
+    end
+  rescue IndexError
+  end
+
+  # p Readline::HISTORY.to_a
+  print &quot;-&gt; &quot;, buf, &quot;\n&quot;
+end
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-readline/s/vi_editing_mode.html">Readline.vi_editing_mode</a>、<a href="../../../method/-readline/s/emacs_editing_mode.html">Readline.emacs_editing_mode</a>、
+     <a href="../../../class/-readline=3a=3a-h-i-s-t-o-r-y.html">Readline::HISTORY</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

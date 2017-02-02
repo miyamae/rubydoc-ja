@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>Win32ネイティブ版Rubyの互換性問題 (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+
+<a href="../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; Win32ネイティブ版Rubyの互換性問題
+
+</p>
+
+<h1>Win32ネイティブ版Rubyの互換性問題</h1>
+
+<p>
+<a href="../doc/platform=2f-win32=2dnative.html">Win32ネイティブ版</a>Rubyは、できる限りUnix版と同等の動作をするように
+意図して作られていますが、
+OS自体の制限などにより、いくつかの非互換性があります。また、実装上の制限・
+バグもいくつか残っているようです。
+</p>
+<p>
+注意: このドキュメントは現状では不充分です。気づいたことのあるひとは
+どんどん書き足してください。
+</p>
+<h1 >プロセスの扱い</h1>
+<p>
+最も重要な違いとして、fork が動作しないことがあげられます。Unix向けに書かれている
+デーモン系のアプリケーションが動かないのはこれが原因であることが多いでしょう。
+</p>
+<h1 >実行権限の扱い</h1>
+<p>
+setuid などのプロセスの実行権限に関するメソッドは、(NT環境であっても)期待した
+動作はしません。
+</p>
+<h1 >ファイルシステムの問題</h1>
+<p>
+Win32のファイルストリームにはテキストモードとバイナリモードの区別が存在します。
+何も考えずに &quot;w&quot; などのモードでファイルに出力すると、\n → \r\n 変換が
+起きるために、バイナリデータが破壊されるという問題が起きます。
+</p>
+<p>
+File.chmod は読み出し許可・書き込み許可属性のみ操作できます。group/other に対する操作や実行許可の操作は無視されます。File.chownはエラーを返しませんが実際には何も行いません。
+</p>
+<p>
+ドライブレター絡みで未だに幾つかの実装上の漏れがあります--<a href="../doc/platform=2f-d-o-s-i-s-h=2dsupport.html">DOSISH 対応</a>。
+また、同様に、-Ksを指定してあっても、日本語ファイル名の扱いで問題が発生する
+ことがあります。
+</p>
+<h1 >シェルの違いによる問題</h1>
+<p>
+Win32 ネイティブ版では、通常は外部シェルとして command.com / cmd.exe が
+使われます。そのため、Kernel#system メソッドなどでシェル経由で外部コマンドを
+起動した場合、プロセス制御などの操作を利用することはできません。
+</p>
+<h1 >IOとRubyスレッド併用時の問題</h1>
+<p>
+Win32ネイティブ版ではIO待ちはスレッドをブロックします。
+現時点では適当な解決策もありません。
+</p>
+<h1 >その他</h1>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

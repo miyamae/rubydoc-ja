@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class Proc (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Procクラス
+</p>
+
+
+<h1>class Proc</h1>
+<p>
+
+
+クラスの継承リスト: Proc
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+ブロックをコンテキスト(ローカル変数のスコープやスタックフ
+レーム)とともにオブジェクト化した手続きオブジェクトです。
+</p>
+<p>
+Proc は ローカル変数のスコープを導入しないことを除いて
+名前のない関数のように使えます。ダイナミックローカル変数は
+Proc ローカルの変数として使えます。
+</p>
+<p>
+Proc がローカル変数のスコープを保持していることは以下の例で
+変数 var を参照できていることからわかります。
+</p>
+<pre>
+var = 1
+$foo = Proc.new { var }
+var = 2
+
+def foo
+  $foo.call
+end
+
+p foo       # =&gt; 2
+</pre>
+<h2 id='should_use_next'>手続きを中断して値を返す</h2>
+<p>
+手続きオブジェクトを中断して、呼出し元(呼び出しブロックでは yield、それ以外では <a href="../method/-proc/i/call.html">Proc#call</a>)
+へジャンプし値を返すには next を使います。break や return ではありません。
+</p>
+<p>
+例:
+</p>
+<pre>
+ def foo
+   f = Proc.new{
+     next 1
+     2
+   }
+ end
+
+p foo().call       #=&gt; 1
+</pre>
+<h2 id='block'>Proc オブジェクトをブロック付きメソッド呼び出しに使う</h2>
+<p>
+ブロック付きメソッドに対して Proc オブジェクトを `&amp;' を指定して渡すと
+呼び出しブロックのように動作します。
+しかし、厳密には以下の違いがあります
+これらは、Proc オブジェクトが呼び出しブロックとして振舞う際の制限です。
+</p>
+<pre>
+# 問題なし
+(1..5).each { break }
+
+# LocalJumpError が発生します。
+pr = Proc.new { break }
+(1..5).each(&amp;pr)
+</pre>
+<h2 id='lambda_proc'>lambda と proc と Proc.new とイテレータの違い</h2>
+<p>
+<a href="../method/-kernel/m/lambda.html">Kernel.#lambda</a> と <a href="../method/-proc/s/new.html">Proc.new</a> はどちらも <a href="../class/-proc.html">Proc</a> クラスのインスタンス(手続きオブジェクト)を生成しますが、
+生成された手続きオブジェクトはいくつかの場面で挙動が異なります。 lambda の生成する手続きオブジェクトのほうが
+よりメソッドに近い働きをするように設計されています。
+</p>
+<p>
+<a href="../method/-kernel/m/proc.html">Kernel.#proc</a> は Proc.new と同じになります。
+引数に &amp; を付けることで手続きオブジェクト化したブロックは、Proc.new で生成されたそれと
+同じにように振る舞います。
+</p>
+<h3 >引数の扱い</h3>
+<p>
+lambda のほうがより厳密です。引数の数が違っていると（メソッドのように）エラーになります。
+Proc.new は引数を多重代入に近い扱い方をします。
+</p>
+<p>
+例:
+</p>
+<pre>
+b1 = Proc.new{|a,b,c|
+  p a,b,c
+}
+b1.call(2, 4)
+#=&gt; 2
+    4
+    nil
+
+b2 = lambda{|a,b,c|
+  p a,b,c
+}
+b2.call(2, 4)
+#=&gt; wrong number of arguments (2 for 3) (ArgumentError)
+</pre>
+<p>
+<a href="../doc/spec=2fcall.html#block_arg">メソッド呼び出し(super・ブロック付き・yield)/ブロックパラメータの挙動</a> も参照してください。
+</p>
+<h3 >ジャンプ構文の挙動の違い</h3>
+<p>
+return と break は、lambda と Proc.new では挙動が異なります。
+例えば return を行った場合、lambda では手続きオブジェクト自身を抜けますが、
+Proc.new では手続きオブジェクトを囲むメソッドを抜けます。
+</p>
+<p>
+例:
+</p>
+<pre>
+def foo
+  f = Proc.new { return :foo }
+  f.call
+  return
+end
+
+def bar
+  f = lambda { return :bar }
+  f.call
+  return
+end
+
+def h
+  yield
+end
+
+def hoge
+  h{ return :hoge }
+  nil
+end
+
+p foo()  #=&gt; :foo
+p bar()  #=&gt; nil
+p hoge() #=&gt; :hoge
+</pre>
+<p>
+以下の表は、手続きオブジェクトの実行を上の例と同じように、手続きオブジェクトが定義されたのと
+同じメソッド内で行った場合の結果です。
+</p>
+<pre>
+               return                          next                        break
+Proc.new   メソッドを抜ける            手続きオブジェクトを抜ける   例外が発生する
+proc       メソッドを抜ける            手続きオブジェクトを抜ける   例外が発生する
+lambda     手続きオブジェクトを抜ける  手続きオブジェクトを抜ける   手続きオブジェクトを抜ける
+イテレータ メソッドを抜ける            手続きオブジェクトを抜ける   メソッドを抜ける
+</pre>
+<h2 id='orphan'>orphan な手続きオブジェクトの挙動</h2>
+<p>
+Proc を生成したメソッドから脱出した後、手続きオブジェクトからの
+return, break
+は例外 <a href="../class/-local-jump-error.html">LocalJumpError</a> を発生させます。
+ただし、上でも説明した通り lambda で生成した手続きオブジェクトはメソッドと同じように振る舞う
+ことを意図されているため、例外 <a href="../class/-local-jump-error.html">LocalJumpError</a> は発生しません。
+</p>
+<p>
+例:
+</p>
+<pre>
+def foo
+  Proc.new { return }
+end
+
+foo.call
+# =&gt; in `call': return from proc-closure (LocalJumpError)
+</pre>
+<p>
+以下の表は、手続きオブジェクトの実行を上の例と同じように、手続きオブジェクトが定義されたメソッドを
+脱出してから行った場合の結果です。
+</p>
+<pre>
+               return                          next                        break
+Proc.new   例外が発生する              手続きオブジェクトを抜ける   例外が発生する
+proc       例外が発生する              手続きオブジェクトを抜ける   例外が発生する
+lambda     手続きオブジェクトを抜ける  手続きオブジェクトを抜ける   手続きオブジェクトを抜ける
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--3D--3D--3D">===</a>
+
+<a href="#I_--3D--3D--3D">[]</a>
+
+<a href="#I_--3D--3D--3D">call</a>
+
+<a href="#I_--3D--3D--3D">yield</a>
+
+<a href="#I_ARITY">arity</a>
+
+<a href="#I_BINDING">binding</a>
+
+<a href="#I_CURRY">curry</a>
+
+<a href="#I_HASH">hash</a>
+
+<a href="#I_INSPECT">inspect</a>
+
+<a href="#I_INSPECT">to_s</a>
+
+<a href="#I_LAMBDA--3F">lambda?</a>
+
+<a href="#I_PARAMETERS">parameters</a>
+
+<a href="#I_SOURCE_LOCATION">source_location</a>
+
+<a href="#I_TO_PROC">to_proc</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new -&gt; Proc</code><span class="permalink">[<a href="../method/-proc/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Proc.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>new { ... } -&gt; Proc</code></dt>
+<dd class="method-description">
+<p>
+ブロックをコンテキストとともにオブジェクト化して返します。
+</p>
+<p>
+ブロックを指定しなければ、このメソッドを呼び出したメソッドが
+ブロックを伴うときに、それを Proc オブジェクトとして生成して返します。
+</p>
+<pre>
+def foo
+  pr = Proc.new
+  pr.call(1)
+end
+foo {|arg| p arg }
+# =&gt; 1
+</pre>
+<p>
+これは以下と同じです。
+</p>
+<pre>
+def foo
+  yield(1)
+end
+foo {|arg| p arg }
+# =&gt; 1
+</pre>
+<p>
+呼び出し元のメソッドがブロックを伴わなければ、例外
+<a href="../class/-argument-error.html">ArgumentError</a> が発生します。
+</p>
+<pre>
+def foo
+  Proc.new
+end
+foo
+# =&gt; -:2:in `new': tried to create Proc object without a block (ArgumentError)
+        from -:2:in `foo'
+        from -:4
+</pre>
+<p>
+Proc.new は、Proc#initialize が定義されていれば
+オブジェクトの初期化のためにこれを呼び出します。このことを
+除けば、<a href="../method/-kernel/m/proc.html">Kernel.#proc</a> と同じです。
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--3D--3D--3D"><code>self[*arg] -&gt; ()</code><span class="permalink">[<a href="../method/-proc/i/=3d=3d=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Proc.html#method-i-3D-3D-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>call(*arg) -&gt; ()</code></dt>
+<dt class="method-heading"><code>self === *arg -&gt; ()</code></dt>
+<dt class="method-heading"><code>yield(*arg) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+手続きオブジェクトを実行してその結果を返します。
+</p>
+<p>
+引数の渡され方はオブジェクトの生成方法によって異なります。
+詳しくは <a href="../method/-proc/i/lambda=3f.html">Proc#lambda?</a> を参照してください。
+</p>
+<p>
+「===」は when の所に手続きを渡せるようにするためのものです。
+</p>
+<pre>
+def sign(n)
+  case n
+  when lambda{|n| n &gt; 0} then 1
+  when lambda{|n| n &lt; 0} then -1
+  else 0
+  end
+end
+
+p sign(-4) #=&gt; -1
+p sign(0)  #=&gt; 0
+p sign(7)  #=&gt; 1
+</pre>
+<p>
+また、以下のような syntactic sugar もあります。
+</p>
+<pre>
+fib = lambda{|n|
+  case n
+  when 0 then 0
+  when 1 then 1
+  else
+    fib.(n - 2) + fib.(n - 1)
+  end
+}
+fib.(10) # =&gt; 55
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] arg:</dt>
+<dd>
+手続きオブジェクトに与える引数を指定します。
+</dd>
+<dt>[EXCEPTION] LocalJumpError:</dt>
+<dd>
+Procを生成したメソッドからリターンしてしまった場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_ARITY"><code>arity -&gt; Fixnum</code><span class="permalink">[<a href="../method/-proc/i/arity.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Proc.html#method-i-arity">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Proc オブジェクトが受け付ける引数の数を返します。
+</p>
+<p>
+ただし、可変長引数を受け付ける場合、負の整数
+</p>
+<pre>
+-(必要とされる引数の数 + 1)
+</pre>
+<p>
+を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+lambda{           }.arity   # =&gt; 0
+lambda{||         }.arity   # =&gt;  0
+lambda{|x|        }.arity   # =&gt;  1
+lambda{|*x|       }.arity   # =&gt; -1
+lambda{|x, y|     }.arity   # =&gt;  2
+lambda{|x, *y|    }.arity   # =&gt; -2
+lambda{|(x, y)|   }.arity   # =&gt;  1
+lambda{|(x, y), z|}.arity   # =&gt;  2
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_BINDING"><code>binding -&gt; Binding</code><span class="permalink">[<a href="../method/-proc/i/binding.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Proc.html#method-i-binding">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Proc オブジェクトが保持するコンテキストを
+<a href="../class/-binding.html">Binding</a> オブジェクトで返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CURRY"><code>curry -&gt; Proc</code><span class="permalink">[<a href="../method/-proc/i/curry.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Proc.html#method-i-curry">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>curry(arity) -&gt; Proc</code></dt>
+<dd class="method-description">
+<p>
+Procをカリー化します
+</p>
+<p>
+カリー化したProcはいくつかの引数をとります。十分な数の引数が与えられると、元のProcに引数を渡し
+て実行し、結果を返します。引数の個数が足りないときは、部分適用したカリー化Procを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] arity:</dt>
+<dd>
+引数の個数を指定します
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+カリー化したProcオブジェクトを返します
+</dd>
+</dl>
+<pre>
+b = proc {|x, y, z| (x||0) + (y||0) + (z||0) }
+p b.curry[1][2][3]           #=&gt; 6
+p b.curry[1, 2][3, 4]        #=&gt; 6
+p b.curry(5)[1][2][3][4][5]  #=&gt; 6
+p b.curry(5)[1, 2][3, 4][5]  #=&gt; 6
+p b.curry(1)[1]              #=&gt; 1
+
+b = proc {|x, y, z, *w| (x||0) + (y||0) + (z||0) + w.inject(0, &amp;:+) }
+p b.curry[1][2][3]           #=&gt; 6
+p b.curry[1, 2][3, 4]        #=&gt; 10
+p b.curry(5)[1][2][3][4][5]  #=&gt; 15
+p b.curry(5)[1, 2][3, 4][5]  #=&gt; 15
+p b.curry(1)[1]              #=&gt; 1
+
+b = lambda {|x, y, z| (x||0) + (y||0) + (z||0) }
+p b.curry[1][2][3]           #=&gt; 6
+p b.curry[1, 2][3, 4]        #=&gt; wrong number of arguments (4 for 3)
+p b.curry(5)                 #=&gt; wrong number of arguments (5 for 3)
+p b.curry(1)                 #=&gt; wrong number of arguments (1 for 3)
+
+b = lambda {|x, y, z, *w| (x||0) + (y||0) + (z||0) + w.inject(0, &amp;:+) }
+p b.curry[1][2][3]           #=&gt; 6
+p b.curry[1, 2][3, 4]        #=&gt; 10
+p b.curry(5)[1][2][3][4][5]  #=&gt; 15
+p b.curry(5)[1, 2][3, 4][5]  #=&gt; 15
+p b.curry(1)                 #=&gt; wrong number of arguments (1 for 3+)
+
+b = proc { :foo }
+p b.curry[]                  #=&gt; :foo
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_HASH"><code>hash -&gt; Integer</code><span class="permalink">[<a href="../method/-proc/i/hash.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Proc.html#method-i-hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self のハッシュ値を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>to_s -&gt; String</code><span class="permalink">[<a href="../method/-proc/i/inspect.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Proc.html#method-i-inspect">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>inspect -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+self の文字列表現を返します。
+</p>
+<p>
+可能なら self を生成したソースファイル名、行番号を含みます。
+</p>
+<pre>
+p Proc.new {
+   true
+}.to_s
+
+=&gt; &quot;#&lt;Proc:0x0x401a880c@-:3&gt;&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_LAMBDA--3F"><code>lambda? -&gt; bool</code><span class="permalink">[<a href="../method/-proc/i/lambda=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Proc.html#method-i-lambda-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+手続きオブジェクトの引数の取扱が厳密であるならば true を返します。
+</p>
+<p>
+引数の取扱の厳密さの意味は以下の例を参考にしてください。
+例:
+</p>
+<pre>
+# lambda で生成した Proc オブジェクトでは true
+lambda{}.lambda? # =&gt; true
+# proc で生成した Proc オブジェクトでは false
+proc{}.lambda?   # =&gt; false
+# Proc.new で生成した Proc オブジェクトでは false
+Proc.new{}.lambda? # =&gt; false
+
+# 以下、lambda?が偽である場合
+# 余分な引数を無視する
+proc{|a,b| [a,b]}.call(1,2,3) # =&gt; [1,2]
+# 足りない引数には nil が渡される
+proc{|a,b| [a,b]}.call(1) # =&gt; [1, nil]
+# 配列1つだと展開される
+proc{|a,b| [a,b]}.call([1,2]) =&gt; [1,2]
+# lambdaの場合これらはすべて ArgumentError となる
+
+# &amp;が付いた仮引数で生成される Proc は lambda? が偽となる
+def n(&amp;b) b.lambda? end
+n {} # =&gt; false
+
+# &amp;が付いた実引数によるものは、lambda?が元の Procオブジェクトから
+# 引き継がれる
+lambda(&amp;lambda {}).lambda?   #=&gt; true
+proc(&amp;lambda {}).lambda?     #=&gt; true
+Proc.new(&amp;lambda {}).lambda? #=&gt; true
+
+lambda(&amp;proc {}).lambda?     #=&gt; false
+proc(&amp;proc {}).lambda?       #=&gt; false
+Proc.new(&amp;proc {}).lambda?   #=&gt; false
+
+n(&amp;lambda {})                #=&gt; true
+n(&amp;proc {})                  #=&gt; false
+n(&amp;Proc.new {})              #=&gt; false
+
+# Method#to_proc によるものは lambda?が真となる
+def m() end
+method(:m).to_proc.lambda? #=&gt; true
+
+# Module#define_method は特別扱いで、
+# これで定義されたメソッドの引数は常に厳密に取り扱われる
+class C
+  define_method(:d) {}
+end
+C.new.d(1,2)       #=&gt; ArgumentError
+C.new.method(:d).to_proc.lambda?   #=&gt; true
+
+class C
+  define_method(:e, &amp;proc {})
+end
+C.new.e(1,2)       #=&gt; ArgumentError
+C.new.method(:e).to_proc.lambda?   #=&gt; true
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_PARAMETERS"><code>parameters -&gt; [object]</code><span class="permalink">[<a href="../method/-proc/i/parameters.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Proc.html#method-i-parameters">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Proc オブジェクトの引数の情報を返します。
+</p>
+<p>
+Proc オブジェクトが引数を取らなければ空の配列を返します。引数を取る場合は、配列の配列を返し、
+各配列の要素は引数の種類に対応した以下のような Symbol と、引数名を表す Symbol の 2 要素です。
+</p>
+<dl>
+<dt>:req</dt>
+<dd>
+<p>
+必須の引数
+</p>
+</dd>
+<dt>:opt</dt>
+<dd>
+<p>
+デフォルト値が指定されたオプショナルな引数
+</p>
+</dd>
+<dt>:rest</dt>
+<dd>
+<p>
+* で指定された残りすべての引数
+</p>
+</dd>
+<dt>:block</dt>
+<dd>
+<p>
+&amp; で指定されたブロック引数
+</p>
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+prc = lambda{|x, y=42, *other, &amp;b|}
+prc.parameters #=&gt; [[:req, :x], [:opt, :y], [:rest, :other], [:block, :b]]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-method/i/parameters.html">Method#parameters</a>, <a href="../method/-unbound-method/i/parameters.html">UnboundMethod#parameters</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SOURCE_LOCATION"><code>source_location -&gt; [String, Fixnum] | nil</code><span class="permalink">[<a href="../method/-proc/i/source_location.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Proc.html#method-i-source_location">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ソースコードのファイル名と行番号を配列で返します。
+</p>
+<p>
+その手続オブジェクトが ruby で定義されていない(つまりネイティブ
+である)場合は nil を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-method/i/source_location.html">Method#source_location</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_PROC"><code>to_proc -&gt; self</code><span class="permalink">[<a href="../method/-proc/i/to_proc.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Proc.html#method-i-to_proc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self を返します。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>class Socket (Ruby 2.2.0)</title>
 </head>
 <body>
@@ -73,8 +74,8 @@
 <a href="../method/-socket/s/unix_server_socket.html">Socket.unix_server_socket</a>, <a href="../method/-u-n-i-x-server/s/open.html">UNIXServer.open</a></li>
 </ul>
 <p>
-また、クライアントソケットは <a href="../class/-addrinfo=23connect.html">Addrinfo#connect</a> で、
-サーバソケットを <a href="../class/-addrinfo=23bind.html">Addrinfo#bind</a> や <a href="../class/-addrinfo=23listen.html">Addrinfo#listen</a> で
+また、クライアントソケットは <a href="../method/-addrinfo/i/connect.html">Addrinfo#connect</a> で、
+サーバソケットを <a href="../method/-addrinfo/i/bind.html">Addrinfo#bind</a> や <a href="../method/-addrinfo/i/listen.html">Addrinfo#listen</a> で
 作ることもできます。
 </p>
 
@@ -1110,6 +1111,8 @@ Socket::AI_NUMERICHOST
 例:
 </p>
 <pre>
+require 'socket'
+
 p Socket.getaddrinfo(Socket.gethostname, &quot;ftp&quot;)
 #=&gt; [[&quot;AF_INET&quot;, 21, &quot;helium.ruby-lang.org&quot;, &quot;210.251.121.214&quot;, 2, 1, 6]]
 
@@ -1181,6 +1184,8 @@ Socket.unpack_sockaddr_in で unpack できます。
 </p>
 <h3 >使用例</h3>
 <pre>
+irb(main):009:0&gt; require 'socket'
+
 irb(main):009:0&gt; Socket.gethostbyname(&quot;210.251.121.214&quot;)
 [&quot;helium.ruby-lang.org&quot;, [&quot;helium&quot;], 2, &quot;\322\373y\326&quot;]
 
@@ -1204,6 +1209,8 @@ irb(main):009:0&gt; Socket.unpack_sockaddr_in(Socket.gethostbyname(&quot;210.251
 例:
 </p>
 <pre>
+require 'socket'
+
 p Socket.gethostname   #=&gt; &quot;helium.ruby-lang.org&quot;
 </pre>
 </dd>
@@ -1218,6 +1225,8 @@ p Socket.gethostname   #=&gt; &quot;helium.ruby-lang.org&quot;
 本メソッドはマルチキャスト通信が可能なインターフェイスを見つけるために使う事ができます。
 </p>
 <pre>
+require 'socket'
+
 pp Socket.getifaddrs.reject {|ifaddr|
   !ifaddr.addr.ip? || (ifaddr.flags &amp; Socket::IFF_MULTICAST == 0)
 }.map {|ifaddr| [ifaddr.name, ifaddr.ifindex, ifaddr.addr] }
@@ -1228,6 +1237,8 @@ pp Socket.getifaddrs.reject {|ifaddr|
 例(GNU/Linux):
 </p>
 <pre>
+require 'socket'
+
 pp Socket.getifaddrs
 #=&gt; [#&lt;Socket::Ifaddr lo UP,LOOPBACK,RUNNING,0x10000 PACKET[protocol=0 lo hatype=772 HOST hwaddr=00:00:00:00:00:00]&gt;,
 #    #&lt;Socket::Ifaddr eth0 UP,BROADCAST,RUNNING,MULTICAST,0x10000 PACKET[protocol=0 eth0 hatype=1 HOST hwaddr=00:16:3e:95:88:bb] broadcast=PACKET[protocol=0 eth0 hatype=1 HOST hwaddr=ff:ff:ff:ff:ff:ff]&gt;,
@@ -1241,6 +1252,8 @@ pp Socket.getifaddrs
 例(FreeBSD):
 </p>
 <pre>
+require 'socket'
+
 pp Socket.getifaddrs
 #=&gt; [#&lt;Socket::Ifaddr usbus0 UP,0x10000 LINK[usbus0]&gt;,
 #    #&lt;Socket::Ifaddr re0 UP,BROADCAST,RUNNING,MULTICAST,0x800 LINK[re0 3a:d0:40:9a:fe:e8]&gt;,
@@ -1336,6 +1349,8 @@ Socket::NI_DGRAM
 </p>
 <h3 >使用例</h3>
 <pre>
+require 'socket'
+
 Socket.getnameinfo(Socket.sockaddr_in('21','127.0.0.1'))
 #=&gt; [&quot;localhost&quot;, &quot;ftp&quot;]
 
@@ -1388,6 +1403,8 @@ service, protoに対応するポート番号を返
 </dd>
 </dl>
 <pre>
+require 'socket'
+
 Socket.getservbyport(80)         #=&gt; &quot;www&quot;
 Socket.getservbyport(514, &quot;tcp&quot;) #=&gt; &quot;shell&quot;
 Socket.getservbyport(514, &quot;udp&quot;) #=&gt; &quot;syslog&quot;
@@ -1567,6 +1584,8 @@ local_host や local_port を指定した場合、ソケットをそこにバイ
 </dd>
 </dl>
 <pre>
+require 'socket'
+
 Socket.tcp(&quot;www.ruby-lang.org&quot;, 80) {|sock|
   sock.print &quot;GET / HTTP/1.0\r\nHost: www.ruby-lang.org\r\n\r\n&quot;
   sock.close_write
@@ -1608,6 +1627,8 @@ TCP/IP で host:port で待ち受けるサーバ側のソケットを作成し�
 <pre>
 # 逐次的な echo サーバ
 # 一度に一つのクライアントした取り扱えない
+require 'socket'
+
 Socket.tcp_server_loop(16807) {|sock, client_addrinfo|
   begin
     IO.copy_stream(sock, sock)
@@ -1619,6 +1640,8 @@ Socket.tcp_server_loop(16807) {|sock, client_addrinfo|
 # スレッドを使った echo サーバ
 # 同時に複数のクライアントを取り扱える
 # 以下の例だと接続制限がない(つまり接続過剰になりえる)ことに注意
+require 'socket'
+
 Socket.tcp_server_loop(16807) {|sock, client_addrinfo|
   Thread.new {
     begin
@@ -1671,6 +1694,8 @@ port が 0 の場合は、実際のポート番号は動的に選ばれます。
 ただし返り値のソケットはすべて同じ番号を持ちます。
 </p>
 <pre>
+require 'socket'
+
 # tcp_server_sockets returns は2つのソケットを返す
 sockets = Socket.tcp_server_sockets(1296)
 p sockets #=&gt; [#&lt;Socket:fd 3&gt;, #&lt;Socket:fd 4&gt;]
@@ -1817,6 +1842,8 @@ port が 0 の場合は、実際のポート番号は動的に選ばれます。
 </p>
 <pre>
 # UDP/IP echo server
+require 'socket'
+
 Socket.udp_server_sockets(0) {|sockets|
   p sockets.first.local_address.ip_port     #=&gt; 32963
   Socket.udp_server_loop_on(sockets) {|msg, msg_src|
@@ -1917,6 +1944,8 @@ Unix サーバソケットを生成します。
 ソケットを <a href="../method/-i-o/i/close.html">IO#close</a> します。
 </p>
 <pre>
+require 'socket'
+
 socket = Socket.unix_server_socket(&quot;/tmp/s&quot;)
 p socket                  #=&gt; #&lt;Socket:fd 3&gt;
 p socket.local_address    #=&gt; #&lt;Addrinfo: /tmp/s SOCK_STREAM&gt;
@@ -2002,6 +2031,8 @@ p Socket.unpack_sockaddr_un(Socket.sockaddr_un(&quot;/tmp/.X11-unix/X0&quot;))
 例:
 </p>
 <pre>
+require 'socket'
+
 serv = Socket.new(Socket::AF_INET, Socket::SOCK_STREAM, 0)
 sockaddr = Socket.sockaddr_in(8080, &quot;0.0.0.0&quot;)
 serv.bind(sockaddr)
@@ -2078,6 +2109,8 @@ man を参照してください。
 例:
 </p>
 <pre>
+require 'socket'
+
 s = Socket.new(Socket::AF_INET, Socket::SOCK_STREAM, 0)
 sockaddr = Socket.sockaddr_in(80, &quot;www.ruby-lang.org&quot;)
 s.connect(sockaddr)
@@ -2197,6 +2230,8 @@ Errno と man を見てください。
 例:
 </p>
 <pre>
+require 'socket'
+
 s1 = Socket.new(Socket::AF_INET, Socket::SOCK_DGRAM, 0)
 s2 = Socket.new(Socket::AF_INET, Socket::SOCK_DGRAM, 0)
 s1.bind(Socket.sockaddr_in(0, &quot;0.0.0.0&quot;))
@@ -6867,8 +6902,8 @@ Don't send partial frames
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

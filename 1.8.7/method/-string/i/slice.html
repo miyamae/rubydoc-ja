@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../../../style.css">
   <link rel="icon" type="image/png" href="../../../rurema.png">
+  
   <title>instance method String#[] (Ruby 1.8.7)</title>
 </head>
 <body>
@@ -22,13 +23,13 @@
 <h1>instance method String#[]</h1>
 <dl class="methodlist">
 
-<dt class="method-heading" id="I_--5B--5D"><code>self[nth] -&gt; Integer | nil</code><span class="permalink">[<a href="../../../method/-string/i/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/String.html#method-i-5B-5D">rdoc</a>]</span></dt>
-<dt class="method-heading"><code>slice(nth) -&gt; Integer | nil</code></dt>
+<dt class="method-heading" id="I_--5B--5D"><code>self[nth] -&gt; String | nil</code><span class="permalink">[<a href="../../../method/-string/i/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/String.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>slice(nth) -&gt; String | nil</code></dt>
 <dd class="method-description">
 <p>
-nth 番目のバイトを整数 (文字コード) で返します。
+nth 番目の文字を返します。
 nth が負の場合は文字列の末尾から数えます。
-つまり、 self.size + nth 番目のバイトを返します。
+つまり、 self.size + nth 番目の文字を返します。
 </p>
 <p>
 nth が範囲外を指す場合は nil を返します。
@@ -36,34 +37,33 @@ nth が範囲外を指す場合は nil を返します。
 <dl>
 <dt class='method-param'>[PARAM] nth:</dt>
 <dd>
-バイトインデックスを表す整数
+文字の位置を表す整数
 </dd>
 <dt>[RETURN]</dt>
 <dd>
-文字コードを表す整数
+指定した位置の文字を表す String オブジェクト
 </dd>
 </dl>
 <p>
 例:
 </p>
 <pre>
-p 'bar'[2]        # =&gt; 114
-p 'bar'[2] == ?r  # =&gt; true
-p 'bar'[-1]       # =&gt; 114
-
-p 'bar'[3]        # =&gt; nil
-p 'bar'[-4]       # =&gt; nil
+p 'bar'[2]       # =&gt; &quot;r&quot;
+p 'bar'[2] == ?r # =&gt; true
+p 'bar'[-1]      # =&gt; &quot;r&quot;
+p 'bar'[3]       # =&gt; nil
+p 'bar'[-4]      # =&gt; nil
 </pre>
 <p>
-このメソッドの逆に文字コードから文字列を得るには
-<a href="../../../method/-integer/i/chr.html">Integer#chr</a> を使ってください。
+このメソッドの仕様は 1.8.x 以前から大きく変更されていますので注意が必要
+です。
 </p>
 </dd>
 <dt class="method-heading" id="I_--5B--5D"><code>self[nth, len] -&gt; String | nil</code><span class="permalink">[<a href="../../../method/-string/i/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/String.html#method-i-5B-5D">rdoc</a>]</span></dt>
 <dt class="method-heading"><code>slice(nth, len) -&gt; String | nil</code></dt>
 <dd class="method-description">
 <p>
-nth バイト番目から長さ len バイトの部分文字列を新しく作って返します。
+nth 文字目から長さ len 文字の部分文字列を新しく作って返します。
 nth が負の場合は文字列の末尾から数えます。
 </p>
 <dl>
@@ -88,9 +88,8 @@ str0 = &quot;bar&quot;
 str0[2, 1]         #=&gt; &quot;r&quot;
 str0[2, 0]         #=&gt; &quot;&quot;
 str0[2, 100]       #=&gt; &quot;r&quot;  (右側を超えても平気)
-str0[2, 1] == ?r   #=&gt; false  (左辺は長さ1の文字列、右辺は整数の文字コード)
 str0[-1, 1]        #=&gt; &quot;r&quot;
-str0[-1, 2]        #=&gt; &quot;r&quot; (あくまでも「右に向かって len バイト」)
+str0[-1, 2]        #=&gt; &quot;r&quot;  (右に向かって len 文字)
 
 str0[3, 1]         #=&gt; &quot;&quot;
 str0[4, 1]         #=&gt; nil
@@ -150,8 +149,40 @@ nth を省略したときや 0 の場合は正規表現がマッチした部分�
 <pre>
 p &quot;foobar&quot;[/bar/]  # =&gt; &quot;bar&quot;
 p $~.begin(0)      # =&gt; 3
-
 p &quot;def getcnt(line)&quot;[ /def\s+(\w+)/, 1 ]   # =&gt; &quot;getcnt&quot;
+</pre>
+</dd>
+<dt class="method-heading" id="I_--5B--5D"><code>self[regexp, name] -&gt; String</code><span class="permalink">[<a href="../../../method/-string/i/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/String.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>slice(regexp, name) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+正規表現 regexp の name で指定した名前付きキャプチャにマッチする最初の
+部分文字列を返します。正規表現が self にマッチしなかった場合は nil を返
+します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] regexp:</dt>
+<dd>
+正規表現を指定します。
+</dd>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+取得したい部分文字列のパターンを示す正規表現レジスタを示す名前
+</dd>
+<dt>[EXCEPTION] IndexError:</dt>
+<dd>
+name に対応する括弧がない場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+s = &quot;FooBar&quot;
+s[/(?&lt;foo&gt;[A-Z]..)(?&lt;bar&gt;[A-Z]..)/]        # =&gt; &quot;FooBar&quot;
+s[/(?&lt;foo&gt;[A-Z]..)(?&lt;bar&gt;[A-Z]..)/, &quot;foo&quot;] # =&gt; &quot;Foo&quot;
+s[/(?&lt;foo&gt;[A-Z]..)(?&lt;bar&gt;[A-Z]..)/, &quot;bar&quot;] # =&gt; &quot;Bar&quot;
+s[/(?&lt;foo&gt;[A-Z]..)(?&lt;bar&gt;[A-Z]..)/, &quot;baz&quot;] # =&gt; IndexError
 </pre>
 </dd>
 <dt class="method-heading" id="I_--5B--5D"><code>self[range] -&gt; String</code><span class="permalink">[<a href="../../../method/-string/i/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/String.html#method-i-5B-5D">rdoc</a>]</span></dt>
@@ -256,8 +287,8 @@ range.first が 0 より小さいか文字列の長さより大きいときは n
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

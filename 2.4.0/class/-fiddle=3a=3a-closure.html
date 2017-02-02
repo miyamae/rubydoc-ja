@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class Fiddle::Closure (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/fiddle.html">fiddleライブラリ</a>
+&gt; Fiddle::Closureクラス
+</p>
+
+
+<h1>class Fiddle::Closure</h1>
+<p>
+
+
+クラスの継承リスト: Fiddle::Closure
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+コールバック関数を表すクラスです。
+</p>
+<p>
+Ruby のメソッド(call)を C の関数ポインタとして表現するためのクラスです。
+</p>
+<p>
+FFI の closure の wrapper です。
+</p>
+<p>
+利用法としては、このクラスのサブクラスを作って
+そのサブクラスに call メソッドを定義し、
+new でオブジェクトを生成することで利用します。
+</p>
+<pre>
+require 'fiddle'
+include Fiddle # TYPE_* を使うために include する
+
+class Compare &lt; Fiddle::Closure
+  # qsort の比較関数は 型が int(*)(void*, void*) であるため、
+  # このメソッドには DL::CPtr オブジェクトが渡される。
+  # そのポインタが指す先は比較している文字なので、
+  # DL::CPtr#to_s で1文字の文字列に変換している
+  def call(x, y)
+    x.to_s(1) &lt;=&gt; y.to_s(1)
+  end
+end
+
+libc = DL.dlopen(&quot;/lib/libc.so.6&quot;)
+qs = Fiddle::Function.new(libc[&quot;qsort&quot;],
+                          [TYPE_VOIDP, TYPE_INT, TYPE_INT, TYPE_VOIDP],
+                          TYPE_VOID)
+s = &quot;7x0cba(Uq)&quot;
+qs.call(s, s.size, 1, Compare.new(TYPE_INT, [TYPE_VOIDP, TYPE_VOIDP]))
+p s # =&gt;  &quot;()07Uabcqx&quot;
+</pre>
+<p>
+<a href="../method/-class/s/new.html">Class.new</a> を使うことで、サブクラスを明示的に作ることなしに
+コールバックオブジェクトを作ることができます。
+</p>
+<pre>
+compare = Class.new(Fiddle::Closure){
+  def call(x, y)
+    x.to_s(1) &lt;=&gt; y
+  end
+}.new(TYPE_INT, [TYPE_VOIDP, TYPE_VOIDP])
+</pre>
+<p>
+単に Ruby のブロックを C の(コールバック)関数に変換したい場合は
+<a href="../class/-fiddle=3a=3a-block-closure.html">Fiddle::BlockClosure</a> を使うほうが簡単です。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_ARGS">args</a>
+
+<a href="#I_CTYPE">ctype</a>
+
+<a href="#I_TO_I">to_i</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(ret, args, abi=Fiddle::Function::DEFAULT) -&gt; Fiddle::Closure</code><span class="permalink">[<a href="../method/-fiddle=3a=3a-closure/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Fiddle/Closure.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+そのクラスの call メソッドを呼びだすような
+Fiddle::Closure オブジェクトを返します。
+</p>
+<p>
+args、ret で関数の引数と返り値の型を指定します。
+指定は <a href="../method/-fiddle=3a=3a-function/s/new.html">Fiddle::Function.new</a> と同様なので、そちら
+を参照してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] ret:</dt>
+<dd>
+返り値の型
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+引数の型を表す配列
+</dd>
+<dt class='method-param'>[PARAM] abi:</dt>
+<dd>
+呼出規約
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_ARGS"><code>args -&gt; [Integer]</code><span class="permalink">[<a href="../method/-fiddle=3a=3a-closure/i/args.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Fiddle/Closure.html#method-i-args">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数の型を表す配列を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CTYPE"><code>ctype -&gt; Integer</code><span class="permalink">[<a href="../method/-fiddle=3a=3a-closure/i/ctype.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Fiddle/Closure.html#method-i-ctype">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+返り値の型を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_I"><code>to_i -&gt; Integer</code><span class="permalink">[<a href="../method/-fiddle=3a=3a-closure/i/to_i.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Fiddle/Closure.html#method-i-to_i">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+C の関数ポインタのアドレスを返します。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

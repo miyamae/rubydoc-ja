@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>終了処理 (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+
+<a href="../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; 終了処理
+
+</p>
+
+<h1>終了処理</h1>
+
+<p>
+Ruby はスクリプトの終端に達した場合や捕捉していない例外が発生した場
+合に終了します(関数 <a href="../method/-kernel/m/exit.html">Kernel.#exit</a> や <a href="../method/-kernel/m/abort.html">Kernel.#abort</a>
+、メインスレッドに対する <a href="../method/-thread/s/kill.html">Thread.kill</a> などは
+<a href="../class/-system-exit.html">SystemExit</a> 例外を発生させます)。終了時には以下
+の処理が順に実行されます。
+</p>
+<ol>
+<li>すべてのスレッドを <a href="../method/-thread/s/kill.html">Thread.kill</a> する。</li>
+<li>Ruby の疑似シグナル SIGEXIT のハンドラが登録されていればそれを実
+行する(<a href="../method/-kernel/m/trap.html">Kernel.#trap</a> を参照)。</li>
+<li><a href="../doc/spec=2fcontrol.html#END">制御構造/END</a> ブロック(END { ... } または関数
+<a href="../method/-kernel/m/at_exit.html">Kernel.#at_exit</a> で指定したブロック)が登録されていれば、
+そのブロックを登録とは逆順に実行する。このブロックの実行中に発生
+した大域脱出はそのブロックの処理を中断するが。スクリプトはまだ終
+了しない。</li>
+<li><a href="../method/-object-space/m/define_finalizer.html">ObjectSpace.#define_finalizer</a> により、ファイナ
+ライザが登録されていればそれらを実行する。実行順序は不定。
+ファイナライザ実行中に発生した大域脱出はそのファイナライザの処理
+を中断するが、スクリプトはまだ終了しない。</li>
+<li><a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/exit.html">exit(3)</a> により終了する。このとき渡される終了ステータス値は終了方法によります。例えば、<ul>
+<li>スクリプトの終端に達した場合は 0</li>
+<li><a href="../method/-kernel/m/exit.html">Kernel.#exit</a> に渡した引数</li>
+<li><a href="../class/-system-exit.html">SystemExit</a> による例外以外は 1</li>
+</ul>
+</li>
+</ol>
+<p>
+関数 <a href="../method/-kernel/m/exit=21.html">Kernel.#exit!</a> による終了は、<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/_exit.html">_exit(2)</a>
+を実行するだけで、上記の処理はいずれも行われません。
+</p>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

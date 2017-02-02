@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>class StringIO (Ruby 2.0.0)</title>
 </head>
 <body>
@@ -140,7 +141,7 @@ sio.write(&quot;a&quot;)
 
 <a href="#I_GETBYTE">getbyte</a>
 
-<a href="#I_GETBYTE">getc</a>
+<a href="#I_GETC">getc</a>
 
 <a href="#I_GETS">gets</a>
 
@@ -228,14 +229,14 @@ sio.write(&quot;a&quot;)
 
 <dt class="method-heading" id="S_NEW"><code>new(string = '', mode = 'r+') -&gt; StringIO</code><span class="permalink">[<a href="../method/-string-i-o/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/StringIO.html#method-c-new">rdoc</a>]</span></dt>
 <dt class="method-heading"><code>open(string = '', mode = 'r+') -&gt; StringIO</code></dt>
-<dt class="method-heading"><code>open(string = '', mode = 'r+') {|io| ... } -&gt; StringIO</code></dt>
+<dt class="method-heading"><code>open(string = '', mode = 'r+') {|io| ... } -&gt; object</code></dt>
 <dd class="method-description">
 <p>
 StringIO オブジェクトを生成して返します。
 </p>
 <p>
 与えられた string がフリーズされている場合には、mode はデフォルトでは読み取りのみに設定されます。
-ブロックを与えた場合は生成した StringIO オブジェクトを引数としてブロックを評価します。
+ブロックを与えた場合は生成した StringIO オブジェクトを引数としてブロックを評価してその結果を返します。
 </p>
 <dl>
 <dt class='method-param'>[PARAM] string:</dt>
@@ -524,8 +525,7 @@ a.each{|l| p l }
 </dd>
 
 
-<dt class="method-heading" id="I_GETBYTE"><code>getc -&gt; Integer | nil</code><span class="permalink">[<a href="../method/-string-i-o/i/getbyte.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/StringIO.html#method-i-getbyte">rdoc</a>]</span></dt>
-<dt class="method-heading"><code>getbyte -&gt; Integer | nil</code></dt>
+<dt class="method-heading" id="I_GETBYTE"><code>getbyte -&gt; Integer | nil</code><span class="permalink">[<a href="../method/-string-i-o/i/getbyte.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/StringIO.html#method-i-getbyte">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 自身から 1 文字読み込んで、その文字に対応する Fixnum を返します。
@@ -542,6 +542,27 @@ a = StringIO.new(&quot;ho&quot;)
 a.getc                   #=&gt; 104
 a.getc                   #=&gt; 111
 a.getc                   #=&gt; nil
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_GETC"><code>getc -&gt; String | nil</code><span class="permalink">[<a href="../method/-string-i-o/i/getc.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/StringIO.html#method-i-getc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身から 1 文字読み込んで、その文字を返します。
+文字列の終端に到達した時には nil を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が読み取り不可なら発生します。
+</dd>
+</dl>
+<pre>
+a = StringIO.new(&quot;ho&quot;)
+a.getc                   # =&gt; &quot;h&quot;
+a.getc                   # =&gt; &quot;o&quot;
+a.getc                   # =&gt; nil
 </pre>
 </dd>
 
@@ -792,7 +813,7 @@ a.string                     #=&gt; &quot;hoge\nbar\nfoo\n&quot;
 <dt class="method-heading"><code>readpartial -&gt; String</code></dt>
 <dt class="method-heading"><code>readpartial(len) -&gt; String</code></dt>
 <dt class="method-heading"><code>readpartial(len, outbuf) -&gt; String</code></dt>
-<dt class="method-heading"><code>read_nonblock(maxlen, outbuf = &quot;&quot;) -&gt; String</code></dt>
+<dt class="method-heading"><code>read_nonblock(maxlen, outbuf = nil) -&gt; String</code></dt>
 <dd class="method-description">
 <p>
 自身から len バイト読み込んで返します。
@@ -1177,21 +1198,21 @@ a.string                       #=&gt; &quot;ho\000\000\000&quot;
 </dd>
 
 
-<dt class="method-heading" id="I_UNGETC"><code>ungetc(ch) -&gt; nil</code><span class="permalink">[<a href="../method/-string-i-o/i/ungetc.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/StringIO.html#method-i-ungetc">rdoc</a>]</span></dt>
+<dt class="method-heading" id="I_UNGETC"><code>ungetc(str_or_int) -&gt; nil</code><span class="permalink">[<a href="../method/-string-i-o/i/ungetc.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/StringIO.html#method-i-ungetc">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
-整数で指定された文字 ch を自身に書き戻します。
+文字列か整数で指定された str_or_int を自身に書き戻します。
 nil を返します。
 </p>
 <p>
 何回でも書き戻すことが可能です。
 現在位置が自身のサイズよりも大きい場合は、自身をリサイズしてから、ch を書き戻します。
-また現在位置が 0 である場合は何も行いません。
 </p>
 <dl>
-<dt class='method-param'>[PARAM] ch:</dt>
+<dt class='method-param'>[PARAM] str_or_int:</dt>
 <dd>
-書き戻したい文字を整数で指定します。
+書き戻したい文字を文字列か整数で指定します。複数の文
+字を書き戻す事もできます。
 </dd>
 <dt>[EXCEPTION] IOError:</dt>
 <dd>
@@ -1201,15 +1222,27 @@ nil を返します。
 <pre>
 s = StringIO.new(&quot;hoge&quot;)
 s.pos = 1
-s.ungetc(?H)
-p s.string   #=&gt; &quot;Hoge&quot;
-p s.pos        #=&gt; 0
+s.ungetc(&quot;H&quot;)
+p s.string   # =&gt; &quot;Hoge&quot;
+p s.pos      # =&gt; 0
+
+s = StringIO.new(&quot;hoge&quot;)
+s.pos = 1
+s.ungetc(&quot;H&quot;.ord)
+p s.string   # =&gt; &quot;Hoge&quot;
+p s.pos      # =&gt; 0
+
+s = StringIO.new(&quot;hoge&quot;)
+s.pos = 4
+s.ungetc(&quot;HOGE&quot;)
+p s.string   # =&gt; &quot;hogHOGE&quot;
+p s.pos      # =&gt; 3
 
 s = StringIO.new(&quot;hoge&quot;)
 s.pos = 8
-s.ungetc(?A)
-p s.string   #=&gt; &quot;hoge\000\000\000A&quot;
-p s.pos        #=&gt; 7
+s.ungetc(&quot;A&quot;)
+p s.string   # =&gt; &quot;hoge\000\000\000A&quot;
+p s.pos      # =&gt; 7
 </pre>
 </dd>
 
@@ -1247,8 +1280,8 @@ a.string                       #=&gt; &quot;aaae&quot;
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

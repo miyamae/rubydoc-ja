@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class Thread::Mutex (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Thread::Mutexクラス
+</p>
+
+
+<h1>class Thread::Mutex</h1>
+<p>
+
+
+クラスの継承リスト: Thread::Mutex
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+<br>aliases: Mutex
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+Mutex(Mutal Exclusion = 相互排他ロック)は共有データを並行アクセスから保護する
+ためにあります。Mutex の典型的な使い方は(m を Mutex オブジェクトとします):
+</p>
+<pre>
+m.lock
+begin
+  # m によって保護されたクリティカルセクション
+ensure
+  m.unlock
+end
+</pre>
+<p>
+または、より簡単に
+</p>
+<pre>
+m.synchronize {
+  # m によって保護されたクリティカルセクション
+}
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_LOCK">lock</a>
+
+<a href="#I_LOCKED--3F">locked?</a>
+
+<a href="#I_OWNED--3F">owned?</a>
+
+<a href="#I_SLEEP">sleep</a>
+
+<a href="#I_SYNCHRONIZE">synchronize</a>
+
+<a href="#I_TRY_LOCK">try_lock</a>
+
+<a href="#I_UNLOCK">unlock</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new -&gt; Mutex</code><span class="permalink">[<a href="../method/-thread=3a=3a-mutex/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Thread/Mutex.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+新しい mutex を生成して返します。
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_LOCK"><code>lock -&gt; self</code><span class="permalink">[<a href="../method/-thread=3a=3a-mutex/i/lock.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Thread/Mutex.html#method-i-lock">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+mutex オブジェクトをロックします。一度に一つのス
+レッドだけが mutex をロックできます。既にロックされている mutex
+に対してロックを行おうとしたスレッドは mutex のロックが解放さ
+れるまで、実行が停止されます。
+</p>
+<dl>
+<dt>[EXCEPTION] ThreadError:</dt>
+<dd>
+self 既にカレントスレッドにロックされている場合に発
+生します。
+また、<a href="../method/-signal/m/trap.html">Signal.#trap</a> に指定したハンドラ内で実行
+した場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_LOCKED--3F"><code>locked? -&gt; bool</code><span class="permalink">[<a href="../method/-thread=3a=3a-mutex/i/locked=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Thread/Mutex.html#method-i-locked-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+mutex がロックされている時、真を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OWNED--3F"><code>owned? -&gt; bool</code><span class="permalink">[<a href="../method/-thread=3a=3a-mutex/i/owned=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Thread/Mutex.html#method-i-owned-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self がカレントスレッドによってロックされている場合に true を返します。
+そうでない場合に false を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SLEEP"><code>sleep(timeout = nil) -&gt; self</code><span class="permalink">[<a href="../method/-thread=3a=3a-mutex/i/sleep.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Thread/Mutex.html#method-i-sleep">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+与えられた秒数の間スリープしてからロックを解放します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] timeout:</dt>
+<dd>
+スリープする秒数を指定します。省略するとスリープし続けます。
+</dd>
+<dt>[EXCEPTION] ThreadError:</dt>
+<dd>
+自身がカレントスレッドによってロックされていない場合に発生します。
+</dd>
+</dl>
+<p>
+[注意] 2.0 以降ではスリープ中でも、シグナルを受信した場合などに実行が再
+開(spurious wakeup)される場合がある点に注意してください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SYNCHRONIZE"><code>synchronize { ... } -&gt; object</code><span class="permalink">[<a href="../method/-thread=3a=3a-mutex/i/synchronize.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Thread/Mutex.html#method-i-synchronize">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+mutex をロックし、ブロックを実行します。実行後に必ず mutex のロックを解放します。
+</p>
+<p>
+ブロックが最後に評価した値を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] ThreadError:</dt>
+<dd>
+self 既にカレントスレッドにロックされている場合に発
+生します。
+また、<a href="../method/-signal/m/trap.html">Signal.#trap</a> に指定したハンドラ内で実行
+した場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_TRY_LOCK"><code>try_lock -&gt; bool</code><span class="permalink">[<a href="../method/-thread=3a=3a-mutex/i/try_lock.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Thread/Mutex.html#method-i-try_lock">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+mutex をロックしようとして、ロックが成功した場合、真を返します。
+ロックできなかった場合にはブロックせず偽を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_UNLOCK"><code>unlock -&gt; self</code><span class="permalink">[<a href="../method/-thread=3a=3a-mutex/i/unlock.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Thread/Mutex.html#method-i-unlock">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+mutex のロックを解放します。mutex のロック待ちになっていたスレッドの実行は再開されます。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+self を返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+m = Mutex.new
+begin
+  m.lock
+  # critical part
+ensure
+  m.unlock
+end
+</pre>
+<p>
+Mutex はロックしたスレッド以外からロックを開放することは出来ません。
+ロックしたスレッド以外から unlock が呼ばれると ThreadError が発生します。
+</p>
+<pre>
+m = Mutex.new
+m.lock
+Thread.new do
+  m.unlock # =&gt; ThreadError
+end.join
+</pre>
+<dl>
+<dt>[EXCEPTION] ThreadError:</dt>
+<dd>
+self がロックされていない場合や self をロックしたス
+レッド以外から呼ばれた場合に発生します。
+また、<a href="../method/-signal/m/trap.html">Signal.#trap</a> に指定したハンドラ内で実行
+した場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

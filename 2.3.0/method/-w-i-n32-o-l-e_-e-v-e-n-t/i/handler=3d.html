@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>instance method WIN32OLE_EVENT#handler= (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/win32ole.html">win32oleライブラリ</a>
+&gt; <a href="../../../class/-w-i-n32-o-l-e_-e-v-e-n-t.html">WIN32OLE_EVENTクラス</a>
+&gt; handler=
+
+</p>
+
+
+<h1>instance method WIN32OLE_EVENT#handler=</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_HANDLER--3D"><code>handler=(obj) -&gt; ()</code><span class="permalink">[<a href="../../../method/-w-i-n32-o-l-e_-e-v-e-n-t/i/handler=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/WIN32OLE_EVENT.html#method-i-handler-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+イベント処理を実行するオブジェクトを登録します。
+</p>
+<p>
+イベントハンドラをメソッドとして持つオブジェクトをイベントハンドラとし
+て登録します。
+</p>
+<p>
+イベントハンドラはイベント名に「on」を前置します。もし、イベントに対応
+するonメソッドが実装されていなければmethod_missingが呼ばれます。イベン
+ト名は大文字小文字を区別するため、正確な記述が必要です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+イベントに対応するメソッドを持つオブジェクト。イベント受信を
+解除するにはnilを指定します。
+</dd>
+</dl>
+<pre>
+class IeHandler
+  def initialize
+    @completed = false
+  end
+  attr_reader :completed
+  def onDocumentComplete(disp, uri)
+    disp.document.getElementsByTagName('a').each do |e|
+      puts &quot;#{e.innerHTML}=#{e.href}&quot;
+    end
+    @completed = true
+  end
+  def method_missing(id, *args)
+    puts &quot;event=#{id.to_s}, args=#{args.inspect}&quot;
+  end
+end
+
+ie = WIN32OLE.new('InternetExplorer.Application.1')
+event = WIN32OLE_EVENT.new(ie, 'DWebBrowserEvents2')
+event.handler = IeHandler.new
+ie.Navigate2 'http://www.ruby-lang.org/ja/'
+loop do
+  break if event.handler.completed
+  WIN32OLE_EVENT.message_loop
+end
+ie.Quit
+</pre>
+<p>
+<a href="../../../method/-w-i-n32-o-l-e_-e-v-e-n-t/i/on_event.html">WIN32OLE_EVENT#on_event</a>などの呼び出しでブロックが登録されている場
+合、そちらが優先されます。
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

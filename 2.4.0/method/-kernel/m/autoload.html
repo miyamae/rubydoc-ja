@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>module function Kernel.#autoload (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-kernel.html">Kernelモジュール</a>
+&gt; autoload
+
+</p>
+
+
+<h1>module function Kernel.#autoload</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_AUTOLOAD"><code>autoload(const_name, feature) -&gt; nil</code><span class="permalink">[<a href="../../../method/-kernel/m/autoload.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Kernel.html#method-c-autoload">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+定数 const_name を最初に参照した時に feature を
+<a href="../../../method/-kernel/m/require.html">Kernel.#require</a> するように設定します。
+</p>
+<p>
+const_name には、 &quot;::&quot; 演算子を含めることはできません
+（ネストした定数を指定する方法は後述）。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] const_name:</dt>
+<dd>
+定数をString または Symbol で指定します。
+</dd>
+<dt class='method-param'>[PARAM] feature:</dt>
+<dd>
+require と同様な方法で autoload する対象を指定します。
+</dd>
+<dt>[EXCEPTION] LoadError:</dt>
+<dd>
+featureのロードに失敗すると発生します。
+</dd>
+</dl>
+<pre>
+------- /tmp/foo.rb ---------
+class Bar
+end
+----- end of /tmp/foo.rb ----
+
+autoload :Bar, '/tmp/foo'
+p Bar #=&gt; Bar
+</pre>
+<h2 >ネストした定義内の定数</h2>
+<p>
+const_name には、 &quot;::&quot; 演算子を含めることはできないので、 Kernel.#autoload
+ではトップレベルの定数しか指定できません。
+</p>
+<p>
+<a href="../../../method/-module/i/autoload.html">Module#autoload</a> と組み合わせることで、任意のクラス／モジュールの定数を autoload できます。
+やはりconst_name に &quot;::&quot; 演算子を含めることはで
+きませんが、以下のように定義する事ができます。
+</p>
+<pre>
+------- /tmp/foo.rb ---------
+class Foo
+  class Bar
+  end
+end
+----- end of /tmp/foo.rb ----
+
+class Foo
+  autoload :Bar, '/tmp/foo'
+end
+p Foo::Bar #=&gt; Foo::Bar
+</pre>
+<p>
+あるいは、以下のようにもできます。
+</p>
+<pre>
+class Foo
+end
+Foo.autoload :Bar, '/tmp/foo'
+p Foo::Bar #=&gt; Foo::Bar
+</pre>
+<p>
+以下のように、autoload したライブラリがネストした定数を定義しない場
+合、一見、正常に動作しているように見えるので注意が必要です(警告メッ
+セージが出ています)。
+</p>
+<pre>
+------- /tmp/bar.rb ---------
+class Bar
+end
+----- end of /tmp/bar.rb ----
+
+class Foo
+  autoload :Bar, '/tmp/bar.rb'
+end
+p Foo::Bar
+p Foo.autoload?(:Bar)
+#=&gt; -:4: warning: toplevel constant Bar referenced by Foo::Bar
+#   Bar
+#   nil
+</pre>
+<p>
+これは以下のようにネストせずに定義したのと同じことです。
+</p>
+<pre>
+class Foo
+end
+class Bar
+end
+p Foo::Bar
+#=&gt; -:5: warning: toplevel constant Bar referenced by Foo::Bar
+#   Bar
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/autoload=3f.html">Kernel.#autoload?</a>,<a href="../../../method/-module/i/autoload.html">Module#autoload</a>,<a href="../../../method/-kernel/m/require.html">Kernel.#require</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

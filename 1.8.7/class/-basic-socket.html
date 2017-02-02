@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>class BasicSocket (Ruby 1.8.7)</title>
 </head>
 <body>
@@ -75,17 +76,37 @@
 <dt>インスタンスメソッド</dt>
 <dd>
 
+<a href="#I_CONNECT_ADDRESS">connect_address</a>
+
+<a href="#I_DO_NOT_REVERSE_LOOKUP">do_not_reverse_lookup</a>
+
+<a href="#I_DO_NOT_REVERSE_LOOKUP--3D">do_not_reverse_lookup=</a>
+
+<a href="#I_GETPEEREID">getpeereid</a>
+
 <a href="#I_GETPEERNAME">getpeername</a>
 
 <a href="#I_GETSOCKNAME">getsockname</a>
 
 <a href="#I_GETSOCKOPT">getsockopt</a>
 
+<a href="#I_LOCAL_ADDRESS">local_address</a>
+
 <a href="#I_RECV">recv</a>
 
 <a href="#I_RECV_NONBLOCK">recv_nonblock</a>
 
+<a href="#I_RECVMSG">recvmsg</a>
+
+<a href="#I_RECVMSG_NONBLOCK">recvmsg_nonblock</a>
+
+<a href="#I_REMOTE_ADDRESS">remote_address</a>
+
 <a href="#I_SEND">send</a>
+
+<a href="#I_SENDMSG">sendmsg</a>
+
+<a href="#I_SENDMSG_NONBLOCK">sendmsg_nonblock</a>
 
 <a href="#I_SETSOCKOPT">setsockopt</a>
 
@@ -102,26 +123,15 @@
 <dt class="method-heading" id="S_DO_NOT_REVERSE_LOOKUP"><code>do_not_reverse_lookup -&gt; bool</code><span class="permalink">[<a href="../method/-basic-socket/s/do_not_reverse_lookup.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/BasicSocket.html#method-c-do_not_reverse_lookup">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
-この値が真ならアドレスからホスト名への逆引きを行わなくなります。
+<a href="../method/-socket/i/do_not_reverse_lookup.html">Socket#do_not_reverse_lookup</a> の Socket オブジェクト生成時の
+デフォルト値を返します。
 </p>
 <p>
 この設定は大域的に作用します。
 </p>
 <p>
-デフォルトは false です。
+デフォルトは true です。
 </p>
-<p>
-以下のメソッドの動作に影響します。
-</p>
-<ul>
-<li><a href="../method/-basic-socket/i/recv.html">BasicSocket#recv</a></li>
-<li><a href="../method/-i-p-socket/i/recvfrom.html">IPSocket#recvfrom</a></li>
-<li><a href="../method/-u-n-i-x-socket/i/recvfrom.html">UNIXSocket#recvfrom</a></li>
-<li><a href="../method/-socket/i/recvfrom.html">Socket#recvfrom</a></li>
-<li><a href="../method/-i-p-socket/i/addr.html">IPSocket#addr</a></li>
-<li><a href="../method/-i-p-socket/i/peeraddr.html">IPSocket#peeraddr</a></li>
-<li><a href="../method/-socket/s/getaddrinfo.html">Socket.getaddrinfo</a></li>
-</ul>
 </dd>
 
 
@@ -182,6 +192,128 @@ TCPSocket.for_fd(fd) # TCPSocket のインスタンスを返す
 <h2>インスタンスメソッド</h2>
 <dl>
 
+<dt class="method-heading" id="I_CONNECT_ADDRESS"><code>connect_address -&gt; Addrinfo</code><span class="permalink">[<a href="../method/-basic-socket/i/connect_address.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/BasicSocket.html#method-i-connect_address">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ローカルマシン内で接続するのに適当なアドレスを <a href="../class/-addrinfo.html">Addrinfo</a>
+オブジェクトで返します。
+</p>
+<p>
+<a href="../method/-basic-socket/i/local_address.html">BasicSocket#local_address</a> の返り値
+以下の点を除いては同じものを返します。
+</p>
+<ul>
+<li>IPv4 の不定アドレス(0.0.0.0) は IPv4 のループバックアドレス(127.0.0.1)
+に置換される</li>
+<li>IPv6 の不定アドレス(::) は IPv6 のループバックアドレス(::1)
+に置換される</li>
+</ul>
+<p>
+BasicSocket#local_address が接続先として不適なアドレスを返す場合は
+例外 <a href="../class/-socket-error.html">SocketError</a> が発生します。
+</p>
+<pre>
+require 'socket'
+
+Addrinfo.tcp(&quot;0.0.0.0&quot;, 0).listen {|serv|
+  p serv.connect_address #=&gt; #&lt;Addrinfo: 127.0.0.1:53660 TCP&gt;
+  serv.connect_address.connect {|c|
+    s, _ = serv.accept
+    p [c, s] #=&gt; [#&lt;Socket:fd 4&gt;, #&lt;Socket:fd 6&gt;]
+  }
+}
+</pre>
+<dl>
+<dt>[EXCEPTION] SocketError:</dt>
+<dd>
+アドレスが接続に不適な場合に返します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-basic-socket/i/local_address.html">BasicSocket#local_address</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DO_NOT_REVERSE_LOOKUP"><code>do_not_reverse_lookup -&gt; bool</code><span class="permalink">[<a href="../method/-basic-socket/i/do_not_reverse_lookup.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/BasicSocket.html#method-i-do_not_reverse_lookup">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ソケットごとのアドレスからホスト名への逆引きの設定を返します。
+</p>
+<p>
+真ならアドレスからホスト名への逆引きを行いません。
+</p>
+<p>
+初期値はソケットを生成したときの
+<a href="../method/-basic-socket/s/do_not_reverse_lookup.html">BasicSocket.do_not_reverse_lookup</a> の値になります。
+</p>
+<pre>
+require 'socket'
+
+BasicSocket.do_not_reverse_lookup = false
+TCPSocket.open(&quot;www.ruby-lang.org&quot;, 80) {|sock|
+  p sock.do_not_reverse_lookup      # =&gt; false
+}
+BasicSocket.do_not_reverse_lookup = true
+TCPSocket.open(&quot;www.ruby-lang.org&quot;, 80) {|sock|
+  p sock.do_not_reverse_lookup      # =&gt; true
+}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-basic-socket/i/do_not_reverse_lookup=3d.html">BasicSocket#do_not_reverse_lookup=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DO_NOT_REVERSE_LOOKUP--3D"><code>do_not_reverse_lookup=(bool)</code><span class="permalink">[<a href="../method/-basic-socket/i/do_not_reverse_lookup=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/BasicSocket.html#method-i-do_not_reverse_lookup-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+アドレスからホスト名への逆引きの設定をソケットごとに設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] bool:</dt>
+<dd>
+この値が真ならアドレスからホスト名への逆引きを行わなくなります。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-basic-socket/i/do_not_reverse_lookup.html">BasicSocket#do_not_reverse_lookup</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_GETPEEREID"><code>getpeereid -&gt; [Integer, Integer]</code><span class="permalink">[<a href="../method/-basic-socket/i/getpeereid.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/BasicSocket.html#method-i-getpeereid">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Unix ドメインソケットにおいて接続相手の euid と egid を
+返します。
+</p>
+<p>
+配列の最初の要素が euid, 2番目の要素が egid です。
+</p>
+<p>
+ソケットが Unix ドメインソケットでない場合の返り値は
+不定です。
+</p>
+<pre>
+require 'socket'
+
+Socket.unix_server_loop(&quot;/tmp/sock&quot;) {|s|
+  begin
+    euid, egid = s.getpeereid
+
+    # Check the connected client is myself or not.
+    next if euid != Process.uid
+
+    # do something about my resource.
+  ensure
+    s.close
+  end
+}
+</pre>
+</dd>
+
+
 <dt class="method-heading" id="I_GETPEERNAME"><code>getpeername -&gt; String</code><span class="permalink">[<a href="../method/-basic-socket/i/getpeername.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/BasicSocket.html#method-i-getpeername">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
@@ -213,6 +345,8 @@ p addr == s.getsockname     #=&gt; true
 例:
 </p>
 <pre>
+require 'socket'
+
 serv = TCPServer.open(&quot;&quot;, 0)
 p serv.getsockname        #=&gt; &quot;\002\000\236C\000\000\000\000\000\000\000\000\000\000\000\000&quot;
 p Socket.unpack_sockaddr_in(serv.getsockname)     #=&gt; [40515, &quot;0.0.0.0&quot;]
@@ -222,13 +356,17 @@ s = serv.accept
 </dd>
 
 
-<dt class="method-heading" id="I_GETSOCKOPT"><code>getsockopt(level, optname) -&gt; String</code><span class="permalink">[<a href="../method/-basic-socket/i/getsockopt.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/BasicSocket.html#method-i-getsockopt">rdoc</a>]</span></dt>
+<dt class="method-heading" id="I_GETSOCKOPT"><code>getsockopt(level, optname) -&gt; Socket::Option</code><span class="permalink">[<a href="../method/-basic-socket/i/getsockopt.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/BasicSocket.html#method-i-getsockopt">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 ソケットのオプションを取得します。<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/getsockopt.html">getsockopt(2)</a>
 を参照してください。
-取得したオプションのデータをパックした文字列を
-返します。
+取得したオプションのデータを <a href="../class/-socket=3a=3a-option.html">Socket::Option</a> で返します。
+</p>
+<p>
+level, optname には Socket::SOL_SOCKET や Socket::SO_REUSEADDR
+といった整数値の他、文字列(&quot;SOL_SOCKET&quot;, prefixなしの &quot;SOCKET&quot;)や
+シンボル(:SO_REUSEADDR, :REUSEADDR)を用いることができます。
 </p>
 <dl>
 <dt class='method-param'>[PARAM] level:</dt>
@@ -247,13 +385,46 @@ s = serv.accept
 例:
 </p>
 <pre>
-serv = TCPServer.open(&quot;&quot;, 0)
-c = TCPSocket.open(*Socket.unpack_sockaddr_in(serv.getsockname).reverse)
+require 'socket'
+
+serv = Socket.tcp_server_sockets(&quot;&quot;, 0)[0]
+c = serv.local_address.connect
 s = serv.accept
 opt = c.getsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY)
-p opt #=&gt; &quot;\000\000\000\000&quot;
-p opt.unpack(&quot;i&quot;)[0] #=&gt; 0   (Nagle アルゴリズム有効)
+# c.getsockopt(&quot;TCP&quot;, &quot;NODELAY&quot;),  なども可能
+p opt #=&gt; #&lt;Socket::Option: INET TCP NODELAY 0&gt;
+p opt.bool #=&gt; false (Nagle アルゴリズム有効)
+p opt.unpack(&quot;i&quot;)[0] #=&gt; 0 (Socket::Option#unpack が互換性のために存在する)
+# 整数値の場合は Socket::Option#int を用いる
+p c.getsockopt(:IP, :TTL).int #=&gt; 64
 </pre>
+</dd>
+
+
+<dt class="method-heading" id="I_LOCAL_ADDRESS"><code>local_address -&gt; Addrinfo</code><span class="permalink">[<a href="../method/-basic-socket/i/local_address.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/BasicSocket.html#method-i-local_address">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/getsockname.html">getsockname(2)</a> で得られたローカルアドレス情報を
+<a href="../class/-addrinfo.html">Addrinfo</a> オブジェクトとして返します。
+</p>
+<p>
+返されたオブジェクトの <a href="../method/-addrinfo/i/protocol.html">Addrinfo#protocol</a> は 0 を
+返すことに注意してください。
+</p>
+<pre>
+require 'socket'
+
+TCPSocket.open(&quot;www.ruby-lang.org&quot;, 80) {|s|
+  p s.local_address #=&gt; #&lt;Addrinfo: 192.168.0.129:36873 TCP&gt;
+}
+
+TCPServer.open(&quot;127.0.0.1&quot;, 1512) {|serv|
+  p serv.local_address #=&gt; #&lt;Addrinfo: 127.0.0.1:1512 TCP&gt;
+}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-basic-socket/i/getsockname.html">BasicSocket#getsockname</a>
+</p>
 </dd>
 
 
@@ -293,6 +464,8 @@ UDP では空のパケットを読み込んだことを意味します。
 例:
 </p>
 <pre>
+require 'socket'
+
 s1, s2 = UNIXSocket.pair
 s1.write &quot;a&quot;
 s1.close
@@ -336,6 +509,140 @@ EAGAIN, EINTR を含め例外 <a href="../class/-errno=3a=3a-e-x-x-x.html">Errno
 </dd>
 
 
+<dt class="method-heading" id="I_RECVMSG"><code>recvmsg(maxmesglen=nil, flags=0, maxcontrollen=nil, opts={}) -&gt; [String, Addrinfo, Integer, *Socket::AncillaryData]</code><span class="permalink">[<a href="../method/-basic-socket/i/recvmsg.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/BasicSocket.html#method-i-recvmsg">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/recvmsg.html">recvmsg(2)</a> を用いてメッセージを受け取ります。
+</p>
+<p>
+このメソッドはブロックします。ノンブロッキング方式で通信したい
+場合は <a href="../method/-basic-socket/i/recvmsg_nonblock.html">BasicSocket#recvmsg_nonblock</a> を用います。
+</p>
+<p>
+maxmesglen, maxcontrollen で受け取るメッセージおよび補助データ
+(<a href="../class/-socket=3a=3a-ancillary-data.html">Socket::AncillaryData</a>)の最大長をバイト単位で指定します。
+省略した場合は必要なだけ内部バッファを拡大して
+データが切れないようにします。
+</p>
+<p>
+flags では Socket::MSG_* という名前の定数の biwsise OR を取った
+ものを渡します。
+</p>
+<p>
+opts にはその他のオプションを渡します。今のところ :scm_right =&gt; bool
+というオプションのみ利用できます。このオプションに
+真を渡すと、 SCM_RIGHTS 制御メッセージを受け取ったときに、メッセージに含まれる
+IO オブジェクトを生成します。詳しくは <a href="../method/-socket=3a=3a-ancillary-data/i/unix_rights.html">Socket::AncillaryData#unix_rights</a>
+を参照してください。
+</p>
+<p>
+返り値は配列で得られます。
+</p>
+<p>
+返り値の配列の最初の要素は受け取ったメッセージを表す文字列です。
+</p>
+<p>
+2番目の要素は connection-less socket の場合には送り元の
+アドレスが <a href="../class/-addrinfo.html">Addrinfo</a> オブジェクトとして含まれています。
+TCP のような connection-oriented socket の場合は
+何が含まれているかはプラットフォーム依存です。
+</p>
+<p>
+3番目の要素は受け取ったメッセージに付加されているフラグで、
+Socket::MSG_* 定数の bitwise OR で表現されています。
+</p>
+<p>
+残りの要素は補助データ(<a href="../class/-socket=3a=3a-ancillary-data.html">Socket::AncillaryData</a> オブジェクト)です。
+</p>
+<pre>
+# UnixSocket#recv_io を recvmsg で実装する例
+mesg, sender_sockaddr, rflags, *controls = sock.recvmsg(:scm_rights=&gt;true)
+controls.each {|ancdata|
+  if ancdata.cmsg_is?(:SOCKET, :RIGHTS)
+    return ancdata.unix_rights[0]
+  end
+}
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] maxmesglen:</dt>
+<dd>
+受け取るメッセージの最大長
+</dd>
+<dt class='method-param'>[PARAM] flags:</dt>
+<dd>
+フラグ
+</dd>
+<dt class='method-param'>[PARAM] maxcontrollen:</dt>
+<dd>
+受け取る補助データの最大長
+</dd>
+<dt class='method-param'>[PARAM] opts:</dt>
+<dd>
+ハッシュオプション
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_RECVMSG_NONBLOCK"><code>recvmsg_nonblock(maxmesglen=nil, flags=0, maxcontrollen=nil, opts={}) -&gt; [String, Addrinfo, Integer, *Socket::AncillaryData]</code><span class="permalink">[<a href="../method/-basic-socket/i/recvmsg_nonblock.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/BasicSocket.html#method-i-recvmsg_nonblock">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/recvmsg.html">recvmsg(2)</a> を用いてノンブロッキング方式でメッセージを受け取ります。
+</p>
+<p>
+ブロッキングの有無以外は <a href="../method/-basic-socket/i/recvmsg.html">BasicSocket#recvmsg</a> と同じです。
+詳しくはそちらを参照してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] maxmesglen:</dt>
+<dd>
+受け取るメッセージの最大長
+</dd>
+<dt class='method-param'>[PARAM] flags:</dt>
+<dd>
+フラグ
+</dd>
+<dt class='method-param'>[PARAM] maxcontrollen:</dt>
+<dd>
+受け取る補助データの最大長
+</dd>
+<dt class='method-param'>[PARAM] opts:</dt>
+<dd>
+ハッシュオプション
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_REMOTE_ADDRESS"><code>remote_address -&gt; Addrinfo</code><span class="permalink">[<a href="../method/-basic-socket/i/remote_address.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/BasicSocket.html#method-i-remote_address">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/getpeername.html">getpeername(2)</a> で得られたリモートアドレス情報を
+<a href="../class/-addrinfo.html">Addrinfo</a> オブジェクトとして返します。
+</p>
+<p>
+返されたオブジェクトの <a href="../method/-addrinfo/i/protocol.html">Addrinfo#protocol</a> は 0 を
+返すことに注意してください。
+</p>
+<pre>
+require 'socket'
+
+TCPSocket.open(&quot;www.ruby-lang.org&quot;, 80) {|s|
+  p s.remote_address #=&gt; #&lt;Addrinfo: 221.186.184.68:80 TCP&gt;
+}
+
+TCPServer.open(&quot;127.0.0.1&quot;, 1728) {|serv|
+  c = TCPSocket.new(&quot;127.0.0.1&quot;, 1728)
+  s = serv.accept
+  p s.remote_address #=&gt; #&lt;Addrinfo: 127.0.0.1:36504 TCP&gt;
+}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-basic-socket/i/getpeername.html">BasicSocket#getpeername</a>
+</p>
+</dd>
+
+
 <dt class="method-heading" id="I_SEND"><code>send(mesg, flags, dest_sockaddr = nil) -&gt; Fixnum</code><span class="permalink">[<a href="../method/-basic-socket/i/send.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/BasicSocket.html#method-i-send">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
@@ -373,6 +680,8 @@ dest_sockaddr には「ソケットアドレス構造体を pack した文字列
 例:
 </p>
 <pre>
+require 'socket'
+
 s = UDPSocket.new
 sockaddr = Socket.sockaddr_in(&quot;discard&quot;, &quot;localhost&quot;)
 s.send(&quot;The king has donkey ears!&quot;, 0, sockaddr)
@@ -380,7 +689,102 @@ s.send(&quot;The king has donkey ears!&quot;, 0, sockaddr)
 </dd>
 
 
+<dt class="method-heading" id="I_SENDMSG"><code>sendmsg(mesg, flags=0, dest_sockaddr=nil, *controls) -&gt; Integer</code><span class="permalink">[<a href="../method/-basic-socket/i/sendmsg.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/BasicSocket.html#method-i-sendmsg">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/sendmsg.html">sendmsg(2)</a> を用いてメッセージを送ります。
+</p>
+<p>
+このメソッドはブロックします。ノンブロッキング方式で通信したい
+場合は <a href="../method/-basic-socket/i/sendmsg_nonblock.html">BasicSocket#sendmsg_nonblock</a> を用います。
+</p>
+<p>
+ソケットが connection-less の場合は dest_sockaddr で
+通信先のアドレスを指定しなければなりません。<a href="../method/-socket/s/sockaddr_in.html">Socket.sockaddr_in</a>
+の返り値や <a href="../class/-addrinfo.html">Addrinfo</a> オブジェクトを引数として渡すことができます。
+</p>
+<p>
+controls には 補助データ(ancillary data)を渡します。
+<a href="../class/-socket=3a=3a-ancillary-data.html">Socket::AncillaryData</a> のインスタンスや
+3要素(cmsg_level, cmsg_type, cmsg_data) の配列を用いることができます。
+</p>
+<p>
+送ったバイト数を返します。
+</p>
+<pre>
+# UnixSocket#send_io の実装例
+# use Socket::AncillaryData.
+require 'socket'
+
+ancdata = Socket::AncillaryData.int(:UNIX, :SOCKET, :RIGHTS, io.fileno)
+sock.sendmsg(&quot;a&quot;, 0, nil, ancdata)
+
+# use 3-element array.
+ancdata = [:SOCKET, :RIGHTS, [io.fileno].pack(&quot;i!&quot;)]
+sock.sendmsg(&quot;\0&quot;, 0, nil, ancdata)
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] mesg:</dt>
+<dd>
+メッセージ文字列
+</dd>
+<dt class='method-param'>[PARAM] flags:</dt>
+<dd>
+フラグ(Socket::MSG_* という定数の bitwise OR を取ったもの)
+</dd>
+<dt class='method-param'>[PARAM] dest_sockaddr:</dt>
+<dd>
+通信先のアドレス
+</dd>
+<dt class='method-param'>[PARAM] controls:</dt>
+<dd>
+補助データの配列
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-basic-socket/i/sendmsg_nonblock.html">BasicSocket#sendmsg_nonblock</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SENDMSG_NONBLOCK"><code>sendmsg_nonblock(mesg, flags=0, dest_sockaddr=nil, *controls) -&gt; Integer</code><span class="permalink">[<a href="../method/-basic-socket/i/sendmsg_nonblock.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/BasicSocket.html#method-i-sendmsg_nonblock">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/sendmsg.html">sendmsg(2)</a> を用いてノンブロッキング方式でメッセージを送ります。
+</p>
+<p>
+詳しくは <a href="../method/-basic-socket/i/sendmsg.html">BasicSocket#sendmsg</a> を見てください。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+送ったバイト数
+</dd>
+<dt class='method-param'>[PARAM] mesg:</dt>
+<dd>
+メッセージ文字列
+</dd>
+<dt class='method-param'>[PARAM] flags:</dt>
+<dd>
+フラグ(Socket::MSG_* という定数の bitwise OR を取ったもの)
+</dd>
+<dt class='method-param'>[PARAM] dest_sockaddr:</dt>
+<dd>
+通信先のアドレス
+</dd>
+<dt class='method-param'>[PARAM] controls:</dt>
+<dd>
+補助データの配列
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-basic-socket/i/sendmsg.html">BasicSocket#sendmsg</a>
+</p>
+</dd>
+
+
 <dt class="method-heading" id="I_SETSOCKOPT"><code>setsockopt(level, optname, optval) -&gt; 0</code><span class="permalink">[<a href="../method/-basic-socket/i/setsockopt.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/BasicSocket.html#method-i-setsockopt">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>setsockopt(socketoption) -&gt; 0</code></dt>
 <dd class="method-description">
 <p>
 ソケットのオプションを設定します。<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/setsockopt.html">setsockopt(2)</a>
@@ -388,7 +792,8 @@ s.send(&quot;The king has donkey ears!&quot;, 0, sockaddr)
 </p>
 <p>
 level, optname には Socket::SOL_SOCKET や Socket::SO_REUSEADDR
-といった整数値を用います。
+といった整数値の他、文字列(&quot;SOL_SOCKET&quot;, prefixなしの &quot;SOCKET&quot;)や
+シンボル(:SO_REUSEADDR, :REUSEADDR)を用いることができます。
 </p>
 <p>
 optval には文字列、整数、真偽値(true or false)を渡すことができます。
@@ -397,6 +802,27 @@ optval には文字列、整数、真偽値(true or false)を渡すことがで�
 true/falseの場合は0/1という整数と解釈され、そのメモリ領域の
 intポインタを渡します。
 </p>
+<p>
+引数が1つの場合は <a href="../class/-socket=3a=3a-option.html">Socket::Option</a> で設定値を表現します。
+</p>
+<pre>
+# 真偽値の場合
+#setsockopt could be called like this:
+sock.setsockopt(:SOCKET, :REUSEADDR, true)
+sock.setsockopt(Socket::SOL_SOCKET,Socket::SO_REUSEADDR, true)
+sock.setsockopt(Socket::Option.bool(:INET, :SOCKET, :REUSEADDR, true))
+
+# 整数値の場合
+#setsockopt could be called like this:
+sock.setsockopt(:IP, :TTL, 255)
+sock.setsockopt(Socket::IPPROTO_IP, Socket::IP_TTL, 255)
+sock.setsockopt(Socket::Option.int(:INET, :IP, :TTL, 255))
+
+# より複雑な場合
+optval = IPAddr.new(&quot;224.0.0.251&quot;).hton +
+         IPAddr.new(Socket::INADDR_ANY, Socket::AF_INET).hton
+sock.setsockopt(Socket::IPPROTO_IP, Socket::IP_ADD_MEMBERSHIP, optval)
+</pre>
 <dl>
 <dt class='method-param'>[PARAM] level:</dt>
 <dd>
@@ -409,6 +835,10 @@ intポインタを渡します。
 <dt class='method-param'>[PARAM] optval:</dt>
 <dd>
 設定値
+</dd>
+<dt class='method-param'>[PARAM] socketoption:</dt>
+<dd>
+設定値を表す <a href="../class/-socket=3a=3a-option.html">Socket::Option</a> オブジェクト
 </dd>
 <dt>[EXCEPTION] Errno::EXXX:</dt>
 <dd>
@@ -464,8 +894,8 @@ how に範囲外の整数を入力した場合に発生します。
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

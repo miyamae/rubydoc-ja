@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>instance method String#scanf (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/scanf.html">scanfライブラリ</a>
+&gt; <a href="../../../class/-string.html">Stringクラス</a>
+&gt; scanf
+
+</p>
+
+
+<h1>instance method String#scanf</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_SCANF"><code>scanf(format) -&gt; Array</code><span class="permalink">[<a href="../../../method/-string/i/scanf.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/String.html#method-i-scanf">rdoc</a>]</span> <span class="kindinfo">[added by <a href="../../../library/scanf.html">scanf</a>]</span>
+</dt>
+<dt class="method-heading"><code>scanf(format) {|*ary| ...} -&gt; Array</code> <span class="kindinfo">[added by <a href="../../../library/scanf.html">scanf</a>]</span>
+</dt>
+<dd class="method-description">
+<p>
+ブロックを指定しない場合、見つかった文字列を format に従って変
+換し、そのオブジェクトの配列を返します。
+format で指定した文字列が見つからない場合は空の配列を
+生成して返します。
+</p>
+<pre>
+str = &quot;123 abc 456 def 789 ghi&quot;
+p str.scanf(&quot;%d%s&quot;) #=&gt; [123, &quot;abc&quot;]
+</pre>
+<p>
+ブロックを指定した場合は scanf を継続して実行し、順次
+見つかった文字列を変換したオブジェクトの配列を引数に、ブロックを
+実行します。このとき、ブロックの実行結果を要素とする配列を返します。
+</p>
+<pre>
+str = &quot;123 0x45 678 0x90&quot;
+p str.scanf(&quot;%d%x&quot;){|n, s| [n, s]}
+#=&gt; [[123, 69], [678, 144]]
+</pre>
+<p>
+formatに完全にマッチしていなくても、部分的にマッチしていれば、
+ブロックは実行されます。
+</p>
+<pre>
+str = &quot;123 abc 456 def&quot;
+ret = str.scanf(&quot;%s%d&quot;) { |s, n| [s, n] }
+p ret #=&gt; [[&quot;123&quot;, nil], [&quot;abc&quot;, 456], [&quot;def&quot;, nil]]
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] format:</dt>
+<dd>
+スキャンするフォーマットを文字列で指定します。
+詳細は、<a href="../../../method/-string/i/scanf.html#format">String#scanf/scanfフォーマット文字列</a> を参照してください。
+</dd>
+</dl>
+<p>
+使用例:
+</p>
+<pre>
+str = &quot;123 abc 456 def 789 ghi&quot;
+p str.scanf(&quot;%d%s&quot;) #=&gt; [123, &quot;abc&quot;]
+</pre>
+<h2 id='format'>scanfフォーマット文字列</h2>
+<p>
+文字 '%' と(s,d のような)指示子の間に、整数を指定する事により読み込む文字列の幅を
+指定する事ができます。もし幅が与えられなければ、無限大の値が規定値として使用されます。
+(但し、%c では、この規定値は適用されません。)
+上記の幅が整数 n で与えられた場合、多くても n 個の文字列がマッチします。
+このフォーマット文字列によるマッチの実行前、多くの場合入力文字列のスペースは読み飛ばされます。
+つまり、スペースは幅の数として数えられない事になります。
+</p>
+<p>
+動作例;
+</p>
+<pre>
+p &quot;a           10&quot;.scanf(&quot;%s %d&quot;)  # =&gt; [&quot;a&quot;, 10]
+p &quot;a10&quot;.scanf(&quot;%1s %d&quot;)      # =&gt; [&quot;a&quot;, 10]
+</pre>
+<p>
+使用例；
+</p>
+<pre>
+str = &quot;1234&quot;
+p str.scanf(&quot;%1s%3d&quot;)  #=&gt; [&quot;1&quot;, 234]
+</pre>
+<p>
+また、1.9 以降では、スペースには全角文字列が含まれます。
+</p>
+<p>
+動作例；
+</p>
+<pre>
+# encoding: utf-8
+require 'scanf'
+
+str = &quot;1　　　　　aaa&quot;
+p str.scanf(&quot;%d %s&quot;) #=&gt; [1, &quot;aaa&quot;]
+</pre>
+<dl>
+<dt>space</dt>
+<dd>
+<p>
+フォーマット中の空白は(0個を含む)任意の数の空白にマッチします。
+</p>
+<pre>
+  p &quot;a           10&quot;.scanf(&quot;%s %d&quot;)  # =&gt; [&quot;a&quot;, 10]
+  p &quot;a10&quot;.scanf(&quot;%1s %d&quot;)            # =&gt; [&quot;a&quot;, 10]
+</pre>
+</dd>
+<dt>%%</dt>
+<dd>
+<p>
+% そのもの
+</p>
+</dd>
+<dt>%d</dt>
+<dt>%u</dt>
+<dd>
+<p>
+符号付き10進数
+</p>
+</dd>
+<dt>%i</dt>
+<dd>
+<p>
+<a href="../../../method/-kernel/m/-integer.html">Kernel.#Integer</a>のように接頭辞を受け付ける符号付き整数
+</p>
+</dd>
+<dt>%o</dt>
+<dd>
+<p>
+符号付き8進数
+</p>
+</dd>
+<dt>%x</dt>
+<dt>%X</dt>
+<dd>
+<p>
+符号付き16進数
+</p>
+</dd>
+<dt>%e</dt>
+<dt>%f</dt>
+<dt>%g</dt>
+<dt>%E</dt>
+<dt>%F</dt>
+<dt>%G</dt>
+<dt>%a</dt>
+<dt>%A</dt>
+<dd>
+<p>
+符号付き浮動小数点数
+</p>
+</dd>
+<dt>%s</dt>
+<dd>
+<p>
+空白文字を含まない文字列
+(幅が指定されているときは指定された文字数か空白文字の直前までの短い方)
+</p>
+</dd>
+<dt>%c</dt>
+<dd>
+<p>
+1文字(幅が指定されているときは指定された文字数)
+</p>
+</dd>
+<dt>[...]</dt>
+<dd>
+<p>
+<a href="../../../doc/spec=2fregexp.html#string">正規表現/文字クラス</a>
+</p>
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

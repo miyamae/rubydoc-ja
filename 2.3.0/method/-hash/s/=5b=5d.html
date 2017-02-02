@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>singleton method Hash.[] (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-hash.html">Hashクラス</a>
+&gt; []
+
+</p>
+
+
+<h1>singleton method Hash.[]</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_--5B--5D"><code>self[other] -&gt; Hash</code><span class="permalink">[<a href="../../../method/-hash/s/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-c-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+新しいハッシュを生成します。
+引数otherと同一のキーと値を持つ新たなハッシュを生成して返します。
+</p>
+<p>
+引数otherがハッシュではない場合、otherのメソッドto_hashを使って暗黙の変換を試みます。
+</p>
+<p>
+デフォルト値はコピーしません。生成されたハッシュのデフォルト値は nil です。
+</p>
+<p>
+引数otherと生成したハッシュは同じオブジェクトを参照することになるので、
+一方でキーや値に破壊的操作を行うともう片方にも影響します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+生成元となるハッシュまたはメソッド to_hash でハッシュに変換できるオブジェクトです。
+</dd>
+</dl>
+<pre>
+h = {1 =&gt; &quot;value&quot;}
+h.default = &quot;none&quot;
+
+g = Hash[h]
+p g #=&gt; {1=&gt;&quot;value&quot;}
+
+p h[:no] #=&gt; &quot;none&quot;
+p g[:no] #=&gt; nil
+
+h[:add] = &quot;some&quot;
+p h #=&gt; {1=&gt;&quot;value&quot;, :add=&gt;&quot;some&quot;}
+p g #=&gt; {1=&gt;&quot;value&quot;}
+
+h[1] &lt;&lt; 'plus' #破壊的操作
+p h #=&gt; {1=&gt;&quot;valueplus&quot;, :add=&gt;&quot;some&quot;}
+p g #=&gt; {1=&gt;&quot;valueplus&quot;}
+</pre>
+</dd>
+<dt class="method-heading" id="S_--5B--5D"><code>self[*key_and_value] -&gt; Hash</code><span class="permalink">[<a href="../../../method/-hash/s/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-c-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+新しいハッシュを生成します。
+引数は必ず偶数個指定しなければなりません。奇数番目がキー、偶数番目が値になります。
+</p>
+<p>
+このメソッドでは生成するハッシュにデフォルト値を指定することはできません。
+<a href="../../../method/-hash/s/new.html">Hash.new</a>を使うか、<a href="../../../method/-hash/i/default=3d.html">Hash#default=</a>で後から指定してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key_and_value:</dt>
+<dd>
+生成するハッシュのキーと値の組です。必ず偶数個(0を含む)指定しなければいけません。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+奇数個の引数を与えたときに発生します。
+</dd>
+</dl>
+<p>
+以下は配列からハッシュを生成する方法の例です。
+</p>
+<p>
+(1) [キー, 値, ...] の配列からハッシュへ
+</p>
+<pre>
+ary = [1,&quot;a&quot;, 2,&quot;b&quot;, 3,[&quot;c&quot;]]
+p Hash[*ary]  # =&gt; {1=&gt;&quot;a&quot;, 2=&gt;&quot;b&quot;, 3=&gt;[&quot;c&quot;]}
+</pre>
+<p>
+(2) キーと値のペアの配列からハッシュへ
+</p>
+<pre>
+alist = [[1,&quot;a&quot;], [2,&quot;b&quot;], [3,[&quot;c&quot;]]]
+p Hash[*alist.flatten(1)]  # =&gt; {1=&gt;&quot;a&quot;, 2=&gt;&quot;b&quot;, 3=&gt;[&quot;c&quot;]}
+</pre>
+<p>
+(3) キーと値の配列のペアからハッシュへ
+</p>
+<pre>
+keys = [1, 2, 3]
+vals = [&quot;a&quot;, &quot;b&quot;, [&quot;c&quot;]]
+alist = keys.zip(vals)     # あるいは alist = [keys,vals].transpose
+p Hash[alist]  # =&gt; {1=&gt;&quot;a&quot;, 2=&gt;&quot;b&quot;, 3=&gt;[&quot;c&quot;]}
+</pre>
+<p>
+(4) キーや値が配列の場合
+</p>
+<pre>
+alist = [[1,[&quot;a&quot;]], [2,[&quot;b&quot;]], [3,[&quot;c&quot;]], [[4,5], [&quot;a&quot;, &quot;b&quot;]]]
+hash = Hash[alist] # =&gt; {1=&gt;[&quot;a&quot;], 2=&gt;[&quot;b&quot;], 3=&gt;[&quot;c&quot;], [4, 5]=&gt;[&quot;a&quot;, &quot;b&quot;]}
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

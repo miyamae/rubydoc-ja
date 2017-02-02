@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class Class (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Classクラス
+</p>
+
+
+<h1>class Class</h1>
+<p>
+
+
+クラスの継承リスト: Class
+
+      &lt; <a href="../class/-module.html">Module</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+クラスのクラスです。
+</p>
+<p>
+より正確に言えば、個々のクラスはそれぞれメタクラスと呼
+ばれる名前のないクラスをクラスとして持っていて、Class はそのメタ
+クラスのクラスです。この関係は少し複雑ですが、Ruby を利用するにあたっ
+ては特に重要ではありません。
+</p>
+<p>
+クラスとモジュールには
+</p>
+<ul>
+<li>クラスはインスタンスを作成できるが、モジュールはできない。</li>
+<li>モジュールを他のモジュールやクラスにインクルードすることはできるが，クラスをインクルードすることはできない。</li>
+</ul>
+<p>
+という違いがありますが、それ以外のほとんどの機能は <a href="../class/-module.html">Module</a> から継
+承されています。Module のメソッドのうち
+</p>
+<ul>
+<li><a href="../method/-module/i/module_function.html">Module#module_function</a></li>
+<li><a href="../method/-module/i/extend_object.html">Module#extend_object</a></li>
+<li><a href="../method/-module/i/append_features.html">Module#append_features</a></li>
+<li><a href="../method/-module/i/prepend_features.html">Module#prepend_features</a></li>
+<li><a href="../method/-module/i/refine.html">Module#refine</a></li>
+</ul>
+<p>
+は Class では未定義にされています。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I__LOAD">_load</a>
+
+<a href="#I_ALLOCATE">allocate</a>
+
+<a href="#I_NEW">new</a>
+
+<a href="#I_SUPERCLASS">superclass</a>
+
+</dd>
+
+<dt>privateメソッド</dt>
+<dd>
+
+<a href="#I_INHERITED">inherited</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(superclass = Object) -&gt; Class</code><span class="permalink">[<a href="../method/-class/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Class.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>new(superclass = Object) {|klass| ... } -&gt; Class</code></dt>
+<dd class="method-description">
+<p>
+新しく名前の付いていない superclass のサブクラスを生成します。
+</p>
+<p>
+名前のないクラスは、最初に名前を求める際に代入されている定数名を検
+索し、見つかった定数名をクラス名とします。
+</p>
+<pre>
+p foo = Class.new   # =&gt; #&lt;Class:0x401b90f8&gt;
+p foo.name          # =&gt; &quot;&quot;
+Foo = foo           # ここで p foo すれば &quot;Foo&quot; 固定
+Bar = foo
+p foo.name          # =&gt; &quot;Bar&quot;  (&quot;Foo&quot; になるか &quot;Bar&quot; になるかは不定)
+</pre>
+<p>
+ブロックが与えられた場合、生成したクラスを引数として
+クラスのコンテキストでブロックを実行します。以下のコードと同じです。
+</p>
+<pre>
+klass = Class.new(superclass)
+klass.module_eval {|m| ... }
+klass
+</pre>
+<p>
+この場合も生成したクラスを返します。
+ブロックの実行は Class#initialize が行います。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] superclass:</dt>
+<dd>
+生成するクラスのスーパークラスを指定します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+k = Class.new{|c|
+      def initialize
+        p &quot;in initialize&quot;
+      end
+
+      def hoge
+        p &quot;hoge hoge hoge&quot;
+      end
+    }
+o = k.new              #=&gt; &quot;in initialize&quot;
+o.hoge                 #=&gt; &quot;hoge hoge hoge&quot;
+</pre>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I__LOAD"><code>_load(str) -&gt; Class</code><span class="permalink">[<a href="../method/-class/i/_load.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Class.html#method-i-_load">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-object/i/_dump.html">Object#_dump</a> を参照して下さい。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+Ruby のオブジェクトがダンプされた文字列を指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_ALLOCATE"><code>allocate -&gt; object</code><span class="permalink">[<a href="../method/-class/i/allocate.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Class.html#method-i-allocate">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身のインスタンスを生成して返します。生成したオブジェクトは
+自身のインスタンスであること以外には何も特性を持ちません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_NEW"><code>new(*args, &amp;block) -&gt; object</code><span class="permalink">[<a href="../method/-class/i/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Class.html#method-i-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身のインスタンスを生成して返します。
+このメソッドの引数はブロック引数も含め <a href="../method/-object/i/initialize.html">Object#initialize</a> に渡されます。
+</p>
+<p>
+new は <a href="../method/-class/i/allocate.html">Class#allocate</a> でインスタンスを生成し、
+<a href="../method/-object/i/initialize.html">Object#initialize</a> で初期化を行います。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+<a href="../method/-object/i/initialize.html">Object#initialize</a> に渡される引数を指定します。
+</dd>
+<dt class='method-param'>[PARAM] block:</dt>
+<dd>
+<a href="../method/-object/i/initialize.html">Object#initialize</a> に渡されるブロックを指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_SUPERCLASS"><code>superclass -&gt; Class | nil</code><span class="permalink">[<a href="../method/-class/i/superclass.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Class.html#method-i-superclass">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身のスーパークラスを返します。
+</p>
+<p>
+ただし <a href="../class/-basic-object.html">BasicObject</a>.superclass は nil を返します。
+</p>
+</dd>
+
+
+</dl>
+
+<h2>privateメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_INHERITED"><code>inherited(subclass) -&gt; ()</code><span class="permalink">[<a href="../method/-class/i/inherited.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Class.html#method-i-inherited">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+クラスのサブクラスが定義された時、新しく生成されたサブクラスを引数
+にインタプリタから呼び出されます。このメソッドが呼ばれるタイミングは
+クラス定義文の実行直前です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] subclass:</dt>
+<dd>
+プログラム内で新たに定義された自身のサブクラスです。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+class Foo
+  def Foo.inherited(subclass)
+    puts &quot;class \&quot;#{self}\&quot; was inherited by \&quot;#{subclass}\&quot;&quot;
+  end
+end
+class Bar &lt; Foo
+  puts &quot;executing class body&quot;
+end
+
+# =&gt; class &quot;Foo&quot; was inherited by &quot;Bar&quot;
+     executing class body
+</pre>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

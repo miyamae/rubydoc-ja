@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>library logger (Ruby 2.1.0)</title>
 </head>
 <body>
@@ -24,7 +25,7 @@
 <p>
 ログを記録するためのライブラリです。
 </p>
-<h2 >使い方</h2>
+<h2 >説明</h2>
 <p>
 5段階のログレベルに分けてログを記録します。
 </p>
@@ -69,9 +70,7 @@
 普段は INFO しか記録していないが、デバッグ情報が必要になった時には、
 Logger オブジェクトのログレベルを DEBUG に下げるなどという使い方をします。
 </p>
-<p>
-例:
-</p>
+<h3 >例</h3>
 <pre>
 require 'logger'
 log = Logger.new(STDOUT)
@@ -80,6 +79,19 @@ log.level = Logger::WARN
 log.debug(&quot;Created logger&quot;)
 log.info(&quot;Program started&quot;)
 log.warn(&quot;Nothing to do!&quot;)
+
+path = &quot;a_non_existent_file&quot;
+
+begin
+  File.foreach(path) do |line|
+    unless line =~ /^(\w+) = (.*)$/
+      logger.error(&quot;Line in wrong format: #{line.chomp}&quot;)
+    end
+  end
+rescue =&gt; err
+  logger.fatal(&quot;Caught exception; exiting&quot;)
+  logger.fatal(err)
+end
 </pre>
 <p>
 上の例ではログには WARN のみが記録されます。下が出力例です。
@@ -87,6 +99,11 @@ log.warn(&quot;Nothing to do!&quot;)
 <pre>
 W, [2005-02-10T20:03:56.489954 #12469]  WARN -- : Nothing to do!
 </pre>
+<p>
+これは log.level が <a href="../method/-logger/c/-w-a-r-n.html">Logger::WARN</a> になっているためです。WARN、
+ERROR、FATALログのみが記録の対象になります。DEBUG、INFOログは無視されま
+す。
+</p>
 <p>
 例外オブジェクトも記録するメッセージとして使えます。
 </p>
@@ -109,27 +126,175 @@ rescue =&gt; err
   log.fatal(err)
 end
 </pre>
+<h3 >機能</h3>
 <p>
-<a href="../method/-logger/i/formatter=3d.html">Logger#formatter=</a> を用いてフォーマットを変更することができます。
+<a href="../class/-logger.html">Logger</a> はログファイルの自動切り替え、ログフォーマットの設定、ログ
+と一緒に記録するプログラム名の指定といった有用な機能があります。以降で
+はその使い方について説明します。
+</p>
+<h2 >使い方</h2>
+<h3 >loggerの作成</h3>
+<p>
+以下のいずれかの方法でloggerを作成する事ができます(<a href="../method/-logger/s/new.html">Logger.new</a> も参照)。
+</p>
+<p>
+1. STDERR/STDOUTに出力するように指定
 </p>
 <pre>
-logger.formatter = proc { |severity, datetime, progname, msg|
+logger = Logger.new(STDERR)
+logger = Logger.new(STDOUT)
+</pre>
+<p>
+2. ログファイル名を指定
+</p>
+<pre>
+logger = Logger.new('logfile.log')
+</pre>
+<p>
+3. <a href="../class/-file.html">File</a> オブジェクトを指定
+</p>
+<pre>
+file = File.open('foo.log', File::WRONLY | File::APPEND)
+# (古いファイルを削除する)新しいログファイルを作成する場合、以下のよ
+# うに [[m:File::CREAT]] を指定。
+# file = File.open('foo.log', File::WRONLY | File::APPEND | File::CREAT)
+logger = Logger.new(file)
+</pre>
+<p>
+4. 指定したファイルサイズに達したらログファイルの切り替えを行うように指定。
+</p>
+<pre>
+# 約1,024,000バイトの&quot;古い&quot;ログファイルを10個残す
+logger = Logger.new('foo.log', 10, 1024000)
+</pre>
+<p>
+5. ログファイルの切り替えを daily/weekly/monthly に指定
+</p>
+<pre>
+logger = Logger.new('foo.log', 'daily')
+logger = Logger.new('foo.log', 'weekly')
+logger = Logger.new('foo.log', 'monthly')
+</pre>
+<h3 >ログの記録</h3>
+<p>
+ログをレベルごとに記録するのに <a href="../method/-logger/i/fatal.html">Logger#fatal</a>、<a href="../method/-logger/i/error.html">Logger#error</a>、
+<a href="../method/-logger/i/warn.html">Logger#warn</a>、<a href="../method/-logger/i/info.html">Logger#info</a>、<a href="../method/-logger/i/debug.html">Logger#debug</a> メソッドを使用
+します。動的に任意のログレベルを設定したい場合は <a href="../method/-logger/i/add.html">Logger#add</a> を使
+用します。
+</p>
+<p>
+1. ブロックを指定
+</p>
+<pre>
+logger.fatal { &quot;Argument 'foo' not given.&quot; }
+</pre>
+<p>
+2. 文字列を指定
+</p>
+<pre>
+logger.error &quot;Argument #{@foo} mismatch.&quot;
+</pre>
+<p>
+3. プログラム名を指定
+</p>
+<pre>
+logger.info('initialize') { &quot;Initializing...&quot; }
+</pre>
+<p>
+4. ログレベルを指定
+</p>
+<pre>
+logger.add(Logger::FATAL) { 'Fatal error!' }
+</pre>
+<p>
+ブロック形式だと潜在的に複雑なログを記録する場合に評価をログの記録のタ
+イミングまで遅延させる事ができます。例えば以下のようにすると、
+</p>
+<pre>
+logger.debug { &quot;This is a &quot; + potentially + &quot; expensive operation&quot; }
+</pre>
+<p>
+もしログレベルが INFO 以上であった場合、デバッグメッセージが記録されな
+いだけでなくブロックが評価される事もありません(以下だと記録が行われない
+のは同じですが、評価されます)。
+</p>
+<pre>
+logger.debug(&quot;This is a &quot; + potentially + &quot; expensive operation&quot;)
+</pre>
+<h3 >loggerのclose</h3>
+<pre>
+logger.close
+</pre>
+<h3 >ログレベル設定</h3>
+<p>
+1. オリジナルインターフェイス
+</p>
+<pre>
+logger.sev_threshold = Logger::WARN
+</pre>
+<p>
+2. (ある程度の) Log4r 互換インターフェイス
+</p>
+<pre>
+logger.level = Logger::INFO
+
+# DEBUG &lt; INFO &lt; WARN &lt; ERROR &lt; FATAL &lt; UNKNOWN
+</pre>
+<p>
+3. <a href="../class/-symbol.html">Symbol</a> か <a href="../class/-string.html">String</a>(大文字小文字の区別を行わない)
+</p>
+<pre>
+logger.level = :info
+logger.level = 'INFO'
+
+# :debug &lt; :info &lt; :warn &lt; :error &lt; :fatal &lt; :unknown
+</pre>
+<h2 >フォーマット</h2>
+<p>
+ログはデフォルトでは特定のフォーマットで記録されます。デフォルトのフォー
+マットとその場合のログの例は以下のようになります。
+</p>
+<p>
+フォーマット:
+</p>
+<pre>
+SeverityID, [DateTime #pid] SeverityLabel -- ProgName: message
+</pre>
+<p>
+例:
+</p>
+<pre>
+I, [1999-03-03T02:34:24.895701 #19074]  INFO -- Main: info.
+</pre>
+<p>
+<a href="../method/-logger/i/datetime_format=3d.html">Logger#datetime_format=</a> を用いてログに記録する時の日時のフォーマッ
+トを変更することもできます。
+</p>
+<pre>
+logger.datetime_format = '%Y-%m-%d %H:%M:%S'
+# e.g. &quot;2004-01-03 00:54:26&quot;
+</pre>
+<p>
+<a href="../method/-logger/i/formatter=3d.html">Logger#formatter=</a> を用いてフォーマットを変更することもできます。
+</p>
+<pre>
+logger.formatter = proc do |severity, datetime, progname, msg|
   &quot;#{datetime}: #{msg}\n&quot;
-}
-# =&gt; &quot;Thu Sep 22 08:51:08 GMT+9:00 2005: hello world&quot;
+end
+# =&gt; &quot;2005-09-22 08:51:08 +0900: hello world&quot;
 </pre>
 <h2 >参考</h2>
 <dl>
 <dt>Rubyist Magazine</dt>
 <dd>
 <p>
-<a class="external" href="http://jp.rubyist.net/magazine/">http://jp.rubyist.net/magazine/</a>
+<a class="external" href="http://magazine.rubyist.net/">http://magazine.rubyist.net/</a>
 </p>
 </dd>
 <dt>標準添付ライブラリ紹介【第 2 回】</dt>
 <dd>
 <p>
-<a class="external" href="http://jp.rubyist.net/magazine/?0008-BundledLibraries">http://jp.rubyist.net/magazine/?0008-BundledLibraries</a>
+<a class="external" href="http://magazine.rubyist.net/?0008-BundledLibraries">http://magazine.rubyist.net/?0008-BundledLibraries</a>
 </p>
 </dd>
 </dl>
@@ -243,8 +408,8 @@ logger.formatter = proc { |severity, datetime, progname, msg|
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

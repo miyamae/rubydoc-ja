@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class File::Stat (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; File::Statクラス
+</p>
+
+
+<h1>class File::Stat</h1>
+<p>
+
+
+クラスの継承リスト: File::Stat
+
+      &lt; <a href="../class/-comparable.html">Comparable</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+ファイルの情報を格納したオブジェクトのクラス。
+</p>
+<p>
+<a href="../class/-file-test.html">FileTest</a> に同名のモジュール関数がある場合はそれと同じ働きをします。ただ、
+ファイル名を引数に取るかわりに Stat 自身について判定する点が違います。
+</p>
+<pre>
+p File::Stat.new($0).directory? #=&gt; false
+p FileTest.directory?($0) #=&gt; false
+</pre>
+<p>
+以下の属性メソッドは、システムによってサポートされていない場合 0 が返ります。
+1.8.0 以降では nil が返ります。
+</p>
+<pre>
+dev         デバイス番号(ファイルシステム)
+dev_major   dev の major 番号部
+dev_minor   dev の minor 番号部
+ino         i-node 番号
+mode        ファイルモード
+nlink       ハードリンクの数
+uid         オーナーのユーザID
+gid         オーナーのグループID
+rdev        デバイスタイプ(スペシャルファイルのみ)
+rdev_major  rdev の major 番号部
+rdev_minor  rdev の minor 番号部
+size        ファイルサイズ(バイト単位)
+blksize     望ましいI/Oのブロックサイズ
+blocks      割り当てられているブロック数
+atime       最終アクセス時刻
+mtime       最終更新時刻
+ctime       最終状態変更時刻(状態の変更とは chmod などによるもので、Unix では i-node の変更を意味します)
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--3C--3D--3E"><=></a>
+
+<a href="#I_ATIME">atime</a>
+
+<a href="#I_BIRTHTIME">birthtime</a>
+
+<a href="#I_BLKSIZE">blksize</a>
+
+<a href="#I_BLOCKDEV--3F">blockdev?</a>
+
+<a href="#I_BLOCKS">blocks</a>
+
+<a href="#I_CHARDEV--3F">chardev?</a>
+
+<a href="#I_CTIME">ctime</a>
+
+<a href="#I_DEV">dev</a>
+
+<a href="#I_DEV_MAJOR">dev_major</a>
+
+<a href="#I_DEV_MINOR">dev_minor</a>
+
+<a href="#I_DIRECTORY--3F">directory?</a>
+
+<a href="#I_EXECUTABLE--3F">executable?</a>
+
+<a href="#I_EXECUTABLE_REAL--3F">executable_real?</a>
+
+<a href="#I_FILE--3F">file?</a>
+
+<a href="#I_FTYPE">ftype</a>
+
+<a href="#I_GID">gid</a>
+
+<a href="#I_GRPOWNED--3F">grpowned?</a>
+
+<a href="#I_INO">ino</a>
+
+<a href="#I_MODE">mode</a>
+
+<a href="#I_MTIME">mtime</a>
+
+<a href="#I_NLINK">nlink</a>
+
+<a href="#I_OWNED--3F">owned?</a>
+
+<a href="#I_PIPE--3F">pipe?</a>
+
+<a href="#I_RDEV">rdev</a>
+
+<a href="#I_RDEV_MAJOR">rdev_major</a>
+
+<a href="#I_RDEV_MINOR">rdev_minor</a>
+
+<a href="#I_READABLE--3F">readable?</a>
+
+<a href="#I_READABLE_REAL--3F">readable_real?</a>
+
+<a href="#I_SETGID--3F">setgid?</a>
+
+<a href="#I_SETUID--3F">setuid?</a>
+
+<a href="#I_SIZE">size</a>
+
+<a href="#I_SIZE--3F">size?</a>
+
+<a href="#I_SOCKET--3F">socket?</a>
+
+<a href="#I_STICKY--3F">sticky?</a>
+
+<a href="#I_SYMLINK--3F">symlink?</a>
+
+<a href="#I_UID">uid</a>
+
+<a href="#I_WORLD_READABLE--3F">world_readable?</a>
+
+<a href="#I_WORLD_WRITABLE--3F">world_writable?</a>
+
+<a href="#I_WRITABLE--3F">writable?</a>
+
+<a href="#I_WRITABLE_REAL--3F">writable_real?</a>
+
+<a href="#I_ZERO--3F">zero?</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(path) -&gt; File::Stat</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+path に関する File::Stat オブジェクトを生成して返します。
+<a href="../method/-file/s/stat.html">File.stat</a> と同じです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+ファイルのパスを指定します。
+</dd>
+<dt>[EXCEPTION] Errno::ENOENT:</dt>
+<dd>
+pathに該当するファイルが存在しない場合発生します。
+</dd>
+</dl>
+<pre>
+p $:[0]
+#=&gt; 例
+# &quot;C:/Program Files/ruby-1.8/lib/ruby/site_ruby/1.8&quot;
+p File::Stat.new($:[0])
+#=&gt; 例
+#&lt;File::Stat dev=0x2, ino=0, mode=040755, nlink=1, uid=0, gid=0, rdev=0x2, size=0, blksize=nil, blocks=nil, atime=Sun Sep 02 14:15:20 +0900 2007, mtime=Tue Apr 24 23:03:44 +0900 2007, ctime=Tue Apr 24 23:03:37 +0900 2007&gt;
+</pre>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--3C--3D--3E"><code>self &lt;=&gt; o -&gt; Fixnum | nil</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/=3c=3d=3e.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-3C-3D-3E">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ファイルの最終更新時刻を比較します。self が other よりも
+新しければ正の数を、等しければ 0 を古ければ負の数を返します。
+比較できない場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] o:</dt>
+<dd>
+<a href="../class/-file=3a=3a-stat.html">File::Stat</a> のインスタンスを指定します。
+</dd>
+</dl>
+<pre>
+require 'tempfile' # for Tempfile
+
+fp1 = Tempfile.open(&quot;first&quot;)
+fp1.print &quot;古い方\n&quot;
+sleep(1)
+fp2 = Tempfile.open(&quot;second&quot;)
+fp2.print &quot;新しい方\n&quot;
+
+p File::Stat.new(fp1.path) &lt;=&gt; File::Stat.new(fp2.path) #=&gt; -1
+p File::Stat.new(fp2.path) &lt;=&gt; File::Stat.new(fp1.path) #=&gt;  1
+p File::Stat.new(fp1.path) &lt;=&gt; fp2.path #=&gt; nil
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ATIME"><code>atime -&gt; Time</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/atime.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-atime">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+最終アクセス時刻を返します。
+</p>
+<pre>
+fs = File::Stat.new($0)
+#例
+p fs.atime.to_a  #=&gt; [45, 5, 21, 5, 9, 2007, 3, 248, false, &quot;\223\214\213\236 (\225W\217\200\216\236) &quot;]
+</pre>
+<p>
+[SEE_ALSO] <a href="../class/-time.html">Time</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_BIRTHTIME"><code>birthtime -&gt; Time</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/birthtime.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-birthtime">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+作成された時刻を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] NotImplementedError:</dt>
+<dd>
+Windows のような birthtime のない環境で発生します。
+</dd>
+</dl>
+<pre>
+File.write(&quot;testfile&quot;, &quot;foo&quot;)
+sleep 10
+File.write(&quot;testfile&quot;, &quot;bar&quot;)
+sleep 10
+File.chmod(0644, &quot;testfile&quot;)
+sleep 10
+File.read(&quot;testfile&quot;)
+File.stat(&quot;testfile&quot;).birthtime   #=&gt; 2014-02-24 11:19:17 +0900
+File.stat(&quot;testfile&quot;).mtime       #=&gt; 2014-02-24 11:19:27 +0900
+File.stat(&quot;testfile&quot;).ctime       #=&gt; 2014-02-24 11:19:37 +0900
+File.stat(&quot;testfile&quot;).atime       #=&gt; 2014-02-24 11:19:47 +0900
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_BLKSIZE"><code>blksize -&gt; Integer</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/blksize.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-blksize">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+望ましいI/Oのブロックサイズを返します。
+</p>
+<pre>
+fs = File::Stat.new($0)
+#例
+p fs.blksize #=&gt; nil
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_BLOCKDEV--3F"><code>blockdev? -&gt; bool</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/blockdev=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-blockdev-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ブロックスペシャルファイルの時に真を返します。
+</p>
+<pre>
+Dir.glob(&quot;/dev/*&quot;) {|bd|
+  if File::Stat.new(bd).blockdev?
+    puts bd
+  end
+}
+#例
+#...
+#=&gt; /dev/hda1
+#=&gt; /dev/hda3
+#...
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_BLOCKS"><code>blocks -&gt; Integer</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/blocks.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-blocks">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+割り当てられているブロック数を返します。
+</p>
+<pre>
+fs = File::Stat.new($0)
+#例
+p fs.blocks  #=&gt; nil
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CHARDEV--3F"><code>chardev? -&gt; bool</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/chardev=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-chardev-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+キャラクタスペシャルファイルの時に真を返します。
+</p>
+<pre>
+Dir.glob(&quot;/dev/*&quot;) {|bd|
+  if File::Stat.new(bd).chardev?
+    puts bd
+  end
+}
+#例
+#...
+#=&gt; /dev/tty1
+#=&gt; /dev/stderr
+#...
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CTIME"><code>ctime -&gt; Time</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/ctime.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-ctime">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+最終状態変更時刻を返します。
+(状態の変更とは chmod などによるもので、Unix では i-node の変更を意味します)
+</p>
+<pre>
+fs = File::Stat.new($0)
+#例
+p fs.ctime.to_f   #=&gt; 1188719843.0
+</pre>
+<p>
+[SEE_ALSO] <a href="../class/-time.html">Time</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DEV"><code>dev -&gt; String</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/dev.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-dev">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+デバイス番号(ファイルシステム)を返します。
+</p>
+<pre>
+fs = File::Stat.new($0)
+p fs.dev
+#例
+#=&gt; 2
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_DEV_MAJOR"><code>dev_major -&gt; Integer</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/dev_major.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-dev_major">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+dev の major 番号部を返します。
+</p>
+<pre>
+fs = File::Stat.new($0)
+p fs.dev_major
+#例
+#=&gt; nil #この場合ではシステムでサポートされていないため
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_DEV_MINOR"><code>dev_minor -&gt; Integer</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/dev_minor.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-dev_minor">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+dev の minor 番号部を返します。
+</p>
+<pre>
+fs = File::Stat.new($0)
+p fs.dev_minor
+#例
+#=&gt; nil
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_DIRECTORY--3F"><code>directory? -&gt; bool</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/directory=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-directory-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ディレクトリの時に真を返します。
+</p>
+<pre>
+p File::Stat.new($0).directory? #=&gt; false
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-file-test/m/directory=3f.html">FileTest.#directory?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EXECUTABLE--3F"><code>executable? -&gt; bool</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/executable=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-executable-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+実効ユーザ/グループIDで実行できる時に真を返します。
+</p>
+<pre>
+p File::Stat.new($0).executable?
+# 例
+#=&gt; true
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_EXECUTABLE_REAL--3F"><code>executable_real? -&gt; bool</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/executable_real=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-executable_real-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+実ユーザ/グループIDで実行できる時に真を返します。
+</p>
+<pre>
+p File::Stat.new($0).executable_real?
+#例
+#=&gt; true
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_FILE--3F"><code>file? -&gt; bool</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/file=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-file-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+通常ファイルの時に真を返します。
+</p>
+<pre>
+p File::Stat.new($0).file? #=&gt; true
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_FTYPE"><code>ftype -&gt; String</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/ftype.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-ftype">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ファイルのタイプを表す文字列を返します。
+</p>
+<p>
+文字列は以下のうちのいずれかです。
+</p>
+<pre>
+&quot;file&quot;
+&quot;directory&quot;
+&quot;characterSpecial&quot;
+&quot;blockSpecial&quot;
+&quot;fifo&quot;
+&quot;link&quot;
+&quot;socket&quot;
+
+&quot;unknown&quot;
+</pre>
+<p>
+サンプル
+</p>
+<pre>
+fs = File::Stat.new($0)
+p fs.ftype #=&gt; &quot;file&quot;
+p File::Stat.new($:[0]).ftype #=&gt; &quot;directory&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_GID"><code>gid -&gt; Integer</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/gid.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-gid">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+オーナーのグループIDを返します。
+</p>
+<pre>
+fs = File::Stat.new($0)
+#例
+p fs.gid      #=&gt; 0
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_GRPOWNED--3F"><code>grpowned? -&gt; bool</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/grpowned=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-grpowned-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+グループIDが実効グループIDと等しい時に真を返します。
+</p>
+<p>
+補助グループIDは考慮されません。
+</p>
+<pre>
+printf &quot;%s %s\n&quot;, $:[0], File::Stat.new($:[0]).grpowned?
+#例
+#=&gt; /usr/local/lib/site_ruby/1.8 false
+printf &quot;%s %s\n&quot;, $0, File::Stat.new($0).grpowned?
+#例
+#=&gt; filestat.rb true
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_INO"><code>ino -&gt; Integer</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/ino.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-ino">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+i-node 番号を返します。
+</p>
+<pre>
+fs = File::Stat.new($0)
+#例
+p fs.ino      #=&gt; 0
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_MODE"><code>mode -&gt; Integer</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/mode.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-mode">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ファイルモードを返します。
+</p>
+<pre>
+fs = File::Stat.new($0)
+printf &quot;%o\n&quot;, fs.mode
+#例
+#=&gt; 100644
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_MTIME"><code>mtime -&gt; Time</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/mtime.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-mtime">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+最終更新時刻を返します。
+</p>
+<pre>
+fs = File::Stat.new($0)
+#例
+p fs.mtime   #=&gt; Wed Sep 05 20:42:18 +0900 2007
+</pre>
+<p>
+[SEE_ALSO] <a href="../class/-time.html">Time</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_NLINK"><code>nlink -&gt; Integer</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/nlink.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-nlink">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ハードリンクの数を返します。
+</p>
+<pre>
+fs = File::Stat.new($0)
+#例
+p fs.nlink    #=&gt; 1
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_OWNED--3F"><code>owned? -&gt; bool</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/owned=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-owned-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自分のものである時に真を返します。
+</p>
+<pre>
+printf &quot;%s %s\n&quot;, $:[0], File::Stat.new($:[0]).owned?
+#例
+#=&gt; /usr/local/lib/site_ruby/1.8 false
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_PIPE--3F"><code>pipe? -&gt; bool</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/pipe=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-pipe-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+無名パイプおよび名前つきパイプ(FIFO)の時に真を返します。
+</p>
+<pre>
+system(&quot;mkfifo /tmp/pipetest&quot;)
+p File::Stat.new(&quot;/tmp/pipetest&quot;).pipe? #=&gt; true
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_RDEV"><code>rdev -&gt; Integer</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/rdev.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-rdev">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+デバイスタイプ(スペシャルファイルのみ)を返します。
+</p>
+<pre>
+fs = File::Stat.new($0)
+#例
+p fs.rdev     #=&gt; 2
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_RDEV_MAJOR"><code>rdev_major -&gt; Integer</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/rdev_major.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-rdev_major">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+rdev の major 番号部を返します。
+</p>
+<pre>
+fs = File::Stat.new($0)
+#例
+p fs.rdev_major #=&gt; nil
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_RDEV_MINOR"><code>rdev_minor -&gt; Integer</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/rdev_minor.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-rdev_minor">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+rdev の minor 番号部を返します。
+</p>
+<pre>
+fs = File::Stat.new($0)
+#例
+p fs.rdev_minor #=&gt; nil
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_READABLE--3F"><code>readable? -&gt; bool</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/readable=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-readable-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+読み込み可能な時に真を返します。
+</p>
+<pre>
+p File::Stat.new($0).readable? #=&gt; true
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_READABLE_REAL--3F"><code>readable_real? -&gt; bool</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/readable_real=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-readable_real-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+実ユーザ/実グループによって読み込み可能な時に真を返します。
+</p>
+<pre>
+p File::Stat.new($0).readable_real? #=&gt; true
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SETGID--3F"><code>setgid? -&gt; bool</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/setgid=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-setgid-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+setgidされている時に真を返します。
+</p>
+<pre>
+Dir.glob(&quot;/usr/sbin/*&quot;) {|bd|
+  if File::Stat.new(bd).setgid?
+    puts bd
+  end
+}
+#例
+#...
+#=&gt; /usr/sbin/postqueue
+#...
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SETUID--3F"><code>setuid? -&gt; bool</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/setuid=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-setuid-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+setuidされている時に真を返します。
+</p>
+<pre>
+Dir.glob(&quot;/bin/*&quot;) {|bd|
+  if File::Stat.new(bd).setuid?
+    puts bd
+  end
+}
+#例
+#...
+#=&gt; /bin/ping
+#=&gt; /bin/su
+#...
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SIZE"><code>size -&gt; Integer</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/size.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-size">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ファイルサイズ(バイト単位)を返します。
+</p>
+<pre>
+fs = File::Stat.new($0)
+#例
+p fs.size    #=&gt; 1548
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SIZE--3F"><code>size? -&gt; Integer | nil</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/size=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-size-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+サイズが0の時にはnil、それ以外の場合はファイルサイズを返します。
+</p>
+<pre>
+require 'tempfile'
+
+fp = Tempfile.new(&quot;temp&quot;)
+p fp.size #=&gt; 0
+p File::Stat.new(fp.path).size? #=&gt; nil
+fp.print &quot;not 0 &quot;
+fp.close
+p FileTest.exist?(fp.path) #=&gt; true
+p File::Stat.new(fp.path).size? #=&gt; 6
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SOCKET--3F"><code>socket? -&gt; bool</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/socket=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-socket-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ソケットの時に真を返します。
+</p>
+<pre>
+Dir.glob(&quot;/tmp/*&quot;){|file|
+  if File::Stat.new(file).socket?
+    printf &quot;%s\n&quot;, file
+  end
+}
+#例
+#=&gt; /tmp/uimhelper-hogehoge
+#...
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_STICKY--3F"><code>sticky? -&gt; bool</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/sticky=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-sticky-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+stickyビットが立っている時に真を返します。
+</p>
+<pre>
+Dir.glob(&quot;/usr/bin/*&quot;) {|bd|
+  begin
+    if File::Stat.new(bd).sticky?
+      puts bd
+    end
+  rescue
+  end
+}
+#例
+#...
+#=&gt; /usr/bin/emacs-21.4
+#...
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SYMLINK--3F"><code>symlink? -&gt; false</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/symlink=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-symlink-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+シンボリックリンクである時に真を返します。
+ただし、File::Statは自動的にシンボリックリンクをたどっていくので
+常にfalseを返します。
+</p>
+<pre>
+require 'fileutils'
+outfile = $0 + &quot;.ln&quot;
+FileUtils.ln_s($0, outfile)
+p File::Stat.new(outfile).symlink? #=&gt; false
+p File.lstat(outfile).symlink?     #=&gt; true
+p FileTest.symlink?(outfile)       #=&gt; true
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/lstat.html">File.lstat</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_UID"><code>uid -&gt; Integer</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/uid.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-uid">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+オーナーのユーザIDを返します。
+</p>
+<pre>
+fs = File::Stat.new($0)
+#例
+p fs.uid    #=&gt; 0
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_WORLD_READABLE--3F"><code>world_readable? -&gt; Fixnum | nil</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/world_readable=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-world_readable-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+If stat is readable by others, returns an integer representing
+the file permission bits of stat. Returns nil otherwise. The
+meaning of the bits is platform dependent; on Unix systems, see
+stat(2).
+</p>
+<pre>
+m = File.stat(&quot;/etc/passwd&quot;).world_readable?  # =&gt; 420
+sprintf(&quot;%o&quot;, m)                              # =&gt; &quot;644&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_WORLD_WRITABLE--3F"><code>world_writable? -&gt; Fixnum | nil</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/world_writable=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-world_writable-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+If stat is writable by others, returns an integer representing
+the file permission bits of stat. Returns nil otherwise. The
+meaning of the bits is platform dependent; on Unix systems, see
+stat(2).
+</p>
+<pre>
+m = File.stat(&quot;/tmp&quot;).world_writable?         # =&gt; 511
+sprintf(&quot;%o&quot;, m)                              # =&gt; &quot;777&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_WRITABLE--3F"><code>writable? -&gt; bool</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/writable=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-writable-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+書き込み可能な時に真を返します。
+</p>
+<pre>
+p File::Stat.new($0).writable? #=&gt; true
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_WRITABLE_REAL--3F"><code>writable_real? -&gt; bool</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/writable_real=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-writable_real-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+実ユーザ/実グループによって書き込み可能な時に真を返します。
+</p>
+<pre>
+p File::Stat.new($0).writable_real? #=&gt; true
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ZERO--3F"><code>zero? -&gt; bool</code><span class="permalink">[<a href="../method/-file=3a=3a-stat/i/zero=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/File/Stat.html#method-i-zero-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+サイズが0である時に真を返します。
+</p>
+<pre>
+p File::Stat.new($0).zero? #=&gt; false
+</pre>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

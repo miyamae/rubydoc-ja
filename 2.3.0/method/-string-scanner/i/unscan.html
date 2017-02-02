@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>instance method StringScanner#unscan (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/strscan.html">strscanライブラリ</a>
+&gt; <a href="../../../class/-string-scanner.html">StringScannerクラス</a>
+&gt; unscan
+
+</p>
+
+
+<h1>instance method StringScanner#unscan</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_UNSCAN"><code>unscan -&gt; self</code><span class="permalink">[<a href="../../../method/-string-scanner/i/unscan.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/StringScanner.html#method-i-unscan">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+スキャンポインタを前回のマッチの前の位置に戻します。
+</p>
+<pre>
+s = StringScanner.new('test string')
+s.scan(/\w+/) # =&gt; &quot;test&quot;
+s.unscan
+s.scan(/\w+/) # =&gt; &quot;test&quot;
+</pre>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+selfを返します。
+</dd>
+</dl>
+<p>
+このメソッドでポインタを戻せるのは 1 回分だけです。
+2 回分以上戻そうとしたときは例外 StringScanner::Error が発生します。
+また、まだマッチを一度も行っていないときや、
+前回のマッチが失敗していたときも例外 StringScanner::Error が発生します。
+</p>
+<dl>
+<dt>[EXCEPTION] StringScanner::Error:</dt>
+<dd>
+2 回分以上戻そうとした時や、
+まだマッチを一度も行っていない時、
+前回のマッチが失敗していた時に発生します。
+</dd>
+</dl>
+<p>
+使用例
+</p>
+<pre>
+s = StringScanner.new('test string')
+begin
+  # マッチを一度も行っていないので、例外が発生する。
+  s.unscan
+rescue StringScanner::Error =&gt; err
+  puts err
+  # 出力例
+  #=&gt; unscan failed: previous match had failed
+end
+p s.scan(/\w+/) # =&gt; &quot;test&quot;
+s.unscan
+begin
+  # 二回以上戻そうとしたので、例外が発生する。
+  s.unscan
+rescue StringScanner::Error =&gt; err
+  puts err
+  # 出力例
+  #=&gt; unscan failed: previous match had failed
+end
+p s.scan(/\w+/) # =&gt; &quot;test&quot;
+p s.scan(/\w+/) # =&gt; nil
+begin
+  # 前回のマッチが失敗しているので、例外が発生する。
+  s.unscan
+rescue =&gt; err
+  puts err
+  # 出力例
+  #=&gt; unscan failed: previous match had failed
+end
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

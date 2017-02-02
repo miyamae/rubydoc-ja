@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>class Symbol (Ruby 1.9.3)</title>
 </head>
 <body>
@@ -111,6 +112,36 @@ p :abc.equal?(:abc) #=&gt; true ←同値ならば同一
 </p>
 <p>
 <a href="../class/-symbol.html">Symbol</a> クラスのメソッドには、<a href="../class/-string.html">String</a> クラスのメソッドと同名で似た働きをするものもあります。
+</p>
+<h3 >GC</h3>
+<p>
+内部的にシンボルは
+</p>
+<ul>
+<li>シンボルの情報を記録するテーブル</li>
+<li>そのテーブルの要素を指し示すポインタ</li>
+</ul>
+<p>
+の2つにより実装されています。そのため
+同じシンボル(同じ文字列から作られたシンボル)を
+複製しても同じ要素へのポインタが使われるだけなので
+メモリ使用量は普通の文字列と比べて少ないです。
+</p>
+<p>
+一方、テーブルに記録された情報はプログラムが動いている間
+はずっと保持しつづけられます。そのため、以下のようなコード
+</p>
+<pre>
+rng = Random.new
+100000.times do { rng.bytes(1000).intern }
+</pre>
+<p>
+はテーブルのサイズを増大させ、メモリを圧迫します。
+</p>
+<p>
+例えば web アプリケーションのようなプロセスを動かしつづけるような
+アプリケーションにおいて、ユーザからの入力を <a href="../method/-string/i/intern.html">String#intern</a> で
+シンボルに変換するような実装をすると、DoSに弱くなる可能性があります。
 </p>
 
 
@@ -619,8 +650,8 @@ Proc#callの第一引数をレシーバとして、 self という名前のメ�
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

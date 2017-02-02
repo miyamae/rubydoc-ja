@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class Thread::ConditionVariable (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Thread::ConditionVariableクラス
+</p>
+
+
+<h1>class Thread::ConditionVariable</h1>
+<p>
+
+
+クラスの継承リスト: Thread::ConditionVariable
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+<br>aliases: ConditionVariable
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+スレッドの同期機構の一つである状態変数を実現するクラスです。
+</p>
+<p>
+以下も ConditionVariable を理解するのに参考になります。
+</p>
+<p>
+<a class="external" href="http://www.ruby-doc.org/docs/ProgrammingRuby/html/tut_threads.html#UF">http://www.ruby-doc.org/docs/ProgrammingRuby/html/tut_threads.html#UF</a>
+</p>
+<h2 >Condition Variable とは</h2>
+<p>
+あるスレッド A が排他領域で動いていたとします。スレッド A は現在空いていない
+リソースが必要になったので空くまで待つことにしたとします。これはうまくいきません。
+なぜなら、スレッド A は排他領域で動いているわけですから、他のスレッドは動くことが
+できません。リソースを空けることもできません。スレッド A がリソースの空きを
+待っていても、いつまでも空くことはありません。
+</p>
+<p>
+以上のような状況を解決するのが Condition Variable です。
+</p>
+<p>
+スレッド a で条件(リソースが空いているかなど)が満たされるまで wait メソッドで
+スレッドを止めます。他のスレッド b において条件が満たされたなら signal
+メソッドでスレッド a に対して条件が成立したことを通知します。これが典型的な
+使用例です。
+</p>
+<pre>
+mutex = Mutex.new
+cv = ConditionVariable.new
+
+a = Thread.start {
+    mutex.synchronize {
+      ...
+      while (条件が満たされない)
+        cv.wait(mutex)
+      end
+      ...
+    }
+}
+
+b = Thread.start {
+    mutex.synchronize {
+      # 上の条件を満たすための操作
+      cv.signal
+    }
+}
+</pre>
+<p>
+以下は <a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-list/14445">[ruby-list:14445]</a> で紹介されている例です。@q が空になった場合、
+あるいは満たんになった場合に Condition Variable を使って wait しています。
+</p>
+<pre>
+require 'thread'
+
+class TinyQueue
+  def initialize(max=2)
+    @max = max
+    @full = ConditionVariable.new
+    @empty = ConditionVariable.new
+    @mutex = Mutex.new
+    @q = []
+  end
+
+  def count
+    @q.size
+  end
+
+  def enq(v)
+    @mutex.synchronize{
+      @full.wait(@mutex) if count == @max
+      @q.push v
+      @empty.signal if count == 1
+    }
+  end
+
+  def deq
+    @mutex.synchronize{
+      @empty.wait(@mutex) if count == 0
+      v = @q.shift
+      @full.signal if count == (@max - 1)
+      v
+    }
+  end
+
+  alias send enq
+  alias recv deq
+end
+
+if __FILE__ == $0
+  q = TinyQueue.new(1)
+  foods = 'Apple Banana Strawberry Udon Rice Milk'.split
+  l = []
+
+  th = Thread.new {
+    for obj in foods
+      q.send(obj)
+      print &quot;sent &quot;, obj, &quot;\n&quot;
+    end
+    q.send nil
+  }
+
+  l.push th
+
+  th = Thread.new {
+    while obj = q.recv
+      print &quot;recv &quot;, obj, &quot;\n&quot;
+    end
+  }
+  l.push th
+
+  l.each do |t|
+    t.join
+  end
+end
+</pre>
+<p>
+実行すると以下のように出力します。
+</p>
+<pre>
+$ ruby condvar.rb
+sent Apple
+recv Apple
+sent Banana
+recv Banana
+sent Strawberry
+recv Strawberry
+sent Udon
+recv Udon
+sent Rice
+recv Rice
+sent Milk
+recv Milk
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_BROADCAST">broadcast</a>
+
+<a href="#I_SIGNAL">signal</a>
+
+<a href="#I_WAIT">wait</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new -&gt; Thread::ConditionVariable</code><span class="permalink">[<a href="../method/-thread=3a=3a-condition-variable/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Thread/ConditionVariable.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+状態変数を生成して返します。
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_BROADCAST"><code>broadcast -&gt; [Thread]</code><span class="permalink">[<a href="../method/-thread=3a=3a-condition-variable/i/broadcast.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Thread/ConditionVariable.html#method-i-broadcast">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+状態変数を待っているスレッドをすべて再開します。再開された
+スレッドは <a href="../method/-thread=3a=3a-condition-variable/i/wait.html">Thread::ConditionVariable#wait</a>
+で指定した mutex のロックを試みます。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+実行待ちしていたスレッドの配列を返します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_SIGNAL"><code>signal -&gt; Thread | nil</code><span class="permalink">[<a href="../method/-thread=3a=3a-condition-variable/i/signal.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Thread/ConditionVariable.html#method-i-signal">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+状態変数を待っているスレッドを1つ再開します。再開された
+スレッドは <a href="../method/-thread=3a=3a-condition-variable/i/wait.html">Thread::ConditionVariable#wait</a>
+で指定した mutex のロックを試みます。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+状態を待っているスレッドがあった場合は、そのスレッドを返します。
+そうでなければ nil を返します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_WAIT"><code>wait(mutex, timeout = nil) -&gt; self</code><span class="permalink">[<a href="../method/-thread=3a=3a-condition-variable/i/wait.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Thread/ConditionVariable.html#method-i-wait">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+mutex のロックを解放し、カレントスレッドを停止します。
+<a href="../method/-thread=3a=3a-condition-variable/i/signal.html">Thread::ConditionVariable#signal</a>または、
+<a href="../method/-thread=3a=3a-condition-variable/i/broadcast.html">Thread::ConditionVariable#broadcast</a>で送られたシグナルを
+受け取ると、mutexのロックを取得し、実行状態となります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] mutex:</dt>
+<dd>
+<a href="../class/-mutex.html">Mutex</a> オブジェクトを指定します。
+</dd>
+<dt class='method-param'>[PARAM] timeout:</dt>
+<dd>
+スリープする秒数を指定します。この場合はシグナルを受け取
+らなかった場合でも指定した秒数が経過するとスリープを終了
+します。省略するとスリープし続けます。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

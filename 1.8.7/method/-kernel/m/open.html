@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../../../style.css">
   <link rel="icon" type="image/png" href="../../../rurema.png">
+  
   <title>module function Kernel.#open (Ruby 1.8.7)</title>
 </head>
 <body>
@@ -22,8 +23,8 @@
 <h1>module function Kernel.#open</h1>
 <dl class="methodlist">
 
-<dt class="method-heading" id="M_OPEN"><code>open(file, mode = &quot;r&quot;, perm = 0666) -&gt; IO</code><span class="permalink">[<a href="../../../method/-kernel/m/open.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-open">rdoc</a>]</span></dt>
-<dt class="method-heading"><code>open(file, mode = &quot;r&quot;, perm = 0666) {|io| ... } -&gt; object</code></dt>
+<dt class="method-heading" id="M_OPEN"><code>open(file, mode_enc = &quot;r&quot;, perm = 0666) -&gt; IO</code><span class="permalink">[<a href="../../../method/-kernel/m/open.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-open">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>open(file, mode_enc = &quot;r&quot;, perm = 0666) {|io| ... } -&gt; object</code></dt>
 <dd class="method-description">
 <p>
 file をオープンして、<a href="../../../class/-i-o.html">IO</a>（<a href="../../../class/-file.html">File</a>を含む）クラスのインスタンスを返します。
@@ -52,9 +53,9 @@ Perlと異なりコマンドは常に `|' で始まります。
 <dd>
 ファイルを文字列で指定します。整数を指定した場合はファイルディスクリプタとして扱います。
 </dd>
-<dt class='method-param'>[PARAM] mode:</dt>
+<dt class='method-param'>[PARAM] mode_enc:</dt>
 <dd>
-モードを文字列か定数の論理和で指定します。後述。
+モード・エンコーディングを文字列か定数の論理和で指定します。後述。
 </dd>
 <dt class='method-param'>[PARAM] perm:</dt>
 <dd>
@@ -135,6 +136,64 @@ mode は以下の三つのうちのいずれかです。
 します (ただし、DOS/Windowsのようにシステムがテキスト／バイナリでファイルを区別する場
 合に限ります)
 </p>
+<h2 >Universal Newline</h2>
+<p>
+改行をLFに揃えます。一言で言えばPEP:278 <a class="external" href="https://www.python.org/dev/peps/pep-0278/">https://www.python.org/dev/peps/pep-0278/</a>のことです。
+</p>
+<dl>
+<dt>&quot;rt&quot;</dt>
+<dd>
+<p>
+CR、LF、CRLFのいずれをもLFとして読み込む。
+</p>
+</dd>
+<dt>&quot;rb&quot;</dt>
+<dd>
+<p>
+CR、LF、CRLFはいずれもそのまま読み込まれる。
+</p>
+</dd>
+<dt>&quot;r&quot;</dt>
+<dd>
+<p>
+&quot;rt&quot;と&quot;rb&quot;のどちらの扱いになるかはプラットフォーム依存。
+(Unix系ならばなら&quot;rb&quot;、mswinやmingwなら&quot;rt&quot;扱いとなる)
+</p>
+</dd>
+<dt>&quot;wb&quot;</dt>
+<dd>
+<p>
+LFはそのままLFとして書き込まれる。
+</p>
+</dd>
+<dt>&quot;wt&quot; または &quot;w&quot;</dt>
+<dd>
+<p>
+LFはLFのままか、CR+LFか、どちらかになる。どちらになるかはプラットフォーム依存。
+(Unix系ならばLFのまま、mswinやmingwならばCRLFとなる)
+</p>
+</dd>
+</dl>
+<p>
+なお、以上のCR、LF、CRLFは入力のエンコーディングを解釈した後に処理されます。例えば、UTF-16LEでは、LFはバイト列&quot;\x0a\x00&quot;のことになります。
+</p>
+<h2 >エンコーディングの指定</h2>
+<p>
+ext_enc(外部エンコーディング)が指定されている場合、
+読み込まれた文字列にはこのエンコーディングが指定され、
+出力する文字列はそのエンコーディングに変換されます。
+</p>
+<p>
+ext_encが'BOM|'で始まる場合、その入力に含まれるBOMはあらかじめ削られます。
+また、BOMがあった場合、入力された文字列にはそのBOMに対応するエンコーディングが設定されます。
+</p>
+<pre>
+# BOMでUTF-16BEかLEかを判別する例
+File.open(&quot;utf16.txt&quot;, &quot;rb:BOM|utf-16&quot;){|file| .... }
+</pre>
+<p>
+int_encも指定されていた場合、入力された文字列をext_encでエンコーディングされた文字列とみなしてint_encへと変換し、その結果にint_encを設定して返します。
+</p>
 </dd>
 
 
@@ -212,8 +271,8 @@ puts sio.read
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

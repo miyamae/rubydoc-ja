@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>library yaml (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; yamlライブラリ
+</p>
+
+<h1>library yaml</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+構造化されたデータを表現するフォーマットであるYAML (YAML Ain't Markup Language) を扱うためのライブラリです。
+</p>
+<p>
+例1: 構造化された配列
+</p>
+<pre>
+require 'yaml'
+
+data = [ &quot;Taro san&quot;, &quot;Jiro san&quot;, &quot;Saburo san&quot;]
+str_r = YAML.dump(data)
+
+str_l =&lt;&lt;EOT
+---
+- Taro san
+- Jiro san
+- Saburo san
+EOT
+
+p str_r == str_l #=&gt; true
+</pre>
+<p>
+例2: 構造化されたハッシュ
+</p>
+<pre>
+require 'yaml'
+require 'date'
+
+str_l =&lt;&lt;YAML_EOT
+Tanaka Taro: { age: 35, birthday: 1970-01-01}
+Suzuki Suneo: {
+  age: 13,
+  birthday: 1992-12-21
+}
+YAML_EOT
+
+str_r = {}
+str_r[&quot;Tanaka Taro&quot;] = {
+  &quot;age&quot; =&gt; 35,
+  &quot;birthday&quot; =&gt; Date.new(1970, 1, 1)
+}
+str_r[&quot;Suzuki Suneo&quot;] = {
+  &quot;age&quot; =&gt; 13,
+  &quot;birthday&quot; =&gt; Date.new(1992, 12, 21)
+}
+
+p str_r == YAML.load(str_l) #=&gt; true
+</pre>
+<p>
+例3: 構造化されたログ
+</p>
+<pre>
+require 'yaml'
+require 'stringio'
+
+strio_r = StringIO.new(&lt;&lt;EOT
+---
+time: 2008-02-25 17:03:12 +09:00
+target: YAML
+version: 4
+log: |
+  例を加えた。
+  アブストラクトを修正した。
+---
+time: 2008-02-24 17:00:35 +09:00
+target: YAML
+version: 3
+log: |
+  アブストラクトを書いた。
+
+EOT
+)
+
+YAML.load_stream(strio_r).documents.sort{|a, b| a[&quot;version&quot;] &lt;=&gt; b[&quot;version&quot;]}.each{|obj|
+  printf &quot;version %d\ntime %s\ntarget:%s\n%s\n&quot;, obj[&quot;version&quot;], obj[&quot;time&quot;], obj[&quot;target&quot;], obj[&quot;log&quot;]
+}
+</pre>
+<h2 >バックエンドの選択</h2>
+<p>
+<a href="../library/yaml.html">yaml</a> ライブラリでは、以下のライブラリをバックエンドとして使用します。
+</p>
+<ul>
+<li><a href="../library/psych.html">psych</a> ライブラリ: YAML バージョン 1.1 を扱う事ができます。</li>
+</ul>
+<h2 >タグの指定</h2>
+<p>
+!ruby/sym :foo などのようにタグを指定することで、読み込み時に記述した値
+の型を指定できます。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'yaml'
+p YAML.load(&lt;&lt;EOS)
+---
+!ruby/sym :foo
+EOS
+# =&gt; :foo
+</pre>
+<p>
+<a href="../library/yaml.html">yaml</a> では、Ruby 向けに以下のローカルタグを扱えます。
+</p>
+<ul>
+<li>!ruby/array: <a href="../class/-array.html">Array</a> オブジェクト</li>
+<li>!ruby/class: <a href="../class/-class.html">Class</a> オブジェクト</li>
+<li>!ruby/hash:  <a href="../class/-hash.html">Hash</a> オブジェクト</li>
+<li>!ruby/module:  <a href="../class/-module.html">Module</a> オブジェクト</li>
+<li>!ruby/regexp:  <a href="../class/-regexp.html">Regexp</a> オブジェクト</li>
+<li>!ruby/range: <a href="../class/-range.html">Range</a> オブジェクト</li>
+<li>!ruby/string: <a href="../class/-string.html">String</a> オブジェクト</li>
+<li>!ruby/struct: <a href="../class/-struct.html">Struct</a> オブジェクト</li>
+<li>!ruby/sym(もしくは !ruby/symbol): <a href="../class/-symbol.html">Symbol</a> オブジェクト</li>
+<li>!ruby/exception: 例外オブジェクト</li>
+<li>!ruby/object:&lt;クラス名&gt;: 上記以外のオブジェクト</li>
+</ul>
+<p>
+例:
+</p>
+<pre>
+require 'yaml'
+p YAML.load(&lt;&lt;EOS)
+---
+array: !ruby/array [1, 2, 3]
+hash: !ruby/hash {foo: 1, bar: 2}
+regexp: !ruby/regexp /foo|bar/
+range: !ruby/range 1..10
+EOS
+# =&gt; {&quot;regexp&quot;=&gt;/foo|bar/, &quot;hash&quot;=&gt;{&quot;foo&quot;=&gt;1, &quot;bar&quot;=&gt;2}, &quot;array&quot;=&gt;[1, 2, 3], &quot;range&quot;=&gt;1..10}
+</pre>
+<p>
+これらは tag:ruby.yaml.org,2002:array のように指定する事もできます。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'yaml'
+p YAML.load(&lt;&lt;EOS)
+---
+array: !tag:ruby.yaml.org,2002:array [1, 2, 3]
+hash: !tag:ruby.yaml.org,2002:hash {foo: 1, bar: 2}
+EOS
+# =&gt; {&quot;hash&quot;=&gt;{&quot;foo&quot;=&gt;1, &quot;bar&quot;=&gt;2}, &quot;array&quot;=&gt;[1, 2, 3]}
+</pre>
+<p>
+自分で定義したクラスなどは !ruby/object:&lt;クラス名&gt; を指定します。なお、
+読み込む場合には既にそのクラスが定義済みでないと読み込めません。
+</p>
+<p>
+また、キーと値を指定する事でインスタンス変数を代入できます。
+</p>
+<p>
+例1:
+</p>
+<pre>
+require 'yaml'
+
+class Foo
+  def initialize
+    @bar = &quot;test&quot;
+  end
+end
+
+p YAML.load(&lt;&lt;EOS)
+---
+!ruby/object:Foo
+bar: &quot;test.modified&quot;
+EOS
+# =&gt; #&lt;Foo:0xf743f754 @bar=&quot;test.modified&quot;&gt;
+</pre>
+<p>
+例2:
+</p>
+<pre>
+require 'yaml'
+
+module Foo
+  class Bar
+  end
+end
+
+p YAML.load(&lt;&lt;EOS)
+---
+!ruby/object:Foo::Bar
+EOS
+# =&gt; #&lt;Foo::Bar:0xf73907b8&gt;
+</pre>
+<h2 >注意</h2>
+<p>
+無名クラスを YAML 形式に変換すると <a href="../class/-type-error.html">TypeError</a> が発生します。また、
+<a href="../class/-i-o.html">IO</a> や <a href="../class/-thread.html">Thread</a> オブジェクトなどはインスタンス変数がオブジェク
+トの状態を保持していないため、変換はできますが、YAML.load した時に完全
+に復元できない事に注意してください。
+</p>
+<p>
+標準添付の yaml 関連ライブラリには以下のようなRuby 独自の拡張、制限があ
+ります。標準添付ライブラリ以外で yaml を扱うライブラリを使用する場合な
+どに注意してください。
+</p>
+<ul>
+<li>&quot;:foo&quot; のような文字列はそのまま <a href="../class/-symbol.html">Symbol</a> として扱える</li>
+<li>&quot;y&quot; や &quot;n&quot; は真偽値として扱われない</li>
+<li>!&lt;tag:yaml.org,2002:str&gt; &quot;foo&quot; のようにタグを扱えない。
+!tag:yaml.org,2002:str &quot;foo&quot; のように記述する必要がある</li>
+</ul>
+<h2 >参考</h2>
+<p>
+YAML Specification
+</p>
+<ul>
+<li><a class="external" href="http://www.yaml.org/spec/">http://www.yaml.org/spec/</a></li>
+<li><a class="external" href="http://www.yaml.org/type/">http://www.yaml.org/type/</a></li>
+</ul>
+<p>
+YAML4R
+</p>
+<ul>
+<li><a class="external" href="http://yaml4r.sourceforge.net/">http://yaml4r.sourceforge.net/</a></li>
+<li><a class="external" href="http://yaml4r.sourceforge.net/cookbook/">http://yaml4r.sourceforge.net/cookbook/</a>(<a class="external" href="http://yaml.org/YAML_for_ruby.html">http://yaml.org/YAML_for_ruby.html</a>)</li>
+<li><a class="external" href="http://yaml4r.sourceforge.net/doc/">http://yaml4r.sourceforge.net/doc/</a></li>
+</ul>
+<p>
+Rubyist Magazine: <a class="external" href="http://magazine.rubyist.net/">http://magazine.rubyist.net/</a>
+</p>
+<ul>
+<li>プログラマーのための YAML 入門 (初級編): <a class="external" href="http://magazine.rubyist.net/?0009-YAML">http://magazine.rubyist.net/?0009-YAML</a></li>
+<li>プログラマーのための YAML 入門 (中級編): <a class="external" href="http://magazine.rubyist.net/?0010-YAML">http://magazine.rubyist.net/?0010-YAML</a></li>
+<li>プログラマーのための YAML 入門 (実践編): <a class="external" href="http://magazine.rubyist.net/?0011-YAML">http://magazine.rubyist.net/?0011-YAML</a></li>
+<li>プログラマーのための YAML 入門 (検証編): <a class="external" href="http://magazine.rubyist.net/?0012-YAML">http://magazine.rubyist.net/?0012-YAML</a></li>
+<li>プログラマーのための YAML 入門 (探索編): <a class="external" href="http://magazine.rubyist.net/?0013-YAML">http://magazine.rubyist.net/?0013-YAML</a></li>
+</ul>
+<p>
+その他
+</p>
+<ul>
+<li>Ruby with YAML: <a class="external" href="http://www.namikilab.tuat.ac.jp/~sasada/prog/yaml.html">http://www.namikilab.tuat.ac.jp/~sasada/prog/yaml.html</a></li>
+</ul>
+
+
+<h2>モジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-y-a-m-l.html">YAML</a>
+</td>
+<td class="description"><p>
+YAML (YAML Ain't Markup Language) を扱うモジュールです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>サブライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/yaml=2fdbm.html">yaml/dbm</a></td>
+<td class="description"><p>
+<a href="../class/-d-b-m.html">DBM</a> の値に文字列以外も格納できるように拡張するためのサブライブラ
+リです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/yaml=2fstore.html">yaml/store</a></td>
+<td class="description"><p>
+RubyのオブジェクトをYAML形式の外部ファイルに格納するためのクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

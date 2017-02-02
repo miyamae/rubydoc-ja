@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>instance method Object#_dump (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-object.html">Objectクラス</a>
+&gt; _dump
+
+</p>
+
+
+<h1>instance method Object#_dump</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I__DUMP"><code>_dump(limit) -&gt; String</code><span class="permalink">[<a href="../../../method/-object/i/_dump.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Object.html#method-i-_dump">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../../../method/-marshal/m/dump.html">Marshal.#dump</a> において出力するオブジェクトがメソッド _dump
+を定義している場合には、そのメソッドの結果が書き出されます。
+</p>
+<p>
+バージョン1.8.0以降では<a href="../../../method/-object/i/marshal_dump.html">Object#marshal_dump</a>, <a href="../../../method/-object/i/marshal_load.html">Object#marshal_load</a>の使用
+が推奨されます。 Marshal.dump するオブジェクトが _dump と marshal_dump の両方の
+メソッドを持つ場合は marshal_dump が優先されます。
+</p>
+<p>
+メソッド _dump は引数として再帰を制限するレベル limit を受
+け取り、オブジェクトを文字列化したものを返します。
+</p>
+<p>
+インスタンスがメソッド _dump を持つクラスは必ず同じフォー
+マットを読み戻すクラスメソッド _load を定義する必要があり
+ます。_load はオブジェクトを表現した文字列を受け取り、それ
+をオブジェクトに戻したものを返す必要があります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] limit:</dt>
+<dd>
+再帰の制限レベルを表す整数です。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+オブジェクトを文字列化したものを返すように定義すべきです。
+</dd>
+</dl>
+<pre>
+class Foo
+  def initialize(arg)
+    @foo = arg
+  end
+  def _dump(limit)
+    Marshal.dump(@foo, limit)
+  end
+  def self._load(obj)
+    p obj
+    Foo.new(Marshal.load(obj))
+  end
+end
+foo = Foo.new(['foo', 'bar'])
+p foo                      #=&gt; #&lt;Foo:0xbaf234 @foo=[&quot;foo&quot;, &quot;bar&quot;]&gt;
+dms = Marshal.dump(foo)
+p dms                      #=&gt; &quot;\004\bu:\bFoo\023\004\b[\a\&quot;\bfoo\&quot;\bbar&quot;
+result = Marshal.load(dms) #=&gt; &quot;\004\b[\a\&quot;\bfoo\&quot;\bbar&quot; # self._load の引数
+p result                   #=&gt; #&lt;Foo:0xbaf07c @foo=[&quot;foo&quot;, &quot;bar&quot;]&gt;
+</pre>
+<p>
+インスタンス変数の情報は普通マーシャルデータに含まれるので、上例
+のように _dump を定義する必要はありません(ただし _dump を定義すると
+インスタンス変数の情報は dump されなくなります)。
+_dump/_load はより高度な制御を行いたい場合や拡張ライブラリで定義し
+たクラスのインスタンスがインスタンス変数以外に情報を保持する場合に
+利用します。(例えば、クラス <a href="../../../class/-time.html">Time</a> は、_dump/_load を定義して
+います)
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-object/i/marshal_dump.html">Object#marshal_dump</a>, <a href="../../../method/-object/i/marshal_load.html">Object#marshal_load</a>, <a href="../../../method/-class/i/_load.html">Class#_load</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

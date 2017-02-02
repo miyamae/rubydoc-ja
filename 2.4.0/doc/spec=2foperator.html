@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>演算子式 (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+
+<a href="../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; 演算子式
+
+</p>
+
+<h1>演算子式</h1>
+
+<ul>
+<li><a href="#assign">代入</a></li>
+<li><a href="#selfassign">自己代入</a></li>
+<li><a href="#multiassign">多重代入</a></li>
+<li><a href="#range">範囲式</a></li>
+<li><a href="#range_cond">条件式としての範囲式</a></li>
+<li><a href="#and">and</a></li>
+<li><a href="#or">or</a></li>
+<li><a href="#not">not</a></li>
+<li><a href="#cond">条件演算子</a></li>
+</ul>
+<p>
+例:
+</p>
+<pre>
+1+2*3/4
+</pre>
+<p>
+プログラミングの利便のために一部のメソッド呼び出しと制御構造は演算子形
+式をとります。Rubyには以下にあげる演算子があります。
+</p>
+<pre>
+高い   ::
+       []
+       +(単項)  !  ~
+       **
+       -(単項)
+       *  /  %
+       +  -
+       &lt;&lt; &gt;&gt;
+       &amp;
+       |  ^
+       &gt; &gt;=  &lt; &lt;=
+       &lt;=&gt; ==  === !=  =~  !~
+       &amp;&amp;
+       ||
+       ..  ...
+       ?:(条件演算子)
+       =(+=, -= ... )
+       not
+低い   and or
+</pre>
+<p>
+左の「高い」「低い」は演算子の優先順位です。
+例えば「&amp;&amp;」は「||」より優先順位が高いので、以下のように
+解釈されます。
+</p>
+<pre>
+a &amp;&amp; b || c   #=&gt; (a &amp;&amp; b) || c
+a || b &amp;&amp; c   #=&gt;  a || (b &amp;&amp; c)
+</pre>
+<p>
+ほとんどの演算子は特別な形式のメソッド呼び出しですが、一部の
+ものは言語に組み込みで、再定義できません。
+</p>
+<dl>
+<dt>再定義できる演算子(メソッド)</dt>
+<dd>
+<p>
++@, -@ は単項演算子 +, - を表しメソッド定義
+などではこの記法を利用します。
+</p>
+<pre>
+    |  ^  &amp;  &lt;=&gt;  ==  ===  =~  &gt;   &gt;=  &lt;   &lt;=   &lt;&lt;  &gt;&gt;
+    +  -  *  /    %   **   ~   +@  -@  []  []=  ` ! != !~
+</pre>
+<p>
+これらの演算子式の定義方法については<a href="../doc/spec=2fdef.html#operator">クラス／メソッドの定義/演算子式の定義</a>を参照してください。
+</p>
+</dd>
+<dt>再定義できない演算子(制御構造)</dt>
+<dd>
+<p>
+演算子の組合せである自己代入演算子は再定義できません。
+</p>
+<pre>
+    =  ?:  ..  ...  not  &amp;&amp;  and  ||  or  ::
+</pre>
+</dd>
+</dl>
+<h2 id='assign'>代入</h2>
+<p>
+例:
+</p>
+<pre>
+foo = bar
+foo[0] = bar
+foo.bar = baz
+</pre>
+<p>
+文法:
+</p>
+<pre>
+変数 '=' 式
+定数 '=' 式
+式`['expr..`]' '=' 式
+式`.'識別子 '=' 式
+</pre>
+<p>
+代入式は変数などに値を設定するために用いられます。代入はロー
+カル変数や定数の宣言としても用いられます。代入式の左辺は以
+下のいずれかでなければなりません。
+</p>
+<dl>
+<dt>変数</dt>
+<dd>
+<pre>
+            変数 `=' 式
+</pre>
+<p>
+左辺値が変数の場合、式を評価した値が変数に代入されます。
+</p>
+</dd>
+<dt>配列参照</dt>
+<dd>
+<pre>
+            式1`[' 式2 ... `]' `=' 式n
+</pre>
+<p>
+式1を評価して得られるオブジェクトに対しての、式 2 から式 n までを
+引数とする []= メソッド呼び出しに変換されます。
+</p>
+<p>
+例:
+</p>
+<pre>
+            class C
+              def initialize
+                @ary = [0,1,2,3,4,5,6,7]
+              end
+              def [](i)
+                @ary[i * 2]
+              end
+              def []=( i, v )
+                @ary[i * 2] = v
+              end
+            end
+            c = C.new
+            p c[3]      # c.[]( 3 )  に変換され、その結果は 6
+            p c[3] = 1  # c.[]=(3,1) に変換され、その結果は 1
+</pre>
+</dd>
+<dt>属性参照</dt>
+<dd>
+<pre>
+            式1 `.' 識別子 `=' 式2
+</pre>
+<p>
+式 1 を評価して得られるオブジェクトに対して、
+識別子= というメソッドを、式 2 を引数にして呼び出します。
+</p>
+<p>
+例:
+</p>
+<pre>
+            class C
+              def foo
+                @foo
+              end
+              def foo=( v )
+                @foo = v
+              end
+            end
+            c = C.new
+            c.foo = 5   # c.foo=( 5 ) のように変換される
+            p c.foo     # =&gt; 5
+</pre>
+<p>
+属性は <a href="../method/-module/i/attr.html">Module#attr</a> を使って同じように定義できます。
+</p>
+<p>
+例:
+</p>
+<pre>
+            class C
+              attr :foo, true
+            end
+            c = C.new
+            c.foo = 5   # c.foo=( 5 ) のように変換される
+            p c.foo     # =&gt; 5
+</pre>
+</dd>
+</dl>
+<h3 id='selfassign'>自己代入</h3>
+<p>
+例:
+</p>
+<pre>
+foo += 12       # foo = foo + 12
+a ||= 1         # a が偽か未定義ならば1を代入。初期化時のイディオムの一種。
+</pre>
+<p>
+文法:
+</p>
+<pre>
+式1 op= 式2     # 式1は通常の代入の左辺のいずれか
+</pre>
+<p>
+op は以下のいずれかです。演算子と=の間にスペースを
+空けてはいけません。
+</p>
+<pre>
++, -, *, /, %, **, &amp;, |, ^, &lt;&lt;, &gt;&gt;, &amp;&amp;, ||
+</pre>
+<p>
+この形式の代入は
+</p>
+<pre>
+式1 = 式1 op 式2
+</pre>
+<p>
+と評価されます。ただし、op が &amp;&amp;, || の場合には、
+</p>
+<pre>
+式1 op (式1 = 式2)
+</pre>
+<p>
+と評価されます。この違いは属性参照のときに
+</p>
+<pre>
+obj.foo ||= true
+</pre>
+<p>
+が、
+</p>
+<pre>
+obj.foo = obj.foo || true
+</pre>
+<p>
+でなく
+</p>
+<pre>
+obj.foo || (obj.foo = true)
+</pre>
+<p>
+と呼ばれることを示します。(obj.foo= は obj.foo の結果によって呼ばれな
+いかも知れません)
+</p>
+<h3 id='multiassign'>多重代入</h3>
+<p>
+例:
+</p>
+<pre>
+foo, bar, baz = 1, 2, 3
+foo, = list()
+foo, *rest = list2()
+</pre>
+<p>
+文法:
+</p>
+<pre>
+式 [`,' [式 `,' ... ] [`*' [式]]] = 式 [, 式 ... ][`*' 式]
+`*' [式] = 式 [, 式 ... ][`*' 式]
+</pre>
+<p>
+多重代入は複数の式または配列から同時に代入を行います。左辺の
+各式はそれぞれ代入可能でなければなりません。右辺の式が一つし
+か与えられなかった場合、式を評価した値は配列に変換されて、各
+要素が左辺のそれぞれの式に代入されます。左辺の要素の数よりも
+配列の要素の数の方が多い場合には、余った要素は無視されます。
+配列の要素が足りない場合には対応する要素の無い左辺には
+nil が代入されます。
+</p>
+<p>
+左辺の最後の式の直前に * がついていると、対応する
+左辺のない余った要素が配列として代入されます。余った要素が
+無い時には空の配列が代入されます。
+</p>
+<p>
+例:
+</p>
+<pre>
+foo, bar = [1, 2]       # foo = 1; bar = 2
+foo, bar = 1, 2         # foo = 1; bar = 2
+foo, bar = 1            # foo = 1; bar = nil
+
+foo, bar, baz = 1, 2    # foo = 1; bar = 2; baz = nil
+foo, bar = 1, 2, 3      # foo = 1; bar = 2
+foo      = 1, 2, 3      # foo = [1, 2, 3]
+*foo     = 1, 2, 3      # foo = [1, 2, 3]
+foo,*bar = 1, 2, 3      # foo = 1; bar = [2, 3]
+</pre>
+<p>
+多重代入は括弧により、ネストした配列の要素を代入することもできます。
+</p>
+<pre>
+(foo, bar), baz = [1, 2], 3       # foo = 1; bar = 2; baz = 3
+</pre>
+<p>
+特殊な形式の代入式も多重代入にすることができます。
+</p>
+<pre>
+class C
+  def foo=( v )
+    @foo = v
+  end
+  def []=(i,v)
+    @bar = [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]
+    @bar[i] = v
+  end
+end
+
+obj = C.new
+obj.foo, obj[2] = 1, 2     # @foo = 1; @bar = [&quot;a&quot;, &quot;b&quot;, 2]
+</pre>
+<p>
+左辺が `,' で終る場合や、`*' の直後の式を省略した場合にも
+余った要素は無視されます。
+</p>
+<p>
+例:
+</p>
+<pre>
+foo,*    = 1, 2, 3      # foo = 1
+foo,     = 1, 2, 3      # foo = 1
+*        = 1, 2, 3
+</pre>
+<p>
+特に最後の単体の `*' はメソッド呼び出しにおいて引数を完全に無視
+したいときに使用できます。(メソッド呼び出しの引数の受け渡しは
+多重代入とほぼ同じルールが適用されます)
+</p>
+<p>
+例:
+</p>
+<pre>
+def foo(*)
+end
+foo(1,2,3)
+</pre>
+<p>
+多重代入の値は配列に変換された右辺です。
+</p>
+<h2 id='range'>範囲式</h2>
+<p>
+例:
+</p>
+<pre>
+1 .. 20
+/first/  ...  /second/
+</pre>
+<p>
+文法:
+</p>
+<pre>
+式1 `..' 式2
+式1 ` ... ' 式2
+</pre>
+<p>
+条件式以外の場所では式1から式2までの範囲オブジェクトを返しま
+す。範囲オブジェクトは<a href="../class/-range.html">Range</a>クラス
+のインスタンスです。 ... で生成された範囲オブジェクトは
+終端を含みません。
+</p>
+<h3 id='range_cond'>条件式としての範囲式</h3>
+<p>
+条件式として範囲式が用いられた場合には、状態を持つ sed や awk 由来の
+特殊な条件式として振る舞います。
+</p>
+<p>
+「..」の場合:
+</p>
+<ol>
+<li>初期状態では式1だけを評価し、式1が真を返すまでは false を返します。</li>
+<li>式1が真を返すと true を返します。式2が真なら初期状態に戻ります。</li>
+<li>この後は式2だけを評価し、式2が真を返すまで true を返します。</li>
+<li>式2が真を返すと true を返したあと、初期状態に戻ります。</li>
+</ol>
+<p>
+「...」の場合:
+</p>
+<ol>
+<li>初期状態では式1だけを評価し、式1が真を返すまでは false を返します。</li>
+<li>式1が真を返すと true を返します。</li>
+<li>この後は式2だけを評価し、式2が真を返すまで true を返します。</li>
+<li>式2が真を返すと true を返したあと、初期状態に戻ります。</li>
+</ol>
+<p>
+例:
+</p>
+<pre>
+# よくある使いかた
+
+5.times{|n|
+  if (n==2)..(n==3)
+    p n
+  end
+}
+#=&gt; 2
+    3
+
+5.times{|n|
+  if (n==2)...(n==3)
+    p n
+  end
+}
+#=&gt; 2
+    3
+
+# 「..」と「...」の違いを示すためだけの例
+
+5.times{|n|
+  if (n==2)..(n==2)
+    p n
+  end
+}
+#=&gt; 2
+
+5.times{|n|
+  if (n==2)...(n==2)
+    p n
+  end
+}
+#=&gt; 2
+    3
+    4
+</pre>
+<h2 id='and'>and</h2>
+<p>
+例:
+</p>
+<pre>
+test &amp;&amp; set
+test and set
+</pre>
+<p>
+文法:
+</p>
+<pre>
+式 `&amp;&amp;' 式
+式 `and' 式
+</pre>
+<p>
+左辺を評価し、結果が偽であった場合はその値(つまり nil
+か false) を返します。左辺の評価結果が真であった場合には
+右辺を評価しその結果を返します。
+and は同じ働きをする優先順位の低い演算子です。
+</p>
+<pre>
+p(nil &amp;&amp; false) # =&gt; nil
+p(false &amp;&amp; nil) # =&gt; false
+p(1 &amp;&amp; 2) # =&gt; 2
+</pre>
+<p>
+and を伴う式をメソッドの引数に渡す場合は二重に括弧が必要となります。
+</p>
+<pre>
+p(true &amp;&amp; false)    #=&gt; false
+p((true and false)) #=&gt; false
+</pre>
+<h2 id='or'>or</h2>
+<p>
+例:
+</p>
+<pre>
+demo || die
+demo or die
+</pre>
+<p>
+文法:
+</p>
+<pre>
+式 `||' 式
+式 or 式
+</pre>
+<p>
+左辺を評価し、結果が真であった場合にはその値を返します。
+左辺の評価結果が偽であった場合には右辺を評価し
+その評価結果を返します。
+or は同じ働きをする優先順位の低い演算子です。
+</p>
+<pre>
+p(1 || 2) # =&gt; 1
+p(nil || false) # =&gt; false
+p(false || nil) # =&gt; nil
+</pre>
+<p>
+or を伴う式をメソッドの引数に渡す場合は二重に括弧が必要となります。
+</p>
+<pre>
+p(false || true)    #=&gt; true
+p((false or true)) #=&gt; true
+</pre>
+<h2 id='not'>not</h2>
+<p>
+例:
+</p>
+<pre>
+! me
+not me
+i != you
+</pre>
+<p>
+文法:
+</p>
+<pre>
+`!' 式
+not 式
+</pre>
+<p>
+式の値が真である時偽を、偽である時真を返します。
+</p>
+<pre>
+式 `!=' 式
+</pre>
+<p>
+!(式 == 式)と同じ。
+</p>
+<pre>
+式 `!~' 式
+</pre>
+<p>
+!(式 =~ 式)と同じ。
+</p>
+<p>
+not を伴う式をメソッドの引数に渡す場合は二重に括弧が必要となります。
+</p>
+<pre>
+p(! false)      #=&gt; true
+p((not false))  #=&gt; true
+</pre>
+<h2 id='cond'>条件演算子</h2>
+<p>
+例:
+</p>
+<pre>
+obj == 1 ? foo : bar
+</pre>
+<p>
+文法:
+</p>
+<pre>
+式1 ? 式2 : 式3
+</pre>
+<p>
+式1の結果によって式2または式3を返します。
+</p>
+<pre>
+if 式1 then 式2 else 式3 end
+</pre>
+<p>
+とまったく同じです。
+</p>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

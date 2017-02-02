@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>class URI::Generic (Ruby 1.9.3)</title>
 </head>
 <body>
@@ -91,9 +92,13 @@ hash と eql? が再定義されているため、<a href="../class/-hash.html">
 
 <a href="#I_ABSOLUTE">absolute?</a>
 
+<a href="#I_COERCE">coerce</a>
+
 <a href="#I_COMPONENT">component</a>
 
 <a href="#I_DEFAULT_PORT">default_port</a>
+
+<a href="#I_FIND_PROXY">find_proxy</a>
 
 <a href="#I_FRAGMENT">fragment</a>
 
@@ -118,6 +123,8 @@ hash と eql? が再定義されているため、<a href="../class/-hash.html">
 <a href="#I_OPAQUE">opaque</a>
 
 <a href="#I_OPAQUE--3D">opaque=</a>
+
+<a href="#I_PARSER">parser</a>
 
 <a href="#I_PASSWORD">password</a>
 
@@ -158,6 +165,15 @@ hash と eql? が再定義されているため、<a href="../class/-hash.html">
 <a href="#I_USERINFO">userinfo</a>
 
 <a href="#I_USERINFO--3D">userinfo=</a>
+
+</dd>
+
+<dt>定数</dt>
+<dd>
+
+<a href="#C_-C-O-M-P-O-N-E-N-T">COMPONENT</a>
+
+<a href="#C_-D-E-F-A-U-L-T_-P-O-R-T">DEFAULT_PORT</a>
 
 </dd>
 
@@ -259,7 +275,7 @@ URI::MailTo.default_port      # =&gt; nil
 </dd>
 
 
-<dt class="method-heading" id="S_NEW"><code>new(scheme, userinfo, host, port, registry, path, opaque, query, fragment, arg_check = false) -&gt; URI::Generic</code><span class="permalink">[<a href="../method/-u-r-i=3a=3a-generic/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.3/URI/Generic.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading" id="S_NEW"><code>new(scheme, userinfo, host, port, registry, path, opaque, query, fragment, parser = URI::DEFAULT_PARSER, arg_check = false) -&gt; URI::Generic</code><span class="permalink">[<a href="../method/-u-r-i=3a=3a-generic/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.3/URI/Generic.html#method-c-new">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 各引数を成分とする URI::Generic オブジェクトを生成して返します。
@@ -422,6 +438,30 @@ p URI.parse('./').absolute?                     #=&gt; false
 </dd>
 
 
+<dt class="method-heading" id="I_COERCE"><code>coerce(oth) -&gt; [URI, URI]</code><span class="permalink">[<a href="../method/-u-r-i=3a=3a-generic/i/coerce.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.3/URI/Generic.html#method-i-coerce">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数 oth をパースして [パース後の oth, self] の配列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] oth:</dt>
+<dd>
+<a href="../class/-u-r-i.html">URI</a> オブジェクトか文字列を指定します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'uri'
+
+uri = URI.parse(&quot;http://my.example.com&quot;)
+uri.coerce(&quot;http://foo.com&quot;)
+# =&gt; [#&lt;URI::HTTP:0x00000000bcb028 URL:http://foo.com/&gt;, #&lt;URI::HTTP:0x00000000d92178 URL:http://my.example.com&gt;]
+</pre>
+</dd>
+
+
 <dt class="method-heading" id="I_COMPONENT"><code>component -&gt; [Symbol]</code><span class="permalink">[<a href="../method/-u-r-i=3a=3a-generic/i/component.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.3/URI/Generic.html#method-i-component">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
@@ -440,6 +480,37 @@ self.class.default_port を返します。
 </p>
 <p>
 [SEE_ALSO] <a href="../method/-u-r-i=3a=3a-generic/s/default_port.html">URI::Generic.default_port</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FIND_PROXY"><code>find_proxy -&gt; URI | nil</code><span class="permalink">[<a href="../method/-u-r-i=3a=3a-generic/i/find_proxy.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.3/URI/Generic.html#method-i-find_proxy">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+プロキシ URI を返します。
+</p>
+<p>
+プロキシ URI は http_proxy, ftp_proxy, no_proxy などの環境変数から取得
+します。適切なプロキシが見つからない場合は nil を返します。
+</p>
+<p>
+環境変数は大文字にしたもの(HTTP_PROXY, FTP_PROXY, NO_PROXYなど)も調べら
+れる事に注意してください。
+</p>
+<p>
+ただし、CGI環境下では http_proxy と HTTP_PROXY は特別扱いされます。
+HTTP_PROXY はヘッダ Proxy: に設定されうるためです。そのため、
+HTTP_PROXY(環境変数が大文字小文字を区別しない場合は http_proxy も) は使
+われません。代わりに CGI_HTTP_PROXY が使われます。
+</p>
+<dl>
+<dt>[EXCEPTION] BadURIError:</dt>
+<dd>
+selfが相対URIであった場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../class/-e-n-v.html">ENV</a>
 </p>
 </dd>
 
@@ -653,6 +724,14 @@ p URI.parse('urn:ietf:rfc:1149').opaque         #=&gt; &quot;ietf:rfc:1149&quot;
 opaque とヒエラルキーパートを同時に設定した場合に発生します。
 </dd>
 </dl>
+</dd>
+
+
+<dt class="method-heading" id="I_PARSER"><code>parser -&gt; URI::Parser</code><span class="permalink">[<a href="../method/-u-r-i=3a=3a-generic/i/parser.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.3/URI/Generic.html#method-i-parser">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+selfのパーサを返します。未定義であった場合は URI::DEFAULT_PARSER を返します。
+</p>
 </dd>
 
 
@@ -1007,11 +1086,32 @@ p u.to_s                             #=&gt; &quot;http://you:akakfd@example.com/
 
 </dl>
 
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-C-O-M-P-O-N-E-N-T"><code>COMPONENT -&gt; [Symbol]</code><span class="permalink">[<a href="../method/-u-r-i=3a=3a-generic/c/-c-o-m-p-o-n-e-n-t.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.3/URI/Generic.html#method-c-COMPONENT">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-u-r-i=3a=3a-generic.html">URI::Generic</a> で利用可能なコンポーネントの一覧です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-D-E-F-A-U-L-T_-P-O-R-T"><code>DEFAULT_PORT -&gt; nil</code><span class="permalink">[<a href="../method/-u-r-i=3a=3a-generic/c/-d-e-f-a-u-l-t_-p-o-r-t.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.3/URI/Generic.html#method-c-DEFAULT_PORT">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-u-r-i=3a=3a-generic.html">URI::Generic</a> のデフォルトポート(nil)です。
+</p>
+</dd>
+
+
+</dl>
+
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

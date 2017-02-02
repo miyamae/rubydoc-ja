@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class OpenSSL::PKey::DH (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/openssl.html">opensslライブラリ</a>
+&gt; OpenSSL::PKey::DHクラス
+</p>
+
+
+<h1>class OpenSSL::PKey::DH</h1>
+<p>
+
+
+クラスの継承リスト: OpenSSL::PKey::DH
+
+      &lt; <a href="../class/-open-s-s-l=3a=3a-p-key=3a=3a-p-key.html">OpenSSL::PKey::PKey</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+Diffie-Hellman 鍵共有クラス
+</p>
+<p>
+Diffie-Hellman 鍵共有プロトコルは署名ができないため、
+<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-p-key/i/sign.html">OpenSSL::PKey::PKey#sign</a> や <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-p-key/i/verify.html">OpenSSL::PKey::PKey#verify</a>
+を呼び署名や署名の検証を行おうとすると例外
+<a href="../class/-open-s-s-l=3a=3a-p-key=3a=3a-p-key-error.html">OpenSSL::PKey::PKeyError</a> が発生します。
+</p>
+<p>
+Diffie-Hellman はこのライブラリでは基本的には鍵共有にしか利用できません。
+</p>
+<h2 >例</h2>
+<p>
+鍵共有の例。
+</p>
+<pre>
+# パラメータの生成
+dh = OpenSSL::PKey::DH.generate(1024, 5)
+# パラメータのチェック
+raise &quot;bad DH parameter&quot; unless dh.params_ok?
+# 以下、dh1 と dh2 が通信の両端であるとする
+#  dh1 と dh2 は鍵パラメータ p と g を共有しなければならない
+#  そのためここでは、単純に2つ複製することにしている
+
+# dh1 は dh をそのまま使う
+dh1 = dh
+# パラメータを複製して dh2 に渡す
+dh2 = OpenSSL::PKey::DH.new(dh)
+
+# 両端が鍵パラメータから鍵対を生成する
+dh1.generate_key!
+dh2.generate_key!
+# 通信の両端で公開鍵を交換する
+#  公開鍵の交換は秘密で行われる必要はないが、それが確かに
+#  相手の公開鍵であることを確認しなければならない。
+#  (さもなければ中間者攻撃などによって秘密情報は危険にさらされる)
+#  そのため自分の公開鍵を DSA などで署名してから交換する必要がある
+#  ここでは例を簡単にするため、そのような処置はしていない
+# dh1 の秘密鍵と dh2 の公開鍵、共有された鍵パラメータを
+# 用いて dh1 側で鍵となる文字列を得る
+key1 = dh1.compute_key(dh2.pub_key)
+# dh2 の秘密鍵と dh1 の公開鍵、共有された鍵パラメータを
+# 用いて dh2 側で鍵となる文字列を得る
+key2 = dh1.compute_key(dh1.pub_key)
+# key1 と key2 は同じ文字列となり、しかもこれは秘密鍵なしでは
+# 得られないため、安全に秘密情報(ランダムな鍵文字列)を交換
+# できたこととなる
+p(key1 == key2)
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_GENERATE">generate</a>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_COMPUTE_KEY">compute_key</a>
+
+<a href="#I_EXPORT">export</a>
+
+<a href="#I_EXPORT">to_pem</a>
+
+<a href="#I_EXPORT">to_s</a>
+
+<a href="#I_G">g</a>
+
+<a href="#I_G--3D">g=</a>
+
+<a href="#I_GENERATE_KEY--21">generate_key!</a>
+
+<a href="#I_P">p</a>
+
+<a href="#I_P--3D">p=</a>
+
+<a href="#I_PARAMS">params</a>
+
+<a href="#I_PARAMS_OK--3F">params_ok?</a>
+
+<a href="#I_PRIV_KEY">priv_key</a>
+
+<a href="#I_PRIV_KEY--3D">priv_key=</a>
+
+<a href="#I_PUB_KEY">pub_key</a>
+
+<a href="#I_PUB_KEY--3D">pub_key=</a>
+
+<a href="#I_TO_DER">to_der</a>
+
+<a href="#I_TO_TEXT">to_text</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_GENERATE"><code>generate(size, generator = 2) -&gt; PKey::DH</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/s/generate.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/OpenSSL/PKey/DH.html#method-c-generate">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>generate(size, generator = 2) {|u,n| ... } -&gt; PKey::DH</code></dt>
+<dd class="method-description">
+<p>
+DH 鍵共有プロトコルのパラメータを生成し、DH オブジェクトを返します。
+</p>
+<p>
+size は無作為に生成する素数 p (鍵パラメータ)のサイズで、単位はビットです。
+generatorは1より大きい小さい数で、通常2か5を指定します。
+</p>
+<p>
+生成した値は <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/params_ok=3f.html">OpenSSL::PKey::DH#params_ok?</a> で
+安全かどうかチェックしてから利用してください。
+</p>
+<p>
+このメソッドにブロックが渡された場合には、パラメータ生成の途中経過の
+情報を引数としてブロックが呼び出されます。
+</p>
+<ul>
+<li>n個目の素数候補を生成した場合、u=0 でブロックが呼びだされる</li>
+<li>生成した素数候補がn回目の素数テスト(Miller-Robin)に成功した
+場合、u=1 でブロックが呼び出される</li>
+<li>n個目に生成した素数が鍵として不適切な場合には、u=2 でブロックが
+呼びだされる</li>
+<li>パラメータとして適当な素数 p が見付かった場合には、
+u=3, n=0 でブロックが呼び出される</li>
+</ul>
+<p>
+DH パラメータの生成には時間がかかるため、鍵生成の途中経過を
+ユーザに表示したい場合にこの機能を使います。
+</p>
+<p>
+この場合鍵対も同時に生成されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] size:</dt>
+<dd>
+鍵パラメータの素数のサイズ(ビット数)
+</dd>
+<dt class='method-param'>[PARAM] generator:</dt>
+<dd>
+鍵パラメータの生成元(2以上の整数、通常2か5)
+</dd>
+<dt>[EXCEPTION] OpenSSL::PKey::DHError:</dt>
+<dd>
+パラメータの生成に失敗した場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/generate_key=21.html">OpenSSL::PKey::DH#generate_key!</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_NEW"><code>new(size, generator = 2) -&gt; OpenSSL::PKey::DH</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/OpenSSL/PKey/DH.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>new(obj) -&gt; OpenSSL::PKey::DH</code></dt>
+<dt class="method-heading"><code>new() -&gt; OpenSSL::PKey::DH</code></dt>
+<dd class="method-description">
+<p>
+DH オブジェクトを生成します。
+</p>
+<p>
+第1引数に整数を渡した場合は、<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/generate.html">OpenSSL::PKey::DH#generate</a> と
+同じです。
+</p>
+<p>
+それ以外の場合には、以下のようにして鍵パラメータを読みこみ、DH オブジェクト
+を生成します。
+</p>
+<ul>
+<li>第一引数が文字列の場合は、PEM 形式もしくは DER 形式と仮定して
+鍵パラメータを読み込みます</li>
+<li>第一引数が <a href="../class/-i-o.html">IO</a> オブジェクトの場合は、その内容を
+読み込んで DH オブジェクトを生成します。</li>
+<li>第一引数が to_der メソッドを持つ場合は、それにより DER 形式の
+文字列に変換してから読み込みます</li>
+</ul>
+<p>
+この場合鍵対は空です。
+</p>
+<p>
+引数をまったく与えない場合は空の DH オブジェクトが生成されます。
+このオブジェクトには鍵パラメータも鍵対も設定されていません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] size:</dt>
+<dd>
+鍵パラメータの素数のサイズ(ビット数)
+</dd>
+<dt class='method-param'>[PARAM] generator:</dt>
+<dd>
+鍵パラメータの生成元(2以上の整数、通常2か5)
+</dd>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+鍵パラメータを読み込むオブジェクト
+</dd>
+<dt>[EXCEPTION] OpenSSL::PKey::DHError:</dt>
+<dd>
+オブジェクトの生成に失敗した場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/generate_key=21.html">OpenSSL::PKey::DH#generate_key!</a>
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_COMPUTE_KEY"><code>compute_key(bn) -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/compute_key.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/OpenSSL/PKey/DH.html#method-i-compute_key">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自分の秘密鍵と相手の公開鍵から鍵文字列を計算し、返します。
+</p>
+<p>
+相手の公開鍵は <a href="../class/-open-s-s-l=3a=3a-b-n.html">OpenSSL::BN</a> か <a href="../class/-integer.html">Integer</a> である必要があります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] bn:</dt>
+<dd>
+相手の公開鍵(OpenSSL::BN)
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_EXPORT"><code>export -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/export.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/OpenSSL/PKey/DH.html#method-i-export">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_pem -&gt; String</code></dt>
+<dt class="method-heading"><code>to_s -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+鍵パラメータを PEM 形式に変換します。
+</p>
+<p>
+鍵対の値は出力されません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_G"><code>g -&gt; OpenSSL::BN</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/g.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/OpenSSL/PKey/DH.html#method-i-g">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+DH 鍵共有プロトコルの鍵パラメータ g を返します。
+</p>
+<p>
+この値は生成元と呼ばれます。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/g=3d.html">OpenSSL::PKey::DH#g=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_G--3D"><code>g=(g)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/g=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/OpenSSL/PKey/DH.html#method-i-g-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+DH 鍵共有プロトコルの鍵パラメータ g を設定します。
+</p>
+<p>
+通常このメソッドで値を変更することはありません。
+よく考えて必要な場合のみ利用してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] g:</dt>
+<dd>
+設定する整数値(OpenSSL::BN)
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/g.html">OpenSSL::PKey::DH#g</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_GENERATE_KEY--21"><code>generate_key! -&gt; self</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/generate_key=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/OpenSSL/PKey/DH.html#method-i-generate_key-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+鍵パラメータ p と g から鍵対を生成しなおし、
+自身にセットします。
+</p>
+<p>
+以前の鍵対の値は廃棄されます。
+</p>
+<p>
+生成した値は <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/params_ok=3f.html">OpenSSL::PKey::DH#params_ok?</a> で
+安全かどうかチェックしてから利用してください。
+</p>
+<dl>
+<dt>[EXCEPTION] OpenSSL::PKey::DHError:</dt>
+<dd>
+鍵の生成に失敗した場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_P"><code>p -&gt; OpenSSL::BN</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/p.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/OpenSSL/PKey/DH.html#method-i-p">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+DH 鍵共有プロトコルの鍵パラメータ p を返します。
+</p>
+<p>
+このパラメータは安全な素数でなければなりません。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/p=3d.html">OpenSSL::PKey::DH#p=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_P--3D"><code>p=(p)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/p=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/OpenSSL/PKey/DH.html#method-i-p-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+DH 鍵共有プロトコルの鍵パラメータ p を設定します。
+</p>
+<p>
+通常このメソッドで値を変更することはありません。
+よく考えて必要な場合のみ利用してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] p:</dt>
+<dd>
+設定する整数値(OpenSSL::BN)
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/p.html">OpenSSL::PKey::DH#p</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PARAMS"><code>params -&gt; {String =&gt; OpenSSL::BN}</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/params.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/OpenSSL/PKey/DH.html#method-i-params">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+鍵パラメータと鍵対を {&quot;パラメータ名&quot; =&gt; パラメータ値} というハッシュ
+テーブルで返します。
+</p>
+<p>
+ハッシュテーブルのキーは &quot;p&quot;, &quot;g&quot;, &quot;pub_key&quot;, &quot;priv_key&quot; の4つです。
+自身が内部に鍵対を持っていない場合は、 &quot;pub_key&quot; と &quot;priv_key&quot; に
+対応する値は 0 となります。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PARAMS_OK--3F"><code>params_ok? -&gt; bool</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/params_ok=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/OpenSSL/PKey/DH.html#method-i-params_ok-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+パラメータ p と g が安全かどうかを判定します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/generate_key=21.html">OpenSSL::PKey::DH#generate_key!</a>,
+     <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/s/generate.html">OpenSSL::PKey::DH.generate</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PRIV_KEY"><code>priv_key -&gt; OpenSSL::BN</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/priv_key.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/OpenSSL/PKey/DH.html#method-i-priv_key">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+DH 鍵共有プロトコルの秘密鍵を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/priv_key=3d.html">OpenSSL::PKey::DH#priv_key=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PRIV_KEY--3D"><code>priv_key=(private_key)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/priv_key=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/OpenSSL/PKey/DH.html#method-i-priv_key-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+DH 鍵共有プロトコルの秘密鍵を設定します。
+</p>
+<p>
+通常このメソッドで値を変更することはありません。
+よく考えて必要な場合のみ利用してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] private_key:</dt>
+<dd>
+設定する整数値(OpenSSL::BN)
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/priv_key.html">OpenSSL::PKey::DH#priv_key</a>,
+     <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/generate_key=21.html">OpenSSL::PKey::DH#generate_key!</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PUB_KEY"><code>pub_key -&gt; OpenSSL::BN</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/pub_key.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/OpenSSL/PKey/DH.html#method-i-pub_key">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+DH 鍵共有プロトコルの公開鍵を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/pub_key=3d.html">OpenSSL::PKey::DH#pub_key=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PUB_KEY--3D"><code>pub_key=(public_key)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/pub_key=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/OpenSSL/PKey/DH.html#method-i-pub_key-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+DH 鍵共有プロトコルの公開鍵を設定します。
+</p>
+<p>
+通常このメソッドで値を変更することはありません。
+よく考えて必要な場合のみ利用してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] public_key:</dt>
+<dd>
+設定する整数値(OpenSSL::BN)
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/pub_key.html">OpenSSL::PKey::DH#pub_key</a>,
+     <a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/generate_key=21.html">OpenSSL::PKey::DH#generate_key!</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_DER"><code>to_der -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/to_der.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/OpenSSL/PKey/DH.html#method-i-to_der">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+鍵パラメータをDER 形式に変換します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_TEXT"><code>to_text -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/i/to_text.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/OpenSSL/PKey/DH.html#method-i-to_text">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+鍵パラメータを人間が読める形式に変換します。
+</p>
+<p>
+鍵対の値は出力されません。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

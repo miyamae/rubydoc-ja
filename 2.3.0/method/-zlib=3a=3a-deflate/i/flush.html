@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>instance method Zlib::Deflate#flush (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/zlib.html">zlibライブラリ</a>
+&gt; <a href="../../../class/-zlib=3a=3a-deflate.html">Zlib::Deflateクラス</a>
+&gt; flush
+
+</p>
+
+
+<h1>instance method Zlib::Deflate#flush</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_FLUSH"><code>flush(flush = Zlib::SYNC_FLUSH) -&gt; String</code><span class="permalink">[<a href="../../../method/-zlib=3a=3a-deflate/i/flush.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/Deflate.html#method-i-flush">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+deflate('', flush) と同じです。flush が
+省略された時は <a href="../../../method/-zlib/c/-s-y-n-c_-f-l-u-s-h.html">Zlib::SYNC_FLUSH</a> が使用されます。
+このメソッドはスクリプトの可読性のために提供されています。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] flush:</dt>
+<dd>
+<a href="../../../method/-zlib/c/-n-o_-f-l-u-s-h.html">Zlib::NO_FLUSH</a> <a href="../../../method/-zlib/c/-s-y-n-c_-f-l-u-s-h.html">Zlib::SYNC_FLUSH</a> <a href="../../../method/-zlib/c/-f-u-l-l_-f-l-u-s-h.html">Zlib::FULL_FLUSH</a> などを指定します。
+</dd>
+</dl>
+<pre>
+require 'zlib'
+
+def case1
+  dez = Zlib::Deflate.new
+  comp_str = dez.deflate('hoge')
+  comp_str &lt;&lt; dez.deflate(' fuga')
+  comp_str &lt;&lt; dez.deflate(' end', Zlib::FINISH)
+  dez.close
+  p comp_str
+  p Zlib::Inflate.inflate(comp_str)
+end
+
+def case2
+  dez = Zlib::Deflate.new
+  comp_str = dez.deflate('hoge')
+  comp_str &lt;&lt; dez.flush
+  comp_str &lt;&lt; dez.deflate(' fuga')
+  comp_str &lt;&lt; dez.flush
+  comp_str &lt;&lt; dez.deflate(' end', Zlib::FINISH)
+  dez.close
+  p comp_str
+  p Zlib::Inflate.inflate(comp_str)
+end
+
+case1
+case2
+#=&gt; &quot;x\234\313\310OOUH+MOTH\315K\001\000!\251\004\276&quot;
+#=&gt; &quot;hoge fuga end&quot;
+#=&gt; &quot;x\234\312\310OO\005\000\000\000\377\377RH+MO\004\000\000\000\377\377SH\315K\001\000!\251\004\276&quot;
+#=&gt; &quot;hoge fuga end&quot;
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

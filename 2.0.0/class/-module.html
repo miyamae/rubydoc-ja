@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>class Module (Ruby 2.0.0)</title>
 </head>
 <body>
@@ -100,6 +101,8 @@
 
 <a href="#I_CONSTANTS">constants</a>
 
+<a href="#I_FREEZE">freeze</a>
+
 <a href="#I_INCLUDE--3F">include?</a>
 
 <a href="#I_INCLUDED_MODULES">included_modules</a>
@@ -115,8 +118,6 @@
 <a href="#I_INSTANCE_METHODS">instance_methods</a>
 
 <a href="#I_METHOD_DEFINED--3F">method_defined?</a>
-
-<a href="#I_PREPEND">prepend</a>
 
 <a href="#I_PRIVATE_CLASS_METHOD">private_class_method</a>
 
@@ -180,6 +181,8 @@
 <a href="#I_METHOD_UNDEFINED">method_undefined</a>
 
 <a href="#I_MODULE_FUNCTION">module_function</a>
+
+<a href="#I_PREPEND">prepend</a>
 
 <a href="#I_PREPEND_FEATURES">prepend_features</a>
 
@@ -410,8 +413,8 @@ p Baz &lt;=&gt; Object.new  # =&gt; nil
 <dt class="method-heading" id="I_--3D--3D--3D"><code>self === obj -&gt; bool</code><span class="permalink">[<a href="../method/-module/i/=3d=3d=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/Module.html#method-i-3D-3D-3D">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
-指定された obj が自身かそのサブクラスのインスタンスであるとき真を返します。
-また、obj が自身をインクルードしたクラスかそのサブクラスのインスタンスである場合にも
+指定された obj が self かそのサブクラスのインスタンスであるとき真を返します。
+また、obj が self をインクルードしたクラスかそのサブクラスのインスタンスである場合にも
 真を返します。上記のいずれでもない場合に false を返します。
 </p>
 <p>
@@ -509,7 +512,7 @@ class Baz &lt; Bar
   p included_modules
   p superclass
 end
-# =&gt; [Baz, Bar, Foo, Object, Kernel]
+# =&gt; [Baz, Bar, Foo, Object, Kernel, BasicObject]
 # =&gt; [Foo, Kernel]
 # =&gt; Bar
 </pre>
@@ -641,14 +644,29 @@ Fred.class_variable_defined?('@@bar')    #=&gt; false
 </dd>
 
 
-<dt class="method-heading" id="I_CLASS_VARIABLES"><code>class_variables -&gt; [Symbol]</code><span class="permalink">[<a href="../method/-module/i/class_variables.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/Module.html#method-i-class_variables">rdoc</a>]</span></dt>
+<dt class="method-heading" id="I_CLASS_VARIABLES"><code>class_variables(inherit = true) -&gt; [Symbol]</code><span class="permalink">[<a href="../method/-module/i/class_variables.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/Module.html#method-i-class_variables">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 クラス／モジュールに定義されているクラス変数の名前の配列を返します。
 </p>
-<p>
-スーパークラスやインクルードしているモジュールのクラス変数も含みます。
-</p>
+<dl>
+<dt class='method-param'>[PARAM] inherit:</dt>
+<dd>
+false を指定しない場合はスーパークラスやインクルードして
+いるモジュールのクラス変数を含みます。
+</dd>
+</dl>
+<pre>
+class One
+  @@var1 = 1
+end
+class Two &lt; One
+  @@var2 = 2
+end
+One.class_variables          # =&gt; [:@@var1]
+Two.class_variables          # =&gt; [:@@var2, :@@var1]
+Two.class_variables(false)   # =&gt; [:@@var2]
+</pre>
 <p>
 [SEE_ALSO] <a href="../method/-module/s/constants.html">Module.constants</a>, <a href="../method/-kernel/m/local_variables.html">Kernel.#local_variables</a>, <a href="../method/-kernel/m/global_variables.html">Kernel.#global_variables</a>, <a href="../method/-object/i/instance_variables.html">Object#instance_variables</a>, <a href="../method/-module/i/constants.html">Module#constants</a>
 </p>
@@ -824,6 +842,9 @@ inherit に真を指定すると
 定数は含まれません。 Object.constants とすると Object クラスで定義された
 定数の配列が得られます。
 </p>
+<p>
+得られる定数の順序は保証されません。
+</p>
 <dl>
 <dt class='method-param'>[PARAM] inherit:</dt>
 <dd>
@@ -861,6 +882,21 @@ Module.constants と Module#constants の違い
    end
  end
 </pre>
+</dd>
+
+
+<dt class="method-heading" id="I_FREEZE"><code>freeze -&gt; self</code><span class="permalink">[<a href="../method/-module/i/freeze.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/Module.html#method-i-freeze">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+モジュールを凍結（内容の変更を禁止）します。
+</p>
+<p>
+凍結したモジュールにメソッドの追加など何らかの変更を加えようとした場合
+に <a href="../class/-runtime-error.html">RuntimeError</a> が発生します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-object/i/freeze.html">Object#freeze</a>
+</p>
 </dd>
 
 
@@ -1064,94 +1100,6 @@ true を返します。
 <p>
 [SEE_ALSO] <a href="../method/-module/i/public_method_defined=3f.html">Module#public_method_defined?</a>, <a href="../method/-module/i/private_method_defined=3f.html">Module#private_method_defined?</a>, <a href="../method/-module/i/protected_method_defined=3f.html">Module#protected_method_defined?</a>
 </p>
-</dd>
-
-
-<dt class="method-heading" id="I_PREPEND"><code>prepend(*modules) -&gt; self</code><span class="permalink">[<a href="../method/-module/i/prepend.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/Module.html#method-i-prepend">rdoc</a>]</span></dt>
-<dd class="method-description">
-<p>
-指定したモジュールを self の継承チェインの先頭に「追加する」ことで
-self の定数、メソッド、モジュール変数を「上書き」します。
-</p>
-<p>
-継承チェイン上で、self のモジュール/クラスよりも「手前」に
-追加されるため、結果として self で定義されたメソッドは
-override されます。
-</p>
-<p>
-modules で指定したモジュールは後ろから順に処理されるため、
-modules の先頭が最も優先されます。
-</p>
-<p>
-また、継承によってこの「上書き」を処理するため、prependの引数として
-渡したモジュールのインスタンスメソッドでsuperを呼ぶことで
-self のモジュール/クラスのメソッドを呼び出すことができます。
-</p>
-<p>
-実際の処理は modules の各要素の prepend_features を後ろから順に呼びだすだけです。
-<a href="../method/-module/i/prepend_features.html">Module#prepend_features</a> が継承チェインの改変を実行し、結果として上のような
-処理が実現されます。そのため、prepend_features を override することで
-prepend の処理を追加/変更できます。
-</p>
-<dl>
-<dt class='method-param'>[PARAM] modules:</dt>
-<dd>
-prepend する <a href="../class/-module.html">Module</a> を指定します
-</dd>
-</dl>
-<p>
-[SEE_ALSO] <a href="../method/-module/i/prepend_features.html">Module#prepend_features</a>
-</p>
-<pre>
-# super と prepend の組み合わせの例
-module X
-  def foo
-    puts &quot;X1&quot; # (1x)
-    super # (2x)
-    puts &quot;X2&quot; # (3x)
-  end
-end
-
-class A
-  prepend X
-
-  def foo
-    puts &quot;A&quot; #(1a)
-  end
-end
-
-A.new.foo
-# (1x) (2x)(ここの super で A#foo を呼びだす) (1a) (3x) の順に実行される
-# &gt;&gt; X1
-# &gt;&gt; A
-# &gt;&gt; X2
-
-# 2つのモジュールを X, Y を prepend X, Y という順で指定したもの
-module Y
-  def foo
-    puts &quot;Y1&quot; #(1y)
-    super #(2y)
-    puts &quot;Y2&quot; #(3y)
-  end
-end
-
-class B
-  prepend X, Y
-  def foo
-    puts &quot;B&quot; # (1b)
-  end
-end
-
-B.new.foo
-# (1x) (2x) (1y) (2y) (1b) (3y) (3x) の順に実行される
-# X#foo のほうが Y#foo より継承チェインの手前側にあり、そちらが優先される
-# &gt;&gt; X1
-# &gt;&gt; Y1
-# &gt;&gt; B
-# &gt;&gt; Y2
-# &gt;&gt; X2
-# prepend Y, X とすると Y1 X1 B X2 Y2 の順で表示される
-</pre>
 </dd>
 
 
@@ -1625,8 +1573,8 @@ p Fred.new.foo    # =&gt; 101
 </dd>
 
 
-<dt class="method-heading" id="I_DEFINE_METHOD"><code>define_method(name, method) -&gt; Proc | Method | UnboundMethod</code><span class="permalink">[<a href="../method/-module/i/define_method.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/Module.html#method-i-define_method">rdoc</a>]</span></dt>
-<dt class="method-heading"><code>define_method(name) { ... } -&gt; Proc</code></dt>
+<dt class="method-heading" id="I_DEFINE_METHOD"><code>define_method(name, method) -&gt; Symbol</code><span class="permalink">[<a href="../method/-module/i/define_method.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/Module.html#method-i-define_method">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>define_method(name) { ... } -&gt; Symbol</code></dt>
 <dd class="method-description">
 <p>
 インスタンスメソッド name を定義します。
@@ -1638,7 +1586,7 @@ p Fred.new.foo    # =&gt; 101
 <dl>
 <dt class='method-param'>[PARAM] name:</dt>
 <dd>
-<a href="../class/-string.html">String</a> または <a href="../class/-symbol.html">Symbol</a> を指定します。
+メソッド名を <a href="../class/-string.html">String</a> または <a href="../class/-symbol.html">Symbol</a> を指定します。
 </dd>
 <dt class='method-param'>[PARAM] method:</dt>
 <dd>
@@ -1647,9 +1595,7 @@ p Fred.new.foo    # =&gt; 101
 </dd>
 <dt>[RETURN]</dt>
 <dd>
-引数 method を与えたときはそれを、ブロック付きで
-呼びだしたときはブロックを <a href="../class/-proc.html">Proc</a> 化したオブジェクトを、
-それぞれ返します。
+メソッド名を表す <a href="../class/-symbol.html">Symbol</a> を返します。
 </dd>
 <dt>[EXCEPTION] TypeError:</dt>
 <dd>
@@ -2018,6 +1964,94 @@ M.bar   # =&gt; &quot;foo&quot;
 </dd>
 
 
+<dt class="method-heading" id="I_PREPEND"><code>prepend(*modules) -&gt; self</code><span class="permalink">[<a href="../method/-module/i/prepend.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/Module.html#method-i-prepend">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+指定したモジュールを self の継承チェインの先頭に「追加する」ことで
+self の定数、メソッド、モジュール変数を「上書き」します。
+</p>
+<p>
+継承チェイン上で、self のモジュール/クラスよりも「手前」に
+追加されるため、結果として self で定義されたメソッドは
+override されます。
+</p>
+<p>
+modules で指定したモジュールは後ろから順に処理されるため、
+modules の先頭が最も優先されます。
+</p>
+<p>
+また、継承によってこの「上書き」を処理するため、prependの引数として
+渡したモジュールのインスタンスメソッドでsuperを呼ぶことで
+self のモジュール/クラスのメソッドを呼び出すことができます。
+</p>
+<p>
+実際の処理は modules の各要素の prepend_features を後ろから順に呼びだすだけです。
+<a href="../method/-module/i/prepend_features.html">Module#prepend_features</a> が継承チェインの改変を実行し、結果として上のような
+処理が実現されます。そのため、prepend_features を override することで
+prepend の処理を追加/変更できます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] modules:</dt>
+<dd>
+prepend する <a href="../class/-module.html">Module</a> を指定します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-module/i/prepend_features.html">Module#prepend_features</a>
+</p>
+<pre>
+# super と prepend の組み合わせの例
+module X
+  def foo
+    puts &quot;X1&quot; # (1x)
+    super # (2x)
+    puts &quot;X2&quot; # (3x)
+  end
+end
+
+class A
+  prepend X
+
+  def foo
+    puts &quot;A&quot; #(1a)
+  end
+end
+
+A.new.foo
+# (1x) (2x)(ここの super で A#foo を呼びだす) (1a) (3x) の順に実行される
+# &gt;&gt; X1
+# &gt;&gt; A
+# &gt;&gt; X2
+
+# 2つのモジュールを X, Y を prepend X, Y という順で指定したもの
+module Y
+  def foo
+    puts &quot;Y1&quot; #(1y)
+    super #(2y)
+    puts &quot;Y2&quot; #(3y)
+  end
+end
+
+class B
+  prepend X, Y
+  def foo
+    puts &quot;B&quot; # (1b)
+  end
+end
+
+B.new.foo
+# (1x) (2x) (1y) (2y) (1b) (3y) (3x) の順に実行される
+# X#foo のほうが Y#foo より継承チェインの手前側にあり、そちらが優先される
+# &gt;&gt; X1
+# &gt;&gt; Y1
+# &gt;&gt; B
+# &gt;&gt; Y2
+# &gt;&gt; X2
+# prepend Y, X とすると Y1 X1 B X2 Y2 の順で表示される
+</pre>
+</dd>
+
+
 <dt class="method-heading" id="I_PREPEND_FEATURES"><code>prepend_features(mod) -&gt; self</code><span class="permalink">[<a href="../method/-module/i/prepend_features.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/Module.html#method-i-prepend_features">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
@@ -2124,12 +2158,12 @@ name で指定した定数の可視性を private に変更します。
 </dd>
 <dt>[EXCEPTION] SecurityError:</dt>
 <dd>
-セーフレベル(<a href="../method/-kernel/v/-s-a-f-e.html">$SAFE</a>)が 4 以上で自身が
+セーフレベル(<a href="../method/-kernel/v/-s-a-f-e.html">$SAFE</a>)が 4 以上で self が
 untrust なオブジェクトではない場合に発生します。
 </dd>
 <dt>[RETURN]</dt>
 <dd>
-自身を返します。
+self を返します。
 </dd>
 </dl>
 <p>
@@ -2217,12 +2251,12 @@ name で指定した定数の可視性を public に変更します。
 </dd>
 <dt>[EXCEPTION] SecurityError:</dt>
 <dd>
-セーフレベル(<a href="../method/-kernel/v/-s-a-f-e.html">$SAFE</a>)が 4 以上で自身が
+セーフレベル(<a href="../method/-kernel/v/-s-a-f-e.html">$SAFE</a>)が 4 以上で self が
 untrust なオブジェクトではない場合に発生します。
 </dd>
 <dt>[RETURN]</dt>
 <dd>
-自身を返します。
+self を返します。
 </dd>
 </dl>
 <p>
@@ -2243,9 +2277,8 @@ untrust なオブジェクトではない場合に発生します。
 refinements 機能の詳細については以下を参照してください。
 </p>
 <ul>
-<li><a class="external" href="http://jp.rubyist.net/magazine/?0041-200Special-refinement">http://jp.rubyist.net/magazine/?0041-200Special-refinement</a></li>
-<li><a class="external" href="http://svn.ruby-lang.org/cgi-bin/viewvc.cgi/trunk/doc/syntax/refinements.rdoc?view=markup">http://svn.ruby-lang.org/cgi-bin/viewvc.cgi/trunk/doc/syntax/refinements.rdoc?view=markup</a></li>
-<li><a class="external" href="http://bugs.ruby-lang.org/projects/ruby-trunk/wiki/RefinementsSpec">http://bugs.ruby-lang.org/projects/ruby-trunk/wiki/RefinementsSpec</a></li>
+<li><a class="external" href="http://magazine.rubyist.net/?0041-200Special-refinement">http://magazine.rubyist.net/?0041-200Special-refinement</a></li>
+<li><a class="external" href="https://docs.ruby-lang.org/en/2.0.0/syntax/refinements_rdoc.html">https://docs.ruby-lang.org/en/2.0.0/syntax/refinements_rdoc.html</a></li>
 </ul>
 <p>
 定義した機能は <a href="../method/main/s/using.html">main.using</a> を実行した場合のみ有効になります。
@@ -2452,8 +2485,8 @@ M2.instance_methods false #=&gt; []
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

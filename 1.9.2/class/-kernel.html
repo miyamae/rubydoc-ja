@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>module Kernel (Ruby 1.9.2)</title>
 </head>
 <body>
@@ -58,6 +59,8 @@
 
 <a href="#M_-FLOAT">Float</a>
 
+<a href="#M_-HASH">Hash</a>
+
 <a href="#M_-INTEGER">Integer</a>
 
 <a href="#M_-RATIONAL">Rational</a>
@@ -66,7 +69,9 @@
 
 <a href="#M___CALLEE__">__callee__</a>
 
-<a href="#M___CALLEE__">__method__</a>
+<a href="#M___DIR__">__dir__</a>
+
+<a href="#M___METHOD__">__method__</a>
 
 <a href="#M_--60">`</a>
 
@@ -85,6 +90,8 @@
 <a href="#M_BLOCK_GIVEN--3F">iterator?</a>
 
 <a href="#M_CALLER">caller</a>
+
+<a href="#M_CALLER_LOCATIONS">caller_locations</a>
 
 <a href="#M_CATCH">catch</a>
 
@@ -423,8 +430,8 @@ p Float(4_000)        #=&gt; 4000.0
 p Float(9.88)         #=&gt; 9.88
 
 p Float(Time.gm(1986)) #=&gt; 504921600.0
-p Float(Object.new)   # cannot convert Object into Float (TypeError)
-p Float(nil)          # cannot convert nil into Float (TypeError)
+p Float(Object.new)   # can't convert Object into Float (TypeError)
+p Float(nil)          # can't convert nil into Float (TypeError)
 
 p Float(&quot;10&quot;)         #=&gt; 10.0
 p Float(&quot;10e2&quot;)       #=&gt; 1000.0
@@ -432,18 +439,46 @@ p Float(&quot;1e-2&quot;)       #=&gt; 0.01
 p Float(&quot;.1&quot;)         #=&gt; 0.1
 p Float(&quot;0xa&quot;)        #=&gt; 10.0
 
-p Float(&quot;nan&quot;)        # invalid value (ArgumentError)
-p Float(&quot;INF&quot;)        # invalid value (ArgumentError)
-p Float(&quot;-Inf&quot;)       # invalid value (ArgumentError)
+p Float(&quot;nan&quot;)        # invalid value for Float(): &quot;nan&quot; (ArgumentError)
+p Float(&quot;INF&quot;)        # invalid value for Float(): &quot;INF&quot; (ArgumentError)
+p Float(&quot;-Inf&quot;)       # invalid value for Float(): &quot;-Inf&quot; (ArgumentError)
 p Float((&quot;10&quot; * 1000)) #=&gt; Infinity
-p Float(&quot;0xa.a&quot;)      # invalid value (ArgumentError)
+p Float(&quot;0xa.a&quot;)      # invalid value for Float(): &quot;0xa.a&quot; (ArgumentError)
 p Float(&quot; \n10\s \t&quot;) #=&gt; 10.0 # 先頭と末尾の空白類は無視される
-p Float(&quot;1\n0&quot;)       # invalid value (ArgumentError)
-p Float(&quot;&quot;)           # invalid value (ArgumentError)
+p Float(&quot;1\n0&quot;)       # invalid value for Float(): &quot;1\n0&quot; (ArgumentError)
+p Float(&quot;&quot;)           # invalid value for Float(): &quot;&quot; (ArgumentError)
 </pre>
 <p>
 [SEE_ALSO] <a href="../method/-string/i/to_f.html">String#to_f</a>,<a href="../class/-float.html">Float</a>
 </p>
+</dd>
+
+
+<dt class="method-heading" id="M_-HASH"><code>Hash(arg) -&gt; Hash</code><span class="permalink">[<a href="../method/-kernel/m/-hash.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/Kernel.html#method-c-Hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数 arg で指定したオブジェクトを to_hash メソッドを呼び出す事で
+<a href="../class/-hash.html">Hash</a> オブジェクトに変換します。nil か [] を指定した場合は空の
+<a href="../class/-hash.html">Hash</a> オブジェクトを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] arg:</dt>
+<dd>
+変換対象のオブジェクトを指定します。
+</dd>
+</dl>
+<pre>
+Hash([])          # =&gt; {}
+Hash(nil)         # =&gt; {}
+Hash(key: :value) # =&gt; {:key =&gt; :value}
+Hash([1, 2, 3])   # =&gt; TypeError
+</pre>
+<dl>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+変換できないオブジェクトを指定した場合に発生します。
+</dd>
+</dl>
 </dd>
 
 
@@ -631,8 +666,42 @@ p String(arg) #=&gt; &quot;hogehoge&quot;
 </dd>
 
 
-<dt class="method-heading" id="M___CALLEE__"><code>__method__ -&gt; Symbol | nil</code><span class="permalink">[<a href="../method/-kernel/m/__callee__.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/Kernel.html#method-c-__callee__">rdoc</a>]</span></dt>
-<dt class="method-heading"><code>__callee__ -&gt; Symbol | nil</code></dt>
+<dt class="method-heading" id="M___CALLEE__"><code>__callee__ -&gt; Symbol | nil</code><span class="permalink">[<a href="../method/-kernel/m/__callee__.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/Kernel.html#method-c-__callee__">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在のメソッド名を返します。
+メソッドの外で呼ばれると nil を返します。
+</p>
+<pre>
+def foo
+  p __callee__
+end
+alias :bar :foo
+foo # =&gt; :foo
+bar # =&gt; :bar
+p __callee__ # =&gt; nil
+</pre>
+<p>
+<a href="../method/-kernel/m/__method__.html">Kernel.#__method__</a> とは異なり、現在のメソッド名が alias されたメ
+ソッドの場合には alias 先のメソッド名を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/m/__method__.html">Kernel.#__method__</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M___DIR__"><code>__dir__ -&gt; String | nil</code><span class="permalink">[<a href="../method/-kernel/m/__dir__.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/Kernel.html#method-c-__dir__">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在のソースファイル(__FILE__)のあるディレクトリ名を正規化された絶対パ
+スで返します。シンボリックリンクも解決されます。また、__FILE__ が nil
+の場合は nil を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M___METHOD__"><code>__method__ -&gt; Symbol | nil</code><span class="permalink">[<a href="../method/-kernel/m/__method__.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/Kernel.html#method-c-__method__">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 現在のメソッド名を返します。
@@ -706,9 +775,8 @@ Ruby プログラムをエラーメッセージ付きで終了します。終了
 <p>
 このメソッドと <a href="../method/-kernel/m/exit.html">Kernel.#exit</a> との違いは、プログラムの終了ステー
 タスが 1 (正確にはCレベルの定数 EXIT_FAILURE の値)固定であることと、
-引数を省略した呼び出し時に
-<a href="../method/-kernel/v/=21.html">$!</a> が nil でなければその例外の
-メッセージを標準エラー出力 <a href="../method/-kernel/v/stderr.html">$stderr</a> に出力することです。
+引数を省略した呼び出し時に <a href="../method/-kernel/v/=21.html">$!</a> が nil でなければその例外のメッセー
+ジを標準エラー出力 <a href="../method/-kernel/v/stderr.html">$stderr</a> に出力することです。
 </p>
 <p>
 引数 message を指定すると SystemExit クラスの
@@ -984,6 +1052,8 @@ check #=&gt; Block isn't given.
 
 
 <dt class="method-heading" id="M_CALLER"><code>caller(start = 1) -&gt; [String] | nil</code><span class="permalink">[<a href="../method/-kernel/m/caller.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/Kernel.html#method-c-caller">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>caller(start, length) -&gt; [String] | nil</code></dt>
+<dt class="method-heading"><code>caller(range) -&gt; [String] | nil</code></dt>
 <dd class="method-description">
 <p>
 start 段上の呼び出し元の情報を <a href="../method/-kernel/v/=40.html">$@</a>
@@ -1001,9 +1071,18 @@ start 段上の呼び出し元の情報を <a href="../method/-kernel/v/=40.html
 <dd>
 long の範囲を超えない正の整数でスタックレベルを指定します。
 </dd>
+<dt class='method-param'>[PARAM] length:</dt>
+<dd>
+取得するスタックの個数を指定します。
+</dd>
+<dt class='method-param'>[PARAM] range:</dt>
+<dd>
+取得したいスタックの範囲を示す <a href="../class/-range.html">Range</a> オブジェクトを指定します。
+</dd>
 </dl>
 <p>
-[SEE_ALSO] <a href="../method/-kernel/m/set_trace_func.html">Kernel.#set_trace_func</a>,<a href="../method/-kernel/m/raise.html">Kernel.#raise</a>
+[SEE_ALSO] <a href="../method/-kernel/m/set_trace_func.html">Kernel.#set_trace_func</a>,<a href="../method/-kernel/m/raise.html">Kernel.#raise</a>,
+     <a href="../method/-kernel/m/caller_locations.html">Kernel.#caller_locations</a>
 </p>
 <pre>
 def foo
@@ -1071,6 +1150,33 @@ debug &quot;debug information&quot;
 
 #=&gt; [&quot;-:7&quot;, &quot;debug information&quot;]
 </pre>
+</dd>
+
+
+<dt class="method-heading" id="M_CALLER_LOCATIONS"><code>caller_locations(start = 1, length = nil) -&gt; [Thread::Backtrace::Location] | nil</code><span class="permalink">[<a href="../method/-kernel/m/caller_locations.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/Kernel.html#method-c-caller_locations">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>caller_locations(range) -&gt; [Thread::Backtrace::Location] | nil</code></dt>
+<dd class="method-description">
+<p>
+現在のフレームを <a href="../class/-thread=3a=3a-backtrace=3a=3a-location.html">Thread::Backtrace::Location</a> の配列で返します。引
+数で指定した値が範囲外の場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] start:</dt>
+<dd>
+開始フレームの位置を数値で指定します。
+</dd>
+<dt class='method-param'>[PARAM] length:</dt>
+<dd>
+取得するフレームの個数を指定します。
+</dd>
+<dt class='method-param'>[PARAM] range:</dt>
+<dd>
+取得したいフレームの範囲を示す <a href="../class/-range.html">Range</a> オブジェクトを指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../class/-thread=3a=3a-backtrace=3a=3a-location.html">Thread::Backtrace::Location</a>, <a href="../method/-kernel/m/caller.html">Kernel.#caller</a>
+</p>
 </dd>
 
 
@@ -2143,9 +2249,6 @@ $_.gsub とほぼ同じですが、置換が発生したときは、$_の内容�
 コマンドラインオプションで -p または -n を指定した時のみ定義されます。
 </p>
 <p>
-replace を指定しない場合ブロックを指定しても無視されて Enumerator オブジェクトが返されます。<a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-core/47967">[ruby-core:47967]</a>
-</p>
-<p>
 暗号的になりすぎるきらいがあるため、このメソッドの使用は推奨されていません。
 今後はより明示的な $_.gsub を使ってください。
 </p>
@@ -2428,11 +2531,21 @@ p local_variables #=&gt; [:yuyu]
 </dd>
 
 
-<dt class="method-heading" id="M_LOOP"><code>loop { ... } -&gt; object</code><span class="permalink">[<a href="../method/-kernel/m/loop.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/Kernel.html#method-c-loop">rdoc</a>]</span></dt>
+<dt class="method-heading" id="M_LOOP"><code>loop -&gt; Enumerator</code><span class="permalink">[<a href="../method/-kernel/m/loop.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/Kernel.html#method-c-loop">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>loop { ... } -&gt; object | nil</code></dt>
 <dd class="method-description">
 <p>
 (中断されない限り)永遠にブロックの評価を繰り返します。
+ブロックが指定されなければ、代わりに <a href="../class/-enumerator.html">Enumerator</a> を返します。
 </p>
+<pre>
+loop do
+  print &quot;Input: &quot;
+  line = gets
+  break if !line or line =~ /^qQ/
+  # ...
+end
+</pre>
 <p>
 与えられたブロック内で <a href="../class/-stop-iteration.html">StopIteration</a> を <a href="../method/-kernel/m/raise.html">Kernel.#raise</a> すると
 ループを終了して nil を返します。
@@ -2444,17 +2557,6 @@ p local_variables #=&gt; [:yuyu]
 break の引数など、ループ脱出時の値を返します。
 </dd>
 </dl>
-<pre>
-def try int
-  n = 0
-  loop do
-    n += 1
-    break(n) if rand(n) &gt; int
-  end
-end
-
-puts &quot;end on #{try(400)}&quot; #=&gt; end on ???
-</pre>
 </dd>
 
 
@@ -2643,7 +2745,7 @@ mode は以下の三つのうちのいずれかです。
 </p>
 <h4 >Universal Newline</h4>
 <p>
-改行をLFに揃えます。一言で言えばPEP:278 <a class="external" href="http://www.python.org/dev/peps/pep-0278/">http://www.python.org/dev/peps/pep-0278/</a>のことです。
+改行をLFに揃えます。一言で言えばPEP:278 <a class="external" href="https://www.python.org/dev/peps/pep-0278/">https://www.python.org/dev/peps/pep-0278/</a>のことです。
 </p>
 <dl>
 <dt>&quot;rt&quot;</dt>
@@ -2797,8 +2899,8 @@ $, = &quot;&lt;and&gt;&quot;
 $\ = &quot;&lt;end&gt;\n&quot;
 print
 print &quot;AA&quot;,&quot;BB&quot;
-#=&gt; input&lt;and&gt;&lt;end&gt;
-#=&gt; AA&lt;and&gt;BB&lt;and&gt;&lt;end&gt;
+#=&gt; input&lt;end&gt;
+#=&gt; AA&lt;and&gt;BB&lt;end&gt;
 </pre>
 <p>
 [SEE_ALSO] <a href="../method/-kernel/m/puts.html">Kernel.#puts</a>,<a href="../method/-kernel/m/p.html">Kernel.#p</a>
@@ -2969,16 +3071,27 @@ puts [&quot;oui&quot;, &quot;non&quot;]
 
 
 <dt class="method-heading" id="M_RAND"><code>rand(max = 0) -&gt; Integer | Float</code><span class="permalink">[<a href="../method/-kernel/m/rand.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/Kernel.html#method-c-rand">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>rand(range) -&gt; Integer | Float | nil</code></dt>
 <dd class="method-description">
 <p>
 擬似乱数を発生させます。
 </p>
 <p>
+最初の形式では
 max が 0 の場合は 0.0 以上 1.0 未満の実数を、正の整数の場合は 0 以上 max 未満の整数を返します。
 それ以外の値を指定した場合は max.to_int の絶対値が指定されたものとして扱います。
 </p>
 <p>
+二番目の形式では range で指定された範囲の値を返します。
+range の始端と終端が共に整数の場合は整数を、少なくとも片方が実数の場合は実数を返します。
+range に含まれる数が無い場合は nil を返します。
+</p>
+<p>
 まだ <a href="../method/-kernel/m/srand.html">Kernel.#srand</a> が呼ばれていなければ自動的に呼び出します。
+</p>
+<p>
+擬似乱数生成器として <a href="../method/-random/c/-d-e-f-a-u-l-t.html">Random::DEFAULT</a> を使用します。
+これは <a href="../method/-random/s/rand.html">Random.rand</a> と共通です。
 </p>
 <dl>
 <dt class='method-param'>[PARAM] max:</dt>
@@ -2986,6 +3099,11 @@ max が 0 の場合は 0.0 以上 1.0 未満の実数を、正の整数の場合
 乱数値の上限を正の整数で指定します。
 max 自体は乱数値の範囲に含まれません。
 0 を指定すると実数値の乱数を返します。
+</dd>
+<dt class='method-param'>[PARAM] range:</dt>
+<dd>
+発生させる乱数値の範囲を <a href="../class/-range.html">Range</a> オブジェクトで指定します。
+range の境界は数値でなければなりません。
 </dd>
 </dl>
 <pre>
@@ -2995,6 +3113,12 @@ rand            #=&gt; 0.6221087710398319
 rand(10)        #=&gt; 4
 rand(5.5)       #=&gt; 0
                 # rand(5) と同じ。 5 が乱数値の範囲に含まれないことに注意。
+
+rand(1..6)      #=&gt; 2                   (1 から 6 までの整数)
+rand(0...10)    #=&gt; 1                   (0 から 9 までの整数。終端を含まない)
+rand(1.0..1.5)  #=&gt; 1.1362963047752432  (1.0 以上 1.5 以下の実数)
+rand(1.0...1.5) #=&gt; 1.1382321275715483  (1.0 以上 1.5 未満の実数)
+rand(1..0)      #=&gt; nil
 </pre>
 <p>
 [SEE_ALSO] <a href="../method/-kernel/m/srand.html">Kernel.#srand</a>, <a href="../method/-random/i/rand.html">Random#rand</a>, <a href="../class/-random.html">Random</a>
@@ -3349,7 +3473,7 @@ end
 43.to_s
 
 # ----結果----
-# [&quot;c-return&quot;, &quot;..&quot;, 3, :set_trace_func, #&lt;Binding:0xf6ceb8&gt;, Kernel]
+# [&quot;c-return&quot;, &quot;..&quot;, 1, :set_trace_func, #&lt;Binding:0xf6ceb8&gt;, Kernel]
 # [&quot;line&quot;, &quot;..&quot;, 4, nil, #&lt;Binding:0x10cbcd8&gt;, nil]
 # [&quot;c-call&quot;, &quot;..&quot;, 4, :inherited, #&lt;Binding:0x10cba98&gt;, Class]
 # [&quot;c-return&quot;, &quot;..&quot;, 4, :inherited, #&lt;Binding:0x10cb858&gt;, Class]
@@ -3862,7 +3986,7 @@ seeds &lt;&lt; srand
 p seeds #=&gt; [455675, 2995620310703489221660585195204777696, 455675]
 </pre>
 <p>
-[SEE_ALSO] <a href="../method/-kernel/m/rand.html">Kernel.#rand</a>
+[SEE_ALSO] <a href="../method/-kernel/m/rand.html">Kernel.#rand</a>, <a href="../method/-random/c/-d-e-f-a-u-l-t.html">Random::DEFAULT</a>
 </p>
 </dd>
 
@@ -3873,9 +3997,6 @@ p seeds #=&gt; [455675, 2995620310703489221660585195204777696, 455675]
 <p>
 $_.sub とほぼ同じですが、置換が発生したときは、$_の内容を置き換える点が異なります。
 コマンドラインオプションで -p または -n を指定した時のみ定義されます。
-</p>
-<p>
-replace を指定しない場合ブロックを指定しても無視されて例外が発生します。<a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-core/47967">[ruby-core:47967]</a>
 </p>
 <p>
 暗号的になりすぎるきらいがあるため、このメソッドの使用は推奨されていません。
@@ -3928,7 +4049,7 @@ syscall(2) や
 それ以外では、返した値をそのまま数値で返します。
 </p>
 <p>
-ライブラリ <a href="../library/dl.html">dl</a> を使えばより高レベルな操作ができます。
+ライブラリ <a href="../library/fiddle.html">fiddle</a> を使えばより高レベルな操作ができます。
 </p>
 <dl>
 <dt class='method-param'>[PARAM] num:</dt>
@@ -3949,7 +4070,7 @@ syscall(2) が -1 を返した場合に発生します。
 </dd>
 </dl>
 <p>
-[SEE_ALSO] <a href="../library/dl.html">dl</a>, <a class="external" href="http://www.freebsd.org/cgi/man.cgi?query=syscall&amp;sektion=2&amp;manpath=FreeBSD+9.0-RELEASE">syscall(2freebsd)</a>, <a class="external" href="http://man7.org/linux/man-pages/man2/syscall.2.html">syscall(2linux)</a>
+[SEE_ALSO] <a href="../library/fiddle.html">fiddle</a>, <a class="external" href="http://www.freebsd.org/cgi/man.cgi?query=syscall&amp;sektion=2&amp;manpath=FreeBSD+9.0-RELEASE">syscall(2freebsd)</a>, <a class="external" href="http://man7.org/linux/man-pages/man2/syscall.2.html">syscall(2linux)</a>
 </p>
 </dd>
 
@@ -4490,7 +4611,7 @@ $v = 'str'        # なにも出力されない
 </dd>
 
 
-<dt class="method-heading" id="M_WARN"><code>warn(message) -&gt; nil</code><span class="permalink">[<a href="../method/-kernel/m/warn.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/Kernel.html#method-c-warn">rdoc</a>]</span></dt>
+<dt class="method-heading" id="M_WARN"><code>warn(*message) -&gt; nil</code><span class="permalink">[<a href="../method/-kernel/m/warn.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/Kernel.html#method-c-warn">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 message を 標準エラー出力 <a href="../method/-kernel/v/stderr.html">$stderr</a> に出力します。 <a href="../method/-kernel/v/-v-e-r-b-o-s-e.html">$VERBOSE</a>
@@ -4504,13 +4625,13 @@ to_s メソッドにより文字列に変換してから出力します。
 このメソッドは以下と同じです。
 </p>
 <pre>
-$stderr.print message, &quot;\n&quot; unless $VERBOSE.nil?
+$stderr.puts(*message) if !$VERBOSE.nil? &amp;&amp; !message.empty?
 nil
 </pre>
 <dl>
 <dt class='method-param'>[PARAM] message:</dt>
 <dd>
-出力するオブジェクトを指定します。
+出力するオブジェクトを任意個指定します。
 </dd>
 <dt>[EXCEPTION] IOError:</dt>
 <dd>
@@ -4983,6 +5104,9 @@ in-place 置換モードで用いられます。
 </p>
 <p>
 この変数はグローバルスコープです。
+</p>
+<p>
+[SEE_ALSO] <a href="../doc/spec=2frubycmd.html">Rubyの起動</a>
 </p>
 </dd>
 
@@ -5500,8 +5624,8 @@ end
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

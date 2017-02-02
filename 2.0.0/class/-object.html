@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>class Object (Ruby 2.0.0)</title>
 </head>
 <body>
@@ -85,6 +86,8 @@
 <a href="#I_CLONE">clone</a>
 
 <a href="#I_CLONE">dup</a>
+
+<a href="#I_DEFINE_SINGLETON_METHOD">define_singleton_method</a>
 
 <a href="#I_DISPLAY">display</a>
 
@@ -582,9 +585,7 @@ clone や dup は浅い(shallow)コピーであることに注意してくださ
 <dl>
 <dt>[EXCEPTION] TypeError:</dt>
 <dd>
-<a href="../class/-true-class.html">TrueClass</a>, <a href="../class/-false-class.html">FalseClass</a>, <a href="../class/-nil-class.html">NilClass</a>,
-<a href="../class/-symbol.html">Symbol</a>, そして <a href="../class/-numeric.html">Numeric</a> クラスのインスタンスなど一部の
-オブジェクトを複製しようとすると発生します。
+<a href="../class/-true-class.html">TrueClass</a>, <a href="../class/-false-class.html">FalseClass</a>, <a href="../class/-nil-class.html">NilClass</a>, <a href="../class/-symbol.html">Symbol</a>, そして <a href="../class/-numeric.html">Numeric</a> クラスのインスタンスなど一部のオブジェクトを複製しようとすると発生します。
 </dd>
 </dl>
 <pre>
@@ -653,6 +654,47 @@ p obj_m #=&gt; [&quot;aPLUS&quot;, &quot;bPLUS&quot;, &quot;c&quot;]
 </dd>
 
 
+<dt class="method-heading" id="I_DEFINE_SINGLETON_METHOD"><code>define_singleton_method(symbol, method) -&gt; Symbol</code><span class="permalink">[<a href="../method/-object/i/define_singleton_method.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/Object.html#method-i-define_singleton_method">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>define_singleton_method(symbol) { ... } -&gt; Symbol</code></dt>
+<dd class="method-description">
+<p>
+self に特異メソッド name を定義します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] symbol:</dt>
+<dd>
+メソッド名を <a href="../class/-string.html">String</a> または <a href="../class/-symbol.html">Symbol</a> で指定します。
+</dd>
+<dt class='method-param'>[PARAM] method:</dt>
+<dd>
+<a href="../class/-proc.html">Proc</a>、<a href="../class/-method.html">Method</a> あるいは <a href="../class/-unbound-method.html">UnboundMethod</a> の
+いずれかのインスタンスを指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+メソッド名を表す <a href="../class/-symbol.html">Symbol</a> を返します。
+</dd>
+</dl>
+<pre>
+class A
+  class &lt;&lt; self
+    def class_name
+      to_s
+    end
+  end
+end
+A.define_singleton_method(:who_am_i) do
+  &quot;I am: #{class_name}&quot;
+end
+A.who_am_i   # ==&gt; &quot;I am: A&quot;
+
+guy = &quot;Bob&quot;
+guy.define_singleton_method(:hello) { &quot;#{self}: Hello there!&quot; }
+guy.hello    #=&gt;  &quot;Bob: Hello there!&quot;
+</pre>
+</dd>
+
+
 <dt class="method-heading" id="I_DISPLAY"><code>display(out = $stdout) -&gt; nil</code><span class="permalink">[<a href="../method/-object/i/display.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/Object.html#method-i-display">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
@@ -664,7 +706,7 @@ p obj_m #=&gt; [&quot;aPLUS&quot;, &quot;bPLUS&quot;, &quot;c&quot;]
 <pre>
 class Object
   def display(out = $stdout)
-    out.print self.to_s
+    out.write self
     nil
   end
 end
@@ -1715,9 +1757,9 @@ class NotImplTemplateMethod
 end
 
 puts ImplTemplateMethod.new.respond_to?(:template_method) # =&gt; true
-# NotImplementedError が発生しているが、Rubyによる実装部のため true を返却
+# NotImplementedError が発生しているが、Rubyによる実装部のため true を返す
 puts NotImplTemplateMethod.new.respond_to?(:template_method) # =&gt; true
-# GNU/Linux で実行。C言語による実装部のため false を返却
+# GNU/Linux で実行。C言語による実装部のため false を返す
 puts File.respond_to?(:lchmod)         # =&gt; false
 </pre>
 <p>
@@ -2467,6 +2509,22 @@ private method も含めたい場合に true が渡されます
 </dd>
 
 
+<dt class="method-heading" id="C_-A-R-G-V"><code>ARGV -&gt; Array</code><span class="permalink">[<a href="../method/-object/c/-a-r-g-v.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/Object.html#method-c-ARGV">rdoc</a>]</span> <span class="kindinfo">[redefined by <a href="../library/optparse.html">optparse</a>]</span>
+</dt>
+<dd class="method-description">
+<p>
+Ruby スクリプトに与えられた引数を表す配列です。
+</p>
+<p>
+<a href="../library/optparse.html">optparse</a> を require することにより、ARGV は
+OptionParser::Arguable を <a href="../method/-object/i/extend.html">Object#extend</a> します。
+</p>
+<p>
+[SEE_ALSO] <a href="../class/-option-parser=3a=3a-arguable.html">OptionParser::Arguable</a>
+</p>
+</dd>
+
+
 <dt class="method-heading" id="C_-A-R-G-V"><code>ARGV -&gt; Array</code><span class="permalink">[<a href="../method/-object/c/-a-r-g-v.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/Object.html#method-c-ARGV">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
@@ -2497,22 +2555,6 @@ $ ruby argv.rb foo bar baz
 <pre>
 [&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;]
 </pre>
-</dd>
-
-
-<dt class="method-heading" id="C_-A-R-G-V"><code>ARGV -&gt; Array</code><span class="permalink">[<a href="../method/-object/c/-a-r-g-v.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/Object.html#method-c-ARGV">rdoc</a>]</span> <span class="kindinfo">[redefined by <a href="../library/optparse.html">optparse</a>]</span>
-</dt>
-<dd class="method-description">
-<p>
-Ruby スクリプトに与えられた引数を表す配列です。
-</p>
-<p>
-<a href="../library/optparse.html">optparse</a> を require することにより、ARGV は
-OptionParser::Arguable を <a href="../method/-object/i/extend.html">Object#extend</a> します。
-</p>
-<p>
-[SEE_ALSO] <a href="../class/-option-parser=3a=3a-arguable.html">OptionParser::Arguable</a>
-</p>
 </dd>
 
 
@@ -2741,22 +2783,6 @@ Ruby のバージョンを表す文字列。
 </p>
 <p>
 Ruby のバージョンは、major.minor.teeny という形式です。
-それぞれの番号は (今のところ) 2 桁以上にならないと約束されていますので、
-</p>
-<pre>
-if RUBY_VERSION &gt;= '1.6.7'
-  # バージョン 1.6.7 以降で有効な処理
-else
-  # それ以前のバージョンで有効な処理
-end
-</pre>
-<p>
-とバージョンの違いによる処理の分岐を書くことができます。
-</p>
-<p>
-Ruby 1.8 までは、minor が奇数のバージョンは開発版、
-minor が偶数のバージョンは安定版です。
-Ruby 1.9.0 以降は、teeny が 0 のバージョンが開発版となる予定です。
 </p>
 </dd>
 
@@ -2909,8 +2935,8 @@ Ruby では false と nil が偽として扱われます。
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

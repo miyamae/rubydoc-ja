@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class WIN32OLE (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/win32ole.html">win32oleライブラリ</a>
+&gt; WIN32OLEクラス
+</p>
+
+
+<h1>class WIN32OLE</h1>
+<p>
+
+
+クラスの継承リスト: WIN32OLE
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+OLEオートメーションサーバをRubyで操作するためのクラスです。
+</p>
+<p>
+Windowsの多くのアプリケーションやライブラリは、COMと呼ばれるAPI群を利用
+して他のプログラムから操作できます。WIN32OLEがサポートしているのは、
+COMのAPIのうち、特にインタープリタ用のインターフェイスであるOLEオートメー
+ション（IDispatchインターフェイス）とそれに付随するリフレクション用のイ
+ンターフェイスです。
+</p>
+<p>
+これらのインターフェイスをサポートしている代表的なWindowsアプリケーショ
+ンに、Office、IE、iTunes、Illustratorがあります。また、WMI、WshShellな
+どのライブラリを利用してWindowsの情報を操作することも可能です。これらの
+プログラムをOLEオートメーションサーバと呼びます。
+</p>
+<p>
+WIN32OLEオブジェクトは、OLEオートメーションサーバが提供するメソッドやプ
+ロパティ（Rubyの属性に対応）をスクリプトから呼び出す手段を提供します。
+呼び出しには、Rubyのオブジェクトと同様にオブジェクトに続けて「.」とメソッ
+ド名、必要であれば引数のリストを記述します。最後の引数にHashを指定した
+場合は、名前付き引数としてキーにパラメータ名、値に引数を指定できます。
+</p>
+<h2 >サンプルコード</h2>
+<pre>
+require 'win32ole'
+
+excel = WIN32OLE.new('Excel.Application')
+workbook = excel.Workbooks.Open('workbook.xls')
+workbook.PrintOut
+workbook.Close(:SaveChanges =&gt; false)
+excel.Quit
+</pre>
+<p>
+なお、OLEオートメーションの仕様ではメソッド名は大文字と小文字を区別しま
+せん。そのため、以下のようにOLEオートメーションサーバのメソッド名は小文
+字で記述しても構いません。
+</p>
+<pre>
+require 'win32ole'
+
+excel = WIN32OLE.new('Excel.Application')
+workbook = excel.workbooks.open('workbook.xls')
+workbook.printout
+workbook.close(:SaveChanges =&gt; false)
+excel.quit
+</pre>
+<h2 >マルチスレッドでの利用制限</h2>
+<p>
+注）以下の記述はWIN32OLEの将来のバージョンの仕様を規定するものではあり
+ません。
+</p>
+<p>
+WIN32OLEはシングルスレッドモードでCOMとインターフェイスします。このため、
+ruby 1.9以降のRubyのThreadとネイティブスレッドが1対1で対応する実行環境
+ではスレッドをまたがる呼び出しはエラーとなります。
+</p>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+Thread.start do
+  workbook = excel.Workbooks.Open('workbook.xls') #=&gt; HRESULT error code:0x800401f0
+  workbook.PrintOut
+  workbook.Close(:SaveChanges =&gt; false)
+end.join
+excel.Quit
+</pre>
+<p>
+発生するエラーはThreadの実行方法によって
+0x800401f0（CO_E_NOTINITIALIZED）または0x8001010e（RPC_E_WRONG_THREAD）
+です。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_CODEPAGE">codepage</a>
+
+<a href="#S_CODEPAGE--3D">codepage=</a>
+
+<a href="#S_CONNECT">connect</a>
+
+<a href="#S_CONST_LOAD">const_load</a>
+
+<a href="#S_CREATE_GUID">create_guid</a>
+
+<a href="#S_LOCALE">locale</a>
+
+<a href="#S_LOCALE--3D">locale=</a>
+
+<a href="#S_NEW">new</a>
+
+<a href="#S_OLE_FREE">ole_free</a>
+
+<a href="#S_OLE_REFERENCE_COUNT">ole_reference_count</a>
+
+<a href="#S_OLE_SHOW_HELP">ole_show_help</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--5B--5D">[]</a>
+
+<a href="#I_--5B--5D--3D">[]=</a>
+
+<a href="#I__GETPROPERTY">_getproperty</a>
+
+<a href="#I__INVOKE">_invoke</a>
+
+<a href="#I__SETPROPERTY">_setproperty</a>
+
+<a href="#I_EACH">each</a>
+
+<a href="#I_INVOKE">invoke</a>
+
+<a href="#I_METHOD_MISSING">method_missing</a>
+
+<a href="#I_OLE_ACTIVEX_INITIALIZE">ole_activex_initialize</a>
+
+<a href="#I_OLE_FREE">ole_free</a>
+
+<a href="#I_OLE_FUNC_METHODS">ole_func_methods</a>
+
+<a href="#I_OLE_GET_METHODS">ole_get_methods</a>
+
+<a href="#I_OLE_METHOD">ole_method</a>
+
+<a href="#I_OLE_METHOD">ole_method_help</a>
+
+<a href="#I_OLE_METHODS">ole_methods</a>
+
+<a href="#I_OLE_OBJ_HELP">ole_obj_help</a>
+
+<a href="#I_OLE_OBJ_HELP">ole_type</a>
+
+<a href="#I_OLE_PUT_METHODS">ole_put_methods</a>
+
+<a href="#I_OLE_QUERY_INTERFACE">ole_query_interface</a>
+
+<a href="#I_OLE_RESPOND_TO--3F">ole_respond_to?</a>
+
+<a href="#I_OLE_TYPELIB">ole_typelib</a>
+
+<a href="#I_SETPROPERTY">setproperty</a>
+
+</dd>
+
+<dt>定数</dt>
+<dd>
+
+<a href="#C_-A-R-G-V">ARGV</a>
+
+<a href="#C_-C-P_-A-C-P">CP_ACP</a>
+
+<a href="#C_-C-P_-M-A-C-C-P">CP_MACCP</a>
+
+<a href="#C_-C-P_-O-E-M-C-P">CP_OEMCP</a>
+
+<a href="#C_-C-P_-S-Y-M-B-O-L">CP_SYMBOL</a>
+
+<a href="#C_-C-P_-T-H-R-E-A-D_-A-C-P">CP_THREAD_ACP</a>
+
+<a href="#C_-C-P_-U-T-F7">CP_UTF7</a>
+
+<a href="#C_-C-P_-U-T-F8">CP_UTF8</a>
+
+<a href="#C_-L-O-C-A-L-E_-S-Y-S-T-E-M_-D-E-F-A-U-L-T">LOCALE_SYSTEM_DEFAULT</a>
+
+<a href="#C_-L-O-C-A-L-E_-U-S-E-R_-D-E-F-A-U-L-T">LOCALE_USER_DEFAULT</a>
+
+<a href="#C_-V-E-R-S-I-O-N">VERSION</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_CODEPAGE"><code>codepage -&gt; Fixnum</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/s/codepage.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-codepage">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+WIN32OLEがOLEオートメーションのインターフェイスに利用するコードページを
+取得します。
+</p>
+<p>
+OLEオートメーションに利用する文字列はUnicodeでエンコードします。
+WIN32OLEはここで示されたコードページを利用してRubyのStringとUnicodeの相
+互変換を行います。
+</p>
+<p>
+ロード時の既定値はEncoding.default_internal、または
+Encoding.default_internalがnilの場合はEncoding.default_externalによって
+求めたエンコーディングに対応するコードページです。もし、該当するコード
+ページが見つからない場合は、<a href="../method/-w-i-n32-o-l-e/c/-c-p_-a-c-p.html">WIN32OLE::CP_ACP</a>を利用します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+WIN32OLEがオートメーション呼び出しの文字列変換に利用するコード
+ページを返します。
+</dd>
+</dl>
+<pre>
+WIN32OLE.codepage   # =&gt; 932 （日本語Windowsの既定値）
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_CODEPAGE--3D"><code>codepage=(cp) -&gt; nil</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/s/codepage=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-codepage-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+WIN32OLEがOLEオートメーションのインターフェイスに利用するコードページを
+設定します。
+</p>
+<p>
+WIN32OLEは、OLEオートメーション呼び出しに利用する文字列のUnicode変換に
+ここで設定したコードページを利用します。通常、WIN32OLEはロード時の
+Encoding.default_internalまたはEncoding.default_externalから適切なコー
+ドページを判断し、それを利用します。したがって、当メソッドを呼び出す必
+要があるのは、WIN32OLEをrequireしたスクリプトと異なるエンコーディングを
+利用しているスクリプトや、異なるエンコーディングを利用しているファイル
+から読み込んだ文字列を利用してWIN32OLEを呼び出す場合です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] cp:</dt>
+<dd>
+コードページを指定します。
+</dd>
+</dl>
+<pre>
+WIN32OLE.codepage = WIN32OLE::CP_UTF8
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_CONNECT"><code>connect(ole) -&gt; WIN32OLE</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/s/connect.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-connect">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在実行中のOLEオートメーションサーバに接続します。
+</p>
+<p>
+connectメソッドは、COMのモニカを利用して、現在実行中のOLEオートメーショ
+ンサーバを検索し、接続します。接続に成功した場合、該当サーバを操作可能
+なWIN32OLEオブジェクトが返ります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] ole:</dt>
+<dd>
+接続対象のサーバを示すPROGID、CLSIDまたはモニカ（別名）を指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+ole引数で特定されるWIN32OLEオブジェクトを返します。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+オートメーションサーバの呼び出しに失敗しました。
+理由はメッセージのHRESULTを調べてください。
+</dd>
+</dl>
+<pre>
+WIN32OLE.connect('Excel.Application') # =&gt; WIN32OLE object which represents running Excel.
+</pre>
+<dl>
+<dt>PROGID</dt>
+<dd>
+<p>
+OLEオートメーションサーバを識別するための文字列。通常「ベンダー名.ア
+プリケーション名.インターフェイス名」の形式を取ります。レジストリの
+HKEY_CLASSES_ROOTの「.」で始まらないキーとして登録されます。
+</p>
+</dd>
+<dt>CLSID</dt>
+<dd>
+<p>
+OLEオートメーションサーバを含むCOMのクラスを識別するための128ビット
+GUID。文字列表現は、レジストリのHKEY_CLASSES_ROOT\CLSID下のキーとして登
+録されます。
+</p>
+</dd>
+<dt>モニカ</dt>
+<dd>
+<p>
+モニカは、URIのようにWindows上のリソースを一意に識別するためのオブジェ
+クトのインターフェイスで、文字表現を持ちます。詳細については
+<a class="external" href="http://msdn.microsoft.com/en-us/library/ms691261(v=VS.85).aspx">http://msdn.microsoft.com/en-us/library/ms691261(v=VS.85).aspx</a>
+を参照してください。
+</p>
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_CONST_LOAD"><code>const_load(ole, mod = WIN32OLE) -&gt; ()</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/s/const_load.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-const_load">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+OLEオートメーションサーバが保持する定数を読み込み、指定されたモジュール
+に組み込みます。
+</p>
+<p>
+OLEオートメーションサーバは、定数をクライアントへ提供できます。
+</p>
+<p>
+const_loadメソッドはこれらの定数を読み込み、指定したモジュールに組み込
+むことで参照可能とします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] ole:</dt>
+<dd>
+定数を読み込む対象のWIN32OLEオブジェクトまたはタイプライブラ
+リ名（文字列）を指定します。
+</dd>
+<dt class='method-param'>[PARAM] mod:</dt>
+<dd>
+定数を定義する対象のモジュールを指定します。省略時は
+WIN32OLEに組み込まれます。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+オートメーションサーバの呼び出しに失敗しました。
+理由はメッセージのHRESULTを調べてください。
+</dd>
+</dl>
+<p>
+OLEオートメーションの定数は通常、VBのコード規約に準じて、vbConstantsの
+ように小文字で始まります。しかし、Rubyの定数は大文字で開始する規則のた
+め、WIN32OLEによってVbConstantsのように自動的に先頭が大文字化されます。
+</p>
+<p>
+また、先頭が英字で始まらない定数については、CONSTANTSハッシュに登録され
+ます。この場合、元の定数名がキーとなります。
+</p>
+<pre>
+module EXCEL_CONST
+end
+
+excel = WIN32OLE.new('Excel.Application')
+WIN32OLE.const_load(excel, EXCEL_CONST)
+puts EXCEL_CONST::XlTop # =&gt; -4160
+puts EXCEL_CONST::CONSTANTS['_xlDialogChartSourceData'] # =&gt; 541
+</pre>
+<p>
+モジュール名を省略した例
+</p>
+<pre>
+WIN32OLE.const_load(excel)
+puts WIN32OLE::XlTop # =&gt; -4160
+</pre>
+<p>
+タイプライブラリ名を指定した例
+</p>
+<pre>
+module MSO
+end
+
+WIN32OLE.const_load('Microsoft Office 9.0 Object Library', MSO)
+puts MSO::MsoLineSingle # =&gt; 1
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_CREATE_GUID"><code>create_guid -&gt; String</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/s/create_guid.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-create_guid">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+GUID(グローバル一意識別子：Global Unique Identifier)を生成します。
+</p>
+<p>
+GUIDは、COMのクラス識別子(CLSID)、インターフェイス識別子(IID)など多数の
+領域でWindows上のオブジェクトの識別に利用される128ビットの値です。
+</p>
+<p>
+WIN32OLEが生成するGUIDは以下の形式によるGUIDの文字列表現です。なお00〜
+FFはGUIDの先頭からのバイト位置を示します。これはレジストリのキーとして
+利用される形式です。
+</p>
+<pre>
+{33221100-5544-7766-8899-AABBCCDDEEFF}
+</pre>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+GUIDの文字列表現を返します。
+</dd>
+</dl>
+<pre>
+WIN32OLE.create_guid   # =&gt; &quot;{????????-????-????-????-????????????}&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_LOCALE"><code>locale -&gt; Fixnum</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/s/locale.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-locale">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+WIN32OLEがオートメーション呼び出し時に設定するロケール識別子(LCID)を取
+得します。
+</p>
+<p>
+OLEオートメーションでは、UNIXで利用される&quot;ja_JP&quot;などの国名と言語名を「_」
+で接続した文字列ではなく、32ビット整数で示します。32ビットの内訳は上位
+16ビットが予約領域で0、下位16ビットが言語ID(LANGID）です。LANGIDは、0〜
+9ビットでプライマリ言語ID、10〜15ビットでサブ言語IDを示します。
+</p>
+<p>
+ロード時の既定値は<a href="../method/-w-i-n32-o-l-e/c/-l-o-c-a-l-e_-s-y-s-t-e-m_-d-e-f-a-u-l-t.html">WIN32OLE::LOCALE_SYSTEM_DEFAULT</a>です。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+WIN32OLEがオートメーション呼び出し時に設定するロケール識別子
+(LCID)を返します。
+</dd>
+</dl>
+<pre>
+lcid = WIN32OLE.locale
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_LOCALE--3D"><code>locale=(lcid) -&gt; nil</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/s/locale=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-locale-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+WIN32OLEがオートメーション呼び出し時に設定するロケール識別子(LCID)を設
+定します。
+</p>
+<p>
+OLEオートメーションでは、UNIXで利用される&quot;ja_JP&quot;などの国名と言語名を「_」
+で接続した文字列ではなく、32ビット整数で示します。32ビットの内訳は上位
+16ビットが予約領域で0、下位16ビットが言語ID(LANGID）です。LANGIDは、0〜
+9ビットでプライマリ言語ID、10〜15ビットでサブ言語IDを示します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] lcid:</dt>
+<dd>
+新たに設定するロケール識別子を整数で指定します。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+システムにインストールされていないロケール
+を指定すると発生します。
+</dd>
+</dl>
+<pre>
+WIN32OLE.locale = 1033 # set locale English(U.S)
+obj = WIN32OLE_VARIANT.new(&quot;$100,000&quot;, WIN32OLE::VARIANT::VT_CY)
+</pre>
+<p>
+オブジェクトがサポートしていないロケールを設定した場合、オブジェクトのメソッド呼び出し時にDISP_E_UNKNOWNLCID(HRESULT error code:0x8002000C)や、TYPE_E_INVDATAREAD(HRESULT error code:0x80028018)などを理由としたWIN32OLERuntimeError例外となります。ほとんどすべての場合において、既定値を変更する必要はありません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_NEW"><code>new(server, host=nil) -&gt; WIN32OLE</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+OLEオートメーションサーバを生成します。
+</p>
+<p>
+引数で指定したCLSIDまたはPROGIDを持つOLEオートメーションサーバを生成し
+ます。生成に成功した場合、該当サーバを操作可能なWIN32OLEオブジェクトが
+返ります。
+</p>
+<p>
+CLSIDおよびPROGIDについては<a href="../method/-w-i-n32-o-l-e/s/connect.html">WIN32OLE.connect</a>を参照してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] server:</dt>
+<dd>
+OLEオートメーションサーバを示すPROGIDまたはCLSIDを文字列
+で指定します。
+</dd>
+<dt class='method-param'>[PARAM] host:</dt>
+<dd>
+サーバを生成するホストのホスト名またはIPアドレスを文字列で
+指定します。省略時は現在スクリプトを実行中のホストで生成し
+ます。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+hostで指定したホスト上のserver引数で指定したWIN32OLEオブジェク
+トを返します。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+オートメーションサーバの呼び出しに失敗しました。
+理由はメッセージのHRESULTを調べてください。
+</dd>
+</dl>
+<pre>
+WIN32OLE.new('Excel.Application') # =&gt; Excel OLE Automation WIN32OLE object.
+
+WIN32OLE.new('{00024500-0000-0000-C000-000000000046}') # =&gt; Excel OLE Automation WIN32OLE object.
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_OLE_FREE"><code>ole_free(aWIN32OLE) -&gt; Integer</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/s/ole_free.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-ole_free">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数で指定したオブジェクトを解放します。
+</p>
+<p>
+このメソッドは主にWIN32OLEのデバッグおよびWIN32OLEを利用するミドルウェ
+アの実装のために用意されています。このため、メソッドの内部動作は不定で
+す。COMの仕様とWIN32OLEの内部処理に熟知していない場合は使用しないでくだ
+さい。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] aWIN32OLE:</dt>
+<dd>
+解放するWIN32OLEオブジェクト。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+Releaseの戻り値。COMの仕様上は現在のオブジェクトの参照カウント
+値を示します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_OLE_REFERENCE_COUNT"><code>ole_reference_count(aWIN32OLE) -&gt; Integer</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/s/ole_reference_count.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-ole_reference_count">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数で指定したオブジェクトの現在の参照カウント値を返します。
+</p>
+<p>
+このメソッドは主にWIN32OLEのデバッグおよびWIN32OLEを利用するミドルウェ
+アの実装のために用意されています。このため、メソッドの内部動作は不定で
+す。COMの仕様とWIN32OLEの内部処理に熟知していない場合は使用しないでくだ
+さい。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] aWIN32OLE:</dt>
+<dd>
+参照カウント値を求めるWIN32OLEオブジェクト。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+AddRef呼び出し後のReleaseの戻り値。COMの仕様上は現在のオブジェ
+クトの参照カウント値を示します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_OLE_SHOW_HELP"><code>ole_show_help(obj, helpcontext = nil) -&gt; ()</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/s/ole_show_help.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-ole_show_help">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+WIN32OLEオブジェクトのヘルプファイルを表示します。
+</p>
+<p>
+Windows標準のヘルプ表示コンポーネントのHHCtrl.OCXを利用して、オブジェク
+トに関連付けられたヘルプファイル（chmファイル）を表示します。
+</p>
+<p>
+また、chmファイルのフルパス名を指定して表示させることも可能です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+<a href="../class/-w-i-n32-o-l-e_-t-y-p-e.html">WIN32OLE_TYPE</a>オブジェクトまたは<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>オ
+ブジェクト。直接ヘルプファイルのフルパス名を指定することも可
+能です。
+</dd>
+<dt class='method-param'>[PARAM] helpcontext:</dt>
+<dd>
+obj引数に<a href="../class/-w-i-n32-o-l-e_-t-y-p-e.html">WIN32OLE_TYPE</a>オブジェクトまたは
+<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>オブジェクトを指定した場合は、こ
+れらのオブジェクトの設定値を利用するため指定不要です。
+obj引数にヘルプファイルのフルパス名を設定した場合は
+0を指定してください。
+</dd>
+<dt>[EXCEPTION] RuntimeError:</dt>
+<dd>
+オブジェクトが関連するヘルプファイルを持たない場合
+(no helpfile of `オブジェクト名') や、ヘルプファイル
+がインストールされていない場合 (failed to open
+help file `ファイル名') に通知します。
+</dd>
+</dl>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+typeobj = excel.ole_obj_help
+WIN32OLE.ole_show_help(typeobj) if typeobj.helpfile
+</pre>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--5B--5D"><code>self[key...] -&gt; object</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+オブジェクトのデフォルトプロパティを参照します。
+</p>
+<p>
+OLEオートメーションにはデフォルトプロパティというプロパティ名を指定せず
+にアクセスできるプロパティがあります。
+</p>
+<p>
+WIN32OLEからデフォルトプロパティにアクセスするには、[]内に必要なキーを
+「,」で区切って記述します。シンボルは文字列として扱います。
+</p>
+<p>
+なおデフォルトプロパティは記述が省略できるプロパティ名に意味がないため、
+OLEオートメーション規約ではItemと命名することが決められています。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+プロパティでアクセスする情報を特定するキーを指定します。プロ
+パティの特定に複数のキーが必要な場合は「,」で区切って列記します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+プロパティ値を返します。
+</dd>
+</dl>
+<pre>
+fsys = WIN32OLE.new('Scripting.FileSystemObject')
+fsys.Drives[:c].FreeSpace #=&gt; Cドライブの空き容量
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--5B--5D--3D"><code>self[key...] = value</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/=5b=5d=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-5B-5D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+オブジェクトのデフォルトプロパティを設定します。
+</p>
+<p>
+OLEオートメーションにはデフォルトプロパティというプロパティ名を指定せず
+にアクセスできるプロパティがあります。
+</p>
+<p>
+WIN32OLEからデフォルトプロパティにアクセスするには、[]内に必要なキーを
+記述します。
+</p>
+<p>
+なおデフォルトプロパティは記述が省略できるプロパティ名には意味がありま
+せん。このためOLEオートメーション規約では一律にItemと命名することが決め
+られています。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+プロパティでアクセスする情報を特定するキーを指定します。プロ
+パティの特定に複数のキーが必要な場合は「,」で区切って列記し
+ます。
+</dd>
+<dt class='method-param'>[PARAM] value:</dt>
+<dd>
+プロパティに設定する値を指定します。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+オートメーションサーバの呼び出しに失敗しました。
+理由はメッセージのHRESULTを調べてください。
+</dd>
+</dl>
+<pre>
+dict = WIN32OLE.new('Scripting.Dictionary')
+dict[:a] = 0x41
+dict[:b] = 0x42
+dict[:a] #=&gt; 65
+dict[:b] #=&gt; 66
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I__GETPROPERTY"><code>_getproperty(dispid, args, types) -&gt; object</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/_getproperty.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-_getproperty">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+DISPIDとパラメータの型を指定してオブジェクトのプロパティを参照します。
+</p>
+<p>
+アクセスするプロパティのインターフェイスを事前に知っている場合に、
+DISPIDとパラメータの型を指定してプロパティを参照します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] dispid:</dt>
+<dd>
+プロパティのDISPID（メソッドを一意に特定する数値）を指定
+します。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+プロパティが引数を取る場合に配列で指定します。引数の順序は
+最左端の引数のインデックスを0とします。引数が不要な場合は空
+配列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] types:</dt>
+<dd>
+プロパティが引数を取る場合に配列で引数の型を指定します。引
+数の順序は最左端の引数のインデックスを0とします。型の指定
+には、<a href="../class/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t.html">WIN32OLE::VARIANT</a>の定数を利用します。引数が不
+要な場合は空配列を指定します。
+</dd>
+</dl>
+<p>
+このメソッドはCOMアーリーバインディングを利用することで外部プロセスサー
+バとのラウンドトリップを減らして処理速度を向上させることを目的としたも
+のです。このため、DLLの形式で型情報（TypeLib）を提供しているサーバに対
+してはあまり意味を持ちません。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+プロパティ値を返します。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+オートメーションサーバの呼び出しに失敗しました。
+理由はメッセージのHRESULTを調べてください。
+</dd>
+</dl>
+<pre>
+DISPID_CELLS = 238
+include WIN32OLE::VARIANT
+excel = WIN32OLE.new('Excel.Application')
+puts excel._getproperty(558, [], []) # VisibleプロパティのDISPIDは558
+workbook = excel.Workbooks.Add
+sheet = workbook.Worksheets[1]
+sheet._setproperty(DISPID_CELLS, [1, 2, 'hello'], [VT_I2, VT_I2, VT_BSTR])
+puts sheet._getproperty(DISPID_CELLS, [1, 2], [VT_I2, VT_I2]).value  #=&gt; 'hello'
+workbook.Close(:SaveChanges =&gt; false)
+excel.Quit
+</pre>
+<p>
+DISPIDは<a href="../method/-w-i-n32-o-l-e_-m-e-t-h-o-d/i/dispid.html">WIN32OLE_METHOD#dispid</a>から取得できます。
+</p>
+<p>
+[SEE_ALSO] <a href="../class/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t.html">WIN32OLE::VARIANT</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I__INVOKE"><code>_invoke(dispid, args, types) -&gt; object | nil</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/_invoke.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-_invoke">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+DISPIDとパラメータの型を指定してオブジェクトのメソッドを呼び出します。
+</p>
+<p>
+呼び出すメソッドのインターフェイスを事前に知っている場合に、DISPIDとパ
+ラメータの型を指定してメソッドを呼び出します。
+</p>
+<p>
+このメソッドは引数の変換方法をプログラマが制御できるようにすることと、
+COMアーリーバインディングを利用して外部プロセスサーバとのラウンドトリッ
+プを減らして処理速度を向上させることを目的としたものです。後者の目的に
+ついては、DLLの形式で型情報（TypeLib）を提供しているサーバに対してはあ
+まり意味を持ちません。そのため、型の高精度な制御が不要な場合は、直接メ
+ソッド名を指定したメソッド呼び出しを行うことを、プログラムの可読性の点
+から推奨します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] dispid:</dt>
+<dd>
+メソッドのDISPID（メソッドを一意に特定する数値）を指定し
+ます。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+メソッドの引数を配列で指定します。引数の順序は最左端の引数
+のインデックスを0とします。引数が不要な場合は空配列を指定し
+ます。
+</dd>
+<dt class='method-param'>[PARAM] types:</dt>
+<dd>
+メソッドの引数の型を配列で指定します。引数の順序は最左端の
+引数のインデックスを0とします。型の指定には、
+<a href="../class/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t.html">WIN32OLE::VARIANT</a>の定数を利用します。引数が不要な場
+合は空配列を指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+メソッドの返り値。ただし返り値を持たないメソッドの場合はnil。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+オートメーションサーバの呼び出しに失敗しました。
+理由はメッセージのHRESULTを調べてください。
+</dd>
+</dl>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+excel._invoke(302, [], []) #  DISPID 302は、Quitメソッド
+</pre>
+<p>
+MFCの制約により、バイト配列の型情報は通常
+<a href="../method/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t/c/-v-t_-v-a-r-i-a-n-t.html">WIN32OLE::VARIANT::VT_VARIANT</a>となります。このような場合に、バイト
+配列を与えるつもりで
+</p>
+<pre>
+include WIN32OLE::VARIANT
+obj.method(DISPID, [[0, 1, 2, 3]], [VT_VARIANT])
+</pre>
+<p>
+のように記述すると、単に32ビット整数（VT_I4）の配列が送られることになり
+空間効率が低下します。
+</p>
+<p>
+引数の最終的な型がわかっている場合は、下記の例のように型指定パラメータ
+には実際の型を指定してください。
+</p>
+<pre>
+include WIN32OLE::VARIANT
+obj.method(DISPID, [[0, 1, 2, 3]], [VT_BYREF | VT_ARRAY | VT_UI1])
+</pre>
+<p>
+なお、VB6で作成したCOMコンポーネントのパラメータに配列を与える場合は、
+<a href="../method/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t/c/-v-t_-b-y-r-e-f.html">WIN32OLE::VARIANT::VT_BYREF</a>の指定が必須です。
+</p>
+<p>
+DISPIDは<a href="../method/-w-i-n32-o-l-e_-m-e-t-h-o-d/i/dispid.html">WIN32OLE_METHOD#dispid</a>から取得できます。
+</p>
+<p>
+[SEE_ALSO] <a href="../class/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t.html">WIN32OLE::VARIANT</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I__SETPROPERTY"><code>_setproperty(dispid, args, types) -&gt; ()</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/_setproperty.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-_setproperty">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+DISPIDとパラメータの型を指定してオブジェクトのプロパティを設定します。
+</p>
+<p>
+アクセスするプロパティのインターフェイスを事前に知っている場合に、
+DISPIDとパラメータの型を指定してプロパティを設定します。
+</p>
+<p>
+このメソッドはCOMアーリーバインディングを利用することで外部プロセスサー
+バとのラウンドトリップを減らして処理速度を向上させることを目的としたも
+のです。このため、DLLの形式で型情報（TypeLib）を提供しているサーバに対
+してはあまり意味を持ちません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] dispid:</dt>
+<dd>
+プロパティのDISPID（メソッドを一意に特定する数値）を指定
+します。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+引数を配列で指定します。引数の順序は最左端の引数のインデッ
+クスを0とします。プロパティに対する設定値は最右端の要素です。
+</dd>
+<dt class='method-param'>[PARAM] types:</dt>
+<dd>
+プロパティの引数の型を配列で指定します。引数の順序は最左端
+の引数のインデックスを0とします。型の指定には、
+<a href="../class/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t.html">WIN32OLE::VARIANT</a>の定数を利用します。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+オートメーションサーバの呼び出しに失敗しました。
+理由はメッセージのHRESULTを調べてください。
+</dd>
+</dl>
+<pre>
+DISPID_CELLS = 238
+include WIN32OLE::VARIANT
+excel = WIN32OLE.new('Excel.Application')
+puts excel._setproperty(558,      # VisibleプロパティのDISPIDは558
+                       [true], [VT_BOOL])
+workbook = excel.Workbooks.Add
+sheet = workbook.Worksheets[1]
+sheet._setproperty(DISPID_CELLS, [1, 2, 'hello'], [VT_I2, VT_I2, VT_BSTR])
+puts sheet._getproperty(DISPID_CELLS, [1, 2], [VT_I2, VT_I2]).value  #=&gt; 'hello'
+workbook.Close(:SaveChanges =&gt; false)
+excel.Quit
+</pre>
+<p>
+DISPIDは<a href="../method/-w-i-n32-o-l-e_-m-e-t-h-o-d/i/dispid.html">WIN32OLE_METHOD#dispid</a>から取得できます。
+</p>
+<p>
+[SEE_ALSO] <a href="../class/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t.html">WIN32OLE::VARIANT</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH"><code>each {|i|...} -&gt; ()</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/each.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-each">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+オブジェクトの列挙インターフェイスを呼び出してアイテム単位にブロックを
+実行します。
+</p>
+<p>
+OLEオートメーションサーバの中には、コレクション用インターフェイスを持つ
+ものがあります。eachメソッドは、このようなオブジェクトの列挙メソッドを
+呼び出して、アイテム毎のイテレーションを行います。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] i:</dt>
+<dd>
+コレクション内のアイテム
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+selfが列挙インターフェイスをサポートしてい
+ない場合に通知します。
+</dd>
+</dl>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+book = excel.workbooks.add
+sheets = book.worksheets(1)
+cells = sheets.cells(&quot;A1:A5&quot;)
+cells.each do |cell|
+  cell.value = 10
+end
+excel.Quit
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_INVOKE"><code>invoke(name, *args) -&gt; object | nil</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/invoke.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-invoke">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+メソッド名を指定してオブジェクトのメソッドを呼び出します。
+</p>
+<p>
+OLEオートメーションサーバのメソッドを動的に呼び出したい場合に利用します。
+</p>
+<p>
+なお、OLEオートメーションの仕様により、メソッド名の大文字、小文字は区別
+されません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+メソッド名を文字列またはシンボルで指定します。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+メソッドの引数を指定します。また、最後の引数に<a href="../class/-hash.html">Hash</a>を
+与えることで、名前付き引数を指定できます。この場合、キーに
+文字列またはシンボルでパラメータ名、値に引数を指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+メソッドの返り値。ただし返り値を持たないメソッドの場合はnil。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+オートメーションサーバの呼び出しに失敗しました。
+理由はメッセージのHRESULTを調べてください。
+excel = WIN32OLE.new('Excel.Application')
+workbook = excel.workbooks.invoke(:Open, :FileName =&gt; 'c:\\users\\public\\test.xml',
+:ReadOnly =&gt; true,
+:Password =&gt; 'secret')
+excel.invoke(:Quit)
+</dd>
+</dl>
+<p>
+このリストは、以下の記述と同等です。
+</p>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+workbook = excel.workbooks.Open(:FileName =&gt; 'c:\\users\\public\\test.xml',
+                                :ReadOnly =&gt; true,
+                                :Password =&gt; 'secret')
+excel.Quit
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_METHOD_MISSING"><code>method_missing(id, *args) -&gt; object | nil</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/method_missing.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-method_missing">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-w-i-n32-o-l-e/i/invoke.html">WIN32OLE#invoke</a>メソッドを実行します。
+</p>
+<p>
+WIN32OLEのインスタンスに対して、このリファレンスに明記されていないメソッ
+ドを呼び出した場合、OLEオートメーションサーバのメソッド（プロパティ）呼
+び出しと解釈します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] id:</dt>
+<dd>
+メソッド名をシンボルで指定します。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+メソッドの引数を指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+メソッドの返り値。ただし返り値を持たないメソッドの場合はnil。
+</dd>
+<dt>[EXCEPTION] RuntimeError:</dt>
+<dd>
+idが有効なシンボルではありません。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+オートメーションサーバの呼び出しに失敗しました。
+理由はメッセージのHRESULTを調べてください。
+</dd>
+</dl>
+<p>
+WIN32OLEはOLEオートメーションオブジェクトのメソッド呼び出しを
+method_missingを利用して実行します。このためWIN32OLEを継承するクラスを
+作成してmethod_missingをオーバーライドする場合、superを呼び出してくださ
+い。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-w-i-n32-o-l-e/i/invoke.html">WIN32OLE#invoke</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OLE_ACTIVEX_INITIALIZE"><code>ole_activex_initialize -&gt; nil</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/ole_activex_initialize.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-ole_activex_initialize">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ActiveXコントロール用の初期化を行います。
+</p>
+<p>
+ole_activex_initializeメソッドは、スクリプト内でActiveXコントロールを利
+用できるように、オブジェクトが持つ永続化データを初期化します。
+</p>
+<p>
+ActiveXコントロール（OCX）は、主にUI用に利用されるOLEオートメーションサー
+バです。ActiveXコントロールは、IDEを利用した開発時と、プログラムの実行
+時の2種類の実行モードを持ちます。これは、開発時の設定を永続化するためで
+す。
+</p>
+<p>
+幾つかのActiveXコントロールは、上記の動作を前提に組まれているため、実行
+に先だって永続化データの転送をデータの有無と関係なく要求します。この場
+合、もし永続化データを初期化しないと、実行時モード状態へ遷移せず、後続
+のメソッド呼び出しがすべてエラーとなります。
+</p>
+<dl>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+オブジェクトがActiveXコントロールの永続化イ
+ンターフェイスを持たない場合に通知します。
+</dd>
+</dl>
+<pre>
+obj = WIN32OLE.new(&quot;ProgID_or_GUID_of_ActiveX_Control&quot;)
+obj.ole_activex_initialize
+obj.method(...)
+</pre>
+<p>
+なお、生成したOLEオートメーションサーバが永続化データの初期化を必要とす
+るActiveXコントロールか、そうでないかを簡単に区別する方法はありません。
+そのため、とりあえず普通にメソッドを呼び出し、その結果
+WIN32OLERuntimeErrorが通知され、メッセージにHRESULT 0x8000ffffと示され
+ている場合にのみ、オブジェクト生成直後に当メソッドを呼び出してみてくだ
+さい。
+</p>
+<p>
+また、オブジェクトによっては、当メソッドの呼び出しにより後続のデータを
+要求してハングアップする場合があります。その場合は、Ctrl-Cなどによって
+実行を中止してください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OLE_FREE"><code>ole_free -&gt; ()</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/ole_free.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-ole_free">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+selfが参照するCOMオブジェクトを解放します。
+</p>
+<p>
+selfが参照するCOMオブジェクトのIUnknown::Releaseを呼び出すことで、COMオ
+ブジェクトを開放します。ole_freeを呼び出した後は、このオブジェクトに対
+する操作は行えません。
+</p>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+excel.ole_free  # オブジェクトの解放
+excel.Quit      #=&gt; RuntimeError (failed to get Dispatch Interface)
+</pre>
+<p>
+通常は利用されなくなったWIN32OLEオブジェクトはGCのタイミングで自動的に
+解放されるため、当メソッドを呼び出す必要はありません。Officeのような外
+部プロセスサーバ呼び出し時に、スクリプト終了後もサーバが解放されない場
+合に強制的にサーバを終了するために当メソッドを利用できます。ただし、現
+実には途中で生成される子オブジェクトからの逆参照などがあるため、
+WIN32OLEがIUnknown::Releaseを呼び出してもオブジェクトが解放されるとは限
+りません。
+</p>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+workbook = excel.Workbooks.Open('workbook.xls')
+workbook.Close(:SaveChanges =&gt; false)
+workbook.ole_free
+excel.ole_free
+# この時点でExcel.EXEは終了しない
+</pre>
+<p>
+上の例では、excel.Workbooks.Openの行で、excel.Workbooksオブジェクトが生
+成されています。しかし、後続の処理で該当オブジェクトが解放されていない
+ため、Workbooksオブジェクトによって参照されているexcelオブジェクトは解
+放されません。それに対して下の例では正しく解放されます。
+</p>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+books = excel.Workbooks
+workbook = books.Open('workbook.xls')
+books.ole_free
+workbook.Close(:SaveChanges =&gt; false)
+workbook.ole_free
+excel.ole_free
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_OLE_FUNC_METHODS"><code>ole_func_methods -&gt; [WIN32OLE_METHOD]</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/ole_func_methods.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-ole_func_methods">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+オブジェクトのファンクション情報を<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>の配列として返し
+ます。
+</p>
+<p>
+ole_func_methodsメソッドは、OLEオートメーションサーバのメソッドのうちファ
+ンクション（何らかの機能的な操作）に属するものを<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>の
+配列として返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>の配列。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+オートメーションサーバの呼び出しに失敗しました。
+型情報ライブラリ(TypeLib)が提供されていない場合などに発生します。
+</dd>
+</dl>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+excel.visible = true
+excel.ole_func_methods.each do |fun|
+  if fun.name.upcase == 'QUIT'
+    excel._invoke(fun.dispid, [], [])
+    break
+  end
+end
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-w-i-n32-o-l-e/i/ole_methods.html">WIN32OLE#ole_methods</a>, <a href="../method/-w-i-n32-o-l-e/i/ole_get_methods.html">WIN32OLE#ole_get_methods</a>,
+     <a href="../method/-w-i-n32-o-l-e/i/ole_put_methods.html">WIN32OLE#ole_put_methods</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OLE_GET_METHODS"><code>ole_get_methods -&gt; [WIN32OLE_METHOD]</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/ole_get_methods.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-ole_get_methods">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+オブジェクトの参照可能プロパティ情報を<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>の配列として
+返します。
+</p>
+<p>
+ole_get_methodsメソッドは、OLEオートメーションサーバのメソッドのうち読
+み取り可能なプロパティを<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>の配列として返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>の配列。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+オートメーションサーバの呼び出しに失敗しました。
+型情報ライブラリ(TypeLib)が提供されていない場合などに発生します。
+</dd>
+</dl>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+excel.ole_get_methods.each do |prop|
+  begin
+    puts &quot;#{prop.name}=#{excel._getproperty(prop.dispid, [], [])}&quot;
+  rescue WIN32OLERuntimeError
+    puts &quot;can't read #{prop.name} property&quot;
+  end
+end
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-w-i-n32-o-l-e/i/ole_methods.html">WIN32OLE#ole_methods</a>, <a href="../method/-w-i-n32-o-l-e/i/ole_func_methods.html">WIN32OLE#ole_func_methods</a>,
+     <a href="../method/-w-i-n32-o-l-e/i/ole_put_methods.html">WIN32OLE#ole_put_methods</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OLE_METHOD"><code>ole_method(method) -&gt; WIN32OLE_METHOD</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/ole_method.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-ole_method">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ole_method_help(method) -&gt; WIN32OLE_METHOD</code></dt>
+<dd class="method-description">
+<p>
+メソッド名を指定して対応する<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>オブジェクトを取得しま
+す。
+</p>
+<p>
+OLEオートメーションの仕様により、メソッド名の大文字、小文字は区別されま
+せん。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] method:</dt>
+<dd>
+メソッド情報を取り出す対象のメソッド名を文字列で指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>オブジェクト。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+指定したメソッド名が未定義あるいは型情報ラ
+イブラリ(TypeLib)が提供されていない場合など
+に発生します。
+</dd>
+</dl>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+method = excel.ole_method_help('Quit')
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_OLE_METHODS"><code>ole_methods -&gt; [WIN32OLE_METHOD]</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/ole_methods.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-ole_methods">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+オブジェクトのメソッド情報を<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>の配列として返します。
+</p>
+<p>
+ole_methodsメソッドは、OLEオートメーションサーバが提供するすべてのメソッ
+ドを<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>の配列として返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>の配列。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+オートメーションサーバの呼び出しに失敗しました。
+型情報ライブラリ(TypeLib)が提供されていない場合などに発生します。
+</dd>
+</dl>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+methods = excel.ole_methods
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-w-i-n32-o-l-e/i/ole_func_methods.html">WIN32OLE#ole_func_methods</a>, <a href="../method/-w-i-n32-o-l-e/i/ole_put_methods.html">WIN32OLE#ole_put_methods</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OLE_OBJ_HELP"><code>ole_obj_help -&gt; WIN32OLE_TYPE | nil</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/ole_obj_help.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-ole_obj_help">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ole_type -&gt; WIN32OLE_TYPE | nil</code></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-w-i-n32-o-l-e_-t-y-p-e.html">WIN32OLE_TYPE</a>オブジェクトを返します。
+</p>
+<p>
+<a href="../class/-w-i-n32-o-l-e_-t-y-p-e.html">WIN32OLE_TYPE</a>オブジェクトは、WIN32OLEオブジェクトの文書情報と型情
+報を保持するオブジェクトです。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+オブジェクトに関連する<a href="../class/-w-i-n32-o-l-e_-t-y-p-e.html">WIN32OLE_TYPE</a>オブジェクトを返します。
+オブジェクトがドキュメント情報を持たない場合はnilを返します。
+</dd>
+</dl>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+tobj = excel.ole_obj_help
+</pre>
+<p>
+[SEE_ALSO] <a href="../class/-w-i-n32-o-l-e_-t-y-p-e.html">WIN32OLE_TYPE</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OLE_PUT_METHODS"><code>ole_put_methods -&gt; [WIN32OLE_METHOD]</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/ole_put_methods.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-ole_put_methods">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+オブジェクトの設定可能プロパティ情報を<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>の配列として
+返します。
+</p>
+<p>
+ole_put_methodsメソッドは、OLEオートメーションサーバのメソッドのうちプ
+ロパティ設定メソッドに属するものを<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>の配列として返し
+ます。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+<a href="../class/-w-i-n32-o-l-e_-m-e-t-h-o-d.html">WIN32OLE_METHOD</a>の配列。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+オートメーションサーバの呼び出しに失敗しました。
+型情報ライブラリ(TypeLib)が提供されていない場合などに発生します。
+</dd>
+</dl>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+properties = excel.ole_put_methods
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-w-i-n32-o-l-e/i/ole_methods.html">WIN32OLE#ole_methods</a>, <a href="../method/-w-i-n32-o-l-e/i/ole_func_methods.html">WIN32OLE#ole_func_methods</a>,
+     <a href="../method/-w-i-n32-o-l-e/i/ole_get_methods.html">WIN32OLE#ole_get_methods</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OLE_QUERY_INTERFACE"><code>ole_query_interface(iid) -&gt; WIN32OLE</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/ole_query_interface.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-ole_query_interface">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IID（インターフェイスID）を指定してオブジェクトの別のインターフェイスを
+持つオブジェクトを取得します。
+</p>
+<p>
+オブジェクトが複数のオートメーション用インターフェイスを持つ場合に、当
+メソッドを利用して既定のインターフェイスとは異なるインターフェイスを取
+得します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] iid:</dt>
+<dd>
+取得するインターフェイスのIIDを文字列で指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+iidパラメータで指定したインターフェイスを持つWIN32OLEオブジェクト
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+指定したIIDをオブジェクトが持たない場合に通知されます。
+</dd>
+</dl>
+<pre>
+ie = WIN32OLE.new('InternetExplorer.Application')
+ie_web_app = ie.ole_query_interface('{0002DF05-0000-0000-C000-000000000046}')
+</pre>
+<p>
+上例のie_web_appは、ieと同じインスタンスとなります。
+</p>
+<p>
+COMの仕様では1つのインターフェイスについて同じIID問い合わせに対しては常
+に同一のインターフェイスを返すことが決められています。
+</p>
+<p>
+このため、正しく実装されたOLEオートメーションサーバでは本メソッドが意味
+を持つことはありません。というのは、2つ以上の異なるWIN32OLEで操作可能な
+インターフェイスを持つということは、IID_IDispatch（OLEオートメーション
+のインターフェイスID）を指定した問い合わせに対して異なるインターフェイ
+スを返すということになるからです。これは、結果的に呼び出し側プログラム
+がいつでも間違えたインターフェイスを呼び出す可能性を持つということを意
+味します。当然、それはサーバ実装のバグです。
+</p>
+<p>
+問題は、C++のvtblアクセスや.NET FrameworkのCOM Interopのために静的型情
+報が必要となることです。このため、一度あるインターフェイスを返すことに
+決めた場合、実際に返すインターフェイスが元のインターフェイスを継承して
+いたとしても、ドキュメント上は異なるインターフェイスとして定義しなけれ
+ば追加のメソッドが呼び出せません。
+</p>
+<p>
+たとえば、当メソッドの存在理由である
+<a class="external" href="http://www.ruby-forum.com/topic/109954">http://www.ruby-forum.com/topic/109954</a>（なお、元のパッチと異な
+りGUIDの統一フォーマットを利用するように改造されているため、IIDの前後に
+{}が必要です）には、Solutionオブジェクトに対してSolution2オブジェクトの
+取得を依頼するために、必要ということになっています。実際、Solutionプロ
+パティが返すのは、この場合はSolutionインターフェイスを継承した
+Solution2インターフェイスです。しかし、Solutionプロパティの型情報は
+Solutionインターフェイスを返すことになっているため、静的に型を解決して
+いる場合は、追加のメソッドの呼び出しを記述できません。
+</p>
+<p>
+しかし、WIN32OLEが利用するIDispatchインターフェイスは、メソッド名による
+動的なメソッド検索が行われます。このため、Solutionオブジェクト（しかし
+その実態はSolution2オブジェクト）に対してSolution2で追加されたメソッド
+（たとえばGetProjectTemplate）を指定したとしても正しく呼び出せます。つ
+まり、<a class="external" href="http://www.ruby-forum.com/topic/109954">http://www.ruby-forum.com/topic/109954</a>で例示されているよ
+うなole_query_interfaceメソッドの呼び出しは不要です。
+</p>
+<p>
+もし、当メソッドの呼び出しが本当に必要なのであれば、まず、該当するOLEオー
+トメーションサーバの修正を依頼してください。その実装は正しくありません。
+</p>
+<p>
+正しく実装されたオブジェクトに対して当メソッドを適用すると、結果として、
+同一オブジェクトの参照カウント値を無駄に増加させることになります。
+</p>
+<p>
+なお、サポートしているインターフェイスのバージョンを調べたい場合に、以
+下のような方法で、インターフェイスのバージョンを調べることができます。
+</p>
+<pre>
+def check_solution_version(obj)
+  [['{CDA7305C-78B6-4D9D-90AD-93EBE71F9341}', 4],
+   ['{DF23915F-FDA3-4DD5-9CAA-2E1372C2BB16}', 3],
+   ['{FA238614-FBB1-4314-A7F7-49AE8BB6C6BA}', 2]].each do |iid, ver|
+    begin
+      intf = obj.ole_query_interface(iid)
+      intf.ole_free
+      return ver
+    rescue WIN32OLERuntimeError
+    end
+  end
+  1
+end
+</pre>
+<p>
+しかし、ole_query_interfaceのような特異なメソッドを利用するよりも、
+WIN32OLE.new('VisualStudio.DTE.8.0') のように生成時にバージョン番号（こ
+の例では8.0）を指定するほうが良いスタイルです。
+</p>
+<p>
+また、単に特定のメソッドをサポートしているかどうかを知りたいだけであれ
+ば、<a href="../method/-w-i-n32-o-l-e/i/ole_respond_to=3f.html">WIN32OLE#ole_respond_to?</a>を利用したダックタイピングをしてくだ
+さい。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OLE_RESPOND_TO--3F"><code>ole_respond_to?(name) -&gt; bool</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/ole_respond_to=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-ole_respond_to-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+指定したメソッドをオブジェクトがサポートしているか調べます。
+</p>
+<p>
+OLEオートメーションサーバが引数で指定した名前のメソッド（プロパティ）を
+サポートしているかどうかを調べます。
+</p>
+<p>
+なお、OLEオートメーションの仕様により、メソッド名の大文字、小文字は区別
+されません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+調べるメソッド名を文字列またはシンボルで指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+nameで指定したメソッドをオブジェクトが提供していれば真を返します。
+</dd>
+</dl>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+excel.ole_respond_to?(:quit) #=&gt; true
+excel.ole_respond_to?(:exit) #=&gt; false
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_OLE_TYPELIB"><code>ole_typelib -&gt; WIN32OLE_TYPELIB</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/ole_typelib.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-ole_typelib">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+オブジェクトに対応する型情報ライブラリ（TypeLib）を
+<a href="../class/-w-i-n32-o-l-e_-t-y-p-e-l-i-b.html">WIN32OLE_TYPELIB</a>として返します。
+</p>
+<p>
+OLEオートメーションではクラス、インターフェイス、メソッド、引数などの型
+情報と文書情報を型情報ライブラリとして利用します。型情報ライブラリは独
+立したファイル（拡張子tlb）の場合もあれば、オブジェクトのバイナリへリソー
+スとして埋め込まれている場合があります。
+</p>
+<p>
+OLEオートメーションでは型情報ライブラリの提供方法を問わずに統一したイン
+ターフェイスでアプリケーションが参照できるように、オブジェクトの形式
+（ITypeInfoインターフェイス）で提供します。WIN32OLEは、このオブジェクト
+をラップして<a href="../class/-w-i-n32-o-l-e_-t-y-p-e-l-i-b.html">WIN32OLE_TYPELIB</a>として提供します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+オブジェクトに対応する<a href="../class/-w-i-n32-o-l-e_-t-y-p-e-l-i-b.html">WIN32OLE_TYPELIB</a>オブジェクト。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+オートメーションサーバの呼び出しに失敗しました。
+型情報ライブラリ(TypeLib)が提供されていない場合などに発生します。
+</dd>
+</dl>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+tlib = excel.ole_typelib
+puts tlib.name  # =&gt; 'Microsoft Excel 9.0 Object Library'
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SETPROPERTY"><code>setproperty(name, val) -&gt; ()</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/i/setproperty.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-i-setproperty">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>setproperty(name, args..., val) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+オブジェクトのプロパティを設定します。
+</p>
+<p>
+プロパティ名を指定してOLEオートメーションオブジェクトのプロパティ
+（Rubyの属性に相当）を設定します。
+</p>
+<p>
+なお、OLEオートメーションの仕様により、プロパティ名の大文字、小文字は区
+別されません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+プロパティ名を文字列またはシンボルで指定します。
+</dd>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+プロパティに設定する値を指定します。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+集合的なプロパティに対する設定項目を特定するための引数を指
+定します。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+オートメーションサーバの呼び出しに失敗しました。
+理由はメッセージのHRESULTを調べてください。
+</dd>
+</dl>
+<p>
+OLEオートメーションのプロパティはRubyの属性と異なり、パラメータを取るこ
+とができます。
+</p>
+<p>
+たとえばExcelのWorksheetオブジェクトのCellsプロパティは桁位置と行番号の
+2つのパラメータを取ります。
+</p>
+<p>
+これはVBでは次のように記述できます。
+</p>
+<pre>
+sheet.Cells(1, 1) = sheet.Cells(1, 2) ' セルB1の内容をセルA1へ
+</pre>
+<p>
+Rubyでは上記のコードの右辺をVBと同じく「sheet.Cells(1, 2)」のように記述
+できますが、左辺の記述はできません。
+</p>
+<p>
+そのため、次の例のようにsetpropertyメソッドを利用して、パラメータ付きプ
+ロパティを設定します。
+</p>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+excel.visible = true
+sheet = excel.Workbooks.Add.Worksheets[1]
+sheet.setproperty(:Cells, 1, 2, 32)
+sheet.setproperty(:Cells, 1, 1, sheet.Cells(1, 2))
+</pre>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-A-R-G-V"><code>ARGV -&gt; [object]</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/c/-a-r-g-v.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-ARGV">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+直前のメソッド呼び出しの引数を格納した配列です。
+</p>
+<p>
+OLEオートメーションでは呼び出し先が引数に対して値を設定できます。しかし、
+Rubyのメソッド引数は値のみを取るため、そのままでは呼び出し先が設定した
+値を参照できません。このような場合、ARGVを参照することで呼び出し先の設
+定値を参照できます。
+</p>
+<p>
+以下のリストは、VBで開発したオブジェクトのメソッド呼び出しを例としてい
+ます。このメソッド（Accm）は、第1引数で指定した演算を第2引数と第3引数に
+適用し、結果を第2引数に設定します。
+</p>
+<pre>
+' VB (OLE Automation server)
+Public Sub Accm(ByVal Operator, ByRef Accumulator, ByVal Operand)
+    If Operator = &quot;*&quot; Then
+        Accmulator = Accmulator * Operand
+    Else If Operator = &quot;+&quot; Then
+        Accmulator = Accmulator + Operand
+    End If
+End Sub
+
+# Ruby
+x = 10
+obj.Accm '*', x, 11
+p x               # =&gt; 10 …… 呼び出しによって影響を受けない
+p WIN32OLE::ARGV  # =&gt; ['*', 110, 11] …… 結果はARGVの対応する引数に反映される
+obj.Accm '+', 10, 11
+p WIN32OLE::ARGV  # =&gt; ['+', 21, 11]
+</pre>
+<p>
+直前のメソッド呼び出しが例外となった場合、ARGVの設定内容は呼び出し前の
+状態が保たれます。つまり、WIN32OLE自身がARGVの内容を消去するのは、メソッ
+ド呼び出しに成功した場合のみです。このため最後のメソッド呼び出しが引数
+にオブジェクトを返すタイプのメソッドだった場合、GCにオブジェクトを回収
+させるために、呼び出し側でARGVを消去してください。
+</p>
+<pre>
+' VB (OLE Automation server)
+Public Sub GetInterface(ByRef obj)
+    Set Obj = New OleObject
+End Sub
+
+# Ruby
+obj.GetInterface nil   # 引数の数を合わせるためダミー引数を指定
+WIN32OLE::ARGV.clear   # 通常は、後続のメソッド呼び出しによって消去される
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P_-A-C-P"><code>CP_ACP -&gt; Fixnum</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/c/-c-p_-a-c-p.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-CP_ACP">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Windows既定のANSIコードページ（0）を示します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P_-M-A-C-C-P"><code>CP_MACCP -&gt; Fixnum</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/c/-c-p_-m-a-c-c-p.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-CP_MACCP">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Macintoshコードページ（2）を示します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P_-O-E-M-C-P"><code>CP_OEMCP -&gt; Fixnum</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/c/-c-p_-o-e-m-c-p.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-CP_OEMCP">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+OEMコードページ（1）を示します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P_-S-Y-M-B-O-L"><code>CP_SYMBOL -&gt; Fixnum</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/c/-c-p_-s-y-m-b-o-l.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-CP_SYMBOL">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字コードの変換にシンボルを利用することを示します（42）。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P_-T-H-R-E-A-D_-A-C-P"><code>CP_THREAD_ACP -&gt; Fixnum</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/c/-c-p_-t-h-r-e-a-d_-a-c-p.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-CP_THREAD_ACP">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在実行中のスレッドの既定のコードページ（3）を示します。
+</p>
+<p>
+Windowsのコードページはスレッド毎に異なる値を設定できます。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P_-U-T-F7"><code>CP_UTF7 -&gt; Fixnum</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/c/-c-p_-u-t-f7.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-CP_UTF7">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字コードの変換にUTF-7を利用することを示します（65000）。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-C-P_-U-T-F8"><code>CP_UTF8 -&gt; Fixnum</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/c/-c-p_-u-t-f8.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-CP_UTF8">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字コードの変換にUTF-8を利用することを示します（65001）。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-L-O-C-A-L-E_-S-Y-S-T-E-M_-D-E-F-A-U-L-T"><code>LOCALE_SYSTEM_DEFAULT -&gt; Fixnum</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/c/-l-o-c-a-l-e_-s-y-s-t-e-m_-d-e-f-a-u-l-t.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-LOCALE_SYSTEM_DEFAULT">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+システム既定のロケールを示すLCID(0x0800)です。WIN32OLEがオートメーショ
+ンを利用する場合の既定値です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-L-O-C-A-L-E_-U-S-E-R_-D-E-F-A-U-L-T"><code>LOCALE_USER_DEFAULT -&gt; Fixnum</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/c/-l-o-c-a-l-e_-u-s-e-r_-d-e-f-a-u-l-t.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-LOCALE_USER_DEFAULT">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ユーザ既定のロケールを示すLCID(0x0400)です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-V-E-R-S-I-O-N"><code>VERSION -&gt; String</code><span class="permalink">[<a href="../method/-w-i-n32-o-l-e/c/-v-e-r-s-i-o-n.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/WIN32OLE.html#method-c-VERSION">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Major.Minor.Patch形式のWIN32OLEのバージョン番号を示す文字列です。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

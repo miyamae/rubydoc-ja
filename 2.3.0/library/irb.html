@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>library irb (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; irbライブラリ
+</p>
+
+<h1>library irb</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+irb は Interactive Ruby の略です。
+irb を使うと、Ruby の式を標準入力から簡単に入力・実行することができます。
+</p>
+<h2 >irb の使い方</h2>
+<p>
+Ruby さえ知っていれば irb を使うのは簡単です。
+irb コマンドを実行すると、以下のようなプロンプトが表れます。
+</p>
+<pre>
+$ irb
+irb(main):001:0&gt;
+</pre>
+<p>
+あとは Ruby の式を入力するだけで、その式が実行され、結果が表示されます。
+</p>
+<pre>
+irb(main):001:0&gt; 1+2
+3
+irb(main):002:0&gt; class Foo
+irb(main):003:1&gt;   def foo
+irb(main):004:2&gt;     print 1
+irb(main):005:2&gt;   end
+irb(main):006:1&gt; end
+nil
+irb(main):007:0&gt;
+</pre>
+<p>
+また irb コマンドは <a href="../library/readline.html">readline</a> ライブラリにも対応しています。
+readline ライブラリがインストールされている時には
+自動的にコマンドライン編集や履歴の機能が使えるようになります。
+</p>
+<h2 >irb のコマンドラインオプション</h2>
+<pre>
+irb [options] file_name opts
+options:
+-f                ~/.irbrc を読み込まない
+-m                bc モード (分数と行列の計算ができる)
+-d                $DEBUG を true にする (ruby -d と同じ)
+-w                ruby -w と同じ
+-W[level=2]       ruby -W と同じ
+-r library        ruby -r と同じ
+-I                ruby -I と同じ
+-U                ruby -U と同じ
+-E enc            ruby -E と同じ
+--verbose         これから実行する行を表示する
+--noverbose       これから実行する行を表示しない (デフォルト)
+--echo            実行結果を表示する (デフォルト)
+--noecho          実行結果を表示しない
+--inspect         結果出力にinspectを用いる (bc モード以外ではデフォルト)
+--noinspect       結果出力にinspectを用いない
+--readline        readlineライブラリを利用する
+--noreadline      readlineライブラリを利用しない。デフォルトでは
+                  inf-ruby-mode 以外で readline ライブラリを利用する。
+--prompt prompt-mode
+--prompt-mode prompt-mode
+                  プロンプトモードを切り替える。現在定義されているプ
+                  ロンプトモードは、default/simple/xmp/inf-ruby。
+--inf-ruby-mode   emacsのinf-ruby-mode 用のプロンプト表示を行なう。
+                  特に指定がない限り readline ライブラリは使わなくなる。
+--sample-book-mode
+--simple-prompt
+                  非常にシンプルなプロンプトを用いるモード。
+--noprompt        プロンプトを表示しない。
+--tracer          コマンド実行時にトレースする。
+--back-trace-limit n
+                  バックトレース表示をバックトレースの頭から n、
+                  うしろから n だけ行なう。デフォルト値は 16。
+--context-mode n  新しいワークスペースを作成した時に関連する Binding
+                  オブジェクトの作成方法を 0 から 3 で設定する。
+                  (IRB::Context 参照)
+--single-irb      irb 中で self を実行して得られるオブジェクトをサブ irb と共
+                  有する
+--irb_debug n     irb のデバッグレベルを n に設定する
+                  (ユーザは利用すべきではない)
+-v, --version     irb のバージョンを表示する
+-h, --help        irb のヘルプを表示する
+--                以降のコマンドライン引数をオプションとして扱わない
+</pre>
+<h2 >irb のカスタマイズ</h2>
+<p>
+irb コマンドは起動時にホームディレクトリの .irbrc というファイルを読み込みます。
+.irbrc は Ruby スクリプトです。ホームディレクトリに .irbrc が存在しない場合は、
+カレントディレクトリの .irbrc, irb.rc, _irbrc, $irbrc を順番にロードしようと
+試みます。
+</p>
+<p>
+以下のような (Ruby の) 式を .irbrc に記述すると、
+irb コマンドのオプションを指定したのと同じ効果が得られます。
+</p>
+<pre>
+IRB.conf[:AUTO_INDENT] = false
+IRB.conf[:BACK_TRACE_LIMIT] = 16
+IRB.conf[:DEBUG_LEVEL] = 1
+IRB.conf[:ECHO] = nil
+IRB.conf[:EVAL_HISTORY] = nil
+IRB.conf[:HISTORY_FILE] = nil
+IRB.conf[:IGNORE_EOF] = true
+IRB.conf[:IGNORE_SIGINT] = true
+IRB.conf[:INSPECT_MODE] = nil
+IRB.conf[:IRB_NAME] = &quot;irb&quot;
+IRB.conf[:IRB_RC] = nil
+IRB.conf[:MATH_MODE] = false
+IRB.conf[:PROMPT] = {....}
+IRB.conf[:PROMPT_MODE] = :DEFAULT
+IRB.conf[:SINGLE_IRB] = false
+IRB.conf[:SAVE_HISTORY] = nil
+IRB.conf[:USE_LOADER] = true
+IRB.conf[:USE_READLINE] = nil
+IRB.conf[:USE_TRACER] = true
+IRB.conf[:VERBOSE] = true
+</pre>
+<p>
+それぞれの設定値の詳細については、<a href="../class/-i-r-b=3a=3a-context.html">IRB::Context</a> を参照してください。
+</p>
+<h3 id='customize_prompt'>プロンプトのカスタマイズ</h3>
+<p>
+irb のプロンプトをカスタマイズしたい時は、
+まず独自のプロンプトモードを作成し、
+それをコマンドラインや .irbrc に指定します。
+</p>
+<p>
+まず、新しいプロンプトモードを作成するには、
+例えば .irbrc で以下のように記述します。
+</p>
+<pre>
+# 新しいプロンプトモード MY_PROMPT を作成する
+IRB.conf[:PROMPT][:MY_PROMPT] = {
+  :PROMPT_I =&gt; nil,          # 通常時のプロンプト
+  :PROMPT_N =&gt; nil,          # 継続行のプロンプト
+  :PROMPT_S =&gt; nil,          # 文字列などの継続行のプロンプト
+  :PROMPT_C =&gt; nil,          # 式が継続している時のプロンプト
+  :RETURN =&gt; &quot;    ==&gt;%s\n&quot;   # メソッドから戻る時のプロンプト
+}
+</pre>
+<p>
+いま作成した新しいプロンプトモードを使うには、
+以下のように irb コマンドに --prompt オプションを指定します。
+</p>
+<pre>
+$ irb --prompt my-prompt
+</pre>
+<p>
+毎回指定するのが面倒なら、.irbrc に以下の式を記述します。
+</p>
+<pre>
+# プロンプトモード MY_PROMPT を使う
+IRB.conf[:PROMPT_MODE] = :MY_PROMPT
+</pre>
+<p>
+PROMPT_I, PROMPT_S, PROMPT_C にはフォーマット文字列を指定します。
+フォーマット文字列では <a href="../method/-kernel/m/printf.html">Kernel.#printf</a> のように
+「%」を用いた記法が使えます。
+フォーマット文字列で使用可能な記法は以下の通りです。
+</p>
+<dl>
+<dt>%N</dt>
+<dd>
+<p>
+起動しているコマンド名(<a href="../method/-i-r-b=3a=3a-context/i/irb_name.html">IRB::Context#irb_name</a>)
+</p>
+</dd>
+<dt>%m</dt>
+<dd>
+<p>
+main オブジェクト (self) を to_s した文字列
+</p>
+</dd>
+<dt>%M</dt>
+<dd>
+<p>
+main オブジェクト (self) を inspect した文字列
+</p>
+</dd>
+<dt>%l</dt>
+<dd>
+<p>
+文字列中のタイプを表す (&quot;, ', /, ], `]'は%wの中の時)
+</p>
+</dd>
+<dt>%NNi</dt>
+<dd>
+<p>
+インデントのレベルを、NN 桁に右詰めした文字列。
+NN は省略可能。
+</p>
+</dd>
+<dt>%NNn</dt>
+<dd>
+<p>
+行番号を、NN 桁に右詰めした文字列。
+NN は省略可能。
+</p>
+</dd>
+<dt>%%</dt>
+<dd>
+<p>
+文字「%」それ自体
+</p>
+</dd>
+</dl>
+<p>
+また、RETURN は現在のところ printf と全く同じ形式で指定します。
+ただし、将来は仕様が変わる可能性があります。
+</p>
+<p>
+例えば、デフォルトのプロンプトモードである
+「default」プロンプトモードは以下のように設定されています。
+</p>
+<pre>
+IRB.conf[:PROMPT_MODE][:DEFAULT] = {
+  :PROMPT_I =&gt; &quot;%N(%m):%03n:%i&gt; &quot;,
+  :PROMPT_S =&gt; &quot;%N(%m):%03n:%i%l &quot;,
+  :PROMPT_C =&gt; &quot;%N(%m):%03n:%i* &quot;,
+  :RETURN =&gt; &quot;%s\n&quot;
+}
+</pre>
+<p>
+プロンプトモードは :DEFAULT
+の他に :NULL, :CLASSIC, :SIMPLE, :XMP が定義されています。
+</p>
+<h2 >サブ irb</h2>
+<p>
+irb では、起動時の irb インタプリタとは独立した環境を持つ
+「サブ irb」を任意の数だけ起動することができます。
+サブ irb は、irb 実行中に「irb」と入力すると起動します。
+</p>
+<p>
+例えば以下の実行例を見てください。
+</p>
+<pre>
+irb(main):004:0&gt; x = &quot;OK&quot;          # ローカル変数 x を定義
+=&gt; &quot;OK&quot;
+irb(main):005:0&gt; x                 # x を表示
+=&gt; &quot;OK&quot;
+irb(main):006:0&gt; irb               # サブ irb を起動
+irb#1(main):001:0&gt; x               # x を表示
+NameError: undefined local variable or method `x' for main:Object
+        from (irb#1):1:in `Kernel#binding'
+</pre>
+<p>
+起動時のインタプリタでローカル変数 x を定義しましたが、
+「irb」でサブ irb を起動すると、
+ローカル変数 x が見えなくなっています。
+これが「独立した環境」の意味です。
+</p>
+<h2 id='configure_sub_irb'>サブ irb の設定</h2>
+<p>
+irb コマンド起動時のインタプリタの設定は
+コマンドラインオプションと IRB.conf の値で決まります。
+それに対して、サブ irb インタプリタの設定は、
+各インタプリタの「conf」オブジェクトの値で決まります。
+</p>
+<p>
+conf オブジェクトの値を変更するには、
+まず以下のようにサブ irb を起動してから conf オブジェクトの
+値を一つ一つ変更する方法があります。
+</p>
+<pre>
+$ irb
+irb(main):001:0&gt; irb                     # サブ irb を起動
+irb#1(main):001:0&gt; conf.prompt_i         # prompt_i の値を確認
+=&gt; &quot;%N(%m):%03n:%i&gt; &quot;
+irb#1(main):002:0&gt; conf.prompt_i = &quot;&gt;&quot;   # prompt_i の値を変更
+=&gt; &quot;&gt;&quot;
+&gt;                                        # プロンプトが変わった
+</pre>
+<p>
+しかし、サブ irb を起動するたびに設定を入力するのは面倒です。
+そこで、IRB.conf[:IRB_RC] を使う方法を紹介します。
+</p>
+<p>
+IRB.conf[:IRB_RC] に Proc オブジェクトを設定しておくと、
+サブ irb が起動されるたびに、その Proc オブジェクトに
+IRB::Context オブジェクトを渡して実行します。
+これによってサブ irb の設定をまとめて設定することができます。
+</p>
+<p>
+以下に例を示します。
+</p>
+<pre>
+$ irb
+irb(main):001:0&gt; IRB.conf[:IRB_RC] = lambda {|conf| conf.prompt_i = &quot;&gt; &quot; }
+=&gt; #&lt;Proc:0x00002a95fa3fd8@(irb):2&gt;
+irb(main):002:0&gt; irb
+&gt;
+</pre>
+<h2 >irb の使用例</h2>
+<p>
+irb のいろいろな使用例を以下に示します。
+</p>
+<pre>
+$ irb
+irb(main):001:0&gt; irb                        # サブirbの立ちあげ
+irb#1(main):001:0&gt; jobs                     # サブirbのリスト
+#0-&gt;irb on main (#&lt;Thread:0x400fb7e4&gt; : stop)
+#1-&gt;irb#1 on main (#&lt;Thread:0x40125d64&gt; : running)
+nil
+irb#1(main):002:0&gt; fg 0                     # jobのスイッチ
+nil
+irb(main):002:0&gt; class Foo;end
+nil
+irb(main):003:0&gt; irb Foo                    # Fooをコンテキストしてirb
+                                            # 立ちあげ
+irb#2(Foo):001:0&gt; def foo                   # Foo#fooの定義
+irb#2(Foo):002:1&gt;   print 1
+irb#2(Foo):003:1&gt; end
+nil
+irb#2(Foo):004:0&gt; fg 0                      # jobをスイッチ
+nil
+irb(main):004:0&gt; jobs                       # jobのリスト
+#0-&gt;irb on main (#&lt;Thread:0x400fb7e4&gt; : running)
+#1-&gt;irb#1 on main (#&lt;Thread:0x40125d64&gt; : stop)
+#2-&gt;irb#2 on Foo (#&lt;Thread:0x4011d54c&gt; : stop)
+nil
+irb(main):005:0&gt; Foo.instance_methods       # Foo#fooがちゃんと定義さ
+                                            # れている
+[&quot;foo&quot;]
+irb(main):006:0&gt; fg 2                       # jobをスイッチ
+nil
+irb#2(Foo):005:0&gt; def bar                   # Foo#barを定義
+irb#2(Foo):006:1&gt;  print &quot;bar&quot;
+irb#2(Foo):007:1&gt; end
+nil
+irb#2(Foo):010:0&gt;  Foo.instance_methods
+[&quot;bar&quot;, &quot;foo&quot;]
+irb#2(Foo):011:0&gt; fg 0
+nil
+irb(main):007:0&gt; f = Foo.new
+#&lt;Foo:0x4010af3c&gt;
+irb(main):008:0&gt; irb f                      # Fooのインスタンスでirbを
+                                            # 立ちあげる.
+irb#3(#&lt;Foo:0x4010af3c&gt;):001:0&gt; jobs
+#0-&gt;irb on main (#&lt;Thread:0x400fb7e4&gt; : stop)
+#1-&gt;irb#1 on main (#&lt;Thread:0x40125d64&gt; : stop)
+#2-&gt;irb#2 on Foo (#&lt;Thread:0x4011d54c&gt; : stop)
+#3-&gt;irb#3 on #&lt;Foo:0x4010af3c&gt; (#&lt;Thread:0x4010a1e0&gt; : running)
+nil
+irb#3(#&lt;Foo:0x4010af3c&gt;):002:0&gt; foo         # f.fooの実行
+nil
+irb#3(#&lt;Foo:0x4010af3c&gt;):003:0&gt; bar         # f.barの実行
+barnil
+irb#3(#&lt;Foo:0x4010af3c&gt;):004:0&gt; kill 1, 2, 3# jobのkill
+nil
+irb(main):009:0&gt; jobs
+#0-&gt;irb on main (#&lt;Thread:0x400fb7e4&gt; : running)
+nil
+irb(main):010:0&gt; exit                       # 終了
+$
+</pre>
+<h2 >irb で使用可能なコマンド一覧</h2>
+<p>
+この一覧に記述されているコマンドは、irb のプロンプトでレシーバなしで使
+うことができます。
+</p>
+<p>
+irb のコマンドは、簡単な名前と頭に「irb_」をつけた名前との両方が定義さ
+れています。これは、簡単な名前がオーバーライドされた場合にもirb のコマ
+ンドが実行できるようにするためです。
+</p>
+<dl>
+<dt>exit</dt>
+<dt>irb_exit</dt>
+<dt>quit</dt>
+<dt>irb_quit</dt>
+<dd>
+<p>
+irb を終了します。
+サブ irb で呼び出した場合は、そのサブ irb だけを終了します。
+</p>
+</dd>
+<dt>conf</dt>
+<dt>context</dt>
+<dt>irb_context</dt>
+<dd>
+<p>
+irb の現在の設定です。<a href="../class/-i-r-b=3a=3a-context.html">IRB::Context</a> オブジェクトです。
+このメソッドで得た IRB::Context オブジェクトに対してメソッドを
+呼び出すことで、現在稼働中の irb インタプリタの設定を表示・変更できます。
+</p>
+</dd>
+<dt>cwws</dt>
+<dt>pwws</dt>
+<dt>irb_cwws</dt>
+<dt>irb_pwws</dt>
+<dt>irb_print_working_workspace</dt>
+<dt>irb_current_working_binding</dt>
+<dt>irb_print_working_binding</dt>
+<dt>irb_cwb</dt>
+<dt>irb_pwb</dt>
+<dd>
+<p>
+irb の self を返します。
+</p>
+</dd>
+<dt>cws(*obj)</dt>
+<dt>chws(*obj)</dt>
+<dt>irb_cws(*obj)</dt>
+<dt>irb_chws(*obj)</dt>
+<dt>irb_change_workspace(*obj)</dt>
+<dt>cb(*obj)</dt>
+<dt>irb_cb(*obj)</dt>
+<dt>irb_change_binding(*obj)</dt>
+<dd>
+<p>
+irb の self を obj に変更します。
+obj が省略されたときは、
+irb を起動したときの main オブジェクトを self にします。
+</p>
+</dd>
+<dt>workspaces</dt>
+<dt>irb_workspaces</dt>
+<dt>irb_bindings</dt>
+<dt>bindings</dt>
+<dd>
+<p>
+現在のワークスペースの一覧を返します。
+</p>
+</dd>
+<dt>pushws(*obj)</dt>
+<dt>irb_pushws(*obj)</dt>
+<dt>irb_push_workspace(*obj)</dt>
+<dt>irb_push_binding(*obj)</dt>
+<dt>irb_pushb(*obj)</dt>
+<dt>pushb(*obj)</dt>
+<dd>
+<p>
+UNIX シェルコマンドの pushd と同じです。
+</p>
+</dd>
+<dt>popws</dt>
+<dt>irb_popws</dt>
+<dt>irb_pop_workspace</dt>
+<dt>irb_pop_binding</dt>
+<dt>irb_popb</dt>
+<dt>popb</dt>
+<dd>
+<p>
+UNIX シェルコマンドの popd と同じです。
+</p>
+</dd>
+<dt>irb</dt>
+<dt>irb(obj)</dt>
+<dd>
+<p>
+新しいサブ irb インタプリタを起動します。
+オブジェクト obj が指定された時はその obj を self にします。
+</p>
+</dd>
+<dt>jobs</dt>
+<dt>irb_jobs</dt>
+<dd>
+<p>
+サブ irb のリストを返します。
+</p>
+</dd>
+<dt>fg(n)</dt>
+<dt>irb_fg(n)</dt>
+<dd>
+<p>
+n で指定したサブ irb に移動します。
+n は以下のいずれかの値で指定します。
+</p>
+<pre>
+  * irb インタプリタ番号
+  * irb オブジェクト
+  * スレッド ID
+  * 各インタプリタの self (「irb(obj)」で起動した時の obj)
+</pre>
+</dd>
+<dt>kill(n)</dt>
+<dt>irb_kill(n)</dt>
+<dd>
+<p>
+n で指定したサブ irb を停止します。
+n は以下のいずれかの値で指定します。
+</p>
+<pre>
+  * irb インタプリタ番号
+  * irb オブジェクト
+  * スレッド ID
+  * 各インタプリタの self (「irb(obj)」で起動した時の obj)
+</pre>
+</dd>
+<dt>source(path)</dt>
+<dt>irb_source(path)</dt>
+<dd>
+<p>
+現在の irb インタプリタ上で、
+Ruby スクリプト path を評価します。
+</p>
+<p>
+path の内容を irb で一行ずつタイプしたかのように、irb 上で一行ずつ評
+価されます。<a href="../method/-kernel/v/=22.html">$&quot;</a> は更新されず、何度でも実行し直す事ができます。
+</p>
+<p>
+source という名前は UNIX シェルの source コマンドに由来します。
+</p>
+</dd>
+<dt>irb_load(path, prev = nil)</dt>
+<dd>
+<p>
+Ruby の load の irb 版です。
+ファイル path を Ruby スクリプトとみなし、
+現在の irb インタプリタ上で実行します。
+ただし、prev に true を指定した場合は実行は内部的に生成される無名モジュー
+ル上で行われ、グローバルな名前空間を汚染しません。
+</p>
+<p>
+<a href="../method/-kernel/m/load.html">Kernel.#load</a> と異なり、path の内容を irb で一行ずつタイプしたか
+のように、irb 上で一行ずつ評価されます。
+</p>
+</dd>
+<dt>irb_require(path)</dt>
+<dd>
+<p>
+Ruby の require の irb 版です。
+ファイル path を現在の irb インタプリタ上で実行します。
+</p>
+<p>
+path に Ruby スクリプトを指定した場合は、<a href="../method/-kernel/m/kernel.html">Kernel.#kernel</a> と異な
+り、path の内容を irb で一行ずつタイプしたかのように、irb 上で一行ず
+つ評価されます。require に成功した場合は true を、そうでない場合は
+false を返します。
+</p>
+<p>
+拡張ライブラリ(*.so,*.o,*.dll など)を指定した場合は単純に require さ
+れます。
+</p>
+</dd>
+<dt>help(*names)</dt>
+<dt>irb_help(*names)</dt>
+<dd>
+<p>
+RI から Ruby のドキュメントを参照します。
+</p>
+<pre>
+  irb(main):001:0&gt; help String#match
+  ...
+</pre>
+<p>
+names を指定しなかった場合は、RI を対話的なモードで起動します。メソッ
+ド名などを入力する事でドキュメントの検索が行えます。入力のタブ補完を
+する事ができます。また、空行を入力する事で irb のプロンプトに戻る事が
+できます。
+</p>
+<pre>
+  irb(main):001:0&gt; help
+
+  Enter the method name you want to look up.
+  You can use tab to autocomplete.
+  Enter a blank line to exit.
+
+  &gt;&gt; String#match
+  String#match
+
+  (from ruby core)
+  ------------------------------------------------------------------------------
+    str.match(pattern)        -&gt; matchdata or nil
+    str.match(pattern, pos)   -&gt; matchdata or nil
+  ...
+</pre>
+</dd>
+</dl>
+<h2 >システム変数</h2>
+<dl>
+<dt>_</dt>
+<dd>
+<p>
+直前の式の実行結果です。
+</p>
+<p>
+例：
+</p>
+<pre>
+  $ irb
+  irb(main):001:0&gt; 10
+  =&gt; 10
+  irb(main):002:0&gt; 2**32
+  =&gt; 4294967296
+  irb(main):003:0&gt; _
+  =&gt; 4294967296
+  irb(main):004:0&gt; _ - 2**31
+  =&gt; 2147483648
+  irb(main):005:0&gt;
+</pre>
+</dd>
+<dt>__</dt>
+<dd>
+<p>
+実行結果の履歴です。
+__[lineno] で、lineno 行で実行した結果を得られます。
+lineno が負の時は、最新の結果から -lineno 行だけ前の
+結果を得られます。
+</p>
+<p>
+この変数はデフォルトでは使えません。
+この変数を使用するには、あらかじめ .irbrc などで
+conf.eval_history の値を指定しておかなければいけません。
+</p>
+<p>
+例：
+</p>
+<pre>
+  $ irb
+  irb(main):001:0&gt; conf.eval_history = 100
+  =&gt; 100
+  irb(main):002:0&gt; 1 + 2
+  =&gt; 3
+  irb(main):003:0&gt; 'hoge' + 'foo'
+  =&gt; &quot;hogefoo&quot;
+  irb(main):004:0&gt; __[2]
+  =&gt; 3
+  irb(main):005:0&gt; __[3]
+  =&gt; &quot;hogefoo&quot;
+  irb(main):006:0&gt; __[-1]
+  =&gt; &quot;hogefoo&quot;
+  irb(main):007:0&gt;
+</pre>
+</dd>
+</dl>
+<h2 >使用上の制限</h2>
+<p>
+irbは, 評価できる時点(式が閉じた時点)での逐次実行を行ないます.
+したがって, rubyを直接使った時と若干異なる動作を行なう場合があります.
+</p>
+<p>
+現在明らかになっている問題点を説明します.
+</p>
+<h3 >ローカル変数の宣言</h3>
+<p>
+Ruby では以下のプログラムはエラーになります.
+</p>
+<pre>
+eval &quot;foo = 0&quot;
+p foo    # -:2: undefined local variable or method `foo' for #&lt;Object:0x40283118&gt; (NameError)
+</pre>
+<p>
+ところが irb を用いると、以下のように、エラーになりません。
+</p>
+<pre>
+&gt;&gt; eval &quot;foo = 0&quot;
+=&gt; 0
+&gt;&gt; foo
+=&gt; 0
+</pre>
+<p>
+この違いは、Ruby と irb のプログラムのコンパイル方法の差に起因します。
+Ruby は最初にスクリプト全体をコンパイルしてローカル変数を決定します。
+それに対し、irb は式が完結して実行可能になった時点で順番にコンパイルします。
+上記の例では、
+</p>
+<pre>
+eval &quot;foo = 0&quot;
+</pre>
+<p>
+が入力された時点でまずその式をコンパイル・実行します。
+この時点で変数 foo が定義されるため、
+次の式を入力する時点ですでに変数 foo が定義されているのです。
+</p>
+<p>
+この Ruby と irb の動作の違いをなくしたい場合は、
+irb では以下のように式を begin 〜 end でくくって入力してください。
+</p>
+<pre>
+&gt;&gt; begin
+?&gt;   eval &quot;foo = 0&quot;
+&gt;&gt;   foo
+&gt;&gt; end
+NameError: undefined local variable or method `foo' for #&lt;Object:0x4013d0f0&gt;
+(irb):3
+(irb_local_binding):1:in `eval'
+</pre>
+<h3 >ヒアドキュメント</h3>
+<p>
+現在のところヒアドキュメントの実装は不完全です。
+</p>
+<h3 >シンボル</h3>
+<p>
+irb はシンボルであるかどうかの判断を間違えることがあります。
+具体的には、式が完了しているのに継続行と見なすことがあります。
+</p>
+<h2 id='history'>履歴の保存</h2>
+<p>
+さらに、.irbrc で以下のように
+conf.save_history の値を指定しておくと、
+実行結果の履歴がファイルに保存されます。
+</p>
+<pre>
+IRB.conf[:SAVE_HISTORY] = 100
+</pre>
+<p>
+履歴ファイルの名前はデフォルトでは ~/.irb_history です。
+履歴ファイルの名前は IRB.conf[:HISTORY_FILE] で指定できます。
+</p>
+<h2 id='inspect_mode'>実行結果の出力方式</h2>
+<p>
+irb のプロンプト中では conf.inspect_mode で、.irbrc 中では
+IRB.conf[:INSPECT_MODE] に以下のいずれかの値を設定する事で、結果出力の
+方式を変更する事ができます。
+</p>
+<dl>
+<dt>false, :to_s, :raw</dt>
+<dd>
+<p>
+出力結果を to_s したものを表示します。
+</p>
+</dd>
+<dt>true, :p, :inspect</dt>
+<dd>
+<p>
+出力結果を inspect したものを表示します。
+</p>
+</dd>
+<dt>:pp, :pretty_inspect</dt>
+<dd>
+<p>
+出力結果を pretty_inspect したものを表示します。
+</p>
+</dd>
+<dt>:yaml, :YAML</dt>
+<dd>
+<p>
+出力結果を YAML 形式にしたものを表示します。
+</p>
+</dd>
+<dt>:marshal, :Marshal, :MARSHAL, <a href="../class/-marshal.html">Marshal</a></dt>
+<dd>
+<p>
+出力結果を <a href="../method/-marshal/m/dump.html">Marshal.#dump</a> したものを表示します。
+</p>
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+$ irb
+irb(main):001:0&gt; conf.inspect_mode = :yaml
+irb(main):002:0&gt; :foo # =&gt; --- :foo
+</pre>
+<p>
+また、irb の起動時に --inspect オプションを指定する事でも同様の設定を行
+えます。
+</p>
+<pre>
+$ irb --inspect [raw|p|pp|yaml|marshal|...]
+</pre>
+<p>
+上記以外にも独自の出力方式を追加する事ができます。詳しくは
+<a href="../method/-i-r-b=3a=3a-i-n-s-p-e-c-t-o-r-s/s/def_inspector.html">IRB::INSPECTORS.def_inspector</a> を参照してください。
+</p>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-i-r-b=3a=3a-context.html">IRB::Context</a>
+</td>
+<td class="description"><p>
+irb の設定を扱うためのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-i-r-b=3a=3a-extend-command=3a=3a-nop.html">IRB::ExtendCommand::Nop</a>
+</td>
+<td class="description"><p>
+irb 中でコマンドを拡張するクラスのベースになるクラスです。サブクラスを
+定義してコマンドを拡張します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-i-r-b=3a=3a-extend-command=3a=3a-change-workspace.html">IRB::ExtendCommand::ChangeWorkspace</a>
+</td>
+<td class="description"><p>
+irb 中の irb_change_workspace コマンドのための拡張を定義したクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-i-r-b=3a=3a-extend-command=3a=3a-current-working-workspace.html">IRB::ExtendCommand::CurrentWorkingWorkspace</a>
+</td>
+<td class="description"><p>
+irb 中の irb_current_working_workspace コマンドのための拡張を定義したク
+ラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-i-r-b=3a=3a-extend-command=3a=3a-foreground.html">IRB::ExtendCommand::Foreground</a>
+</td>
+<td class="description"><p>
+irb 中の irb_fg コマンドのための拡張を定義したクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-i-r-b=3a=3a-extend-command=3a=3a-help.html">IRB::ExtendCommand::Help</a>
+</td>
+<td class="description"><p>
+irb 中の help コマンドのための拡張を定義したクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-i-r-b=3a=3a-extend-command=3a=3a-irb-command.html">IRB::ExtendCommand::IrbCommand</a>
+</td>
+<td class="description"><p>
+irb 中の irb コマンドのための拡張を定義したクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-i-r-b=3a=3a-extend-command=3a=3a-jobs.html">IRB::ExtendCommand::Jobs</a>
+</td>
+<td class="description"><p>
+irb 中の irb_jobs コマンドのための拡張を定義したクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-i-r-b=3a=3a-extend-command=3a=3a-kill.html">IRB::ExtendCommand::Kill</a>
+</td>
+<td class="description"><p>
+irb 中の irb_kill コマンドのための拡張を定義したクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-i-r-b=3a=3a-extend-command=3a=3a-load.html">IRB::ExtendCommand::Load</a>
+</td>
+<td class="description"><p>
+irb 中の irb_load コマンドのための拡張を定義したクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-i-r-b=3a=3a-extend-command=3a=3a-pop-workspace.html">IRB::ExtendCommand::PopWorkspace</a>
+</td>
+<td class="description"><p>
+irb 中の irb_pop_workspace コマンドのための拡張を定義したクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-i-r-b=3a=3a-extend-command=3a=3a-push-workspace.html">IRB::ExtendCommand::PushWorkspace</a>
+</td>
+<td class="description"><p>
+irb 中の irb_push_workspace コマンドのための拡張を定義したクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-i-r-b=3a=3a-extend-command=3a=3a-require.html">IRB::ExtendCommand::Require</a>
+</td>
+<td class="description"><p>
+irb 中の irb_require コマンドのための拡張を定義したクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-i-r-b=3a=3a-extend-command=3a=3a-source.html">IRB::ExtendCommand::Source</a>
+</td>
+<td class="description"><p>
+irb 中の irb_source コマンドのための拡張を定義したクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-i-r-b=3a=3a-extend-command=3a=3a-workspaces.html">IRB::ExtendCommand::Workspaces</a>
+</td>
+<td class="description"><p>
+irb 中の irb_workspaces コマンドのための拡張を定義したクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-i-r-b=3a=3a-input-method.html">IRB::InputMethod</a>
+</td>
+<td class="description"><p>
+抽象的な入力を表すクラスです。ライブラリ内部で使用します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-i-r-b=3a=3a-file-input-method.html">IRB::FileInputMethod</a>
+</td>
+<td class="description"><p>
+ファイルからの入力を表すクラスです。ライブラリ内部で使用します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-i-r-b=3a=3a-readline-input-method.html">IRB::ReadlineInputMethod</a>
+</td>
+<td class="description"><p>
+readline を用いた標準入力からの入力を表すクラスです。ライブラリ内部で使
+用します。<a href="../library/readline.html">readline</a> の require に失敗した場合は定義されません。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-i-r-b=3a=3a-stdio-input-method.html">IRB::StdioInputMethod</a>
+</td>
+<td class="description"><p>
+標準入力を表すクラスです。ライブラリ内部で使用します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-i-r-b=3a=3a-irb.html">IRB::Irb</a>
+</td>
+<td class="description"><p>
+irb インタプリタのメインルーチンです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-i-r-b=3a=3a-output-method.html">IRB::OutputMethod</a>
+</td>
+<td class="description"><p>
+抽象的な出力を表すクラスです。ライブラリ内部で使用します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-i-r-b=3a=3a-stdio-output-method.html">IRB::StdioOutputMethod</a>
+</td>
+<td class="description"><p>
+標準出力を表すクラスです。ライブラリ内部で使用します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-i-r-b=3a=3a-work-space.html">IRB::WorkSpace</a>
+</td>
+<td class="description"><p>
+irb 中で self を表すためのクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>モジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-i-r-b.html">IRB</a>
+</td>
+<td class="description"><p>
+irb のメインモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-i-r-b=3a=3a-context-extender.html">IRB::ContextExtender</a>
+</td>
+<td class="description"><p>
+<a href="../class/-i-r-b=3a=3a-context.html">IRB::Context</a> を拡張するためのモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-i-r-b=3a=3a-extend-command-bundle.html">IRB::ExtendCommandBundle</a>
+</td>
+<td class="description"><p>
+irb のコマンドを拡張するためのモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-i-r-b=3a=3a-history-saving-ability.html">IRB::HistorySavingAbility</a>
+</td>
+<td class="description"><p>
+<a href="../class/-i-r-b=3a=3a-history-saving-ability.html">IRB::HistorySavingAbility</a> を extend したオブジェクトに irb のヒス
+トリの読み込み、保存の機能を提供するモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-i-r-b=3a=3a-irb-loader.html">IRB::IrbLoader</a>
+</td>
+<td class="description"><p>
+load または require 時の irb のファイル読み込み機能(irb_load、
+irb_require)を定義するモジュールです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>オブジェクト</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-i-r-b=3a=3a-magic-file.html">IRB::MagicFile</a>
+</td>
+<td class="description"><p>
+irb が扱う入力やファイル中のマジックコメントを正しく扱うためのクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-i-r-b=3a=3a-abort.html">IRB::Abort</a>
+</td>
+<td class="description"><p>
+実行中の処理を中断する時に発生させる例外クラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-i-r-b=3a=3a-load-abort.html">IRB::LoadAbort</a>
+</td>
+<td class="description"><p>
+irb 中で require などを中断した場合に発生する例外です。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>同時にrequireされるライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/cmath.html">cmath</a></td>
+<td class="description"><p>
+複素数演算をサポートするライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/e2mmap.html">e2mmap</a></td>
+<td class="description"><p>
+例外クラスに特定のエラーメッセージ用フォーマットを関連づけるためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fcmd=2fchws.html">irb/cmd/chws</a></td>
+<td class="description"><p>
+irb 中の irb_current_working_workspace、irb_change_workspace コマンドの
+ための拡張を定義したサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fcmd=2fhelp.html">irb/cmd/help</a></td>
+<td class="description"><p>
+irb 中の help コマンドのための拡張を定義したサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fcmd=2fload.html">irb/cmd/load</a></td>
+<td class="description"><p>
+irb 中の irb_load、irb_require、irb_source コマンドのための拡張を定義し
+たサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fcmd=2fnop.html">irb/cmd/nop</a></td>
+<td class="description"><p>
+irb 中でコマンドを拡張する各ライブラリのベースになるクラスを扱うサブラ
+イブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fcmd=2fpushws.html">irb/cmd/pushws</a></td>
+<td class="description"><p>
+irb 中の irb_workspaces、irb_push_workspace、irb_pop_workspace コマンド
+のための拡張を定義したサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fcmd=2fsubirb.html">irb/cmd/subirb</a></td>
+<td class="description"><p>
+irb 中の irb、irb_jobs、irb_fg、irb_kill コマンドのための拡張を定義した
+サブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fcontext.html">irb/context</a></td>
+<td class="description"><p>
+irb の設定を扱うためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fext=2fchange=2dws.html">irb/ext/change-ws</a></td>
+<td class="description"><p>
+<a href="../class/-i-r-b=3a=3a-context.html">IRB::Context</a> に irb 中での self を管理する機能を提供するサブライ
+ブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fext=2fhistory.html">irb/ext/history</a></td>
+<td class="description"><p>
+<a href="../class/-i-r-b=3a=3a-context.html">IRB::Context</a> に実行結果の履歴を保持する機能を提供するサブライブラ
+リです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fext=2floader.html">irb/ext/loader</a></td>
+<td class="description"><p>
+load または require 時の irb のファイル読み込み機能(irb_load、
+irb_require)を定義するサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fext=2fmath=2dmode.html">irb/ext/math-mode</a></td>
+<td class="description"><p>
+irb コマンドで実行結果を <a href="../method/-object/i/inspect.html">Object#inspect</a> の代わりに
+<a href="../class/-object=23to_s.html">Object#to_s</a> した結果で表示するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fext=2fmulti=2dirb.html">irb/ext/multi-irb</a></td>
+<td class="description"><p>
+irb 中で複数の独立した irb を扱えるようにするためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fext=2fsave=2dhistory.html">irb/ext/save-history</a></td>
+<td class="description"><p>
+<a href="../class/-i-r-b=3a=3a-context.html">IRB::Context</a> にヒストリの読み込み、保存の機能を提供するサブライブ
+ラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fext=2ftracer.html">irb/ext/tracer</a></td>
+<td class="description"><p>
+irb への入力を評価する時に <a href="../library/tracer.html">tracer</a> ライブラリを使用してトレース
+出力を行う機能を提供するサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fext=2fuse=2dloader.html">irb/ext/use-loader</a></td>
+<td class="description"><p>
+load または require 時に irb のファイル読み込み機能(irb_load、
+irb_require)を使うように設定する機能を提供するサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fext=2fworkspaces.html">irb/ext/workspaces</a></td>
+<td class="description"><p>
+<a href="../class/-i-r-b=3a=3a-context.html">IRB::Context</a> に irb 中での self を管理する機能を提供するサブライ
+ブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fextend=2dcommand.html">irb/extend-command</a></td>
+<td class="description"><p>
+irb を拡張するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2finit.html">irb/init</a></td>
+<td class="description"><p>
+irb の初期化をするためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2finput=2dmethod.html">irb/input-method</a></td>
+<td class="description"><p>
+irb が入力を扱うためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2flocale.html">irb/locale</a></td>
+<td class="description"><p>
+ライブラリ内部で使用します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fmagic=2dfile.html">irb/magic-file</a></td>
+<td class="description"><p>
+irb が扱う入力やファイル中のマジックコメントを正しく扱うためのサブライ
+ブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fnotifier.html">irb/notifier</a></td>
+<td class="description"><p>
+ライブラリ内部で使用します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2foutput=2dmethod.html">irb/output-method</a></td>
+<td class="description"><p>
+irb が出力を扱うためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fruby=2dlex.html">irb/ruby-lex</a></td>
+<td class="description"><p>
+Ruby のソースコードを字句解析するためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fruby=2dtoken.html">irb/ruby-token</a></td>
+<td class="description"><p>
+Ruby のソースコード中の各種トークンを定義したサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fslex.html">irb/slex</a></td>
+<td class="description"><p>
+Ruby のソースコードを字句解析するためのサブライブラリです。
+<a href="../library/irb=2fruby=2dlex.html">irb/ruby-lex</a> から使用されます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fsrc_encoding.html">irb/src_encoding</a></td>
+<td class="description"><p>
+irb が扱う入力やファイル中の規程のエンコーディングを正しく扱うためのサ
+ブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fversion.html">irb/version</a></td>
+<td class="description"><p>
+<a href="../library/irb.html">irb</a> ライブラリのバージョンを定義したサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fworkspace.html">irb/workspace</a></td>
+<td class="description"><p>
+irb 中で self を扱うためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fws=2dfor=2dcase=2d2.html">irb/ws-for-case-2</a></td>
+<td class="description"><p>
+ライブラリ内部で使用します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/mathn.html">mathn</a></td>
+<td class="description"><p>
+<a href="../class/-rational.html">Rational</a> と <a href="../class/-complex.html">Complex</a> をよりシームレスに利用できるようにするライブラリです。数値ライブラリの挙動をグローバルに変更します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/matrix.html">matrix</a></td>
+<td class="description"><p>
+行列と数ベクトルを扱うためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/prime.html">prime</a></td>
+<td class="description"><p>
+素数や素因数分解を扱うライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/readline.html">readline</a></td>
+<td class="description"><p>
+GNU Readline によるコマンドライン入力インタフェースを提供するライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/thread.html">thread</a></td>
+<td class="description"><p>
+このライブラリで提供されていたクラスは 2.3.0 で組み込みクラスになりまし
+た。互換性のためだけに残されています。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/tracer.html">tracer</a></td>
+<td class="description"><p>
+実行トレース出力をとる機能を提供します。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>サブライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/irb=2fcompletion.html">irb/completion</a></td>
+<td class="description"><p>
+irb の completion 機能を提供するライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fframe.html">irb/frame</a></td>
+<td class="description"><p>
+現在実行中のフレーム情報を取り扱うためのサブライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fhelp.html">irb/help</a></td>
+<td class="description"><p>
+irb コマンドのヘルプを表示するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2finspector.html">irb/inspector</a></td>
+<td class="description"><p>
+irb コマンドで実行結果の出力方式(inspect_mode)を定義するためのサブライ
+ブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/irb=2fxmp.html">irb/xmp</a></td>
+<td class="description"><p>
+Ruby のソースコードとその実行結果を、行ごとに交互に表示するためのライブ
+ラリです。irb を実行しなくても、使用することが出来ます。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

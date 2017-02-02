@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>library test/unit (Ruby 1.8.7)</title>
 </head>
 <body>
@@ -23,6 +24,17 @@
 <h2>要約</h2>
 <p>
 ユニットテストを行うためのライブラリです。
+</p>
+<p>
+このライブラリは 2.2.0 からbundled gem(gemファイルのみを同梱)になりまし
+た。詳しい内容は下記のプロジェクトページを参照してください。
+</p>
+<ul>
+<li>Test::Unit - Ruby用単体テストフレームワーク: <a class="external" href="http://test-unit.github.io/">http://test-unit.github.io/</a></li>
+</ul>
+<p>
+なお、2.2.0以前のtest/unit は <a href="../library/minitest=2funit.html">minitest/unit</a> を使って再実装され
+ていましたが、上記のtest/unitと完全な互換性がある訳ではありません。
 </p>
 <h2 >使い方</h2>
 <p>
@@ -78,71 +90,54 @@ Started
 F.
 Finished in 0.022223 seconds.
 
-  1) Failure!!!
+  1) Failure:
 test_bar(TC_Foo) [test_foo.rb:16]:
-&lt;bar&gt; expected but was
-&lt;foo&gt;
+&lt;&quot;bar&quot;&gt; expected but was
+&lt;&quot;foo&quot;&gt;.
 
-2 tests, 2 assertions, 1 failures, 0 errors
+2 tests, 2 assertions, 1 failures, 0 errors, 0 skips
 </pre>
 <p>
 test_bar だけテストしたい場合は以下のようなオプションを与えます。
 </p>
 <pre>
-$ ruby test_foo.rb --name=test_bar
+$ ruby test_foo.rb --name test_bar
 
 Loaded suite test_foo
 Started
 F
 Finished in 0.019573 seconds.
 
-  1) Failure!!!
+  1) Failure:
 test_bar(TC_Foo) [test_foo.rb:16]:
-&lt;bar&gt; expected but was
-&lt;foo&gt;
+&lt;&quot;bar&quot;&gt; expected but was
+&lt;&quot;foo&quot;&gt;.
 
-1 tests, 1 assertions, 1 failures, 0 errors
+1 tests, 1 assertions, 1 failures, 0 errors, 0 skips
 </pre>
 <p>
-gtk を使った testrunner
+--name=test_barのような指定は行えません。
 </p>
-<pre>
-$ ruby test_foo.rb --runner=gtk --name=test_bar
-</pre>
-<p>
-fox を使う
-</p>
-<pre>
-$ ruby test_foo.rb --runner=fox --name=test_bar
-</pre>
-<p>
-console を使う (default)
-</p>
-<pre>
-$ ruby test_foo.rb --runner=console --name=test_bar
-</pre>
 <p>
 以下のようにすると help も表示されます。
 </p>
 <pre>
 $ ruby test_foo.rb --help
-
-   Usage: test_foo.rb [options] [-- untouched arguments]
-
-       -r, --runner=RUNNER              Use the given RUNNER.
-                                        (c[onsole], f[ox], g[tk], g[tk]2, t[k])
-       -b, --basedir=DIR                Base directory of test suites.
-       -w, --workdir=DIR                Working directory to run tests.
-       -n, --name=NAME                  Runs tests matching NAME.
-                                        (patterns may be used).
-       -t, --testcase=TESTCASE          Runs tests in TestCases matching TESTCASE.
-                                        (patterns may be used).
-       -v, --verbose=[LEVEL]            Set the output level (default is verbose).
-                                        (s[ilent], p[rogress], n[ormal], v[erbose])
-           --                           Stop processing options so that the
-                                        remaining options will be passed to the
-                                        test.
-       -h, --help                       Display this help.
+Usage: test_foo [options]
+minitest options:
+    -h, --help                       Display this help.
+    -s, --seed SEED                  Sets random seed
+    -v, --verbose                    Verbose. Show progress processing files.
+    -n, --name PATTERN               Filter test names on pattern.
+        --jobs-status [TYPE]         Show status of jobs every file; Disabled when --jobs isn't specified.
+    -j, --jobs N                     Allow run tests with N jobs at once
+        --no-retry                   Don't retry running testcase when --jobs specified
+        --ruby VAL                   Path to ruby; It'll have used at -j option
+    -q, --hide-skip                  Hide skipped tests
+    -b, --basedir=DIR                Base directory of test suites.
+    -x, --exclude PATTERN            Exclude test files on pattern.
+    -Idirectory                      Add library load path
+        --[no-]gc-stress             Set GC.stress as true
 </pre>
 <p>
 複数のテストを一度に行う場合、以下のように書いただけのファイルを実行します。
@@ -152,20 +147,12 @@ require 'test/unit'
 require 'test_foo.rb'
 require 'test_bar.rb'
 </pre>
-<p>
-もう少し高度なテストの実行方法に関しては <a href="../class/-test=3a=3a-unit=3a=3a-auto-runner.html">Test::Unit::AutoRunner</a> を
-参照して下さい。
-</p>
 <h2 >いつテストは実行されるか</h2>
 <p>
 上の例では、テストクラスを「定義しただけ」で、テストが実行されています。
-これは、<a href="../method/-kernel/m/at_exit.html">Kernel.#at_exit</a> と <a href="../method/-object-space/m/each_object.html">ObjectSpace.#each_object</a> を使って
-実装されています。つまり、上の例ではテストは終了時の後処理として実行されます。
-</p>
-<p>
-大抵の場合は、これで問題ありません。が、そうでない場合は、
-testrb コマンドや <a href="../class/-test=3a=3a-unit=3a=3a-auto-runner.html">Test::Unit::AutoRunner</a> 、各種 TestRunner クラスを使うことにより、
-明示的にテストを実行することができます。
+これは、require 'test/unit'した時に<a href="../method/-mini-test=3a=3a-unit/s/autorun.html">MiniTest::Unit.autorun</a>を実行し
+ているためです。その結果、終了時の後処理として実行されるようになってい
+ます。
 </p>
 <h2 >Error と Failure の違い</h2>
 <dl>
@@ -182,26 +169,20 @@ testrb コマンドや <a href="../class/-test=3a=3a-unit=3a=3a-auto-runner.html
 </p>
 </dd>
 </dl>
+<h2 >並列実行</h2>
+<p>
+1.9.3 から単体テストの高速化のために、並列実行がサポートされました。
+</p>
+<p>
+並列化の仕組みについては以下の記事をご覧ください。
+</p>
+<ul>
+<li>Rubyist Magazine 0033 号 詳解! test-all 並列化: <a class="external" href="http://magazine.rubyist.net/?0033-ParallelizeTestAll">http://magazine.rubyist.net/?0033-ParallelizeTestAll</a></li>
+</ul>
 
 
 <h2>クラス</h2>
 <table class="entries libraries">
-
-<tr>
-<td class="signature" style="text-indent: 0.0em;">
-<span style="display:none"></span>
-<a href="../class/-test=3a=3a-unit=3a=3a-auto-runner.html">Test::Unit::AutoRunner</a>
-</td>
-<td class="description"><p>
-テストの実行を操作したいときにこの AutoRunner クラスを使います。
-大量のテストの中から特定のテストスクリプトのみを実行したい場合、
-特定のテストクラスのみを実行したい場合などに使います。
-AutoRunner は Collector::Dir オブジェクトなどの Collector に
-テストを集めさせて、UI::Console::TestRunner オブジェクトなどの
-Runner にテストを実行させているクラスです。
-</p>
-</td>
-</tr>
 
 <tr>
 <td class="signature" style="text-indent: 0.0em;">
@@ -285,28 +266,6 @@ TestSuite にすることもできます。
 </td>
 </tr>
 
-<tr>
-<td class="signature" style="text-indent: 0.0em;">
-<span style="display:none"></span>
-<a href="../class/-test=3a=3a-unit=3a=3a-u-i.html">Test::Unit::UI</a>
-</td>
-<td class="description"><p>
-各種 TestRunner を実装するためのモジュールです。
-</p>
-</td>
-</tr>
-
-<tr>
-<td class="signature" style="text-indent: 0.0em;">
-<span style="display:none"></span>
-<a href="../class/-test=3a=3a-unit=3a=3a-u-i=3a=3a-test-runner-utilities.html">Test::Unit::UI::TestRunnerUtilities</a>
-</td>
-<td class="description"><p>
-各種 TestRunner を実装するためのモジュールです。
-</p>
-</td>
-</tr>
-
 </table>
 
 <h2>例外クラス</h2>
@@ -330,25 +289,9 @@ TestSuite にすることもできます。
 <table class="entries libraries">
 
 <tr>
-<td class="signature"><a href="../library/test=2funit.html">test/unit</a></td>
-<td class="description"><p>
-ユニットテストを行うためのライブラリです。
-</p>
-</td>
-</tr>
-
-<tr>
 <td class="signature"><a href="../library/test=2funit=2fassertions.html">test/unit/assertions</a></td>
 <td class="description"><p>
 各種の assert メソッドを提供します。
-</p>
-</td>
-</tr>
-
-<tr>
-<td class="signature"><a href="../library/test=2funit=2fautorunner.html">test/unit/autorunner</a></td>
-<td class="description"><p>
-ユニットテストの実行を操作したいときに使います。
 </p>
 </td>
 </tr>
@@ -369,18 +312,18 @@ TestSuite にすることもできます。
 </td>
 </tr>
 
-<tr>
-<td class="signature"><a href="../library/test=2funit=2fui=2ftestrunnerutilities.html">test/unit/ui/testrunnerutilities</a></td>
-<td class="description"><p>
-各種 TestRunner を実装するために使われます。
-</p>
-</td>
-</tr>
-
 </table>
 
 <h2>サブライブラリ</h2>
 <table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/test=2funit=2fautorunner.html">test/unit/autorunner</a></td>
+<td class="description"><p>
+ユニットテストの実行を操作したいときに使います。
+</p>
+</td>
+</tr>
 
 <tr>
 <td class="signature"><a href="../library/test=2funit=2ftestresult.html">test/unit/testresult</a></td>
@@ -435,6 +378,14 @@ GTK+ を用いた UI 上でユニットテストを実行し、結果を表示�
 </tr>
 
 <tr>
+<td class="signature"><a href="../library/test=2funit=2fui=2ftestrunnerutilities.html">test/unit/ui/testrunnerutilities</a></td>
+<td class="description"><p>
+各種 TestRunner を実装するために使われます。
+</p>
+</td>
+</tr>
+
+<tr>
 <td class="signature"><a href="../library/test=2funit=2fui=2ftk=2ftestrunner.html">test/unit/ui/tk/testrunner</a></td>
 <td class="description"><p>
 Tk を用いた UI 上でユニットテストを実行し、結果を表示するためのライブラ
@@ -457,8 +408,8 @@ Tk を用いた UI 上でユニットテストを実行し、結果を表示す�
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

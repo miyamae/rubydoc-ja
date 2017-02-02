@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>library shell (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; shellライブラリ
+</p>
+
+<h1>library shell</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+Ruby 上で sh/csh のようにコマンドの実行及びフィルタリングを手軽に行うためのライブラリです。
+</p>
+<p>
+sh/csh の制御文は Ruby の機能を用いて実現します。
+</p>
+<h2 >サンプル</h2>
+<h3 >Example 1:</h3>
+<pre>
+sh = Shell.cd(&quot;/tmp&quot;)
+sh.mkdir &quot;shell-test-1&quot; unless sh.exists?(&quot;shell-test-1&quot;)
+sh.cd(&quot;shell-test-1&quot;)
+for dir in [&quot;dir1&quot;, &quot;dir3&quot;, &quot;dir5&quot;]
+  unless sh.exists?(dir)
+    sh.mkdir dir
+    sh.cd(dir) do
+      f = sh.open(&quot;tmpFile&quot;, &quot;w&quot;)
+      f.puts &quot;TEST&quot;
+      f.close
+    end
+    print sh.pwd
+  end
+end
+</pre>
+<h3 >Example 2:</h3>
+<pre>
+sh = Shell.cd(&quot;/tmp&quot;)
+sh.transact do
+  mkdir &quot;shell-test-1&quot; unless exists?(&quot;shell-test-1&quot;)
+  cd(&quot;shell-test-1&quot;)
+  for dir in [&quot;dir1&quot;, &quot;dir3&quot;, &quot;dir5&quot;]
+    if !exists?(dir)
+      mkdir dir
+      cd(dir) do
+        f = open(&quot;tmpFile&quot;, &quot;w&quot;)
+        f.print &quot;TEST\n&quot;
+        f.close
+      end
+      print pwd
+    end
+  end
+end
+</pre>
+<h3 >Example 3: Using Pipe</h3>
+<pre>
+sh.cat(&quot;/etc/printcap&quot;) | sh.tee(&quot;tee1&quot;) &gt; &quot;tee2&quot;
+(sh.cat &lt; &quot;/etc/printcap&quot;) | sh.tee(&quot;tee11&quot;) &gt; &quot;tee12&quot;
+sh.cat(&quot;/etc/printcap&quot;) | sh.tee(&quot;tee1&quot;) &gt;&gt; &quot;tee2&quot;
+(sh.cat &lt; &quot;/etc/printcap&quot;) | sh.tee(&quot;tee11&quot;) &gt;&gt; &quot;tee12&quot;
+</pre>
+<h3 >Example 4:</h3>
+<pre>
+print sh.cat(&quot;/etc/passwd&quot;).head.collect {|line| /keiju/ =~ line }
+</pre>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-shell.html">Shell</a>
+</td>
+<td class="description"><p>
+Shell オブジェクトはカレントディレクトリを持ち,
+コマンド実行はそこからの相対パスになります.
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-shell=3a=3a-command-processor.html">Shell::CommandProcessor</a>
+</td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-shell=3a=3a-filter.html">Shell::Filter</a>
+</td>
+<td class="description"><p>
+コマンドの実行結果はすべて <a href="../class/-shell=3a=3a-filter.html">Shell::Filter</a> か、そのサブクラスのインスタンスとして返ります。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-shell=3a=3a-built-in-command.html">Shell::BuiltInCommand</a>
+</td>
+<td class="description"><p>
+クラスとして実装されている全てのビルトインコマンドのスーパークラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-shell=3a=3a-append-i-o.html">Shell::AppendIO</a>
+</td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 3.0em;">
+<span style="display:none">&nbsp;&nbsp;&nbsp;</span>
+<a href="../class/-shell=3a=3a-append-file.html">Shell::AppendFile</a>
+</td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-shell=3a=3a-cat.html">Shell::Cat</a>
+</td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-shell=3a=3a-concat.html">Shell::Concat</a>
+</td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-shell=3a=3a-echo.html">Shell::Echo</a>
+</td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-shell=3a=3a-glob.html">Shell::Glob</a>
+</td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-shell=3a=3a-tee.html">Shell::Tee</a>
+</td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-shell=3a=3a-void.html">Shell::Void</a>
+</td>
+<td class="description"><p>
+何もしないコマンドです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-shell=3a=3a-system-command.html">Shell::SystemCommand</a>
+</td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-shell=3a=3a-process-controller.html">Shell::ProcessController</a>
+</td>
+<td class="description"></td>
+</tr>
+
+</table>
+
+<h2>モジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-shell=3a=3a-error.html">Shell::Error</a>
+</td>
+<td class="description"><p>
+<a href="../library/shell.html">shell</a> で使用する例外のための名前空間です。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-shell=3a=3a-error=3a=3a-cant-apply-method.html">Shell::Error::CantApplyMethod</a>
+</td>
+<td class="description"><p>
+メソッドを適用できないときに発生する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-shell=3a=3a-error=3a=3a-cant-define.html">Shell::Error::CantDefine</a>
+</td>
+<td class="description"><p>
+コマンドを定義出来ないときに発生する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-shell=3a=3a-error=3a=3a-command-not-found.html">Shell::Error::CommandNotFound</a>
+</td>
+<td class="description"><p>
+コマンドが見つからないときに発生する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-shell=3a=3a-error=3a=3a-dir-stack-empty.html">Shell::Error::DirStackEmpty</a>
+</td>
+<td class="description"><p>
+空のディレクトリスタックから要素を取り出そうとしたときに発生する例外です。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>同時にrequireされるライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/shell=2fbuiltin=2dcommand.html">shell/builtin-command</a></td>
+<td class="description"><p>
+<a href="../class/-shell.html">Shell</a> で使用するビルトインコマンドを定義しているライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/shell=2fcommand=2dprocessor.html">shell/command-processor</a></td>
+<td class="description"><p>
+<a href="../class/-shell.html">Shell</a> で使用可能なコマンドの大半を定義するライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/shell=2ferror.html">shell/error</a></td>
+<td class="description"><p>
+<a href="../library/shell.html">shell</a> で使用する例外を定義したライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/shell=2ffilter.html">shell/filter</a></td>
+<td class="description"><p>
+<a href="../class/-shell=3a=3a-filter.html">Shell::Filter</a> を定義しているライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/shell=2fprocess=2dcontroller.html">shell/process-controller</a></td>
+<td class="description"><p>
+プロセスを制御するためのクラスを定義したライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/shell=2fsystem=2dcommand.html">shell/system-command</a></td>
+<td class="description"></td>
+</tr>
+
+</table>
+
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

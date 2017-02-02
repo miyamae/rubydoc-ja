@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>instance method Proc#curry (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-proc.html">Procクラス</a>
+&gt; curry
+
+</p>
+
+
+<h1>instance method Proc#curry</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_CURRY"><code>curry -&gt; Proc</code><span class="permalink">[<a href="../../../method/-proc/i/curry.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Proc.html#method-i-curry">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>curry(arity) -&gt; Proc</code></dt>
+<dd class="method-description">
+<p>
+Procをカリー化します
+</p>
+<p>
+カリー化したProcはいくつかの引数をとります。十分な数の引数が与えられると、元のProcに引数を渡し
+て実行し、結果を返します。引数の個数が足りないときは、部分適用したカリー化Procを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] arity:</dt>
+<dd>
+引数の個数を指定します
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+カリー化したProcオブジェクトを返します
+</dd>
+</dl>
+<pre>
+b = proc {|x, y, z| (x||0) + (y||0) + (z||0) }
+p b.curry[1][2][3]           #=&gt; 6
+p b.curry[1, 2][3, 4]        #=&gt; 6
+p b.curry(5)[1][2][3][4][5]  #=&gt; 6
+p b.curry(5)[1, 2][3, 4][5]  #=&gt; 6
+p b.curry(1)[1]              #=&gt; 1
+
+b = proc {|x, y, z, *w| (x||0) + (y||0) + (z||0) + w.inject(0, &amp;:+) }
+p b.curry[1][2][3]           #=&gt; 6
+p b.curry[1, 2][3, 4]        #=&gt; 10
+p b.curry(5)[1][2][3][4][5]  #=&gt; 15
+p b.curry(5)[1, 2][3, 4][5]  #=&gt; 15
+p b.curry(1)[1]              #=&gt; 1
+
+b = lambda {|x, y, z| (x||0) + (y||0) + (z||0) }
+p b.curry[1][2][3]           #=&gt; 6
+p b.curry[1, 2][3, 4]        #=&gt; wrong number of arguments (4 for 3)
+p b.curry(5)                 #=&gt; wrong number of arguments (5 for 3)
+p b.curry(1)                 #=&gt; wrong number of arguments (1 for 3)
+
+b = lambda {|x, y, z, *w| (x||0) + (y||0) + (z||0) + w.inject(0, &amp;:+) }
+p b.curry[1][2][3]           #=&gt; 6
+p b.curry[1, 2][3, 4]        #=&gt; 10
+p b.curry(5)[1][2][3][4][5]  #=&gt; 15
+p b.curry(5)[1, 2][3, 4][5]  #=&gt; 15
+p b.curry(1)                 #=&gt; wrong number of arguments (1 for 3+)
+
+b = proc { :foo }
+p b.curry[]                  #=&gt; :foo
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>module function ObjectSpace.#define_finalizer (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-object-space.html">ObjectSpaceモジュール</a>
+&gt; define_finalizer
+
+</p>
+
+
+<h1>module function ObjectSpace.#define_finalizer</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_DEFINE_FINALIZER"><code>define_finalizer(obj, proc) -&gt; Array</code><span class="permalink">[<a href="../../../method/-object-space/m/define_finalizer.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/ObjectSpace.html#method-c-define_finalizer">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>define_finalizer(obj) {|id| ...} -&gt; Array</code></dt>
+<dd class="method-description">
+<p>
+obj が解放されるときに実行されるファイナライザ proc を
+登録します。同じオブジェクトについて複数回呼ばれたときは置き換えで
+はなく追加登録されます。現在のセーフレベルと proc を配列にして返します。
+</p>
+<p>
+ブロックを指定した場合は、そのブロックがファイナライザになります。
+obj の回収時にブロックは obj の ID (<a href="../../../method/-basic-object/i/__id__.html">BasicObject#__id__</a>)を引数とし
+て実行されます。
+しかし、後述の問題があるのでブロックでファイナライザを登録するのは難しいでしょう。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+ファイナライザを登録したいオブジェクトを指定します。
+</dd>
+<dt class='method-param'>[PARAM] proc:</dt>
+<dd>
+ファイナライザとして <a href="../../../class/-proc.html">Proc</a> オブジェクトを指定します。proc は obj の回収時に obj の ID を引数として実行されます。
+</dd>
+</dl>
+<h2 >使い方の注意</h2>
+<p>
+以下は、define_finalizer の使い方の悪い例です。
+</p>
+<pre>
+class Foo
+  def initialize
+    ObjectSpace.define_finalizer(self) {
+      puts &quot;foo&quot;
+    }
+  end
+end
+Foo.new
+GC.start
+</pre>
+<p>
+これは、渡された proc の self が obj を参照しつ
+づけるため。そのオブジェクトが GC の対象になりません。
+</p>
+<p>
+<a href="../../../library/tempfile.html">tempfile</a> は、ファイナライザの使い方の
+良い例になっています。これは、クラスのコンテキストで <a href="../../../class/-proc.html">Proc</a> を
+生成することで上記の問題を回避しています。
+</p>
+<pre>
+class Bar
+  def Bar.callback
+    proc {
+      puts &quot;bar&quot;
+    }
+  end
+  def initialize
+    ObjectSpace.define_finalizer(self, Bar.callback)
+  end
+end
+Bar.new
+GC.start
+</pre>
+<p>
+proc の呼び出しで発生した大域脱出(exitや例外)は無視されます。
+これは、スクリプトのメイン処理が GC の発生によって非同期に中断され
+るのを防ぐためです。不安なうちは -d オプションで
+事前に例外の発生の有無を確認しておいた方が良いでしょう。
+</p>
+<pre>
+class Baz
+  def initialize
+    ObjectSpace.define_finalizer self, eval %q{
+      proc {
+        raise &quot;baz&quot; rescue puts $!
+        raise &quot;baz2&quot;
+        puts &quot;baz3&quot;
+      }
+    }, TOPLEVEL_BINDING
+  end
+end
+Baz.new
+GC.start
+
+# =&gt; baz
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../doc/spec=2frubycmd.html">Rubyの起動</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

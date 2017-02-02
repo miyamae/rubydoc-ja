@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>Rubyの起動 (Ruby 2.2.0)</title>
 </head>
 <body>
@@ -45,8 +46,7 @@ argument に指定した文字列は組み込み定数 <a href="../method/-objec
 期値として設定されます。標準のシェルがワイルドカードを展開しない環境
 (<a href="../doc/platform=2f-win32.html">Win32</a>)では、Ruby インタプリタが自前でワイルドカードを展開して
 <a href="../method/-object/c/-a-r-g-v.html">Object::ARGV</a> に設定します。この場合ワイルドカードとして
-`*', `?', `[]', `**/' が使用できます
-(<a href="../method/-dir/s/glob.html">Dir.glob</a> と異なり `{..}' は使えません)。Win32 環境で、
+`*', `?', `[]', `**/' が使用できます。Win32 環境で、
 ワイルドカード展開を抑止したい場合は引数をシングルクォート(') で括りま
 す。
 </p>
@@ -362,38 +362,29 @@ Rubyのバージョンを表示します。
 </dl>
 <h2 id='shebang'>インタプリタ行の解釈</h2>
 <p>
-コマンドラインに指定したスクリプトが `#!' で始まるファイルで、そ
-の行に `ruby' という文字列を含まない場合、OSに代わって
-`#!' に続く文字列をコマンドラインとみなしてそのインタプリタを起
-動します。このときコマンドラインで指定した引数はそのインタプリタに渡さ
-れます。
+コマンドラインに指定したスクリプトが `#!` で始まるファイルで、その行に
+`ruby` という文字列を含まない場合、その行を読み飛ばします。`#!` に続く
+文字列が `ruby` という文字列を含む行を見つけたらその行以下を Ruby スク
+リプトとして実行します。
 </p>
 <p>
-例えば、以下のシェルスクリプトを ruby で実行すると sh を起動します。
+例えば、以下のようなスクリプトを sh で実行すると sh から Ruby を起動することができます。
 </p>
 <pre>
-#!/bin/sh -vx
-echo &quot;$@&quot;
+#!/bin/sh
+exec ruby -x &quot;$0&quot; &quot;$@&quot;
+#!ruby
+p ARGV
+puts &quot;Hello, World!&quot;
 </pre>
 <p>
-この行に `ruby' という文字列が含まれる場合は、その文字列よ
-り左側は無視され、右側に `-'で始まる語があればオプションとして解
-釈します。
+これは Ruby をスペースを含むパスにインストールした場合などに有用です。
 </p>
-<p>
-ここで指定したオプションは、コマンドラインでの指定に追加されます。これ
-はそのスクリプトで指定すべきオプションを埋め込むために使います。例えば
-以下の行で始まるスクリプトはコマンドラインに -Ke オプションを指
-定したのと同じ効果になります。
-</p>
-<pre>
-#! ruby -Ke
-</pre>
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

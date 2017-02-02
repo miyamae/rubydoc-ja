@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../../../style.css">
   <link rel="icon" type="image/png" href="../../../rurema.png">
+  
   <title>module function Kernel.#system (Ruby 1.8.7)</title>
 </head>
 <body>
@@ -22,18 +23,26 @@
 <h1>module function Kernel.#system</h1>
 <dl class="methodlist">
 
-<dt class="method-heading" id="M_SYSTEM"><code>system(command) -&gt; bool</code><span class="permalink">[<a href="../../../method/-kernel/m/system.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-system">rdoc</a>]</span></dt>
+<dt class="method-heading" id="M_SYSTEM"><code>system(command, options={}) -&gt; bool | nil</code><span class="permalink">[<a href="../../../method/-kernel/m/system.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-system">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>system(env, command, options={}) -&gt; bool | nil</code></dt>
 <dd class="method-description">
 <p>
 引数を外部コマンドとして実行して、成功した時に真を返します。
 </p>
 <p>
 子プロセスが終了ステータス 0 で終了すると成功とみなし true を返します。
-それ以外の終了ステータスの場合
-(コマンドを実行できなかった場合も含む)は false を返します。
+それ以外の終了ステータスの場合は false を返します。
+コマンドを実行できなかった場合は nil を返します。
 </p>
 <p>
 終了ステータスは変数 <a href="../../../method/-kernel/v/=3f.html">$?</a> で参照できます。
+</p>
+<p>
+コマンドを実行することができなかった場合、多くのシェルはステータス
+127 を返します。(したがって <a href="../../../method/-kernel/v/=3f.html">$?</a> の数値は、0x7f00)、シェルを介
+さない場合は Ruby の子プロセスがステータス 127 で終了します。
+コマンドが実行できなかったのか、コマンドが失敗したのかは、普通
+<a href="../../../method/-kernel/v/=3f.html">$?</a> を参照することで判別可能です。
 </p>
 <h2 >引数の解釈</h2>
 <p>
@@ -51,23 +60,53 @@
 <dd>
 command コマンドを文字列で指定します。
 </dd>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+更新する環境変数を表す Hash
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+オプションパラメータ Hash
+</dd>
 </dl>
 <p>
-[SEE_ALSO] <a href="../../../method/-kernel/m/=60.html">Kernel.#`</a>,<a href="../../../method/-kernel/m/exec.html">Kernel.#exec</a>,<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/system.html">system(3)</a>
+[SEE_ALSO] <a href="../../../method/-kernel/m/=60.html">Kernel.#`</a>,<a href="../../../method/-kernel/m/spawn.html">Kernel.#spawn</a>,<a href="../../../method/-kernel/m/exec.html">Kernel.#exec</a>,<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/system.html">system(3)</a>
 </p>
 </dd>
-<dt class="method-heading" id="M_SYSTEM"><code>system(program, *args) -&gt; bool</code><span class="permalink">[<a href="../../../method/-kernel/m/system.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-system">rdoc</a>]</span></dt>
+<dt class="method-heading" id="M_SYSTEM"><code>system(program, *args, options={}) -&gt; bool | nil</code><span class="permalink">[<a href="../../../method/-kernel/m/system.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-system">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>system(env, program, *args, options={}) -&gt; bool | nil</code></dt>
 <dd class="method-description">
 <p>
 引数を外部コマンドとして実行して、成功した時に真を返します。
 </p>
 <p>
 子プロセスが終了ステータス 0 で終了すると成功とみなし true を返します。
-それ以外の終了ステータスの場合は false を返します。
-コマンドを実行できなかった場合は nil を返します。
+それ以外の終了ステータスの場合
+(コマンドを実行できなかった場合も含む)は false を返します。
 </p>
 <p>
 終了ステータスは変数 <a href="../../../method/-kernel/v/=3f.html">$?</a> で参照できます。
+</p>
+<p>
+コマンドを実行することができなかった場合、多くのシェルはステータス
+127 を返します。(したがって $? の数値は、0x7f00)、シェルを介
+さない場合は Ruby の子プロセスがステータス 127 で終了します。
+コマンドが実行できなかったのか、コマンドが失敗したのかは、普通
+$? を参照することで判別可能です。
+</p>
+<p>
+Hash を options として渡すことで、起動される子プロセスの
+</p>
+<ul>
+<li>プロセスグループ</li>
+<li>resource limit</li>
+<li>カレントディレクトリ</li>
+<li>umask</li>
+<li>子プロセスでのリダイレクト</li>
+</ul>
+<p>
+などを変更できます。環境変数のクリアなども指定できます。
+詳しくは <a href="../../../method/-kernel/m/spawn.html">Kernel.#spawn</a> を参照してください。
 </p>
 <h2 >引数の解釈</h2>
 <p>
@@ -87,13 +126,21 @@ command コマンドを文字列で指定します。
 <dd>
 program に渡す引数を 0 個以上指定する
 </dd>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+更新する環境変数を表す Hash
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+オプションパラメータ Hash
+</dd>
 <dt>[EXCEPTION] ArgumentError:</dt>
 <dd>
 第一引数が配列かつ要素数が 2 でない場合に発生します。
 </dd>
 </dl>
 <p>
-[SEE_ALSO] <a href="../../../method/-kernel/m/=60.html">Kernel.#`</a>,<a href="../../../method/-kernel/m/exec.html">Kernel.#exec</a>,<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/system.html">system(3)</a>
+[SEE_ALSO] <a href="../../../method/-kernel/m/=60.html">Kernel.#`</a>,<a href="../../../method/-kernel/m/spawn.html">Kernel.#spawn</a>,<a href="../../../method/-kernel/m/exec.html">Kernel.#exec</a>,<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/system.html">system(3)</a>
 </p>
 </dd>
 
@@ -102,8 +149,8 @@ program に渡す引数を 0 個以上指定する
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

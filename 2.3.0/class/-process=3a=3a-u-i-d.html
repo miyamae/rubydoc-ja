@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>module Process::UID (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Process::UIDモジュール
+</p>
+
+
+<h1>module Process::UID</h1>
+<p>
+
+
+クラスの継承リスト: Process::UID
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+カレントプロセスのユーザ ID を操作するためのモジュールです。
+</p>
+<p>
+移植性が考慮されており、プラットフォーム間の違いを吸収するように実装されています。
+プラットフォームのシステムコールを直接使いたい場合には <a href="../class/-process=3a=3a-sys.html">Process::Sys</a>
+が提供されています。<a href="../class/-process=3a=3a-sys.html">Process::Sys</a> と Process::UID を同時に使うことは推奨されません。
+</p>
+<p>
+実ユーザ ID を変更するメソッドは提供されていません。
+これは <a href="../method/-process=3a=3a-u-i-d/m/eid=3d.html">Process::UID.#eid=</a> と <a href="../method/-process=3a=3a-u-i-d/m/re_exchange.html">Process::UID.#re_exchange</a> を以下のように
+組み合わせることによって実現できます。
+</p>
+<pre>
+                           # (r,e,s) == (u1,u2,??)
+Process::UID.re_exchange   # (u1,u2,??) ==&gt; (u2,u1,??)
+Process::UID.eid = id      # (u2,u1,??) ==&gt; (u2,id,??)
+Process::UID.re_exchange   # (u2,id,??) ==&gt; (id,u2,??)
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>モジュール関数</dt>
+<dd>
+
+<a href="#M_CHANGE_PRIVILEGE">change_privilege</a>
+
+<a href="#M_EID">eid</a>
+
+<a href="#M_EID--3D">eid=</a>
+
+<a href="#M_EID--3D">grant_privilege</a>
+
+<a href="#M_FROM_NAME">from_name</a>
+
+<a href="#M_RE_EXCHANGE">re_exchange</a>
+
+<a href="#M_RE_EXCHANGEABLE--3F">re_exchangeable?</a>
+
+<a href="#M_RID">rid</a>
+
+<a href="#M_SID_AVAILABLE--3F">sid_available?</a>
+
+<a href="#M_SWITCH">switch</a>
+
+</dd>
+
+</dl>
+
+
+<h2>モジュール関数</h2>
+<dl>
+
+<dt class="method-heading" id="M_CHANGE_PRIVILEGE"><code>change_privilege(id) -&gt; Integer</code><span class="permalink">[<a href="../method/-process=3a=3a-u-i-d/m/change_privilege.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Process/UID.html#method-c-change_privilege">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+実ユーザ ID・実効ユーザ ID・保存ユーザ ID のすべてを指定された id に変更します。
+成功したら id を返します。主に root 権限を完全に放棄するために使います。
+</p>
+<p>
+利用できるかはプラットフォームに依存します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] id:</dt>
+<dd>
+ユーザ ID を整数で指定します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+変更できないユーザ ID があった場合に発生します。例外の発生時にこのメソッドを呼び出す前の各ユーザ ID の値が保存されているかどうかは保証されません。
+</dd>
+<dt>[EXCEPTION] NotImplementedError:</dt>
+<dd>
+メソッドが現在のプラットフォームで実装されていない場合に発生します。
+</dd>
+</dl>
+<pre>
+[Process.uid, Process.euid]          #=&gt; [0, 0]
+Process::UID.change_privilege(33)    #=&gt; 33
+[Process.uid, Process.euid]          #=&gt; [33, 33]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="M_EID"><code>eid -&gt; Integer</code><span class="permalink">[<a href="../method/-process=3a=3a-u-i-d/m/eid.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Process/UID.html#method-c-eid">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在の実効ユーザ ID を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_EID--3D"><code>grant_privilege(id) -&gt; Integer</code><span class="permalink">[<a href="../method/-process=3a=3a-u-i-d/m/eid=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Process/UID.html#method-c-eid-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>eid=(id)</code></dt>
+<dd class="method-description">
+<p>
+現在のプロセスの実効ユーザ ID を id に変更します。成功したら id を返します。
+</p>
+<p>
+実ユーザ ID は変更されないことが保証されます。
+保存ユーザ ID が変更されないかもしれないので root 権限の完全放棄には使えません。
+保存ユーザ ID が変化するかどうかは <a href="../method/-process=3a=3a-u-i-d/m/re_exchangeable=3f.html">Process::UID.#re_exchangeable?</a>
+が true を返すかどうかで決まります。
+</p>
+<ul>
+<li>true の環境では、実ユーザ ID と異なる値を設定した場合、保存ユーザ ID は新しい実効ユーザ ID の値に設定されます。</li>
+<li>false の環境では保存ユーザ ID は変化しません。</li>
+</ul>
+<p>
+利用できるかはプラットフォームに依存します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] id:</dt>
+<dd>
+ユーザ ID を整数で指定します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+変更できない場合に発生します。
+</dd>
+<dt>[EXCEPTION] NotImplementedError:</dt>
+<dd>
+メソッドが現在のプラットフォームで実装されていない場合に発生します。
+</dd>
+</dl>
+<pre>
+[Process.uid, Process.euid]          #=&gt; [0, 0]
+Process::UID.grant_privilege(33)     #=&gt; 33
+[Process.uid, Process.euid]          #=&gt; [0, 33]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="M_FROM_NAME"><code>from_name(name) -&gt; Integer</code><span class="permalink">[<a href="../method/-process=3a=3a-u-i-d/m/from_name.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Process/UID.html#method-c-from_name">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数で指定した名前の実ユーザ ID を返します。
+</p>
+<pre>
+Process::UID.from_name(&quot;root&quot;) # =&gt; 0
+Process::UID.from_name(&quot;nosuchuser&quot;) # =&gt; can't find user for nosuchuser (ArgumentError)
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+ユーザ名を指定します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+引数で指定したユーザが存在しない場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="M_RE_EXCHANGE"><code>re_exchange -&gt; Integer</code><span class="permalink">[<a href="../method/-process=3a=3a-u-i-d/m/re_exchange.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Process/UID.html#method-c-re_exchange">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+実ユーザ ID と実効ユーザ ID とを入れ換えます。
+保存ユーザ ID は新しい実効ユーザ ID と同じになります。
+新しい実効ユーザ ID を返します。
+</p>
+<p>
+利用できるかはプラットフォームに依存します。
+</p>
+<dl>
+<dt>[EXCEPTION] NotImplementedError:</dt>
+<dd>
+メソッドが現在のプラットフォームで実装されていない場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="M_RE_EXCHANGEABLE--3F"><code>re_exchangeable? -&gt; bool</code><span class="permalink">[<a href="../method/-process=3a=3a-u-i-d/m/re_exchangeable=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Process/UID.html#method-c-re_exchangeable-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-process=3a=3a-u-i-d/m/re_exchange.html">Process::UID.#re_exchange</a> が実装されているならば true を返します。そうでない場合に false を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_RID"><code>rid -&gt; Integer</code><span class="permalink">[<a href="../method/-process=3a=3a-u-i-d/m/rid.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Process/UID.html#method-c-rid">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在の実ユーザ ID を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_SID_AVAILABLE--3F"><code>sid_available? -&gt; bool</code><span class="permalink">[<a href="../method/-process=3a=3a-u-i-d/m/sid_available=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Process/UID.html#method-c-sid_available-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+保存ユーザ ID を持つ環境かどうかを真偽値で返します。
+保存ユーザ ID を持つなら true を返します。
+</p>
+<p>
+ただし、このメソッドの値には保証がありません。
+現在は次の条件のいずれかが満足される場合には
+保存ユーザ ID を持つものと判定しています。
+</p>
+<ul>
+<li>setresuid() を持つ</li>
+<li>seteuid() を持つ</li>
+<li>_POSIX_SAVED_IDS が真として定義されている</li>
+</ul>
+</dd>
+
+
+<dt class="method-heading" id="M_SWITCH"><code>switch -&gt; Integer</code><span class="permalink">[<a href="../method/-process=3a=3a-u-i-d/m/switch.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Process/UID.html#method-c-switch">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>switch { .... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+実効ユーザ ID を一時的に変更するために使います。
+</p>
+<p>
+実効ユーザ ID を実ユーザ ID に変更します。実効ユーザ ID と実ユーザ ID が
+等しい場合には、実効ユーザ ID を保存ユーザ ID に変更します。
+変更前の実効ユーザ ID を返します。
+</p>
+<p>
+ブロックが指定された場合、実効ユーザ ID を実ユーザ ID へ
+変更しブロックを実行します。ブロック終了時に実効ユーザ ID を元の
+値に戻します。ブロックの実行結果を返します。
+</p>
+<p>
+なお、保存ユーザ ID を持たない環境でこのメソッドを実行すると
+実ユーザ ID が変化します。
+</p>
+<dl>
+<dt>[EXCEPTION] Errno::EPERM:</dt>
+<dd>
+各ユーザ ID がこのメソッドを実行するのに適切な状態でない場合、
+つまり、実ユーザ ID・実効ユーザ ID・保存ユーザ ID が全て
+同じ場合に発生します。ブロック付きの場合は、なんらかの原因で元の
+権限に復帰できないにも発生します。ブロック内でユーザ ID が変更
+されたなどの理由が挙げられます。
+</dd>
+<dt>[EXCEPTION] NotImplementedError:</dt>
+<dd>
+メソッドが現在のプラットフォームで実装されていない場合に発生します。
+</dd>
+</dl>
+<pre>
+include Process
+# (r, e, s) == (500, 505, 505)
+p [uid, euid]           #=&gt; [500, 505]
+Process::UID.switch do
+  p [uid, euid]         #=&gt; [500, 500]
+end
+p [uid, euid]           #=&gt; [500, 505]
+</pre>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

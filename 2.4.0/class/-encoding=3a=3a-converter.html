@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class Encoding::Converter (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Encoding::Converterクラス
+</p>
+
+
+<h1>class Encoding::Converter</h1>
+<p>
+
+
+クラスの継承リスト: Encoding::Converter
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+文字エンコーディング(文字符号化方式)の変換器のクラスです。既存の変換器より一段細かな処理が可能となります。
+</p>
+<p>
+Encoding::Converter を用いて変換を行う場合は、<a href="../method/-encoding=3a=3a-converter/i/convert.html">Encoding::Converter#convert</a> か、より細かな変換処理が可能な <a href="../method/-encoding=3a=3a-converter/i/primitive_convert.html">Encoding::Converter#primitive_convert</a> が利用できます。
+エンコーディングを変換するメソッドはこの他に <a href="../method/-string/i/encode.html">String#encode</a>, <a href="../method/-n-k-f/m/nkf.html">NKF.#nkf</a>
+などがあります。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_ASCIICOMPAT_ENCODING">asciicompat_encoding</a>
+
+<a href="#S_NEW">new</a>
+
+<a href="#S_SEARCH_CONVPATH">search_convpath</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_CONVERT">convert</a>
+
+<a href="#I_CONVPATH">convpath</a>
+
+<a href="#I_DESTINATION_ENCODING">destination_encoding</a>
+
+<a href="#I_FINISH">finish</a>
+
+<a href="#I_INSERT_OUTPUT">insert_output</a>
+
+<a href="#I_INSPECT">inspect</a>
+
+<a href="#I_LAST_ERROR">last_error</a>
+
+<a href="#I_PRIMITIVE_CONVERT">primitive_convert</a>
+
+<a href="#I_PRIMITIVE_ERRINFO">primitive_errinfo</a>
+
+<a href="#I_PUTBACK">putback</a>
+
+<a href="#I_REPLACEMENT">replacement</a>
+
+<a href="#I_REPLACEMENT--3D">replacement=</a>
+
+<a href="#I_SOURCE_ENCODING">source_encoding</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_ASCIICOMPAT_ENCODING"><code>asciicompat_encoding(string) -&gt; Encoding | nil</code><span class="permalink">[<a href="../method/-encoding=3a=3a-converter/s/asciicompat_encoding.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Encoding/Converter.html#method-c-asciicompat_encoding">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>asciicompat_encoding(encoding) -&gt; Encoding | nil</code></dt>
+<dd class="method-description">
+<p>
+同じ文字集合を持つ ASCII 互換エンコーディングを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+エンコーディング名
+</dd>
+<dt class='method-param'>[PARAM] encoding:</dt>
+<dd>
+エンコーディングオブジェクト
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+ASCII 互換エンコーディングのオブジェクトか nil
+</dd>
+</dl>
+<p>
+引数とエンコーディングと同じ文字集合を持つ ASCII 互換エンコーディングを返します。引数と戻り値、2 つのエンコーディング間では変換しても未定義文字の例外は発生しません。
+引数が ASCII 互換エンコーディングである場合や、エンコーディングでない場合は nil を返します。
+</p>
+<pre>
+Encoding::Converter.asciicompat_encoding(&quot;ISO-2022-JP&quot;) #=&gt; #&lt;Encoding:stateless-ISO-2022-JP&gt;
+Encoding::Converter.asciicompat_encoding(&quot;UTF-16BE&quot;) #=&gt; #&lt;Encoding:UTF-8&gt;
+Encoding::Converter.asciicompat_encoding(&quot;UTF-8&quot;) #=&gt; nil
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_NEW"><code>new(source_encoding, destination_encoding) -&gt; Encoding::Converter</code><span class="permalink">[<a href="../method/-encoding=3a=3a-converter/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Encoding/Converter.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>new(source_encoding, destination_encoding, options) -&gt; Encoding::Converter</code></dt>
+<dt class="method-heading"><code>new(convpath) -&gt; Encoding::Converter</code></dt>
+<dd class="method-description">
+<p>
+Encoding::Converter オブジェクトを作成します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] source_encoding:</dt>
+<dd>
+変換元のエンコーディング
+</dd>
+<dt class='method-param'>[PARAM] destination_encoding:</dt>
+<dd>
+変換先のエンコーディング
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+変換の詳細を指定する定数やハッシュ
+</dd>
+<dt class='method-param'>[PARAM] convpath:</dt>
+<dd>
+変換経路の配列
+</dd>
+</dl>
+<p>
+options では <a href="../method/-string/i/encode.html">String#encode</a> でのハッシュオプションに加えて、以下の定数が利用可能です。
+</p>
+<ul>
+<li>Encoding::Converter::INVALID_REPLACE</li>
+<li>Encoding::Converter::UNDEF_REPLACE</li>
+<li>Encoding::Converter::UNDEF_HEX_CHARREF</li>
+<li>Encoding::Converter::UNIVERSAL_NEWLINE_DECORATOR</li>
+<li>Encoding::Converter::CRLF_NEWLINE_DECORATOR</li>
+<li>Encoding::Converter::CR_NEWLINE_DECORATOR</li>
+<li>Encoding::Converter::XML_TEXT_DECORATOR</li>
+<li>Encoding::Converter::XML_ATTR_CONTENT_DECORATOR</li>
+<li>Encoding::Converter::XML_ATTR_QUOTE_DECORATOR</li>
+</ul>
+</dd>
+
+
+<dt class="method-heading" id="S_SEARCH_CONVPATH"><code>search_convpath(source_encoding, destination_encoding, options) -&gt; Array</code><span class="permalink">[<a href="../method/-encoding=3a=3a-converter/s/search_convpath.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Encoding/Converter.html#method-c-search_convpath">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数で指定した文字エンコーディングの変換の経路を配列にして返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] source_encoding:</dt>
+<dd>
+変換元の文字エンコーディングを <a href="../class/-encoding.html">Encoding</a> オ
+ブジェクトか文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] destination_encoding:</dt>
+<dd>
+変換先の文字エンコーディングを
+<a href="../class/-encoding.html">Encoding</a> オブジェクトか文字列で指定し
+ます。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+変換の詳細を指定する定数やハッシュを指定します。
+<a href="../method/-encoding=3a=3a-converter/s/new.html">Encoding::Converter.new</a> と同じオプションが指定でき
+ます。
+</dd>
+</dl>
+<pre>
+p Encoding::Converter.search_convpath(&quot;ISO-8859-1&quot;, &quot;EUC-JP&quot;)
+# =&gt; [[#&lt;Encoding:ISO-8859-1&gt;, #&lt;Encoding:UTF-8&gt;],
+#     [#&lt;Encoding:UTF-8&gt;, #&lt;Encoding:EUC-JP&gt;]]
+
+p Encoding::Converter.search_convpath(&quot;ISO-8859-1&quot;, &quot;EUC-JP&quot;, universal_newline: true)
+or
+p Encoding::Converter.search_convpath(&quot;ISO-8859-1&quot;, &quot;EUC-JP&quot;, newline: :universal)
+# =&gt; [[#&lt;Encoding:ISO-8859-1&gt;, #&lt;Encoding:UTF-8&gt;],
+#     [#&lt;Encoding:UTF-8&gt;, #&lt;Encoding:EUC-JP&gt;],
+#     &quot;universal_newline&quot;]
+
+p Encoding::Converter.search_convpath(&quot;ISO-8859-1&quot;, &quot;UTF-32BE&quot;, universal_newline: true)
+or
+p Encoding::Converter.search_convpath(&quot;ISO-8859-1&quot;, &quot;UTF-32BE&quot;, newline: :universal)
+# =&gt; [[#&lt;Encoding:ISO-8859-1&gt;, #&lt;Encoding:UTF-8&gt;],
+#     &quot;universal_newline&quot;,
+#     [#&lt;Encoding:UTF-8&gt;, #&lt;Encoding:UTF-32BE&gt;]]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-encoding=3a=3a-converter/i/convpath.html">Encoding::Converter#convpath</a>, <a href="../method/-encoding=3a=3a-converter/s/new.html">Encoding::Converter.new</a>
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_CONVERT"><code>convert(source_string) -&gt; String</code><span class="permalink">[<a href="../method/-encoding=3a=3a-converter/i/convert.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Encoding/Converter.html#method-i-convert">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+与えられた文字列を変換して、変換できた結果を返します。
+引数の末尾の文字がバイト列の途中で終わっている場合、そのバイト列は変換器内に取り置かれます。
+変換を終了させるには <a href="../method/-encoding=3a=3a-converter/i/finish.html">Encoding::Converter#finish</a> を呼びます。
+</p>
+<p>
+<a href="../class/-encoding=3a=3a-converter.html">Encoding::Converter</a> を用いると、文字列の一部または全部を渡して変換を行うことができます。よって、不正なバイトを意識せずにストリームから読み出した文字列を変換したいときには Encoding::Converter が適します。
+</p>
+<p>
+なお、Encoding::Converter#convert では、これらの例外を捕獲しても、例外を起こしたところから変換を再開することはできません。不正なバイトや変換先で未定義な文字をエスケープしたい場合やさらに細かい指定を行いたい場合は、<a href="../method/-encoding=3a=3a-converter/i/primitive_convert.html">Encoding::Converter#primitive_convert</a> を用います。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] source_string:</dt>
+<dd>
+変換する文字列の一部または全部です。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+変換結果である文字列の一部または全部です。
+</dd>
+<dt>[EXCEPTION] Encoding::InvalidByteSequenceError:</dt>
+<dd>
+変換元のエンコーディングにおいて不正なバイト列があった場合に発生します。
+</dd>
+<dt>[EXCEPTION] Encoding::UndefinedConversionError:</dt>
+<dd>
+変換先のエンコーディングで未定義な文字があった場合に発生します。
+</dd>
+</dl>
+<pre>
+ec = Encoding::Converter.new(&quot;utf-8&quot;, &quot;euc-jp&quot;)
+puts ec.convert(&quot;\u3042&quot;).dump     #=&gt; &quot;\xA4\xA2&quot;
+puts ec.finish.dump                #=&gt; &quot;&quot;
+
+ec = Encoding::Converter.new(&quot;euc-jp&quot;, &quot;utf-8&quot;)
+puts ec.convert(&quot;\xA4&quot;).dump       #=&gt; &quot;&quot;
+puts ec.convert(&quot;\xA2&quot;).dump       #=&gt; &quot;\xE3\x81\x82&quot;
+puts ec.finish.dump                #=&gt; &quot;&quot;
+
+ec = Encoding::Converter.new(&quot;utf-8&quot;, &quot;iso-2022-jp&quot;)
+puts ec.convert(&quot;\xE3&quot;).dump       #=&gt; &quot;&quot;.force_encoding(&quot;ISO-2022-JP&quot;)
+puts ec.convert(&quot;\x81&quot;).dump       #=&gt; &quot;&quot;.force_encoding(&quot;ISO-2022-JP&quot;)
+puts ec.convert(&quot;\x82&quot;).dump       #=&gt; &quot;\e$B$\&quot;&quot;.force_encoding(&quot;ISO-2022-JP&quot;)
+puts ec.finish.dump                #=&gt; &quot;\e(B&quot;.force_encoding(&quot;ISO-2022-JP&quot;)
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CONVPATH"><code>convpath -&gt; Array</code><span class="permalink">[<a href="../method/-encoding=3a=3a-converter/i/convpath.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Encoding/Converter.html#method-i-convpath">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+変換器が行う変換の経路を配列にして返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+変換器が行う変換の経路の配列
+</dd>
+</dl>
+<pre>
+ec = Encoding::Converter.new(&quot;ISo-8859-1&quot;, &quot;EUC-JP&quot;, crlf_newline: true)
+p ec.convpath
+#=&gt; [[#&lt;Encoding:ISO-8859-1&gt;, #&lt;Encoding:UTF-8&gt;],
+#    [#&lt;Encoding:UTF-8&gt;, #&lt;Encoding:EUC-JP&gt;],
+#    &quot;crlf_newline&quot;]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-encoding=3a=3a-converter/s/search_convpath.html">Encoding::Converter.search_convpath</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DESTINATION_ENCODING"><code>destination_encoding -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding=3a=3a-converter/i/destination_encoding.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Encoding/Converter.html#method-i-destination_encoding">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+変換先のエンコーディングを返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+変換先のエンコーディング
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_FINISH"><code>finish -&gt; String</code><span class="permalink">[<a href="../method/-encoding=3a=3a-converter/i/finish.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Encoding/Converter.html#method-i-finish">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+変換処理を終了し、結果文字列の末尾を返します。
+変換元の文字列の末尾がバイト列の途中で終わっていた場合、保持しているバイト列全てを返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+変換結果の末尾
+</dd>
+<dt>[EXCEPTION] Encoding::InvalidByteSequenceError:</dt>
+<dd>
+変換元のエンコーディングにお
+いて不正なバイト列があった場合に発生します。
+</dd>
+</dl>
+<pre>
+ec = Encoding::Converter.new(&quot;utf-8&quot;, &quot;iso-2022-jp&quot;)
+p ec.convert(&quot;\u3042&quot;)     #=&gt; &quot;\e$B$\&quot;&quot;
+p ec.finish                #=&gt; &quot;\e(B&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_INSERT_OUTPUT"><code>insert_output(string) -&gt; nil</code><span class="permalink">[<a href="../method/-encoding=3a=3a-converter/i/insert_output.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Encoding/Converter.html#method-i-insert_output">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+変換器内のバッファに文字列を挿入します。
+バッファに保持された文字列は、次の変換時の変換結果と一緒に返されます。
+</p>
+<p>
+変換先がステートフルなエンコーディングであった場合、
+挿入された文字列は状態に基づいて変換され、状態を更新します。
+</p>
+<p>
+このメソッドは変換に際してエラーが発生した際にのみ利用されるべきです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+挿入する文字列
+</dd>
+</dl>
+<pre>
+ec = Encoding::Converter.new(&quot;utf-8&quot;, &quot;iso-8859-1&quot;)
+src = &quot;HIRAGANA LETTER A is \u{3042}.&quot;
+dst = &quot;&quot;
+p ec.primitive_convert(src, dst)    #=&gt; :undefined_conversion
+puts &quot;[#{dst.dump}, #{src.dump}]&quot;   #=&gt; [&quot;HIRAGANA LETTER A is &quot;, &quot;.&quot;]
+ec.insert_output(&quot;&lt;err&gt;&quot;)
+p ec.primitive_convert(src, dst)    #=&gt; :finished
+puts &quot;[#{dst.dump}, #{src.dump}]&quot;   #=&gt; [&quot;HIRAGANA LETTER A is &lt;err&gt;.&quot;, &quot;&quot;]
+
+ec = Encoding::Converter.new(&quot;utf-8&quot;, &quot;iso-2022-jp&quot;)
+src = &quot;\u{306F 3041 3068 2661 3002}&quot; # U+2661 is not representable in iso-2022-jp
+dst = &quot;&quot;
+p ec.primitive_convert(src, dst)    #=&gt; :undefined_conversion
+puts &quot;[#{dst.dump}, #{src.dump}]&quot;   #=&gt; [&quot;\e$B$O$!$H&quot;.force_encoding(&quot;ISO-2022-JP&quot;), &quot;\xE3\     x80\x82&quot;]
+ec.insert_output &quot;?&quot;                # state change required to output &quot;?&quot;.
+p ec.primitive_convert(src, dst)    #=&gt; :finished
+puts &quot;[#{dst.dump}, #{src.dump}]&quot;   #=&gt; [&quot;\e$B$O$!$H\e(B?\e$B!#\e(B&quot;.force_encoding(&quot;ISO-20     22-JP&quot;), &quot;&quot;]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-encoding=3a=3a-converter/i/inspect.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Encoding/Converter.html#method-i-inspect">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Encoding::Converter オブジェクトの情報を簡単に表示します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+変換器の情報を簡単に可視化した文字列です。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_LAST_ERROR"><code>last_error -&gt; Exception | nil</code><span class="permalink">[<a href="../method/-encoding=3a=3a-converter/i/last_error.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Encoding/Converter.html#method-i-last_error">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+直前に変換器で発生した例外に相当する例外オブジェクトを返します
+直線の変換で例外が発生していない場合は nil を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PRIMITIVE_CONVERT"><code>primitive_convert(source_buffer, destination_buffer) -&gt; Symbol</code><span class="permalink">[<a href="../method/-encoding=3a=3a-converter/i/primitive_convert.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Encoding/Converter.html#method-i-primitive_convert">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>primitive_convert(source_buffer, destination_buffer, destination_byteoffset) -&gt; Symbol</code></dt>
+<dt class="method-heading"><code>primitive_convert(source_buffer, destination_buffer, destination_byteoffset, destination_bytesize) -&gt; Symbol</code></dt>
+<dt class="method-heading"><code>primitive_convert(source_buffer, destination_buffer, destination_byteoffset, destination_bytesize, options) -&gt; Symbol</code></dt>
+<dd class="method-description">
+<p>
+エンコーディング変換のためのメソッドの中で、もっとも細かな扱いが可能なメソッドです。
+</p>
+<p>
+可搬性を確保しつつ、不正なバイトや変換先で未定義な文字の扱いを細かに指定したいときは、Encoding::Converter#primitive_convert が唯一の方法になります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] source_buffer:</dt>
+<dd>
+変換元文字列のバッファ
+</dd>
+<dt class='method-param'>[PARAM] destination_buffer:</dt>
+<dd>
+変換先文字列を格納するバッファ
+</dd>
+<dt class='method-param'>[PARAM] destination_byteoffset:</dt>
+<dd>
+変換先バッファでのオフセット
+</dd>
+<dt class='method-param'>[PARAM] destination_bytesize:</dt>
+<dd>
+変換先バッファの容量
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+変換の詳細を指定する定数やハッシュ
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+変換結果を表す Symbol
+</dd>
+</dl>
+<p>
+options には以下が指定できます。
+</p>
+<dl>
+<dt>hash form</dt>
+<dd>
+<p>
+:partial_input =&gt; true           # source buffer may be part of larger source
+:after_output =&gt; true            # stop conversion after output before input
+</p>
+</dd>
+<dt>integer form</dt>
+<dd>
+<p>
+Encoding::Converter::PARTIAL_INPUT
+Encoding::Converter::AFTER_OUTPUT
+</p>
+</dd>
+</dl>
+<p>
+戻り値は以下のうちのどれかです。
+</p>
+<ul>
+<li>:invalid_byte_sequence</li>
+<li>:incomplete_input</li>
+<li>:undefined_conversion</li>
+<li>:after_output</li>
+<li>:destination_buffer_full</li>
+<li>:source_buffer_empty</li>
+<li>:finished</li>
+</ul>
+<pre>
+ec = Encoding::Converter.new(&quot;UTF-8&quot;, &quot;EUC-JP&quot;)
+src = &quot;abc\x81あいう\u{20bb7}\xe3&quot;
+dst = ''
+
+begin
+  ret = ec.primitive_convert(src, dst)
+  p [ret, src, dst, ec.primitive_errinfo]
+  case ret
+  when :invalid_byte_sequence
+    ec.insert_output(ec.primitive_errinfo[3].dump[1..-2])
+    redo
+  when :undefined_conversion
+    c = ec.primitive_errinfo[3].dup.force_encoding(ec.primitive_errinfo[1])
+    ec.insert_output('\x{%X:%s}' % [c.ord, c.encoding])
+    redo
+  when :incomplete_input
+    ec.insert_output(ec.primitive_errinfo[3].dump[1..-2])
+  when :finished
+  end
+  break
+end while nil
+</pre>
+<p>
+不正なバイトや変換先で未定義なバイトをエスケープしつつ変換する例です。以上のように、戻り値で分岐させつつ、<a href="../method/-encoding=3a=3a-converter/i/primitive_errinfo.html">Encoding::Converter#primitive_errinfo</a> の情報を参照して処理していくことになります。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PRIMITIVE_ERRINFO"><code>primitive_errinfo -&gt; Array</code><span class="permalink">[<a href="../method/-encoding=3a=3a-converter/i/primitive_errinfo.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Encoding/Converter.html#method-i-primitive_errinfo">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+直前の <a href="../method/-encoding=3a=3a-converter/i/primitive_convert.html">Encoding::Converter#primitive_convert</a> による変換の結果を保持する五要素の配列を返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+[result, enc1, enc2, error_bytes, readagain_bytes] という五要素の配列
+</dd>
+</dl>
+<p>
+result は直前の primitive_convert の戻り値です。
+それ以外の四要素は :invalid_byte_sequence か :incomplete_input か :undefined_conversion だった場合に意味を持ちます。
+enc1 はエラーの発生した原始変換の変換元のエンコーディング、enc2 は変換先のエンコーディングです。
+error_bytes はエラーの発生原因となったバイト列、readagain_bytes は先読みによって変換器内部に保持されているバイト列です。
+</p>
+<p>
+primitive_errinfo はもっぱら <a href="../method/-encoding=3a=3a-converter/i/primitive_convert.html">Encoding::Converter#primitive_convert</a> と組み合わせて使います。<a href="../method/-encoding=3a=3a-converter/i/convert.html">Encoding::Converter#convert</a> を用いている場合にも取得することはできますが、有用な使い方は難しいでしょう。
+</p>
+<pre>
+# \xff is invalid as EUC-JP.
+ec = Encoding::Converter.new(&quot;EUC-JP&quot;, &quot;Shift_JIS&quot;)
+ec.primitive_convert(src=&quot;\xff&quot;, dst=&quot;&quot;, nil, 10)
+p ec.primitive_errinfo
+#=&gt; [:invalid_byte_sequence, &quot;EUC-JP&quot;, &quot;UTF-8&quot;, &quot;\xFF&quot;, &quot;&quot;]
+
+# HIRAGANA LETTER A (\xa4\xa2 in EUC-JP) is not representable in ISO-8859-1.
+# Since this error is occur in UTF-8 to ISO-8859-1 conversion,
+# error_bytes is HIRAGANA LETTER A in UTF-8 (\xE3\x81\x82).
+ec = Encoding::Converter.new(&quot;EUC-JP&quot;, &quot;ISO-8859-1&quot;)
+ec.primitive_convert(src=&quot;\xa4\xa2&quot;, dst=&quot;&quot;, nil, 10)
+p ec.primitive_errinfo
+#=&gt; [:undefined_conversion, &quot;UTF-8&quot;, &quot;ISO-8859-1&quot;, &quot;\xE3\x81\x82&quot;, &quot;&quot;]
+
+# partial character is invalid
+ec = Encoding::Converter.new(&quot;EUC-JP&quot;, &quot;ISO-8859-1&quot;)
+ec.primitive_convert(src=&quot;\xa4&quot;, dst=&quot;&quot;, nil, 10)
+p ec.primitive_errinfo
+#=&gt; [:incomplete_input, &quot;EUC-JP&quot;, &quot;UTF-8&quot;, &quot;\xA4&quot;, &quot;&quot;]
+
+# Encoding::Converter::PARTIAL_INPUT prevents invalid errors by
+# partial characters.
+ec = Encoding::Converter.new(&quot;EUC-JP&quot;, &quot;ISO-8859-1&quot;)
+ec.primitive_convert(src=&quot;\xa4&quot;, dst=&quot;&quot;, nil, 10, Encoding::Converter::PARTIAL_INPUT)
+p ec.primitive_errinfo
+#=&gt; [:source_buffer_empty, nil, nil, nil, nil]
+
+# \xd8\x00\x00@ is invalid as UTF-16BE because
+# no low surrogate after high surrogate (\xd8\x00).
+# It is detected by 3rd byte (\00) which is part of next character.
+# So the high surrogate (\xd8\x00) is discarded and
+# the 3rd byte is read again later.
+# Since the byte is buffered in ec, it is dropped from src.
+ec = Encoding::Converter.new(&quot;UTF-16BE&quot;, &quot;UTF-8&quot;)
+ec.primitive_convert(src=&quot;\xd8\x00\x00@&quot;, dst=&quot;&quot;, nil, 10)
+p ec.primitive_errinfo
+#=&gt; [:invalid_byte_sequence, &quot;UTF-16BE&quot;, &quot;UTF-8&quot;, &quot;\xD8\x00&quot;, &quot;\x00&quot;]
+p src
+#=&gt; &quot;@&quot;
+
+# Similar to UTF-16BE, \x00\xd8@\x00 is invalid as UTF-16LE.
+# The problem is detected by 4th byte.
+ec = Encoding::Converter.new(&quot;UTF-16LE&quot;, &quot;UTF-8&quot;)
+ec.primitive_convert(src=&quot;\x00\xd8@\x00&quot;, dst=&quot;&quot;, nil, 10)
+p ec.primitive_errinfo
+#=&gt; [:invalid_byte_sequence, &quot;UTF-16LE&quot;, &quot;UTF-8&quot;, &quot;\x00\xD8&quot;, &quot;@\x00&quot;]
+p src
+#=&gt; &quot;&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_PUTBACK"><code>putback -&gt; String</code><span class="permalink">[<a href="../method/-encoding=3a=3a-converter/i/putback.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Encoding/Converter.html#method-i-putback">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>putback(max_numbytes) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+後の変換用に変換器内部で保持しているバイト列を max_numbytes で指定した
+バイト数だけ返します。max_numbytes を指定しなかった場合は保持しているバ
+イト列の全てを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] max_numbytes:</dt>
+<dd>
+取得するバイト列の最大値
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+格納されていたバイト列
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_REPLACEMENT"><code>replacement -&gt; String</code><span class="permalink">[<a href="../method/-encoding=3a=3a-converter/i/replacement.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Encoding/Converter.html#method-i-replacement">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+変換器に設定されている置換文字を返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+変換器に設定されている置換文字
+</dd>
+</dl>
+<pre>
+ec = Encoding::Converter.new(&quot;euc-jp&quot;, &quot;us-ascii&quot;)
+p ec.replacement    #=&gt; &quot;?&quot;
+
+ec = Encoding::Converter.new(&quot;euc-jp&quot;, &quot;utf-8&quot;)
+p ec.replacement    #=&gt; &quot;\uFFFD&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_REPLACEMENT--3D"><code>replacement=(string)</code><span class="permalink">[<a href="../method/-encoding=3a=3a-converter/i/replacement=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Encoding/Converter.html#method-i-replacement-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+置換文字を設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+変換器に設定する置換文字
+</dd>
+</dl>
+<pre>
+ec = Encoding::Converter.new(&quot;utf-8&quot;, &quot;us-ascii&quot;, :undef =&gt; :replace)
+ec.replacement = &quot;&lt;undef&gt;&quot;
+p ec.convert(&quot;a \u3042 b&quot;)      #=&gt; &quot;a &lt;undef&gt; b&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SOURCE_ENCODING"><code>source_encoding -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding=3a=3a-converter/i/source_encoding.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Encoding/Converter.html#method-i-source_encoding">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+変換元のエンコーディングを返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+変換元のエンコーディング
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

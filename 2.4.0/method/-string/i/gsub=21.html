@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>instance method String#gsub! (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-string.html">Stringクラス</a>
+&gt; gsub!
+
+</p>
+
+
+<h1>instance method String#gsub!</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_GSUB--21"><code>gsub!(pattern, replace) -&gt; self | nil</code><span class="permalink">[<a href="../../../method/-string/i/gsub=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-gsub-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中で pattern にマッチする部分全てを文字列 replace に破壊的に置き換えます。
+</p>
+<p>
+置換文字列 replace 中の \&amp; と \0 はマッチした部分文字列に、
+\1 ... \9 は n 番目の括弧の内容に置き換えられます。
+置換文字列内では \`、\'、\+ も使えます。
+これらは <a href="../../../method/-kernel/v/=60.html">$`</a>、<a href="../../../method/-kernel/v/=27.html">$'</a>、<a href="../../../method/-kernel/v/=2b.html">$+</a> に対応します。
+</p>
+<p>
+gsub! は通常 self を変更して返しますが、
+置換が起こらなかった場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターンを表す文字列か正規表現。
+文字列を指定した場合は全く同じ文字列にだけマッチする
+</dd>
+<dt class='method-param'>[PARAM] replace:</dt>
+<dd>
+pattern で指定した文字列と置き換える文字列
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+置換した場合は self、置換しなかった場合は nil
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+buf = &quot;String-String&quot;
+buf.gsub!(/in./, &quot;!!&quot;)
+p buf   # =&gt; &quot;Str!!-Str!!&quot;
+
+buf = &quot;String.String&quot;
+buf.gsub!(/in./, '&lt;&lt;\&amp;&gt;&gt;')
+p buf   # =&gt; &quot;Str&lt;&lt;ing&gt;&gt;-Str&lt;&lt;ing&gt;&gt;&quot;
+</pre>
+<p>
+注意:
+</p>
+<p>
+引数 replace の中で <a href="../../../method/-kernel/v/1.html">$1</a> を使うことはできません。
+replace は gsub メソッドの呼び出しより先に評価されるので、
+まだ gsub の正規表現マッチが行われておらず、
+$1 がセットされていないからです。
+</p>
+<p>
+また、gsub では「\」が部分文字列との置き換えという特別な意味を持つため、
+replace に「\」自身を入れたいときは
+「\」を二重にエスケープしなければなりません。
+</p>
+<p>
+例:
+</p>
+<pre>
+# ひとつめの括弧にマッチした部分に置き換えるときによくやる間違い
+'abbbcd'.gsub!(/a(b+)/, &quot;#{$1}&quot;)       # NG
+'abbbcd'.gsub!(/a(b+)/, &quot;\1&quot;)          # NG
+'abbbcd'.gsub!(/a(b+)/, &quot;\\1&quot;)         # OK
+'abbbcd'.gsub!(/a(b+)/, '\\1')         # OK
+'abbbcd'.gsub!(/a(b+)/, '\1')          # OK
+'abbbcd'.gsub!(/a(b+)/) { $1 }         # OK   これがもっとも安全
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-string/i/sub.html">String#sub</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_GSUB--21"><code>gsub!(pattern) {|matched| .... } -&gt; self | nil</code><span class="permalink">[<a href="../../../method/-string/i/gsub=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-gsub-21">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>gsub!(pattern) -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+文字列中で pattern にマッチする部分全てを順番にブロックに渡し、
+その評価結果に置き換えます。
+</p>
+<p>
+また、ブロックなしの場合と違い、ブロックの中からは
+組み込み変数 <a href="../../../method/-kernel/v/1.html">$1</a>, $2, $3, ... を問題なく参照できます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターンを表す文字列か正規表現。
+文字列を指定した場合は全く同じ文字列にだけマッチする
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+置換した場合は self、置換しなかった場合は nil
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+str = 'abcabc'
+str.gsub!(/b/) {|s| s.upcase }
+p str    #=&gt; &quot;aBcaBc&quot;
+
+str = 'abcabc'
+str.gsub!(/b/) { $&amp;.upcase }
+p str    #=&gt; &quot;aBcaBc&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-string/i/sub.html">String#sub</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_GSUB--21"><code>gsub!(pattern, hash) -&gt; self | nil</code><span class="permalink">[<a href="../../../method/-string/i/gsub=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-gsub-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中の pattern にマッチした部分をキーにして hash を引いた値へ破壊的に置き換えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターン
+</dd>
+<dt class='method-param'>[PARAM] hash:</dt>
+<dd>
+置き換える文字列を与えるハッシュ
+</dd>
+</dl>
+<pre>
+hash = {'b'=&gt;'B', 'c'=&gt;'C'}
+str = &quot;abcabc&quot;
+str.gsub!(/[bc]/){hash[$&amp;]}
+p str     #=&gt; &quot;aBCaBC&quot;
+
+str = &quot;abcabc&quot;
+str.gsub!(/[bc]/, hash)
+p str     #=&gt; &quot;aBCaBC&quot;
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>
