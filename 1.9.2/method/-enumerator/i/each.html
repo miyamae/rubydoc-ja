@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../../../style.css">
   <link rel="icon" type="image/png" href="../../../rurema.png">
+  
   <title>instance method Enumerator#each (Ruby 1.9.2)</title>
 </head>
 <body>
@@ -23,13 +24,24 @@
 <dl class="methodlist">
 
 <dt class="method-heading" id="I_EACH"><code>each {...} -&gt; object</code><span class="permalink">[<a href="../../../method/-enumerator/i/each.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/Enumerator.html#method-i-each">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each -&gt; self</code></dt>
+<dt class="method-heading"><code>each(*args) {...} -&gt; object</code></dt>
+<dt class="method-heading"><code>each(*args) -&gt; Enumerator</code></dt>
 <dd class="method-description">
 <p>
 生成時のパラメータに従ってブロックを繰り返します。
+*args を渡した場合は、生成時のパラメータ内引数末尾へ *args を追加した状態で繰り返します。
+ブロック付きで呼び出された場合は、
 生成時に指定したイテレータの戻り値をそのまま返します。
 </p>
+<dl>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+末尾へ追加する引数
+</dd>
+</dl>
 <p>
-例:
+例1:
 </p>
 <pre>
 str = &quot;Yet Another Ruby Hacker&quot;
@@ -45,6 +57,33 @@ str.scan(/\w+/) {|word| p word }        # =&gt; &quot;Yet&quot;
                                         #    &quot;Ruby&quot;
                                         #    &quot;Hacker&quot;
 </pre>
+<p>
+例2:
+</p>
+<pre>
+&quot;Hello, world!&quot;.scan(/\w+/)                     # =&gt; [&quot;Hello&quot;, &quot;world&quot;]
+&quot;Hello, world!&quot;.to_enum(:scan, /\w+/).to_a      # =&gt; [&quot;Hello&quot;, &quot;world&quot;]
+&quot;Hello, world!&quot;.to_enum(:scan).each(/\w+/).to_a # =&gt; [&quot;Hello&quot;, &quot;world&quot;]
+
+obj = Object.new
+
+def obj.each_arg(a, b=:b, *rest)
+  yield a
+  yield b
+  yield rest
+  :method_returned
+end
+
+enum = obj.to_enum :each_arg, :a, :x
+
+enum.each.to_a                  # =&gt; [:a, :x, []]
+enum.each.equal?(enum)          # =&gt; true
+enum.each { |elm| elm }         # =&gt; :method_returned
+
+enum.each(:y, :z).to_a          # =&gt; [:a, :x, [:y, :z]]
+enum.each(:y, :z).equal?(enum)  # =&gt; false
+enum.each(:y, :z) { |elm| elm } # =&gt; :method_returned
+</pre>
 </dd>
 
 
@@ -52,8 +91,8 @@ str.scan(/\w+/) {|word| p word }        # =&gt; &quot;Yet&quot;
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

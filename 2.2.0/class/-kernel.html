@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>module Kernel (Ruby 2.2.0)</title>
 </head>
 <body>
@@ -429,8 +430,8 @@ p Float(4_000)        #=&gt; 4000.0
 p Float(9.88)         #=&gt; 9.88
 
 p Float(Time.gm(1986)) #=&gt; 504921600.0
-p Float(Object.new)   # cannot convert Object into Float (TypeError)
-p Float(nil)          # cannot convert nil into Float (TypeError)
+p Float(Object.new)   # can't convert Object into Float (TypeError)
+p Float(nil)          # can't convert nil into Float (TypeError)
 
 p Float(&quot;10&quot;)         #=&gt; 10.0
 p Float(&quot;10e2&quot;)       #=&gt; 1000.0
@@ -438,14 +439,14 @@ p Float(&quot;1e-2&quot;)       #=&gt; 0.01
 p Float(&quot;.1&quot;)         #=&gt; 0.1
 p Float(&quot;0xa&quot;)        #=&gt; 10.0
 
-p Float(&quot;nan&quot;)        # invalid value (ArgumentError)
-p Float(&quot;INF&quot;)        # invalid value (ArgumentError)
-p Float(&quot;-Inf&quot;)       # invalid value (ArgumentError)
+p Float(&quot;nan&quot;)        # invalid value for Float(): &quot;nan&quot; (ArgumentError)
+p Float(&quot;INF&quot;)        # invalid value for Float(): &quot;INF&quot; (ArgumentError)
+p Float(&quot;-Inf&quot;)       # invalid value for Float(): &quot;-Inf&quot; (ArgumentError)
 p Float((&quot;10&quot; * 1000)) #=&gt; Infinity
-p Float(&quot;0xa.a&quot;)      # invalid value (ArgumentError)
+p Float(&quot;0xa.a&quot;)      # invalid value for Float(): &quot;0xa.a&quot; (ArgumentError)
 p Float(&quot; \n10\s \t&quot;) #=&gt; 10.0 # 先頭と末尾の空白類は無視される
-p Float(&quot;1\n0&quot;)       # invalid value (ArgumentError)
-p Float(&quot;&quot;)           # invalid value (ArgumentError)
+p Float(&quot;1\n0&quot;)       # invalid value for Float(): &quot;1\n0&quot; (ArgumentError)
+p Float(&quot;&quot;)           # invalid value for Float(): &quot;&quot; (ArgumentError)
 </pre>
 <p>
 [SEE_ALSO] <a href="../method/-string/i/to_f.html">String#to_f</a>,<a href="../class/-float.html">Float</a>
@@ -774,9 +775,8 @@ Ruby プログラムをエラーメッセージ付きで終了します。終了
 <p>
 このメソッドと <a href="../method/-kernel/m/exit.html">Kernel.#exit</a> との違いは、プログラムの終了ステー
 タスが 1 (正確にはCレベルの定数 EXIT_FAILURE の値)固定であることと、
-引数を省略した呼び出し時に
-<a href="../method/-kernel/v/=21.html">$!</a> が nil でなければその例外の
-メッセージを標準エラー出力 <a href="../method/-kernel/v/stderr.html">$stderr</a> に出力することです。
+引数を省略した呼び出し時に <a href="../method/-kernel/v/=21.html">$!</a> が nil でなければその例外のメッセー
+ジを標準エラー出力 <a href="../method/-kernel/v/stderr.html">$stderr</a> に出力することです。
 </p>
 <p>
 引数 message を指定すると SystemExit クラスの
@@ -2531,11 +2531,21 @@ p local_variables #=&gt; [:yuyu]
 </dd>
 
 
-<dt class="method-heading" id="M_LOOP"><code>loop { ... } -&gt; object</code><span class="permalink">[<a href="../method/-kernel/m/loop.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Kernel.html#method-c-loop">rdoc</a>]</span></dt>
+<dt class="method-heading" id="M_LOOP"><code>loop -&gt; Enumerator</code><span class="permalink">[<a href="../method/-kernel/m/loop.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Kernel.html#method-c-loop">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>loop { ... } -&gt; object | nil</code></dt>
 <dd class="method-description">
 <p>
 (中断されない限り)永遠にブロックの評価を繰り返します。
+ブロックが指定されなければ、代わりに <a href="../class/-enumerator.html">Enumerator</a> を返します。
 </p>
+<pre>
+loop do
+  print &quot;Input: &quot;
+  line = gets
+  break if !line or line =~ /^qQ/
+  # ...
+end
+</pre>
 <p>
 与えられたブロック内で <a href="../class/-stop-iteration.html">StopIteration</a> を <a href="../method/-kernel/m/raise.html">Kernel.#raise</a> すると
 ループを終了して nil を返します。
@@ -2547,17 +2557,6 @@ p local_variables #=&gt; [:yuyu]
 break の引数など、ループ脱出時の値を返します。
 </dd>
 </dl>
-<pre>
-def try int
-  n = 0
-  loop do
-    n += 1
-    break(n) if rand(n) &gt; int
-  end
-end
-
-puts &quot;end on #{try(400)}&quot; #=&gt; end on ???
-</pre>
 </dd>
 
 
@@ -2746,7 +2745,7 @@ mode は以下の三つのうちのいずれかです。
 </p>
 <h4 >Universal Newline</h4>
 <p>
-改行をLFに揃えます。一言で言えばPEP:278 <a class="external" href="http://www.python.org/dev/peps/pep-0278/">http://www.python.org/dev/peps/pep-0278/</a>のことです。
+改行をLFに揃えます。一言で言えばPEP:278 <a class="external" href="https://www.python.org/dev/peps/pep-0278/">https://www.python.org/dev/peps/pep-0278/</a>のことです。
 </p>
 <dl>
 <dt>&quot;rt&quot;</dt>
@@ -2900,8 +2899,8 @@ $, = &quot;&lt;and&gt;&quot;
 $\ = &quot;&lt;end&gt;\n&quot;
 print
 print &quot;AA&quot;,&quot;BB&quot;
-#=&gt; input&lt;and&gt;&lt;end&gt;
-#=&gt; AA&lt;and&gt;BB&lt;and&gt;&lt;end&gt;
+#=&gt; input&lt;end&gt;
+#=&gt; AA&lt;and&gt;BB&lt;end&gt;
 </pre>
 <p>
 [SEE_ALSO] <a href="../method/-kernel/m/puts.html">Kernel.#puts</a>,<a href="../method/-kernel/m/p.html">Kernel.#p</a>
@@ -4050,7 +4049,7 @@ syscall(2) や
 それ以外では、返した値をそのまま数値で返します。
 </p>
 <p>
-ライブラリ <a href="../library/dl.html">dl</a> を使えばより高レベルな操作ができます。
+ライブラリ <a href="../library/fiddle.html">fiddle</a> を使えばより高レベルな操作ができます。
 </p>
 <dl>
 <dt class='method-param'>[PARAM] num:</dt>
@@ -4071,7 +4070,7 @@ syscall(2) が -1 を返した場合に発生します。
 </dd>
 </dl>
 <p>
-[SEE_ALSO] <a href="../library/dl.html">dl</a>, <a class="external" href="http://www.freebsd.org/cgi/man.cgi?query=syscall&amp;sektion=2&amp;manpath=FreeBSD+9.0-RELEASE">syscall(2freebsd)</a>, <a class="external" href="http://man7.org/linux/man-pages/man2/syscall.2.html">syscall(2linux)</a>
+[SEE_ALSO] <a href="../library/fiddle.html">fiddle</a>, <a class="external" href="http://www.freebsd.org/cgi/man.cgi?query=syscall&amp;sektion=2&amp;manpath=FreeBSD+9.0-RELEASE">syscall(2freebsd)</a>, <a class="external" href="http://man7.org/linux/man-pages/man2/syscall.2.html">syscall(2linux)</a>
 </p>
 </dd>
 
@@ -5106,6 +5105,9 @@ in-place 置換モードで用いられます。
 <p>
 この変数はグローバルスコープです。
 </p>
+<p>
+[SEE_ALSO] <a href="../doc/spec=2frubycmd.html">Rubyの起動</a>
+</p>
 </dd>
 
 
@@ -5622,8 +5624,8 @@ end
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

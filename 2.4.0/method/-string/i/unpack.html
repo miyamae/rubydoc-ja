@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>instance method String#unpack (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-string.html">Stringクラス</a>
+&gt; unpack
+
+</p>
+
+
+<h1>instance method String#unpack</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_UNPACK"><code>unpack(template) -&gt; Array</code><span class="permalink">[<a href="../../../method/-string/i/unpack.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-unpack">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../../../method/-array/i/pack.html">Array#pack</a> で生成された文字列を
+テンプレート文字列 template にしたがってアンパックし、
+それらの要素を含む配列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] template:</dt>
+<dd>
+pack テンプレート文字列
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+オブジェクトの配列
+</dd>
+</dl>
+<p>
+以下にあげるものは、<a href="../../../method/-array/i/pack.html">Array#pack</a>、<a href="../../../method/-string/i/unpack.html">String#unpack</a>
+のテンプレート文字の一覧です。テンプレート文字は後に「長さ」を表す数字
+を続けることができます。「長さ」の代わりに`*'とすることで「残り全て」
+を表すこともできます。
+</p>
+<p>
+長さの意味はテンプレート文字により異なりますが大抵、
+</p>
+<pre>
+&quot;iiii&quot;
+</pre>
+<p>
+のように連続するテンプレート文字は
+</p>
+<pre>
+&quot;i4&quot;
+</pre>
+<p>
+と書き換えることができます。
+</p>
+<p>
+テンプレート文字列中の空白類は無視されます。
+また、`#' から改行あるいはテンプレート文字列の最後まではコメントとみな
+され無視されます。
+</p>
+<h2 >整数のテンプレート文字のシステム依存性</h2>
+<p>
+各テンプレート文字の説明の中で、
+short や long はシステムによらずそれぞれ 2, 4バイトサ
+イズの数値(32ビットマシンで一般的なshort, longのサイズ)を意味していま
+す。s, S, l, L に対しては直後に _ または ! を &quot;s_&quot; あるいは &quot;s!&quot; のように
+続けることでシステム依存の short, long のサイズにすることもできます。
+</p>
+<p>
+i, I (int)のサイズは常にシステム依存であり、n, N, v, V
+のサイズは常にシステム依存ではない(!をつけられない)ことに注意してください。
+</p>
+<p>
+つまり、<a href="../../../method/-i-o/i/ioctl.html">IO#ioctl</a> などで C の構造体を渡すときのように、
+システム依存のサイズとエンディアンに合わせる必要があるときには
+s!, S!, i!, I!, l!, L!, q!, Q! を用います。
+また、ネットワークプロトコルやファイルフォーマットのように、
+システムに依存しないデータを扱うときには
+n, N, v, V を用います。
+</p>
+<p>
+強制的にエンディアンを指定したいときは、
+リトルエンディアンなら&lt;
+ビッグエンディアンなら&gt;
+を後ろにつけます。!と組み合わせることも可能です。
+</p>
+<p>
+まとめると以下のようになります。
+</p>
+<dl>
+<dt>エンディアン非依存、整数サイズ非依存 (ネットワークプロトコルなどに適切)</dt>
+<dd>
+<pre>
+  n: big endian unsigned 16bit
+  N: big endian unsigned 32bit
+  v: little endian unsigned 16bit
+  V: little endian unsigned 32bit
+</pre>
+</dd>
+<dt>エンディアン依存、整数サイズ依存 (C の構造体などに適切)</dt>
+<dd>
+<pre>
+  s!: signed short
+  S!: unsigned short
+  i!: signed int
+  I!: unsigned int
+  l!: signed long
+  L!: unsigned long
+  q!: signed long long
+  Q!: unsigned long long
+</pre>
+</dd>
+<dt>エンディアン依存、整数サイズ非依存 (C99 の stdint.h にある厳密な幅を持つ整数型に適切)</dt>
+<dd>
+<pre>
+  s: int16_t
+  S: uint16_t
+  l: int32_t
+  L: uint32_t
+</pre>
+</dd>
+<dt>エンディアンの強制指定(バイナリ解析などに適切)</dt>
+<dd>
+<pre>
+  S&gt;:  big endian unsigned 16bit(nと同じ)
+  s&gt;:  big endian int16_t
+  s!&gt;: big endian signed short
+  l&lt;:  little endian int32_t
+  l!&lt;: little endian signed long
+</pre>
+</dd>
+</dl>
+<h2 >各テンプレート文字の説明</h2>
+<p>
+説明中、<a href="../../../method/-array/i/pack.html">Array#pack</a> と <a href="../../../method/-string/i/unpack.html">String#unpack</a> で違いのあるものは `/' で区切って
+「Array#pack の説明 / String#unpack の説明」としています。
+</p>
+<dl>
+<dt>a</dt>
+<dd>
+<p>
+ASCII文字列(null文字を詰める/後続するnull文字やスペースを残す)
+</p>
+<pre>
+    [&quot;abc&quot;].pack(&quot;a&quot;)    # =&gt; &quot;a&quot;
+    [&quot;abc&quot;].pack(&quot;a*&quot;)   # =&gt; &quot;abc&quot;
+    [&quot;abc&quot;].pack(&quot;a4&quot;)   # =&gt; &quot;abc\0&quot;
+
+    &quot;abc\0&quot;.unpack(&quot;a4&quot;) # =&gt; [&quot;abc\0&quot;]
+    &quot;abc &quot;.unpack(&quot;a4&quot;)  # =&gt; [&quot;abc &quot;]
+</pre>
+</dd>
+<dt>A</dt>
+<dd>
+<p>
+ASCII文字列(スペースを詰める/後続するnull文字やスペースを削除)
+</p>
+<pre>
+    [&quot;abc&quot;].pack(&quot;A&quot;)    # =&gt; &quot;a&quot;
+    [&quot;abc&quot;].pack(&quot;A*&quot;)   # =&gt; &quot;abc&quot;
+    [&quot;abc&quot;].pack(&quot;A4&quot;)   # =&gt; &quot;abc &quot;
+
+    &quot;abc &quot;.unpack(&quot;A4&quot;)  # =&gt; [&quot;abc&quot;]
+    &quot;abc\0&quot;.unpack(&quot;A4&quot;) # =&gt; [&quot;abc&quot;]
+</pre>
+</dd>
+<dt>Z</dt>
+<dd>
+<p>
+null終端文字列(長さが`*'の場合も含め、null文字を詰める/後続するnull文字を削除)
+</p>
+<pre>
+    [&quot;abc&quot;].pack(&quot;Z&quot;)  # =&gt; &quot;a&quot;
+    [&quot;abc&quot;].pack(&quot;Z*&quot;) # =&gt; &quot;abc\0&quot;
+    [&quot;abc&quot;].pack(&quot;Z4&quot;) # =&gt; &quot;abc\0&quot;
+
+    &quot;abc\0&quot;.unpack(&quot;Z4&quot;) # =&gt; [&quot;abc&quot;]
+    &quot;abc &quot;.unpack(&quot;Z4&quot;)  # =&gt; [&quot;abc &quot;]
+</pre>
+</dd>
+<dt>b</dt>
+<dd>
+<p>
+ビットストリング(各バイトごとに下位ビットから上位ビット)
+</p>
+<pre>
+    &quot;\377\000&quot;.unpack(&quot;b*&quot;) # =&gt; [&quot;1111111100000000&quot;]
+    &quot;\001\002&quot;.unpack(&quot;b*&quot;) # =&gt; [&quot;1000000001000000&quot;]
+    &quot;\001\002&quot;.unpack(&quot;b3&quot;) # =&gt; [&quot;100&quot;]
+
+
+    [&quot;1000000001000000&quot;].pack(&quot;b*&quot;) # =&gt; &quot;\001\002&quot;
+</pre>
+</dd>
+<dt>B</dt>
+<dd>
+<p>
+ビットストリング(各バイトごとに上位ビットから下位ビット)
+</p>
+<pre>
+    &quot;\377\000&quot;.unpack(&quot;B*&quot;)  # =&gt; [&quot;1111111100000000&quot;]
+    &quot;\001\002&quot;.unpack(&quot;B*&quot;)  # =&gt; [&quot;0000000100000010&quot;]
+    &quot;\001\002&quot;.unpack(&quot;B9&quot;)  # =&gt; [&quot;000000010&quot;]
+    &quot;\001\002&quot;.unpack(&quot;B15&quot;) # =&gt; [&quot;000000010000001&quot;]
+
+    [&quot;0000000100000010&quot;].pack(&quot;B*&quot;)  # =&gt; &quot;\001\002&quot;
+    [&quot;0000000100000010&quot;].pack(&quot;B0&quot;)  # =&gt; &quot;&quot;
+    [&quot;0000000100000010&quot;].pack(&quot;B1&quot;)  # =&gt; &quot;\000&quot;
+    [&quot;0000000100000010&quot;].pack(&quot;B7&quot;)  # =&gt; &quot;\000&quot;
+    [&quot;0000000100000010&quot;].pack(&quot;B8&quot;)  # =&gt; &quot;\001&quot;
+    [&quot;0000000100000010&quot;].pack(&quot;B9&quot;)  # =&gt; &quot;\001\000&quot;
+    [&quot;0000000100000010&quot;].pack(&quot;B14&quot;) # =&gt; &quot;\001\000&quot;
+    [&quot;0000000100000010&quot;].pack(&quot;B15&quot;) # =&gt; &quot;\001\002&quot;
+    [&quot;0000000100000010&quot;].pack(&quot;B16&quot;) # =&gt; &quot;\001\002&quot;
+</pre>
+</dd>
+<dt>h</dt>
+<dd>
+<p>
+16進文字列(下位ニブルが先)
+</p>
+<pre>
+    &quot;\x01\xfe&quot;.unpack(&quot;h*&quot;) # =&gt; [&quot;10ef&quot;]
+    &quot;\x01\xfe&quot;.unpack(&quot;h3&quot;) # =&gt; [&quot;10e&quot;]
+
+    [&quot;10ef&quot;].pack(&quot;h*&quot;) # =&gt; &quot;\001\376&quot;
+</pre>
+</dd>
+<dt>H</dt>
+<dd>
+<p>
+16進文字列(上位ニブルが先)
+</p>
+<pre>
+    &quot;\x01\xfe&quot;.unpack(&quot;H*&quot;) # =&gt; [&quot;01fe&quot;]
+    &quot;\x01\xfe&quot;.unpack(&quot;H3&quot;) # =&gt; [&quot;01f&quot;]
+    &quot;~&quot;.unpack(&quot;H2&quot;)        # =&gt; [&quot;7e&quot;]
+
+    [&quot;01fe&quot;].pack(&quot;H*&quot;) # =&gt; &quot;\001\376&quot;
+    [&quot;7e&quot;].pack(&quot;H2&quot;)   # =&gt; &quot;~&quot;
+</pre>
+</dd>
+<dt>c</dt>
+<dd>
+<p>
+char (8bit 符号つき整数)
+</p>
+<pre>
+    &quot;\001\376&quot;.unpack(&quot;c*&quot;) # =&gt; [1, -2]
+
+    [1, -2].pack(&quot;c*&quot;)  # =&gt; &quot;\001\376&quot;
+    [1, 254].pack(&quot;c*&quot;) # =&gt; &quot;\001\376&quot;
+</pre>
+</dd>
+<dt>C</dt>
+<dd>
+<p>
+unsigned char (8bit 符号なし整数)
+</p>
+<pre>
+    &quot;\001\376&quot;.unpack(&quot;C*&quot;) # =&gt; [1, 254]
+
+    [1, -2].pack(&quot;C*&quot;)  # =&gt; &quot;\001\376&quot;
+    [1, 254].pack(&quot;C*&quot;) # =&gt; &quot;\001\376&quot;
+</pre>
+</dd>
+<dt>s</dt>
+<dd>
+<p>
+short (16bit 符号つき整数, エンディアンに依存)
+(s! は 16bit でなく、short のサイズに依存)
+</p>
+<p>
+リトルエンディアン:
+</p>
+<pre>
+    &quot;\001\002\376\375&quot;.unpack(&quot;s*&quot;) # =&gt; [513, -514]
+
+    [513, 65022].pack(&quot;s*&quot;) # =&gt; &quot;\001\002\376\375&quot;
+    [513, -514].pack(&quot;s*&quot;)  # =&gt; &quot;\001\002\376\375&quot;
+</pre>
+<p>
+ビッグエンディアン:
+</p>
+<pre>
+    &quot;\001\002\376\375&quot;.unpack(&quot;s*&quot;) # =&gt; [258, -259]
+
+    [258, 65277].pack(&quot;s*&quot;) # =&gt; &quot;\001\002\376\375&quot;
+    [258, -259].pack(&quot;s*&quot;)  # =&gt; &quot;\001\002\376\375&quot;
+</pre>
+</dd>
+<dt>S</dt>
+<dd>
+<p>
+unsigned short (16bit 符号なし整数, エンディアンに依存)
+(S! は 16bit でなく、short のサイズに依存)
+</p>
+<p>
+リトルエンディアン:
+</p>
+<pre>
+    &quot;\001\002\376\375&quot;.unpack(&quot;S*&quot;) # =&gt; [513, 65022]
+
+    [513, 65022].pack(&quot;s*&quot;) # =&gt; &quot;\001\002\376\375&quot;
+    [513, -514].pack(&quot;s*&quot;)  # =&gt; &quot;\001\002\376\375&quot;
+</pre>
+<p>
+ビッグエンディアン:
+</p>
+<pre>
+    &quot;\001\002\376\375&quot;.unpack(&quot;S*&quot;) # =&gt; [258, 65277]
+
+    [258, 65277].pack(&quot;S*&quot;) # =&gt; &quot;\001\002\376\375&quot;
+    [258, -259].pack(&quot;S*&quot;)  # =&gt; &quot;\001\002\376\375&quot;
+</pre>
+</dd>
+<dt>i</dt>
+<dd>
+<p>
+int (符号つき整数, エンディアンと int のサイズに依存)
+</p>
+<p>
+リトルエンディアン, 32bit int:
+</p>
+<pre>
+    &quot;\001\002\003\004\377\376\375\374&quot;.unpack(&quot;i*&quot;) # =&gt; [67305985, -50462977]
+
+    [67305985, 4244504319].pack(&quot;i*&quot;) # =&gt; RangeError
+    [67305985, -50462977].pack(&quot;i*&quot;)  # =&gt; &quot;\001\002\003\004\377\376\375\374&quot;
+</pre>
+<p>
+ビッグエンディアン, 32bit int:
+</p>
+<pre>
+    &quot;\001\002\003\004\377\376\375\374&quot;.unpack(&quot;i*&quot;) # =&gt; [16909060, -66052]
+
+    [16909060, 4294901244].pack(&quot;i*&quot;) # =&gt; RangeError
+    [16909060, -66052].pack(&quot;i*&quot;)     # =&gt; &quot;\001\002\003\004\377\376\375\374&quot;
+</pre>
+</dd>
+<dt>I</dt>
+<dd>
+<p>
+unsigned int (符号なし整数, エンディアンと int のサイズに依存)
+</p>
+<p>
+リトルエンディアン, 32bit int:
+</p>
+<pre>
+    &quot;\001\002\003\004\377\376\375\374&quot;.unpack(&quot;I*&quot;) # =&gt; [67305985, 4244504319]
+
+    [67305985, 4244504319].pack(&quot;I*&quot;) # =&gt; &quot;\001\002\003\004\377\376\375\374&quot;
+    [67305985, -50462977].pack(&quot;I*&quot;)  # =&gt; &quot;\001\002\003\004\377\376\375\374&quot;
+</pre>
+<p>
+ビッグエンディアン, 32bit int:
+</p>
+<pre>
+    &quot;\001\002\003\004\377\376\375\374&quot;.unpack(&quot;I*&quot;) # =&gt; [16909060, 4294901244]
+
+    [16909060, 4294901244].pack(&quot;I*&quot;) # =&gt; &quot;\001\002\003\004\377\376\375\374&quot;
+    [16909060, -66052].pack(&quot;I*&quot;)     # =&gt; &quot;\001\002\003\004\377\376\375\374&quot;
+</pre>
+</dd>
+<dt>l</dt>
+<dd>
+<p>
+long (32bit 符号つき整数, エンディアンに依存)
+(l! は 32bit でなく、long のサイズに依存)
+</p>
+<p>
+リトルエンディアン, 32bit long:
+</p>
+<pre>
+    &quot;\001\002\003\004\377\376\375\374&quot;.unpack(&quot;l*&quot;) # =&gt; [67305985, -50462977]
+
+    [67305985, 4244504319].pack(&quot;l*&quot;) # =&gt; RangeError
+    [67305985, -50462977].pack(&quot;l*&quot;)  # =&gt; &quot;\001\002\003\004\377\376\375\374&quot;
+</pre>
+</dd>
+<dt>L</dt>
+<dd>
+<p>
+unsigned long (32bit 符号なし整数, エンディアンに依存)
+(L! は 32bit でなく、long のサイズに依存)
+</p>
+<p>
+リトルエンディアン, 32bit long:
+</p>
+<pre>
+    &quot;\001\002\003\004\377\376\375\374&quot;.unpack(&quot;L*&quot;) # =&gt; [67305985, 4244504319]
+
+    [67305985, 4244504319].pack(&quot;L*&quot;) # =&gt; &quot;\001\002\003\004\377\376\375\374&quot;
+    [67305985, -50462977].pack(&quot;L*&quot;)  # =&gt; &quot;\001\002\003\004\377\376\375\374&quot;
+</pre>
+</dd>
+<dt>q</dt>
+<dd>
+<p>
+long long (符号付き整数, エンディアンと long long のサイズに依存)
+(C で long long が扱えない場合には 64bit)
+</p>
+<p>
+リトルエンディアン, 64bit long long:
+</p>
+<pre>
+    &quot;\001\002\003\004\005\006\007\010\377\376\375\374\373\372\371\370&quot;.unpack(&quot;q*&quot;)
+    # =&gt; [578437695752307201, -506097522914230529]
+
+    [578437695752307201, -506097522914230529].pack(&quot;q*&quot;)
+    # =&gt; &quot;\001\002\003\004\005\006\a\010\377\376\375\374\373\372\371\370&quot;
+    [578437695752307201, 17940646550795321087].pack(&quot;q*&quot;)
+    # =&gt; &quot;\001\002\003\004\005\006\a\010\377\376\375\374\373\372\371\370&quot;
+</pre>
+</dd>
+<dt>Q</dt>
+<dd>
+<p>
+unsigned long long (符号なし整数, エンディアンと long long のサイズに依存)
+(C で long long が扱えない場合には 64bit)
+</p>
+<p>
+リトルエンディアン, 64bit long long:
+</p>
+<pre>
+    &quot;\001\002\003\004\005\006\007\010\377\376\375\374\373\372\371\370&quot;.unpack(&quot;Q*&quot;)
+    # =&gt; [578437695752307201, 17940646550795321087]
+
+    [578437695752307201, 17940646550795321087].pack(&quot;Q*&quot;)
+    # =&gt; &quot;\001\002\003\004\005\006\a\010\377\376\375\374\373\372\371\370&quot;
+    [578437695752307201, -506097522914230529].pack(&quot;Q*&quot;)
+    # =&gt; &quot;\001\002\003\004\005\006\a\010\377\376\375\374\373\372\371\370&quot;
+</pre>
+</dd>
+<dt>m</dt>
+<dd>
+<p>
+base64された文字列。60 オクテットごと(と最後)に改行コードが付加されます。
+</p>
+<p>
+Base64は、3オクテット(8bits * 3 = 24bits)のバイナリコードをASCII文字の
+うちの65文字 ([A-Za-z0-9+/]の64文字とpaddingのための'=')だけを使用して
+4オクテット(6bits * 4 = 24bits)の印字可能文字列に変換するエンコーディ
+ング法です。<a class="external" href="http://www.ietf.org/rfc/rfc2045.txt">[RFC2045]</a>, <a class="external" href="http://www.ietf.org/rfc/rfc4648.txt">[RFC4648]</a> で定義されています。
+</p>
+<pre>
+    [&quot;&quot;].pack(&quot;m&quot;)             # =&gt; &quot;&quot;
+    [&quot;\0&quot;].pack(&quot;m&quot;)           # =&gt; &quot;AA==\n&quot;
+    [&quot;\0\0&quot;].pack(&quot;m&quot;)         # =&gt; &quot;AAA=\n&quot;
+    [&quot;\0\0\0&quot;].pack(&quot;m&quot;)       # =&gt; &quot;AAAA\n&quot;
+    [&quot;\377&quot;].pack(&quot;m&quot;)         # =&gt; &quot;/w==\n&quot;
+    [&quot;\377\377&quot;].pack(&quot;m&quot;)     # =&gt; &quot;//8=\n&quot;
+    [&quot;\377\377\377&quot;].pack(&quot;m&quot;) # =&gt; &quot;////\n&quot;
+
+    [&quot;abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;].pack(&quot;m&quot;)
+    # =&gt; &quot;YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXpBQkNERUZHSElKS0xNTk9QUVJT\nVFVWV1hZWg==\n&quot;
+    [&quot;abcdefghijklmnopqrstuvwxyz&quot;].pack(&quot;m3&quot;)
+    # =&gt; &quot;YWJj\nZGVm\nZ2hp\namts\nbW5v\ncHFy\nc3R1\ndnd4\neXo=\n&quot;
+
+    &quot;&quot;.unpack(&quot;m&quot;)       # =&gt; [&quot;&quot;]
+    &quot;AA==\n&quot;.unpack(&quot;m&quot;) # =&gt; [&quot;\000&quot;]
+    &quot;AA==&quot;.unpack(&quot;m&quot;)   # =&gt; [&quot;\000&quot;]
+
+    &quot;YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXpBQkNERUZHSElKS0xNTk9QUVJT\nVFVWV1hZWg==\n&quot;.unpack(&quot;m&quot;)
+    # =&gt; [&quot;abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;]
+    &quot;YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXpBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWg==\n&quot;.unpack(&quot;m&quot;)
+    # =&gt; [&quot;abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;]
+</pre>
+<p>
+m0 は <a class="external" href="http://www.ietf.org/rfc/rfc4648.txt">[RFC4648]</a> 対応
+</p>
+<pre>
+    [&quot;&quot;].pack(&quot;m0&quot;)             # =&gt; &quot;&quot;
+    [&quot;\0&quot;].pack(&quot;m0&quot;)           # =&gt; &quot;AA==&quot;
+    [&quot;\0\0&quot;].pack(&quot;m0&quot;)         # =&gt; &quot;AAA=&quot;
+    [&quot;\0\0\0&quot;].pack(&quot;m0&quot;)       # =&gt; &quot;AAAA&quot;
+    [&quot;\377&quot;].pack(&quot;m0&quot;)         # =&gt; &quot;/w==&quot;
+    [&quot;\377\377&quot;].pack(&quot;m0&quot;)     # =&gt; &quot;//8=&quot;
+    [&quot;\377\377\377&quot;].pack(&quot;m0&quot;) # =&gt; &quot;////&quot;
+
+    [&quot;abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;].pack(&quot;m0&quot;)
+    # =&gt; &quot;YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXpBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWg==&quot;
+
+    &quot;&quot;.unpack(&quot;m0&quot;)       # =&gt; [&quot;&quot;]
+    &quot;AA==\n&quot;.unpack(&quot;m0&quot;) # =&gt; ArgumentError
+    &quot;AA==&quot;.unpack(&quot;m0&quot;)   # =&gt; [&quot;\x00&quot;]
+
+    &quot;YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXpBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWg==&quot;.unpack(&quot;m0&quot;)
+    # =&gt; [&quot;abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;]
+</pre>
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../library/base64.html">base64</a>
+</p>
+<dl>
+<dt>M</dt>
+<dd>
+<p>
+quoted-printable encoding された文字列
+</p>
+<pre>
+    [&quot;a b c\td \ne&quot;].pack(&quot;M&quot;) # =&gt; &quot;a b c\td =\n\ne=\n&quot;
+
+    &quot;a b c\td =\n\ne=\n&quot;.unpack(&quot;M&quot;) # =&gt; [&quot;a b c\td \ne&quot;]
+</pre>
+</dd>
+<dt>n</dt>
+<dd>
+<p>
+ネットワークバイトオーダー(ビッグエンディアン)のunsigned short (16bit 符号なし整数)
+</p>
+<pre>
+    [0,1,-1,32767,-32768,65535].pack(&quot;n*&quot;)
+    # =&gt; &quot;\000\000\000\001\377\377\177\377\200\000\377\377&quot;
+
+    &quot;\000\000\000\001\377\377\177\377\200\000\377\377&quot;.unpack(&quot;n*&quot;)
+    # =&gt; [0, 1, 65535, 32767, 32768, 65535]
+</pre>
+</dd>
+<dt>N</dt>
+<dd>
+<p>
+ネットワークバイトオーダー(ビッグエンディアン)のunsigned long (32bit 符号なし整数)
+</p>
+<pre>
+    [0,1,-1].pack(&quot;N*&quot;) # =&gt; &quot;\000\000\000\000\000\000\000\001\377\377\377\377&quot;
+
+    &quot;\000\000\000\000\000\000\000\001\377\377\377\377&quot;.unpack(&quot;N*&quot;) # =&gt; [0, 1, 4294967295]
+</pre>
+</dd>
+<dt>v</dt>
+<dd>
+<p>
+&quot;VAX&quot;バイトオーダー(リトルエンディアン)のunsigned short (16bit 符号なし整数)
+</p>
+<pre>
+    [0,1,-1,32767,-32768,65535].pack(&quot;v*&quot;)
+    # =&gt; &quot;\000\000\001\000\377\377\377\177\000\200\377\377&quot;
+
+    &quot;\000\000\001\000\377\377\377\177\000\200\377\377&quot;.unpack(&quot;v*&quot;)
+    # =&gt; [0, 1, 65535, 32767, 32768, 65535]
+</pre>
+</dd>
+<dt>V</dt>
+<dd>
+<p>
+&quot;VAX&quot;バイトオーダー(リトルエンディアン)のunsigned long (32bit 符号なし整数)
+</p>
+<pre>
+    [0,1,-1].pack(&quot;V*&quot;) # =&gt; &quot;\000\000\000\000\001\000\000\000\377\377\377\377&quot;
+
+    &quot;\000\000\000\000\001\000\000\000\377\377\377\377&quot;.unpack(&quot;V*&quot;) # =&gt; [0, 1, 4294967295]
+</pre>
+</dd>
+<dt>f</dt>
+<dd>
+<p>
+単精度浮動小数点数(機種依存)
+</p>
+<p>
+IA-32 (x86) (IEEE754 単精度 リトルエンディアン):
+</p>
+<pre>
+    [1.0].pack(&quot;f&quot;)      # =&gt; &quot;\000\000\200?&quot;
+    [0.0/0.0].pack(&quot;f&quot;)  # =&gt; &quot;\000\000\300\377&quot;      # NaN
+    [1.0/0.0].pack(&quot;f&quot;)  # =&gt; &quot;\000\000\200\177&quot;      # +Inf
+    [-1.0/0.0].pack(&quot;f&quot;) # =&gt; &quot;\000\000\200\377&quot;      # -Inf
+</pre>
+<p>
+SPARC (IEEE754 単精度 ビッグエンディアン):
+</p>
+<pre>
+    [1.0].pack(&quot;f&quot;)      # =&gt; &quot;?\200\000\000&quot;
+    [0.0/0.0].pack(&quot;f&quot;)  # =&gt; &quot;\177\377\377\377&quot;      # NaN
+    [1.0/0.0].pack(&quot;f&quot;)  # =&gt; &quot;\177\200\000\000&quot;      # +Inf
+    [-1.0/0.0].pack(&quot;f&quot;) # =&gt; &quot;\377\200\000\000&quot;      # -Inf
+</pre>
+<p>
+VAX (NetBSD 3.0) (非IEEE754):
+</p>
+<pre>
+    [1.0].pack(&quot;f&quot;) # =&gt; &quot;\200@\000\000&quot;
+</pre>
+</dd>
+<dt>d</dt>
+<dd>
+<p>
+倍精度浮動小数点数(機種依存)
+</p>
+<p>
+IA-32 (IEEE754 倍精度 リトルエンディアン):
+</p>
+<pre>
+    [1.0].pack(&quot;d&quot;)      # =&gt; &quot;\000\000\000\000\000\000\360?&quot;
+    [0.0/0.0].pack(&quot;d&quot;)  # =&gt; &quot;\000\000\000\000\000\000\370\377&quot;      # NaN
+    [1.0/0.0].pack(&quot;d&quot;)  # =&gt; &quot;\000\000\000\000\000\000\360\177&quot;      # +Inf
+    [-1.0/0.0].pack(&quot;d&quot;) # =&gt; &quot;\000\000\000\000\000\000\360\377&quot;      # -Inf
+</pre>
+<p>
+SPARC (IEEE754 倍精度 ビッグエンディアン):
+</p>
+<pre>
+    [1.0].pack(&quot;d&quot;)      # =&gt; &quot;?\360\000\000\000\000\000\000&quot;
+    [0.0/0.0].pack(&quot;d&quot;)  # =&gt; &quot;\177\377\377\377\377\377\377\377&quot;      # NaN
+    [1.0/0.0].pack(&quot;d&quot;)  # =&gt; &quot;\177\360\000\000\000\000\000\000&quot;      # +Inf
+    [-1.0/0.0].pack(&quot;d&quot;) # =&gt; &quot;\377\360\000\000\000\000\000\000&quot;      # -Inf
+</pre>
+<p>
+VAX (NetBSD 3.0) (非IEEE754):
+</p>
+<pre>
+    [1.0].pack(&quot;d&quot;) # =&gt; &quot;\200@\000\000\000\000\000\000&quot;
+</pre>
+</dd>
+<dt>e</dt>
+<dd>
+<p>
+リトルエンディアンの単精度浮動小数点数(機種依存)
+</p>
+<p>
+IA-32 (IEEE754):
+</p>
+<pre>
+    [1.0].pack(&quot;e&quot;) # =&gt; &quot;\000\000\200?&quot;
+</pre>
+<p>
+SPARC (IEEE754):
+</p>
+<pre>
+    [1.0].pack(&quot;e&quot;) # =&gt; &quot;\000\000\200?&quot;
+</pre>
+</dd>
+<dt>E</dt>
+<dd>
+<p>
+リトルエンディアンの倍精度浮動小数点数(機種依存)
+</p>
+<p>
+IA-32 (IEEE754):
+</p>
+<pre>
+    [1.0].pack(&quot;E&quot;) # =&gt; &quot;\000\000\000\000\000\000\360?&quot;
+</pre>
+<p>
+SPARC (IEEE754):
+</p>
+<pre>
+    [1.0].pack(&quot;E&quot;) # =&gt; &quot;\000\000\000\000\000\000\360?&quot;
+</pre>
+</dd>
+<dt>g</dt>
+<dd>
+<p>
+ビッグエンディアンの単精度浮動小数点数(機種依存)
+</p>
+<p>
+IA-32 (IEEE754):
+</p>
+<pre>
+    [1.0].pack(&quot;g&quot;) # =&gt; &quot;?\200\000\000&quot;
+</pre>
+<p>
+SPARC (IEEE754):
+</p>
+<pre>
+    [1.0].pack(&quot;g&quot;) # =&gt; &quot;?\200\000\000&quot;
+</pre>
+<p>
+IEEE754準拠な環境の場合、以下のようにして符号、指数部、仮数部を取り出せます。
+</p>
+<pre>
+    s = [v].pack(&quot;g&quot;).unpack(&quot;B*&quot;)[0][0,1]      # 符号
+    e = [v].pack(&quot;g&quot;).unpack(&quot;B*&quot;)[0][1,8]      # 指数部
+    f = [v].pack(&quot;g&quot;).unpack(&quot;B*&quot;)[0][9,23]     # 仮数部
+</pre>
+<p>
+そして、s, e, f の意味は以下の通りです。
+</p>
+<pre>
+    sgn = s == &quot;0&quot; ? +1.0 : -1.0
+    exp = Integer(&quot;0b&quot; + e)
+    fra = Integer(&quot;0b&quot; + f)
+    if exp == 0
+      if fra == 0
+        sgn * 0                     # ±0 (positive/negative zero)
+      else
+        sgn * fra * 2**(-126-23)    # 非正規化数 (denormalized number)
+      end
+    elsif exp == 255
+      if fra == 0
+        sgn * Inf                   # ±∞ (positive/negative infinity)
+      else
+        NaN                         # 非数 (not a number)
+      end
+    else
+      fra += 1 &lt;&lt; 23                # ゲタ
+      sgn * fra * 2**(exp-127-23)   # 正規化数 (normalized number)
+    end
+</pre>
+</dd>
+<dt>G</dt>
+<dd>
+<p>
+ビッグエンディアンの倍精度浮動小数点数(機種依存)
+</p>
+<p>
+IA-32:
+</p>
+<pre>
+    [1.0].pack(&quot;G&quot;) # =&gt; &quot;?\360\000\000\000\000\000\000&quot;
+</pre>
+<p>
+SPARC:
+</p>
+<pre>
+    [1.0].pack(&quot;G&quot;) # =&gt; &quot;?\360\000\000\000\000\000\000&quot;
+</pre>
+<p>
+IEEE754準拠な環境の場合、以下のようにして符号、指数部、仮数部を取り出せます。
+</p>
+<pre>
+    s = [v].pack(&quot;G&quot;).unpack(&quot;B*&quot;)[0][0,1]    # 符号
+    e = [v].pack(&quot;G&quot;).unpack(&quot;B*&quot;)[0][1,11]   # 指数部
+    f = [v].pack(&quot;G&quot;).unpack(&quot;B*&quot;)[0][12,52]  # 仮数部
+</pre>
+<p>
+そして、s, e, f の意味は以下の通りです。
+</p>
+<pre>
+    sgn = s == &quot;0&quot; ? +1.0 : -1.0
+    exp = Integer(&quot;0b&quot; + e)
+    fra = Integer(&quot;0b&quot; + f)
+    if exp == 0
+      if fra == 0
+        sgn * 0                     # ±0 (positive/negative zero)
+      else
+        sgn * fra * 2**(-1022-52)   # 非正規化数 (denormalized number)
+      end
+    elsif exp == 2047
+      if fra == 0
+        sgn * Inf                   # ±∞ (positive/negative infinity)
+      else
+        NaN                         # 非数 (not a number)
+      end
+    else
+      fra += 1 &lt;&lt; 52                # ゲタ
+      sgn * fra * 2**(exp-1023-52)  # 正規化数 (normalized number)
+    end
+</pre>
+</dd>
+<dt>p</dt>
+<dd>
+<p>
+ナル終端の文字列へのポインタ
+</p>
+<pre>
+    [&quot;&quot;].pack(&quot;p&quot;)             # =&gt; &quot;\310\037\034\010&quot;
+    [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;].pack(&quot;p3&quot;) # =&gt; &quot; =\030\010\340^\030\010\360^\030\010&quot;
+    [nil].pack(&quot;p&quot;)            # =&gt; &quot;\000\000\000\000&quot;
+</pre>
+</dd>
+<dt>P</dt>
+<dd>
+<p>
+構造体(固定長文字列)へのポインタ
+</p>
+<pre>
+    [nil].pack(&quot;P&quot;)    # =&gt; &quot;\000\000\000\000&quot;
+    [&quot;abc&quot;].pack(&quot;P3&quot;) # =&gt; &quot;x*\024\010&quot;
+
+    [&quot;abc&quot;].pack(&quot;P4&quot;) # =&gt; ArgumentError: too short buffer for P(3 for 4)
+    [&quot;&quot;].pack(&quot;P&quot;)     # =&gt; ArgumentError: too short buffer for P(0 for 1)
+</pre>
+</dd>
+<dt>u</dt>
+<dd>
+<p>
+uuencodeされた文字列
+</p>
+<pre>
+    [&quot;&quot;].pack(&quot;u&quot;)           # =&gt; &quot;&quot;
+    [&quot;a&quot;].pack(&quot;u&quot;)          # =&gt; &quot;!80``\n&quot;
+    [&quot;abc&quot;].pack(&quot;u&quot;)        # =&gt; &quot;#86)C\n&quot;
+    [&quot;abcd&quot;].pack(&quot;u&quot;)       # =&gt; &quot;$86)C9```\n&quot;
+    [&quot;a&quot;*45].pack(&quot;u&quot;)       # =&gt; &quot;M86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A\n&quot;
+    [&quot;a&quot;*46].pack(&quot;u&quot;)       # =&gt; &quot;M86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A\n!80``\n&quot;
+    [&quot;abcdefghi&quot;].pack(&quot;u6&quot;) # =&gt; &quot;&amp;86)C9&amp;5F\n#9VAI\n&quot;
+</pre>
+</dd>
+<dt>U</dt>
+<dd>
+<p>
+UTF-8
+</p>
+<pre>
+    [0].pack(&quot;U&quot;)                               # =&gt; &quot;\000&quot;
+    [1].pack(&quot;U&quot;)                               # =&gt; &quot;\001&quot;
+    [0x7f].pack(&quot;U&quot;)                            # =&gt; &quot;\177&quot;
+    [0x80].pack(&quot;U&quot;)                            # =&gt; &quot;\302\200&quot;
+    [0x7fffffff].pack(&quot;U&quot;)                      # =&gt; &quot;\375\277\277\277\277\277&quot;
+    [0x80000000].pack(&quot;U&quot;)                      # =&gt; RangeError
+    [0,256,65536].pack(&quot;U3&quot;)                    # =&gt; &quot;\000\304\200\360\220\200\200&quot;
+
+    &quot;\000\304\200\360\220\200\200&quot;.unpack(&quot;U3&quot;) # =&gt; [0, 256, 65536]
+    &quot;\000\304\200\360\220\200\200&quot;.unpack(&quot;U&quot;)  # =&gt; [0]
+    &quot;\000\304\200\360\220\200\200&quot;.unpack(&quot;U*&quot;) # =&gt; [0, 256, 65536]
+</pre>
+</dd>
+<dt>w</dt>
+<dd>
+<p>
+BER圧縮整数
+</p>
+<p>
+1バイトあたり7ビットを使用して必要最小限のバイト数で任意サイズの
+0以上の整数を表す数値表現。各バイトの最上位ビットはデータの最後
+を除いて必ず1が立っている(つまり最上位ビットはどこまでデータがあ
+るかを示している)。
+</p>
+<p>
+ISO/IEC 8825-1:1995 : Information technology−ASN.1 encoding rules : Specification of Basic Encoding Rules(BER) に定められる整数の符号化方法。
+</p>
+<pre>
+    [0].pack(&quot;w&quot;)             # =&gt; &quot;\000&quot;
+    [1].pack(&quot;w&quot;)             # =&gt; &quot;\001&quot;
+    [127].pack(&quot;w&quot;)           # =&gt; &quot;\177&quot;
+    [128].pack(&quot;w&quot;)           # =&gt; &quot;\201\000&quot;
+    [0x3fff].pack(&quot;w&quot;)        # =&gt; &quot;\377\177&quot;
+    [0x4000].pack(&quot;w&quot;)        # =&gt; &quot;\201\200\000&quot;
+    [0x3fffffff].pack(&quot;w&quot;)    # =&gt; &quot;\203\377\377\377\177&quot;
+    [0x40000000].pack(&quot;w&quot;)    # =&gt; &quot;\204\200\200\200\000&quot;
+    [0xffffffff].pack(&quot;w&quot;)    # =&gt; &quot;\217\377\377\377\177&quot;
+    [0x100000000].pack(&quot;w&quot;)   # =&gt; &quot;\220\200\200\200\000&quot;
+
+    &quot;\0&quot;.unpack(&quot;w&quot;)          # =&gt; [0]
+    &quot;\0\201\0\1&quot;.unpack(&quot;w*&quot;) # =&gt; [0, 128, 1]
+</pre>
+<p>
+なお、BER圧縮整数でエンコードした結果は大小関係を保存しない。
+たとえば、[0x3fff].pack(&quot;w&quot;) &gt; [0x4000].pack(&quot;w&quot;) である。
+</p>
+</dd>
+<dt>x</dt>
+<dd>
+<p>
+ナルバイト/1バイト読み飛ばす
+</p>
+<pre>
+    [?a, ?b].pack(&quot;CxC&quot;)    # =&gt; &quot;a\000b&quot;
+    [?a, ?b].pack(&quot;Cx3C&quot;)   # =&gt; &quot;a\000\000\000b&quot;
+
+    &quot;a\000b&quot;.unpack(&quot;CxC&quot;)  # =&gt; [97, 98]
+    &quot;a\377b&quot;.unpack(&quot;CxC&quot;)  # =&gt; [97, 98]
+    &quot;a\377b&quot;.unpack(&quot;Cx3C&quot;) # =&gt; ArgumentError: x outside of string
+</pre>
+</dd>
+<dt>X</dt>
+<dd>
+<p>
+1バイト後退
+</p>
+<pre>
+    [?a, ?b, ?c].pack(&quot;CCXC&quot;) # =&gt; &quot;ac&quot;
+
+    &quot;abcdef&quot;.unpack(&quot;x*XC&quot;) # =&gt; [102]
+</pre>
+</dd>
+<dt>@</dt>
+<dd>
+<p>
+絶対位置への移動
+</p>
+<pre>
+    [?a, ?b].pack(&quot;C @3 C&quot;) # =&gt; &quot;a\000\000b&quot;
+
+    &quot;a\000\000b&quot;.unpack(&quot;C @3 C&quot;) # =&gt; [97, 98]
+</pre>
+</dd>
+<dt>j</dt>
+<dd>
+</dd>
+</dl>
+<p>
+intptr_t
+</p>
+<dl>
+<dt>J</dt>
+<dd>
+</dd>
+</dl>
+<p>
+uintptr_t
+</p>
+<h2 >使用例</h2>
+<p>
+以下、pack/unpack の使用例の一部です。
+</p>
+<p>
+pack を使用しなくても同じことができる場合はその例も載せています。
+pack は暗号になりやすい面があることを考慮し、pack を使いたくない人
+に別解を示すためです。
+</p>
+<dl>
+<dt>数値(文字コード)の配列を文字列に変換する例</dt>
+<dd>
+<pre>
+    [82, 117, 98, 121].pack(&quot;cccc&quot;)  # =&gt; &quot;Ruby&quot;
+    [82, 117, 98, 121].pack(&quot;c4&quot;)    # =&gt; &quot;Ruby&quot;
+    [82, 117, 98, 121].pack(&quot;c*&quot;)    # =&gt; &quot;Ruby&quot;
+
+    s = &quot;&quot;
+    [82, 117, 98, 121].each {|c| s &lt;&lt; c}
+    s    # =&gt; &quot;Ruby&quot;
+
+    [82, 117, 98, 121].collect {|c| sprintf &quot;%c&quot;, c}.join   # =&gt; &quot;Ruby&quot;
+
+    [82, 117, 98, 121].inject(&quot;&quot;) {|s, c| s &lt;&lt; c}    # =&gt; &quot;Ruby&quot;
+</pre>
+</dd>
+<dt>文字列を数値(文字コード)の配列に変換する例</dt>
+<dd>
+<pre>
+    &quot;Ruby&quot;.unpack('C*')    # =&gt; [82, 117, 98, 121]
+
+    a = []
+    &quot;Ruby&quot;.each_byte {|c| a &lt;&lt; c}
+    a    # =&gt; [82, 117, 98, 121]
+</pre>
+</dd>
+<dt>&quot;x&quot; でナルバイトを埋めることができる</dt>
+<dd>
+<pre>
+    [82, 117, 98, 121].pack(&quot;ccxxcc&quot;)    # =&gt; &quot;Ru\000\000by&quot;
+</pre>
+</dd>
+<dt>&quot;x&quot; で文字を読み飛ばす事が出来る</dt>
+<dd>
+<pre>
+    &quot;Ru\0\0by&quot;.unpack('ccxxcc')    # =&gt; [82, 117, 98, 121]
+</pre>
+</dd>
+<dt>Hexダンプを数値の配列に変換する例</dt>
+<dd>
+<pre>
+    &quot;61 62 63 64 65 66&quot;.delete(' ').to_a.pack('H*').unpack('C*')
+    # =&gt; [97, 98, 99, 100, 101, 102]
+
+    &quot;61 62 63 64 65 66&quot;.split.collect {|c| c.hex}
+    # =&gt; [97, 98, 99, 100, 101, 102]
+</pre>
+</dd>
+<dt>バイナリと16進数のpackでは長さ指定は生成されるバイト数ではなく、ビットやニブルの個数を表す</dt>
+<dd>
+<pre>
+    [0b01010010, 0b01110101, 0b01100010, 0b01111001].pack(&quot;C4&quot;)
+    # =&gt; &quot;Ruby&quot;
+    [&quot;01010010011101010110001001111001&quot;].pack(&quot;B32&quot;) # 8 bits * 4
+    # =&gt; &quot;Ruby&quot;
+
+    [0x52, 0x75, 0x62, 0x79].pack(&quot;C4&quot;)
+    # =&gt; &quot;Ruby&quot;
+    [&quot;52756279&quot;].pack(&quot;H8&quot;)  # 2 nybbles * 4
+    # =&gt; &quot;Ruby&quot;
+</pre>
+</dd>
+<dt>テンプレート文字'a'の長さ指定は1つの文字列だけに適用される</dt>
+<dd>
+<pre>
+    [&quot;RUBY&quot;, &quot;u&quot;, &quot;b&quot;, &quot;y&quot;].pack(&quot;a4&quot;)
+    # =&gt; &quot;RUBY&quot;
+
+    [&quot;RUBY&quot;, &quot;u&quot;, &quot;b&quot;, &quot;y&quot;].pack(&quot;aaaa&quot;)
+    # =&gt; &quot;Ruby&quot;
+
+    [&quot;RUBY&quot;, &quot;u&quot;, &quot;b&quot;, &quot;y&quot;].pack(&quot;a*aaa&quot;)
+    # =&gt; &quot;RUBYuby&quot;
+</pre>
+</dd>
+<dt>テンプレート文字&quot;a&quot;は、長さが足りない分をヌル文字で補う</dt>
+<dd>
+<pre>
+    [&quot;Ruby&quot;].pack(&quot;a8&quot;)
+    # =&gt; &quot;Ruby\000\000\000\000&quot;
+</pre>
+</dd>
+<dt>リトルエンディアンとビッグエンディアン</dt>
+<dd>
+<pre>
+    [1,2].pack(&quot;s2&quot;)
+    # =&gt; &quot;\000\001\000\002&quot; # ビッグエンディアンのシステムでの出力
+    # =&gt; &quot;\001\000\002\000&quot; # リトルエンディアンのシステムでの出力
+
+    [1,2].pack(&quot;n2&quot;)
+    # =&gt; &quot;\000\001\000\002&quot; # システムによらずビッグエンディアン
+
+    [1,2].pack(&quot;v2&quot;)
+    # =&gt; &quot;\001\000\002\000&quot; # システムによらずリトルエンディアン
+</pre>
+</dd>
+<dt>ネットワークバイトオーダの signed long</dt>
+<dd>
+<pre>
+      s = &quot;\xff\xff\xff\xfe&quot;
+      n = s.unpack(&quot;N&quot;)[0]
+      if n[31] == 1
+        n = -((n ^ 0xffff_ffff) + 1)
+      end
+      n # =&gt; -2
+</pre>
+</dd>
+<dt>ネットワークバイトオーダの signed long(その2)</dt>
+<dd>
+<pre>
+      s = &quot;\xff\xff\xff\xfe&quot;
+      n = s.unpack(&quot;N&quot;).pack(&quot;l&quot;).unpack(&quot;l&quot;)[0]
+      n # =&gt; -2
+</pre>
+</dd>
+<dt>IPアドレス</dt>
+<dd>
+<pre>
+      require 'socket'
+      Socket.gethostbyname(&quot;localhost&quot;)[3].unpack(&quot;C4&quot;).join(&quot;.&quot;)
+      # =&gt; &quot;127.0.0.1&quot;
+
+      &quot;127.0.0.1&quot;.split(&quot;.&quot;).collect {|c| c.to_i}.pack(&quot;C4&quot;)
+      # =&gt; &quot;\177\000\000\001&quot;
+</pre>
+</dd>
+<dt>sockaddr_in 構造体</dt>
+<dd>
+<pre>
+      require 'socket'
+      [Socket::AF_INET,
+       Socket.getservbyname('echo'),
+       127, 0, 0, 1].pack(&quot;s n C4 x8&quot;)
+      # =&gt; &quot;\002\000\000\a\177\000\000\001\000\000\000\000\000\000\000\000&quot;
+</pre>
+<p>
+pack/unpack を使う代わりに
+<a href="../../../method/-socket/s/pack_sockaddr_in.html">Socket.pack_sockaddr_in</a>,
+<a href="../../../method/-socket/s/unpack_sockaddr_in.html">Socket.unpack_sockaddr_in</a> メソッドがあります。
+</p>
+</dd>
+<dt>'\0'終端文字列のアドレス</dt>
+<dd>
+<p>
+テンプレート文字 &quot;p&quot; や &quot;P&quot; は、C 言語レベルのインタフェースのた
+めにあります(例えば <a href="../../../method/-i-o/i/ioctl.html">IO#ioctl</a>)。
+</p>
+<pre>
+    [&quot;foo&quot;].pack(&quot;p&quot;)    # =&gt; &quot;8\266\021\010&quot;
+</pre>
+<p>
+結果の文字列はゴミに見えますが、実際は文字列&quot;foo\0&quot;を指すアドレ
+ス(のバイナリ表現)です。以下のようにすれば見慣れた表記で見ること
+が出来ます
+</p>
+<pre>
+    printf &quot;%#010x\n&quot;, &quot;8\266\021\010&quot;.unpack(&quot;L&quot;)[0] # =&gt; 0x0811b638
+</pre>
+<p>
+アドレスが指す先のオブジェクト(この例で &quot;foo\0&quot;) は、pack の結
+果が GC されるまではGCされないことが保証されています。
+</p>
+<p>
+unpack(&quot;p&quot;), unpack(&quot;P&quot;) は、pack の結果からしか unpack できません。
+</p>
+<pre>
+    [&quot;foo&quot;].pack(&quot;p&quot;).unpack(&quot;p&quot;) # =&gt; [&quot;foo&quot;]
+    &quot;8\266\021\010&quot;.unpack(&quot;p&quot;)
+    # =&gt; -:1:in `unpack': no associated pointer (ArgumentError)
+    #         from -:1
+</pre>
+<p>
+&quot;p&quot; や &quot;P&quot; は、nil を特別に扱い NULL
+ポインタとして解釈します。(以下は、32bitマシンで一般的な結果)
+</p>
+<pre>
+      [nil].pack(&quot;p&quot;)        # =&gt; &quot;\000\000\000\000&quot;
+      &quot;\0\0\0\0&quot;.unpack(&quot;p&quot;) # =&gt; [nil]
+</pre>
+</dd>
+<dt>構造体のアドレス</dt>
+<dd>
+<p>
+例えば、
+</p>
+<pre>
+      struct {
+        int   a;
+        short b;
+        long  c;
+      } v = {1,2,3};
+</pre>
+<p>
+を表す文字列は
+</p>
+<pre>
+      v = [1,2,3].pack(&quot;i!s!l!&quot;)
+</pre>
+<p>
+です。(byte alignment の問題から実際は適当な padding が必要に
+なるかもしれません)
+</p>
+<p>
+この構造体を指すアドレスは
+</p>
+<pre>
+      [v].pack(&quot;P&quot;)  # =&gt; &quot;\300\265\021\010&quot;
+</pre>
+<p>
+で得られます。
+</p>
+</dd>
+<dt>UTF-8からUCS-2への変換 (サロゲートを処理していないので UTF-16 とはいえない)</dt>
+<dd>
+<p>
+Little endian:
+</p>
+<pre>
+    (&quot;Comments&quot;).unpack(&quot;U*&quot;).pack(&quot;v*&quot;) # =&gt; &quot;C\000o\000m\000m\000e\000n\000t\000s\000&quot;
+</pre>
+<p>
+Big endian:
+</p>
+<pre>
+    (&quot;Comments&quot;).unpack(&quot;U*&quot;).pack(&quot;n*&quot;) # =&gt; &quot;\000C\000o\000m\000m\000e\000n\000t\000s&quot;
+</pre>
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>library rubygems (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; rubygemsライブラリ
+</p>
+
+<h1>library rubygems</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+RubyGems を扱うためのクラスやモジュールが定義されているライブラリです。
+</p>
+<h2 >gem コマンドの使い方</h2>
+<pre>
+$ gem help
+
+  RubyGems は Ruby のための高機能なパッケージ管理ツールです。
+  これはより多くの情報へのポインタを含んでいる基本的なヘルプメッセージです。
+
+    使用方法:
+      gem -h/--help
+      gem -v/--version
+      gem command [arguments...] [options...]
+
+    例:
+      gem install rake
+      gem list --local
+      gem build package.gemspec
+      gem help install
+
+    さらにヘルプ:
+      gem help commands            全ての 'gem' コマンドをリストアップします
+      gem help examples            いくつかの使用方法の例を表示します
+      gem help platforms           プラットフォームに関する情報を表示します
+      gem help &lt;COMMAND&gt;           COMMAND に関するヘルプを表示します
+                                     (e.g. 'gem help install')
+    より詳しい情報:
+      http://rubygems.rubyforge.org
+</pre>
+<h3 >Gem パッケージをインストールする</h3>
+<p>
+例えば rak ( <a class="external" href="http://rubygems.org/gems/rak">http://rubygems.org/gems/rak</a> ) をインストールするには、以下のいずれかを実行します。
+</p>
+<pre>
+$ gem install rak
+$ sudo gem install rak
+</pre>
+<p>
+特定のバージョンの Gem パッケージをインストールするには以下のようにします。
+</p>
+<pre>
+$ gem install rak --version 0.8.1    # バージョン 0.8.1 をインストールする
+$ gem install rak --version '&gt;= 0.5' # バージョン 0.5 以上のものをインストールする
+</pre>
+<p>
+Proxy サーバ経由で Gem パッケージをインストールするには以下のようにします。
+</p>
+<pre>
+$ gem install rak -p http://user:pasword@proxy.example.com/
+</pre>
+<h3 >Gem パッケージをアンインストールする</h3>
+<p>
+例えば rak をアンインストールするには、以下のいずれかを実行します。
+</p>
+<pre>
+$ gem uninstall rak
+$ sudo gem uninstall rak
+</pre>
+<p>
+特定のバージョンの Gem パッケージをアンインストールするには以下のようにします。
+</p>
+<pre>
+$ gem uninstall rak --version 0.8.1
+</pre>
+<h3 >Gem パッケージを更新する</h3>
+<p>
+インストールされている Gem パッケージを更新するには以下のようにします。
+</p>
+<pre>
+$ gem update
+$ sudo gem update
+</pre>
+<p>
+特定の Gem パッケージを更新するには以下のようにします。
+</p>
+<pre>
+$ gem update rak
+</pre>
+<h3 >Gem パッケージを探す</h3>
+<p>
+パッケージ名から Gem パッケージを探すことができます。
+'active' という文字列をパッケージ名に含むパッケージを探すには以下のようにします。
+</p>
+<pre>
+$ gem search active       # デフォルトではリポジトリから検索します
+$ gem search active -a    # -a オプションをつけると全てのバージョンを表示します
+</pre>
+<p>
+より詳細な条件で検索したい場合は query を使用してください。
+</p>
+<pre>
+$ gem query -n ^rails$ -r # rails にちょうど一致するものを検索する
+$ gem query -n ^rails -r  # rails で始まるものを検索する
+</pre>
+<p>
+パッケージの詳細からキーワード検索することはできません。
+</p>
+<h3 >Gem パッケージを作成する</h3>
+<p>
+作成した gemspec ファイルを元にして Gem パッケージを簡単に作成することができます。
+</p>
+<pre>
+$ gem build &lt;gemspec filename&gt;
+</pre>
+<p>
+最小の gemspec は以下のようになります。ビルドするために必要な最小の gemspec なので出来上がるのは
+メタデータのみを含む Gem パッケージです。また、いくつかの警告が表示されます。
+</p>
+<pre>
+Gem::Specification.new do |s|
+  s.name    = 'hello'
+  s.version = '0.0.0'
+  s.summary = 'hello summary'
+end
+</pre>
+<p>
+実用的なライブラリを作成するための gemspec の例を示します。
+警告メッセージが出力されないようにいくつか設定を追加しています。
+</p>
+<pre>
+Gem::Specification.new do |s|
+  s.name              = 'hello'
+  s.version           = '0.0.0'
+  s.summary           = 'hello summary'
+  s.files             = ['lib/hello.rb']
+  s.authors           = ['Hello Author']
+  s.email             = 'hello_author@example.com'
+  s.homepage          = 'http://example.com/hello/'
+  s.description       = 'hello description'
+  s.rubyforge_project = 'hello'
+end
+</pre>
+<dl>
+<dt>name</dt>
+<dd>
+<p>
+この Gem の名前を指定します。
+</p>
+</dd>
+<dt>version</dt>
+<dd>
+<p>
+この Gem のバージョンを指定します。
+</p>
+</dd>
+<dt>summary</dt>
+<dd>
+<p>
+この Gem の短い説明を指定します。
+</p>
+</dd>
+<dt>files</dt>
+<dd>
+<p>
+この Gem に含むファイルのリストを指定します。
+</p>
+</dd>
+<dt>authors</dt>
+<dd>
+<p>
+この Gem の作者のリストを指定します。
+</p>
+</dd>
+<dt>email</dt>
+<dd>
+<p>
+この Gem の作者の連絡先メールアドレスを指定します。
+</p>
+</dd>
+<dt>homepage</dt>
+<dd>
+<p>
+この Gem のウェブサイトの URI を指定します。
+</p>
+</dd>
+<dt>description</dt>
+<dd>
+<p>
+この Gem の長い説明を指定します。
+</p>
+</dd>
+<dt>rubyforge_project</dt>
+<dd>
+<p>
+Rubyforge にプロジェクトがある場合、そのプロジェクト名を指定します。
+</p>
+</dd>
+</dl>
+<p>
+実行可能なファイル (コマンド) を含む場合の gemspec は以下のようになります。
+</p>
+<pre>
+Gem::Specification.new do |s|
+  s.name              = 'hello'
+  s.version           = '0.0.0'
+  s.summary           = 'hello summary'
+  s.files             = ['bin/hello', 'lib/hello.rb']
+  s.executables       = ['hello']
+  s.authors           = ['Hello Author']
+  s.email             = 'hello@example.com'
+  s.homepage          = 'http://example.com/hello'
+  s.rubyforge_project = 'hello'
+  s.description       = 'hello description'
+end
+</pre>
+<p>
+ライブラリの例に加えて executables を追加しています。
+</p>
+<p>
+また、以下のように Rakefile にタスクを追加することもできます。
+</p>
+<pre>
+require 'rake/gempackagetask'
+
+PKG_FILES = FileList[
+  'lib/hello.rb',
+  'spec/*'
+]
+spec = Gem::Specification.new do |s|
+  s.name             = 'hello'
+  s.version          = '0.0.1'
+  s.author           = 'Hello Author'
+  s.email            = 'hello@example.com
+  s.homepage         = 'http://example.com/hello'
+  s.platform         = Gem::Platform::RUBY
+  s.summary          = 'Hello Gem'
+  s.files            = PKG_FILES.to_a
+  s.require_path     = 'lib'
+  s.has_rdoc         = false
+  s.extra_rdoc_files = ['README']
+end
+
+Rake::GemPackageTask.new(spec) do |pkg|
+  pkg.gem_spec = spec
+end
+</pre>
+<p>
+@see <a href="../class/-gem=3a=3a-specification.html">Gem::Specification</a>, <a href="../library/rake.html">rake</a>
+</p>
+<h2 >gem コマンドの設定</h2>
+<ul>
+<li>GEM_HOME Gem のホームディレクトリ</li>
+<li>GEM_PATH Gem のサーチパス</li>
+<li>$HOME/.gemrc</li>
+</ul>
+<p>
+環境変数 GEM_HOME, GEM_PATH を設定する事によって Gem コマンドの動作を変更することができます。
+また、ホームディレクトリに .gemrc という YAML フォーマットで書かれたファイルを置くことでも
+動作を変更することができます。
+</p>
+<p>
+例:
+</p>
+<pre>
+---
+:backtrace: false
+:benchmark: false
+:bulk_threshold: 1000
+:sources:
+- http://gems.rubyforge.org
+:update_sources: true
+:verbose: true
+gemhome: /home/hoge/.gems
+gempath:
+- /usr/local/lib/ruby/gems/1.9
+gem: --no-rdoc --no-ri
+</pre>
+<h2 >参考</h2>
+<dl>
+<dt>Rubyist Magazine - シリーズ パッケージマネジメント 【第 1 回】 RubyGems (1)</dt>
+<dd>
+<p>
+<a class="external" href="http://magazine.rubyist.net/?0006-PackageManagement">http://magazine.rubyist.net/?0006-PackageManagement</a>
+</p>
+</dd>
+<dt>Rubyist Magazine - シリーズ パッケージマネジメント 【第 2 回】 RubyGems (2)</dt>
+<dd>
+<p>
+<a class="external" href="http://magazine.rubyist.net/?0010-PackageManagement">http://magazine.rubyist.net/?0010-PackageManagement</a>
+</p>
+</dd>
+</dl>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-builder.html">Gem::Builder</a>
+</td>
+<td class="description"><p>
+<a href="../class/-gem=3a=3a-specification.html">Gem::Specification</a> のインスタンスから Gem パッケージを作成するためのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-cache.html">Gem::Cache</a>
+</td>
+<td class="description"><p>
+Alias of <a href="../class/-gem=3a=3a-source-index.html">Gem::SourceIndex</a>
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-dependency.html">Gem::Dependency</a>
+</td>
+<td class="description"><p>
+Gem の依存関係を管理するクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-gem-path-searcher.html">Gem::GemPathSearcher</a>
+</td>
+<td class="description"><p>
+Gem パッケージに含まれているファイルのうちロード可能なものを検索するためのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-platform.html">Gem::Platform</a>
+</td>
+<td class="description"><p>
+選択した Gem のインストールを実行できるプラットフォームのリストを扱うクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-remote-fetcher.html">Gem::RemoteFetcher</a>
+</td>
+<td class="description"><p>
+リモートソースから Gem パッケージや Gem パッケージの情報を取得するためのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-requirement.html">Gem::Requirement</a>
+</td>
+<td class="description"><p>
+Gem の必要条件を扱うクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-silent-u-i.html">Gem::SilentUI</a>
+</td>
+<td class="description"><p>
+完全に何もしない UI です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-source-index.html">Gem::SourceIndex</a>
+</td>
+<td class="description"><p>
+個々のソースから取得した全ての有効な Gem パッケージをインデックス化するためのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-source-info-cache.html">Gem::SourceInfoCache</a>
+</td>
+<td class="description"><p>
+個々の Gem パッケージのインデックス情報のコピーを保存するためのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-source-info-cache-entry.html">Gem::SourceInfoCacheEntry</a>
+</td>
+<td class="description"><p>
+<a href="../class/-gem=3a=3a-source-info-cache.html">Gem::SourceInfoCache</a> が持つエントリを表すためのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-spec-fetcher.html">Gem::SpecFetcher</a>
+</td>
+<td class="description"><p>
+リモートリポジトリから Gem のメタデータを取得して更新するためのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-specification.html">Gem::Specification</a>
+</td>
+<td class="description"><p>
+Gem パッケージのメタデータを扱うためのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-stream-u-i.html">Gem::StreamUI</a>
+</td>
+<td class="description"><p>
+シンプルなストリームを実装したユーザインターフェイスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-console-u-i.html">Gem::ConsoleUI</a>
+</td>
+<td class="description"><p>
+<a href="../class/-gem=3a=3a-stream-u-i.html">Gem::StreamUI</a> を標準入力、標準出力、標準エラー出力を使用して初期化します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-stream-u-i=3a=3a-silent-progress-reporter.html">Gem::StreamUI::SilentProgressReporter</a>
+</td>
+<td class="description"><p>
+何もしない進捗報告のクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-stream-u-i=3a=3a-simple-progress-reporter.html">Gem::StreamUI::SimpleProgressReporter</a>
+</td>
+<td class="description"><p>
+シンプルな表示を行う進捗報告のクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-stream-u-i=3a=3a-verbose-progress-reporter.html">Gem::StreamUI::VerboseProgressReporter</a>
+</td>
+<td class="description"><p>
+現在の進捗に関するメッセージを表示する進捗報告のクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-version.html">Gem::Version</a>
+</td>
+<td class="description"><p>
+文字列で表現されたバージョンを比較可能 (Comparable) にするためのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-version=3a=3a-requirement.html">Gem::Version::Requirement</a>
+</td>
+<td class="description"><p>
+Alias of <a href="../class/-gem=3a=3a-requirement.html">Gem::Requirement</a>
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>モジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem.html">Gem</a>
+</td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-default-user-interaction.html">Gem::DefaultUserInteraction</a>
+</td>
+<td class="description"><p>
+このモジュールはデフォルトの <a href="../class/-gem=3a=3a-user-interaction.html">Gem::UserInteraction</a> を定義しています。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-quick-loader.html">Gem::QuickLoader</a>
+</td>
+<td class="description"><p>
+prelude.c で定義されている内部用のモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-user-interaction.html">Gem::UserInteraction</a>
+</td>
+<td class="description"><p>
+デフォルト UI にアクセスしやすくするためのモジュールです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-exception.html">Gem::Exception</a>
+</td>
+<td class="description"><p>
+RubyGems で扱う全ての例外のスーパークラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-command-line-error.html">Gem::CommandLineError</a>
+</td>
+<td class="description"><p>
+コマンドラインの例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-dependency-error.html">Gem::DependencyError</a>
+</td>
+<td class="description"><p>
+依存関係の例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-dependency-removal-exception.html">Gem::DependencyRemovalException</a>
+</td>
+<td class="description"><p>
+Gem を削除出来なかった場合に使用する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-document-error.html">Gem::DocumentError</a>
+</td>
+<td class="description"><p>
+システムに RDoc がインストールされていない場合に使用する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-end-of-y-a-m-l-exception.html">Gem::EndOfYAMLException</a>
+</td>
+<td class="description"><p>
+YAML データが不正である場合に使用する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-file-permission-error.html">Gem::FilePermissionError</a>
+</td>
+<td class="description"><p>
+ファイルの権限に関する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-format-exception.html">Gem::FormatException</a>
+</td>
+<td class="description"><p>
+フォーマットに関する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-gem-not-found-exception.html">Gem::GemNotFoundException</a>
+</td>
+<td class="description"><p>
+Gem が見つからなかった場合の例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-gem-not-in-home-exception.html">Gem::GemNotInHomeException</a>
+</td>
+<td class="description"><p>
+Gem が適切なディレクトリにインストールされていない場合に使用する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-install-error.html">Gem::InstallError</a>
+</td>
+<td class="description"><p>
+何らかの理由で Gem をインストール出来なかった場合に使用する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-invalid-specification-exception.html">Gem::InvalidSpecificationException</a>
+</td>
+<td class="description"><p>
+不正な gemspec に関する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-operation-not-supported-error.html">Gem::OperationNotSupportedError</a>
+</td>
+<td class="description"><p>
+サポートされていない操作を行った場合に使用する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-remote-error.html">Gem::RemoteError</a>
+</td>
+<td class="description"><p>
+リモートで問題が発生した場合に使用する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-remote-fetcher=3a=3a-fetch-error.html">Gem::RemoteFetcher::FetchError</a>
+</td>
+<td class="description"><p>
+<a href="../class/-gem=3a=3a-remote-fetcher.html">Gem::RemoteFetcher</a> での処理で発生する IO や HTTP の例外をラップする例外クラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-remote-installation-cancelled.html">Gem::RemoteInstallationCancelled</a>
+</td>
+<td class="description"><p>
+???
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-remote-installation-skipped.html">Gem::RemoteInstallationSkipped</a>
+</td>
+<td class="description"><p>
+???
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-remote-source-exception.html">Gem::RemoteSourceException</a>
+</td>
+<td class="description"><p>
+HTTP 経由でネットワークにアクセス出来ない場合に使用する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-gem=3a=3a-verification-error.html">Gem::VerificationError</a>
+</td>
+<td class="description"><p>
+Gem の検証でエラーになった場合に使用する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-load-error.html">Gem::LoadError</a>
+</td>
+<td class="description"><p>
+Gem をロードできなかった場合に発生するエラーです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-gem=3a=3a-system-exit-exception.html">Gem::SystemExitException</a>
+</td>
+<td class="description"><p>
+何らかの理由でコマンドを実行出来ない場合に使用する例外です。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>同時にrequireされるライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/rubygems.html">rubygems</a></td>
+<td class="description"><p>
+RubyGems を扱うためのクラスやモジュールが定義されているライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fbuilder.html">rubygems/builder</a></td>
+<td class="description"><p>
+<a href="../class/-gem=3a=3a-specification.html">Gem::Specification</a> のインスタンスから Gem パッケージを作成するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fdefaults.html">rubygems/defaults</a></td>
+<td class="description"><p>
+RubyGems ライブラリで使用するデフォルト値を返すメソッドを定義したライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fdependency.html">rubygems/dependency</a></td>
+<td class="description"><p>
+Gem の依存関係を管理するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fdigest=2fsha2.html">rubygems/digest/sha2</a></td>
+<td class="description"><p>
+<a href="../class/-digest=3a=3a-s-h-a256.html">Digest::SHA256</a> をラップするためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fexceptions.html">rubygems/exceptions</a></td>
+<td class="description"><p>
+RubyGems で使用する例外クラスを定義したライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fgem_path_searcher.html">rubygems/gem_path_searcher</a></td>
+<td class="description"><p>
+Gem パッケージに含まれているファイルのうちロード可能なものを検索するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fplatform.html">rubygems/platform</a></td>
+<td class="description"><p>
+選択した Gem のインストールを実行できるプラットフォームのリストを扱うライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fremote_fetcher.html">rubygems/remote_fetcher</a></td>
+<td class="description"><p>
+リモートソースから Gem パッケージや Gem パッケージの情報を取得するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2frequirement.html">rubygems/requirement</a></td>
+<td class="description"><p>
+Gem パッケージのバージョンに関する必須条件を扱うためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fsource_index.html">rubygems/source_index</a></td>
+<td class="description"><p>
+個々のソースから取得した全ての有効な Gem パッケージをインデックス化するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fsource_info_cache.html">rubygems/source_info_cache</a></td>
+<td class="description"><p>
+個々の Gem パッケージのインデックス情報のコピーを保存するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fsource_info_cache_entry.html">rubygems/source_info_cache_entry</a></td>
+<td class="description"><p>
+<a href="../class/-gem=3a=3a-source-info-cache.html">Gem::SourceInfoCache</a> が持つエントリを表すためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fspecification.html">rubygems/specification</a></td>
+<td class="description"><p>
+Gem パッケージのメタデータを扱うためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fspec_fetcher.html">rubygems/spec_fetcher</a></td>
+<td class="description"><p>
+リモートリポジトリから Gem のメタデータを取得して更新するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fuser_interaction.html">rubygems/user_interaction</a></td>
+<td class="description"><p>
+ユーザとのやりとりを行うライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fversion.html">rubygems/version</a></td>
+<td class="description"><p>
+Gem パッケージのバージョンを扱うためのライブラリです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>サブライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommand.html">rubygems/command</a></td>
+<td class="description"><p>
+gem コマンドを扱うためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fbuild_command.html">rubygems/commands/build_command</a></td>
+<td class="description"><p>
+Gem パッケージをビルドするためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fcert_command.html">rubygems/commands/cert_command</a></td>
+<td class="description"><p>
+Gem パッケージの証明書や署名の設定を管理するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fcheck_command.html">rubygems/commands/check_command</a></td>
+<td class="description"><p>
+インストールされている Gem パッケージを検証するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fcleanup_command.html">rubygems/commands/cleanup_command</a></td>
+<td class="description"><p>
+ローカルにインストールされている古い Gem を削除するライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fcontents_command.html">rubygems/commands/contents_command</a></td>
+<td class="description"><p>
+インストールされている Gem パッケージに含まれているファイルリストを表示するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fdependency_command.html">rubygems/commands/dependency_command</a></td>
+<td class="description"><p>
+インストールされている Gem パッケージの依存関係を表示するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fenvironment_command.html">rubygems/commands/environment_command</a></td>
+<td class="description"><p>
+RubyGems の環境に関する情報を表示するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2ffetch_command.html">rubygems/commands/fetch_command</a></td>
+<td class="description"><p>
+Gem パッケージをダウンロードしてカレントディレクトリに保存するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fgenerate_index_command.html">rubygems/commands/generate_index_command</a></td>
+<td class="description"><p>
+ある Gem サーバに対するインデックスを作成するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fhelp_command.html">rubygems/commands/help_command</a></td>
+<td class="description"><p>
+Gem コマンドに関するヘルプを提供するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2finstall_command.html">rubygems/commands/install_command</a></td>
+<td class="description"><p>
+Gem パッケージをローカルリポジトリにインストールするためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2flist_command.html">rubygems/commands/list_command</a></td>
+<td class="description"><p>
+Gem パッケージの名前を前方一致で検索するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2flock_command.html">rubygems/commands/lock_command</a></td>
+<td class="description"><p>
+指定された特定のバージョンの Gem パッケージに依存する Gem を使用するために
+必要な <a href="../method/-kernel/i/gem.html">Kernel#gem</a> メソッドの呼び出し方法を文字列で出力します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fmirror_command.html">rubygems/commands/mirror_command</a></td>
+<td class="description"><p>
+リモートリポジトリをローカルリポジトリにミラーするためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2foutdated_command.html">rubygems/commands/outdated_command</a></td>
+<td class="description"><p>
+更新が必要な Gem パッケージの一覧を出力するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fpristine_command.html">rubygems/commands/pristine_command</a></td>
+<td class="description"><p>
+インストールされている Gem パッケージを初期状態にするためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fquery_command.html">rubygems/commands/query_command</a></td>
+<td class="description"><p>
+Gem パッケージの情報を検索するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2frdoc_command.html">rubygems/commands/rdoc_command</a></td>
+<td class="description"><p>
+RDoc と ri のライブラリを生成するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fsearch_command.html">rubygems/commands/search_command</a></td>
+<td class="description"><p>
+指定された文字列を含む Gem パッケージを全て表示するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fserver_command.html">rubygems/commands/server_command</a></td>
+<td class="description"><p>
+ローカルにインストールされている Gem パッケージとそのドキュメントを HTTP サーバに
+載せて公開するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fsources_command.html">rubygems/commands/sources_command</a></td>
+<td class="description"><p>
+Gem パッケージの取得元の情報を管理するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fspecification_command.html">rubygems/commands/specification_command</a></td>
+<td class="description"><p>
+指定された Gem パッケージの gemspec の情報を YAML 形式で表示するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fstale_command.html">rubygems/commands/stale_command</a></td>
+<td class="description"><p>
+インストールされている Gem パッケージの一覧をアクセス時刻とともに表示するための
+ライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2funinstall_command.html">rubygems/commands/uninstall_command</a></td>
+<td class="description"><p>
+Gem パッケージをアンインストールするためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2funpack_command.html">rubygems/commands/unpack_command</a></td>
+<td class="description"><p>
+指定された Gem パッケージをカレントディレクトリに展開するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fupdate_command.html">rubygems/commands/update_command</a></td>
+<td class="description"><p>
+ローカルリポジトリにインストールされている Gem パッケージを更新するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommands=2fwhich_command.html">rubygems/commands/which_command</a></td>
+<td class="description"><p>
+指定された Gem パッケージに含まれるライブラリのパスを見つけるためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcommand_manager.html">rubygems/command_manager</a></td>
+<td class="description"><p>
+gem コマンドによってサポートされているサブコマンドを管理するライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fconfig_file.html">rubygems/config_file</a></td>
+<td class="description"><p>
+設定ファイルに書かれている gem コマンドのオプションを
+オブジェクトに保存するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fcustom_require.html">rubygems/custom_require</a></td>
+<td class="description"><p>
+<a href="../method/-kernel/i/require.html">Kernel#require</a> を再定義するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fdependency_installer.html">rubygems/dependency_installer</a></td>
+<td class="description"><p>
+ある Gem が依存している Gem を同時にインストールするためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fdependency_list.html">rubygems/dependency_list</a></td>
+<td class="description"><p>
+Gem の依存関係を扱うためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fdigest=2fdigest_adapter.html">rubygems/digest/digest_adapter</a></td>
+<td class="description"><p>
+Ruby 1.8.5 と 1.8.6 の間に存在する API の差異を吸収するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fdigest=2fmd5.html">rubygems/digest/md5</a></td>
+<td class="description"><p>
+<a href="../class/-digest=3a=3a-m-d5.html">Digest::MD5</a> をラップするためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fdigest=2fsha1.html">rubygems/digest/sha1</a></td>
+<td class="description"><p>
+<a href="../class/-digest=3a=3a-s-h-a1.html">Digest::SHA1</a> をラップするためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fdoc_manager.html">rubygems/doc_manager</a></td>
+<td class="description"><p>
+Gem パッケージの RDoc, RI を生成するためのクラスを扱うライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fext.html">rubygems/ext</a></td>
+<td class="description"><p>
+拡張ライブラリをビルドするためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fext=2fbuilder.html">rubygems/ext/builder</a></td>
+<td class="description"><p>
+拡張ライブラリをビルドするためのクラスを扱うライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fext=2fconfigure_builder.html">rubygems/ext/configure_builder</a></td>
+<td class="description"><p>
+configure スクリプトを元に拡張ライブラリをビルドするクラスを扱うライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fext=2fext_conf_builder.html">rubygems/ext/ext_conf_builder</a></td>
+<td class="description"><p>
+extconf.rb を元にして拡張ライブラリをビルドするためのクラスを扱うライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fext=2frake_builder.html">rubygems/ext/rake_builder</a></td>
+<td class="description"><p>
+Rake を使用して拡張ライブラリをビルドするためのクラスを扱うライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fformat.html">rubygems/format</a></td>
+<td class="description"><p>
+RubyGems の Gem ファイルの内部構造を扱うためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fgem_openssl.html">rubygems/gem_openssl</a></td>
+<td class="description"><p>
+OpenSSL がインストールされていないシステムがあるかもしれないので、
+OpenSSL が使えるかどうかを確認するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fgem_runner.html">rubygems/gem_runner</a></td>
+<td class="description"><p>
+gem コマンドを実行するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2findexer.html">rubygems/indexer</a></td>
+<td class="description"><p>
+Gem リポジトリのインデックスを作成するためのクラスを扱うためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2finstaller.html">rubygems/installer</a></td>
+<td class="description"><p>
+RubyGems の Gem をインストールするためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2finstall_update_options.html">rubygems/install_update_options</a></td>
+<td class="description"><p>
+<a href="../class/-gem=3a=3a-command.html">Gem::Command</a> で使用するインストールとアップデートに関するオプションを
+扱うためのモジュールを定義したライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2flocal_remote_options.html">rubygems/local_remote_options</a></td>
+<td class="description"><p>
+<a href="../class/-gem=3a=3a-command.html">Gem::Command</a> で使用する --local, --remote オプションのためのモジュールを
+定義したライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fold_format.html">rubygems/old_format</a></td>
+<td class="description"><p>
+RubyGems の Gem ファイルの内部構造を扱うためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fpackage.html">rubygems/package</a></td>
+<td class="description"><p>
+このライブラリは Gem パッケージを扱うためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fpackage=2ff_sync_dir.html">rubygems/package/f_sync_dir</a></td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fpackage=2ftar_header.html">rubygems/package/tar_header</a></td>
+<td class="description"><p>
+tar アーカイブの各エントリのヘッダを表すクラスを提供するライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fpackage=2ftar_input.html">rubygems/package/tar_input</a></td>
+<td class="description"><p>
+gem-format な tar ファイルを読み込む <a href="../class/-gem=3a=3a-package=3a=3a-tar-reader.html">Gem::Package::TarReader</a> のラッ
+パークラスを提供するライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fpackage=2ftar_output.html">rubygems/package/tar_output</a></td>
+<td class="description"><p>
+gem-format な tar ファイルを書き出す <a href="../class/-gem=3a=3a-package=3a=3a-tar-writer.html">Gem::Package::TarWriter</a> のラッ
+パークラスを提供するライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fpackage=2ftar_reader.html">rubygems/package/tar_reader</a></td>
+<td class="description"><p>
+gem-format な tar ファイルを読むためのクラスを提供するライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fpackage=2ftar_reader=2fentry.html">rubygems/package/tar_reader/entry</a></td>
+<td class="description"><p>
+tar アーカイブ中のそれぞれのエントリを扱うためのクラスを提供するライブ
+ラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fpackage=2ftar_writer.html">rubygems/package/tar_writer</a></td>
+<td class="description"><p>
+tar ファイルを書き込むためのクラスを提供するライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2frequire_paths_builder.html">rubygems/require_paths_builder</a></td>
+<td class="description"><p>
+必要であれば、'.require_paths' というファイルを Gem ごとに作成するための
+モジュールを提供するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fsecurity.html">rubygems/security</a></td>
+<td class="description"><p>
+このライブラリは暗号署名を RubyGems パッケージに使用するために使用します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fserver.html">rubygems/server</a></td>
+<td class="description"><p>
+Gem パッケージを配布したり Gem パッケージに同梱されているドキュメントを参照するための
+簡易ウェブサーバを動かすためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2ftest_utilities.html">rubygems/test_utilities</a></td>
+<td class="description"><p>
+テストで使用するクラスやメソッドを定義しています。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2ftimer.html">rubygems/timer</a></td>
+<td class="description"><p>
+このライブラリは、ログ取得のために $log というグローバル変数を定義します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2funinstaller.html">rubygems/uninstaller</a></td>
+<td class="description"><p>
+Gem のアンインストールを行うためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fvalidator.html">rubygems/validator</a></td>
+<td class="description"><p>
+様々な Gem ファイルや Gem データベースを懸賞するためのライブラリです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/rubygems=2fversion_option.html">rubygems/version_option</a></td>
+<td class="description"><p>
+<a href="../class/-gem=3a=3a-command.html">Gem::Command</a> の --version, --platform オプションのためのモジュールを
+定義したライブラリです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>追加・再定義されるメソッド</h2>
+<p><code>
+
+<a href="../method/-kernel/i/gem.html">Kernel#gem</a>
+
+</code></p>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

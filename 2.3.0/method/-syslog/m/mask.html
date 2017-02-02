@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>module function Syslog.#mask (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/syslog.html">syslogライブラリ</a>
+&gt; <a href="../../../class/-syslog.html">Syslogモジュール</a>
+&gt; mask
+
+</p>
+
+
+<h1>module function Syslog.#mask</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_MASK"><code>mask -&gt; Fixnum | nil</code><span class="permalink">[<a href="../../../method/-syslog/m/mask.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Syslog.html#method-c-mask">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>mask=(mask)</code></dt>
+<dd class="method-description">
+<p>
+ログの優先度のマスクを取得または設定します。
+マスクは永続的であり、
+Syslog.openやSyslog.close
+ではリセットされません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] mask:</dt>
+<dd>
+ログの優先度のマスクを設定します。
+</dd>
+<dt>[EXCEPTION] RuntimeError:</dt>
+<dd>
+syslog がオープンされていない場合、発生します。
+</dd>
+</dl>
+<p>
+使用例
+</p>
+<pre>
+require 'syslog'
+include Syslog::Constants
+# ログの場所は実行環境によって異なる。詳しくはsyslog.conf を参照
+log = '/var/log/ftp.log'
+
+Syslog.open('ftpd', LOG_PID | LOG_NDELAY, LOG_FTP)
+Syslog.mask = Syslog::LOG_UPTO(LOG_ERR)
+
+[ LOG_CRIT, LOG_ERR, LOG_WARNING,
+  LOG_NOTICE, LOG_INFO, LOG_DEBUG ].each_with_index { |c, i|
+  Syslog.log(c, &quot;test for syslog FTP #{c}, #{i}&quot;)
+}
+Syslog.close
+File.foreach(log){|line|
+  print line if line =~ /FTP/
+}
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,6605 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class String (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Stringクラス
+</p>
+
+
+<h1>class String</h1>
+<p>
+
+
+クラスの継承リスト: String
+
+      &lt; <a href="../class/-comparable.html">Comparable</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+<br> dynamic include:
+ <a href="../class/-j-s-o-n=3a=3a-generator=3a=3a-generator-methods=3a=3a-string.html">JSON::Generator::GeneratorMethods::String</a> (by <a href="../library/json.html">json</a>)
+
+
+<br> dynamic extend:
+ <a href="../class/-j-s-o-n=3a=3a-generator=3a=3a-generator-methods=3a=3a-string=3a=3a-extend.html">JSON::Generator::GeneratorMethods::String::Extend</a> (by <a href="../library/json.html">json</a>)
+
+</p>
+
+<h2>要約</h2>
+<p>
+文字列のクラスです。
+NUL 文字を含む任意のバイト列を扱うことができます。
+文字列の長さにはメモリ容量以外の制限はありません。
+</p>
+<p>
+文字列は通常、文字列リテラルを使って生成します。
+以下に文字列リテラルの例をいくつか示します。
+</p>
+<pre>
+'str\\ing'   # シングルクオート文字列 (エスケープシーケンスがほぼ無効)
+&quot;string\n&quot;   # ダブルクオート文字列 (エスケープシーケンスがすべて有効)
+%q(str\\ing) # 「%q」文字列 (エスケープシーケンスがほぼ無効、デリミタが変えられる)
+%Q(string\n) # 「%Q」文字列 (エスケープシーケンスがすべて有効、デリミタが変えられる)
+
+# ヒアドキュメント
+&lt;&lt;End
+この行はヒアドキュメント
+End
+
+# ダブルクオートヒアドキュメント (クオートなしの場合と同じ)
+&lt;&lt;&quot;End&quot;
+この行はヒアドキュメント
+End
+
+# シングルクオートヒアドキュメント (一切のエスケープシーケンスが無効)
+&lt;&lt;'End'
+この行はヒアドキュメント
+End
+
+# 終端記号がインデントされたヒアドキュメント
+# シングルクオート、ダブルクオートとの併用も可能
+&lt;&lt;-End
+この行はヒアドキュメント (終端記号をインデントできる)
+   End
+</pre>
+<h2 id='mutable'>破壊的な変更</h2>
+<p>
+Ruby の String クラスは mutable です。
+つまり、オブジェクト自体を破壊的に変更できます。
+</p>
+<p>
+「破壊的な変更」とは、あるオブジェクトの内容自体を変化させることです。
+例えば文字列のすべての文字を破壊的に大文字へ変更する
+<a href="../method/-string/i/upcase=21.html">String#upcase!</a> メソッドの使用例を以下に示します。
+</p>
+<pre>
+a = &quot;string&quot;
+b = a
+a.upcase!
+p a   # =&gt; &quot;STRING&quot;
+p b   # =&gt; &quot;STRING&quot;
+</pre>
+<p>
+この例では、a に対してメソッドを呼んだにも関わらず b も変更されています。
+これは、変数 a と b が一つの文字列オブジェクトを指していて、
+upcase! メソッドでそのオブジェクト自体が変更されたからです。
+</p>
+<p>
+upcase! の非破壊版である <a href="../method/-string/i/upcase.html">String#upcase</a> を使った例を以下に示します。
+こちらでは a の変更が b に波及しません。
+</p>
+<pre>
+a = &quot;string&quot;
+b = a
+a = a.upcase
+p a   # =&gt; &quot;STRING&quot;
+p b   # =&gt; &quot;string&quot;
+</pre>
+<p>
+一般には、破壊的「ではない」メソッドを
+中心に使っていくほうがバグが出にくくなります。
+</p>
+<p>
+String クラスのメソッドには破壊的なメソッドも非破壊的なメソッドもあります。
+破壊的なメソッドの例としては concat, sub!, upcase! などが挙げられます。
+非破壊的なメソッドの例としては index, sub, upcase などが挙げられます。
+</p>
+<p>
+同じ動作で破壊的なメソッドと非破壊的なメソッドの両方が定義されているときは、
+破壊的なバージョンには名前の最後に「!」が付いています。
+例えば upcase メソッドは非破壊的で、upcase! メソッドは破壊的です。
+</p>
+<p>
+ただし、この命名ルールを
+「破壊的なメソッドにはすべて『!』が付いている」と解釈しないでください。
+例えば concat には「!」が付いていませんが、破壊的です。あくまでも、
+「『!』が付いているメソッドと付いていないメソッドの両方があるときは、
+『!』が付いているほうが破壊的」というだけです。
+「『!』が付いているならば破壊的」は常に成立しますが、逆は必ずしも成立しません。
+</p>
+<h2 id='m17n'>多言語化と文字列のエンコーディング</h2>
+<p>
+String オブジェクトは自身のエンコーディング情報を持ちます。
+インスタンスメソッドはエンコーディングに従い、1バイトではなく1文字を単位として動作します。
+エンコーディングの変換にはメソッド <a href="../method/-string/i/encode.html">String#encode</a> を使います。
+</p>
+<p>
+動作例:  (注)一行目にmagic commentが必要です。
+</p>
+<pre>
+# vim:set fileencoding=UTF-8:
+p &quot;いろは&quot;.size      #=&gt; 3
+p &quot;漢字&quot;[0]          #=&gt; &quot;漢&quot;
+p &quot;山本山&quot;.reverse   #=&gt; &quot;山本山&quot; (回文なので分からないですね)
+p &quot;ループ&quot;.reverse   #=&gt; &quot;プール&quot;
+
+s = &quot;ruビー&quot;
+s[0..1] = &quot;ル&quot;
+p s                  #=&gt; &quot;ルビー&quot;
+
+e = &quot;言語&quot;.encode(&quot;EUC-JP&quot;)
+u = &quot;言語&quot;.encode(&quot;UTF-8&quot;)
+p e.encoding                   #=&gt; Encoding::EUC_JP
+p u.encoding                   #=&gt; Encoding::UTF_8
+</pre>
+<p>
+より詳しく知りたい場合は、<a href="../doc/spec=2fm17n.html">多言語化</a> を参照してください。
+</p>
+<h3 >文字列同士の比較・結合</h3>
+<p>
+文字列同士の比較・結合などでは両者のエンコーディングを意識する必要があります。
+例えば <a href="../method/-string/i/=3d=3d.html">String#==</a> や <a href="../method/-string/i/eql=3f.html">String#eql?</a> は両者のエンコーディングが等しく
+バイト列表現が等しい場合にのみ true を返します。
+このときエンコーディングが UTF-8 であっても正規化せずに比較します。
+文字列の結合も同様です。異なるエンコーディング同士の文字列を結合する時は
+明示的にエンコーディングを変換する必要があります。
+</p>
+<p>
+動作例:  (注)一行目にmagic commentが必要です。
+</p>
+<pre>
+# vim:set fileencoding=UTF-8:
+s = &quot;いろは&quot;
+a = s.encode(&quot;EUC-JP&quot;)
+b = s.encode(&quot;UTF-8&quot;)
+p a == b                            #=&gt; false
+
+s = &quot;合&quot;.encode(&quot;EUC-JP&quot;)
+p s + &quot;\u{4f53}&quot;.encode(&quot;EUC-JP&quot;)   #=&gt; &quot;合体&quot;
+p s + &quot;\u{4f53}&quot;                    #=&gt; ArgumentError
+</pre>
+<p>
+<a href="../method/-string/i/eql=3f.html">String#eql?</a> はハッシュのキーの比較に使われますので、
+ハッシュのキーに非 ASCII 文字列を使う場合には注意が必要です。
+</p>
+<p>
+動作例:  (注)一行目にmagic commentが必要です。
+</p>
+<pre>
+# encoding: UTF-8
+h = {}
+s = &quot;いろは&quot;
+s.force_encoding(&quot;EUC-JP&quot;)
+h[s] = 1
+s.force_encoding(&quot;ASCII-8BIT&quot;)
+p h[s]                             #=&gt; nil
+</pre>
+<h3 >7bit クリーンな文字列</h3>
+<p>
+ASCII 互換エンコーディングをもつ 7bit クリーンな文字列は
+エンコーディングに関わらず ASCII として扱うことができます。
+例えば <a href="../method/-string/i/=3d=3d.html">String#==</a> は両者の文字エンコーディングが異なっていても
+true を返します。
+ASCII 互換エンコーディングをもつ文字列にエンコーディングの変換なしで結合することができます。
+</p>
+<p>
+例:
+</p>
+<pre>
+s = &quot;abc&quot;
+a = s.encode(&quot;EUC-JP&quot;)
+b = s.encode(&quot;UTF-8&quot;)
+p a == b                           #=&gt; true
+p a + b                            #=&gt; &quot;abcabc&quot;
+</pre>
+<p>
+ここで言う「ASCII互換エンコーディング」とは、コードポイントが同一という意味ではなく
+バイト列が同じことを意味します。従って UTF-16 はASCII互換ではありません。
+また厳密性を追求せず、おおむね互換なら互換と呼びます。よって Shift_JIS は ASCII 互換です。
+</p>
+<h3 >バイト列を表す文字列</h3>
+<p>
+文字列ではない単なるバイト列も String オブジェクトで表されます。
+その時のエンコーディングは ASCII-8BIT です。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+<a href="#S_TRY_CONVERT">try_convert</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--25">%</a>
+
+<a href="#I_--2A">*</a>
+
+<a href="#I_--2B">+</a>
+
+<a href="#I_--2B--40">+@</a>
+
+<a href="#I_--2D--40">-@</a>
+
+<a href="#I_--3C--3C"><<</a>
+
+<a href="#I_--3C--3C">concat</a>
+
+<a href="#I_--3C--3D--3E"><=></a>
+
+<a href="#I_--3D--3D">==</a>
+
+<a href="#I_--3D--3D">===</a>
+
+<a href="#I_--3D--7E">=~</a>
+
+<a href="#I_--5B--5D">[]</a>
+
+<a href="#I_--5B--5D">slice</a>
+
+<a href="#I_--5B--5D--3D">[]=</a>
+
+<a href="#I_ASCII_ONLY--3F">ascii_only?</a>
+
+<a href="#I_B">b</a>
+
+<a href="#I_BYTES">bytes</a>
+
+<a href="#I_BYTESIZE">bytesize</a>
+
+<a href="#I_BYTESLICE">byteslice</a>
+
+<a href="#I_CAPITALIZE">capitalize</a>
+
+<a href="#I_CAPITALIZE--21">capitalize!</a>
+
+<a href="#I_CASECMP">casecmp</a>
+
+<a href="#I_CASECMP--3F">casecmp?</a>
+
+<a href="#I_CENTER">center</a>
+
+<a href="#I_CHARS">chars</a>
+
+<a href="#I_CHOMP">chomp</a>
+
+<a href="#I_CHOMP--21">chomp!</a>
+
+<a href="#I_CHOP">chop</a>
+
+<a href="#I_CHOP--21">chop!</a>
+
+<a href="#I_CHR">chr</a>
+
+<a href="#I_CLEAR">clear</a>
+
+<a href="#I_CODEPOINTS">codepoints</a>
+
+<a href="#I_COUNT">count</a>
+
+<a href="#I_CRYPT">crypt</a>
+
+<a href="#I_DELETE">delete</a>
+
+<a href="#I_DELETE--21">delete!</a>
+
+<a href="#I_DOWNCASE">downcase</a>
+
+<a href="#I_DOWNCASE--21">downcase!</a>
+
+<a href="#I_DUMP">dump</a>
+
+<a href="#I_EACH_BYTE">each_byte</a>
+
+<a href="#I_EACH_CHAR">each_char</a>
+
+<a href="#I_EACH_CODEPOINT">each_codepoint</a>
+
+<a href="#I_EACH_LINE">each_line</a>
+
+<a href="#I_EMPTY--3F">empty?</a>
+
+<a href="#I_ENCODE">encode</a>
+
+<a href="#I_ENCODE--21">encode!</a>
+
+<a href="#I_ENCODING">encoding</a>
+
+<a href="#I_END_WITH--3F">end_with?</a>
+
+<a href="#I_EQL--3F">eql?</a>
+
+<a href="#I_FORCE_ENCODING">force_encoding</a>
+
+<a href="#I_GETBYTE">getbyte</a>
+
+<a href="#I_GSUB">gsub</a>
+
+<a href="#I_GSUB--21">gsub!</a>
+
+<a href="#I_HASH">hash</a>
+
+<a href="#I_HEX">hex</a>
+
+<a href="#I_INCLUDE--3F">include?</a>
+
+<a href="#I_INDEX">index</a>
+
+<a href="#I_INSERT">insert</a>
+
+<a href="#I_INSPECT">inspect</a>
+
+<a href="#I_INTERN">intern</a>
+
+<a href="#I_INTERN">to_sym</a>
+
+<a href="#I_LENGTH">length</a>
+
+<a href="#I_LENGTH">size</a>
+
+<a href="#I_LINES">lines</a>
+
+<a href="#I_LJUST">ljust</a>
+
+<a href="#I_LSTRIP">lstrip</a>
+
+<a href="#I_LSTRIP--21">lstrip!</a>
+
+<a href="#I_MATCH">match</a>
+
+<a href="#I_NEXT">next</a>
+
+<a href="#I_NEXT">succ</a>
+
+<a href="#I_NEXT--21">next!</a>
+
+<a href="#I_NEXT--21">succ!</a>
+
+<a href="#I_OCT">oct</a>
+
+<a href="#I_ORD">ord</a>
+
+<a href="#I_PARTITION">partition</a>
+
+<a href="#I_PREPEND">prepend</a>
+
+<a href="#I_REPLACE">replace</a>
+
+<a href="#I_REVERSE">reverse</a>
+
+<a href="#I_REVERSE--21">reverse!</a>
+
+<a href="#I_RINDEX">rindex</a>
+
+<a href="#I_RJUST">rjust</a>
+
+<a href="#I_RPARTITION">rpartition</a>
+
+<a href="#I_RSTRIP">rstrip</a>
+
+<a href="#I_RSTRIP--21">rstrip!</a>
+
+<a href="#I_SCAN">scan</a>
+
+<a href="#I_SCRUB">scrub</a>
+
+<a href="#I_SCRUB--21">scrub!</a>
+
+<a href="#I_SETBYTE">setbyte</a>
+
+<a href="#I_SLICE--21">slice!</a>
+
+<a href="#I_SPLIT">split</a>
+
+<a href="#I_SQUEEZE">squeeze</a>
+
+<a href="#I_SQUEEZE--21">squeeze!</a>
+
+<a href="#I_START_WITH--3F">start_with?</a>
+
+<a href="#I_STRIP">strip</a>
+
+<a href="#I_STRIP--21">strip!</a>
+
+<a href="#I_SUB">sub</a>
+
+<a href="#I_SUB--21">sub!</a>
+
+<a href="#I_SUM">sum</a>
+
+<a href="#I_SWAPCASE">swapcase</a>
+
+<a href="#I_SWAPCASE--21">swapcase!</a>
+
+<a href="#I_TO_C">to_c</a>
+
+<a href="#I_TO_F">to_f</a>
+
+<a href="#I_TO_I">to_i</a>
+
+<a href="#I_TO_R">to_r</a>
+
+<a href="#I_TO_S">to_s</a>
+
+<a href="#I_TO_S">to_str</a>
+
+<a href="#I_TR">tr</a>
+
+<a href="#I_TR--21">tr!</a>
+
+<a href="#I_TR_S">tr_s</a>
+
+<a href="#I_TR_S--21">tr_s!</a>
+
+<a href="#I_UNICODE_NORMALIZE">unicode_normalize</a>
+
+<a href="#I_UNICODE_NORMALIZE--21">unicode_normalize!</a>
+
+<a href="#I_UNICODE_NORMALIZED--3F">unicode_normalized?</a>
+
+<a href="#I_UNPACK">unpack</a>
+
+<a href="#I_UPCASE">upcase</a>
+
+<a href="#I_UPCASE--21">upcase!</a>
+
+<a href="#I_UPTO">upto</a>
+
+<a href="#I_VALID_ENCODING--3F">valid_encoding?</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(string = &quot;&quot;) -&gt; String</code><span class="permalink">[<a href="../method/-string/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>new(string = &quot;&quot;, encoding: enc) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+string と同じ内容の新しい文字列を作成して返します。
+引数を省略した場合は空文字列を生成して返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+文字列
+</dd>
+<dt class='method-param'>[PARAM] encoding:</dt>
+<dd>
+作成する文字列のエンコーディングを文字列か
+<a href="../class/-encoding.html">Encoding</a> オブジェクトで指定します(変換は行われま
+せん)。省略した場合は引数 string のエンコーディングと同
+じになります(ただし、string にエンコーディングが指定さ
+れていなかった場合は <a href="../method/-encoding/c/-a-s-c-i-i_8-b-i-t.html">Encoding::ASCII_8BIT</a>になりま
+す)。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+引数 string と同じ内容の文字列オブジェクト
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_TRY_CONVERT"><code>try_convert(obj) -&gt; String | nil</code><span class="permalink">[<a href="../method/-string/s/try_convert.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-c-try_convert">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+obj を String に変換しようと試みます。変換には <a href="../method/-object/i/to_str.html">Object#to_str</a> メソッ
+ドが使われます。変換後の文字列を返すか、何らかの理由により変換できなかっ
+た場合は nil が返されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+変換する任意のオブジェクト
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+変換後の文字列または nil
+</dd>
+</dl>
+<pre>
+String.try_convert(&quot;str&quot;)     # =&gt; &quot;str&quot;
+String.try_convert(/re/)      # =&gt; nil
+</pre>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--25"><code>self % args -&gt; String</code><span class="permalink">[<a href="../method/-string/i/=25.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-25">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+printf と同じ規則に従って args をフォーマットします。
+</p>
+<p>
+args が配列であれば <a href="../method/-kernel/m/sprintf.html">Kernel.#sprintf</a>(self, *args) と同じです。
+それ以外の場合は <a href="../method/-kernel/m/sprintf.html">Kernel.#sprintf</a>(self, args) と同じです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+フォーマットする値、もしくはその配列
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+フォーマットされた文字列
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;i = %d&quot; % 10       # =&gt; &quot;i = 10&quot;
+p &quot;i = %x&quot; % 10       # =&gt; &quot;i = a&quot;
+p &quot;i = %o&quot; % 10       # =&gt; &quot;i = 12&quot;
+
+p &quot;i = %#d&quot; % 10      # =&gt; &quot;i = 10&quot;
+p &quot;i = %#x&quot; % 10      # =&gt; &quot;i = 0xa&quot;
+p &quot;i = %#o&quot; % 10      # =&gt; &quot;i = 012&quot;
+
+p &quot;%d&quot; % 10           # =&gt; &quot;10&quot;
+p &quot;%d,%o&quot; % [10, 10]  # =&gt; &quot;10,12&quot;
+</pre>
+<h4 >sprintf フォーマット</h4>
+<p>
+Ruby の sprintf フォーマットは基本的に C 言語の <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/sprintf.html">sprintf(3)</a>
+のものと同じです。ただし、short や long などの C 特有の型に対する修飾子が
+ないこと、2進数の指示子(%b, %B)が存在すること、sprintf のすべての方言をサ
+ポートしていないこと(%': 3桁区切り)などの違いがあります。
+</p>
+<p>
+Ruby には整数の大きさに上限がないので、%b, %B, %o, %x, %X
+に負の数を与えると (左側に無限に1が続くとみなせるので)
+..f のような表示をします。絶対値に符号を付けた形式
+で出力するためには %+x、% x のように指定します。
+</p>
+<p>
+以下は sprintf フォーマットの書式です。[] で囲まれた部分は省略可
+能であることを示しています。
+</p>
+<pre>
+%[nth$][フラグ][幅][.精度]指示子
+%[&lt;name&gt;][フラグ][幅][.精度]指示子
+</pre>
+<p>
+`%' 自身を出力するには `%%' とします。
+</p>
+<p>
+以下それぞれの要素に関して説明します。
+</p>
+<h4 >フラグ</h4>
+<p>
+フラグには #, +, ' '(スペース), -, 0 の5種類があります。
+</p>
+<dl>
+<dt>#</dt>
+<dd>
+<p>
+2進、8進、16進の指示子(b, B, o, x, X) ではそれぞれプレフィック
+スとして &quot;0b&quot;, &quot;0B&quot;, &quot;0&quot;, &quot;0x&quot;, &quot;0X&quot; を付加します。
+C 言語と同様引数が 0 の場合にはプレフィックスが付加されません。
+</p>
+<pre>
+  p sprintf(&quot;%#b&quot;, 10) #=&gt; &quot;0b1010&quot;
+  p sprintf(&quot;%#B&quot;, 10) #=&gt; &quot;0B1010&quot;
+  p sprintf(&quot;%#b&quot;, 0)  #=&gt; &quot;0&quot;
+  p sprintf(&quot;%#o&quot;, 10) #=&gt; &quot;012&quot;
+  p sprintf(&quot;%#x&quot;, 10) #=&gt; &quot;0xa&quot;
+  p sprintf(&quot;%#X&quot;, 10) #=&gt; &quot;0XA&quot;
+</pre>
+<p>
+浮動小数点数 (f, e, E, g, G) に対しては必ず出力に&quot;.&quot;をつけます。
+</p>
+<pre>
+  p sprintf(&quot;%.0f&quot;, 10) #=&gt; &quot;10&quot;
+  p sprintf(&quot;%#.0f&quot;, 10) #=&gt; &quot;10.&quot;
+  p sprintf(&quot;%.0e&quot;, 10) #=&gt; &quot;1e+01&quot;
+  p sprintf(&quot;%#.0e&quot;, 10) #=&gt; &quot;1.e+01&quot;
+</pre>
+<p>
+また g, G では上記に加えて末尾の余分な0が残ります。
+</p>
+<pre>
+  p sprintf(&quot;%.05g&quot;, 10) #=&gt; &quot;10&quot;
+  p sprintf(&quot;%#.05g&quot;, 10) #=&gt; &quot;10.000&quot;
+</pre>
+</dd>
+<dt>+</dt>
+<dd>
+<p>
+出力文字列を符号付きにします。特に正の数では`+'が付加されます。
+数値の指示子
+(d, i, b, B, o, x, X, u, f, e, E, g, G)
+に対してだけ意味を持ちます。
+また、特に b, B, o, x, X, u に対しては、負数に対して &quot;-&quot;
+を付加することを示します。
+</p>
+<pre>
+  p sprintf(&quot;%d&quot;, 1)   #=&gt; &quot;1&quot;
+  p sprintf(&quot;%+d&quot;, 1)  #=&gt; &quot;+1&quot;
+
+  p sprintf(&quot;%x&quot;, -1)  #=&gt; &quot;..f&quot;  # &quot;..&quot; は無限に f が続くことを表している
+  p sprintf(&quot;%+x&quot;, -1) #=&gt; &quot;-1&quot;
+</pre>
+</dd>
+<dt>' '(スペース)</dt>
+<dd>
+<p>
+`+' と同じですが正の符号 `+' の代わりに空白を用います。数値の指示子
+(d, i, b, B, o, x, X, u, f, e, E, g, G)
+に対してだけ意味を持ちます。
+</p>
+<pre>
+  p sprintf(&quot;%d&quot;, 1)   #=&gt; &quot;1&quot;
+  p sprintf(&quot;%+d&quot;, 1)  #=&gt; &quot;+1&quot;
+  p sprintf(&quot;% d&quot;, 1)  #=&gt; &quot; 1&quot;
+
+  p sprintf(&quot;%x&quot;, -1)  #=&gt; &quot;..f&quot;
+  p sprintf(&quot;% x&quot;, 1)  #=&gt; &quot; 1&quot;
+  p sprintf(&quot;% x&quot;, -1) #=&gt; &quot;-1&quot;
+</pre>
+</dd>
+<dt>-</dt>
+<dd>
+<p>
+出力を左詰めにします幅の指定がなければ
+意味がありません。
+</p>
+</dd>
+<dt>0</dt>
+<dd>
+<p>
+出力が右詰めの場合に余った部分に空白の代わりに &quot;0&quot; を詰めます。
+</p>
+<p>
+数値の指示子の一部(d, i, b, B, o, x, X, u, f, g, G)に対し
+てだけ意味を持ちます(e, E には意味がない)
+</p>
+<pre>
+  p sprintf(&quot;%010d&quot;, 10)   #=&gt; &quot;0000000010&quot;
+</pre>
+<p>
+`#' と一緒に指定した場合の出力は以下のようになります。
+</p>
+<pre>
+  p sprintf(&quot;%#010x&quot;, 10)  #=&gt; &quot;0x0000000a&quot;
+  p sprintf(&quot;%#010o&quot;, 10)  #=&gt; &quot;0000000012&quot;
+  p sprintf(&quot;%#010b&quot;, 10)  #=&gt; &quot;0b00001010&quot;
+</pre>
+<p>
+これは、以下と同じです。
+</p>
+<pre>
+  p sprintf(&quot;%#10.8x&quot;, 10) #=&gt; &quot;0x0000000a&quot;
+  p sprintf(&quot;%#10.9o&quot;, 10) #=&gt; &quot;0000000012&quot;
+  p sprintf(&quot;%#10.8b&quot;, 10) #=&gt; &quot;0b00001010&quot;
+</pre>
+<p>
+通常は、以下のようになります。
+</p>
+<pre>
+  p sprintf(&quot;%#10x&quot;, 10)   #=&gt; &quot;       0xa&quot;
+  p sprintf(&quot;%#10o&quot;, 10)   #=&gt; &quot;       012&quot;
+  p sprintf(&quot;%#10b&quot;, 10)   #=&gt; &quot;    0b1010&quot;
+</pre>
+</dd>
+</dl>
+<h4 >幅</h4>
+<p>
+0以外の数字で始まる数字列は幅指定になります。幅は生成文字列の長さを示
+します。後述の精度の値によらずこの幅分だ
+けの文字列が生成されます。
+</p>
+<p>
+幅の指定はフラグで付与される &quot; &quot;, &quot;+&quot;,
+&quot;-&quot;, &quot;0b&quot;, &quot;0B&quot;, &quot;0&quot;, &quot;0x&quot;, &quot;0X&quot; の長さも考慮されます。
+</p>
+<pre>
+p sprintf(&quot;%+5d&quot;, 11)  #=&gt; &quot;  +11&quot;
+p sprintf(&quot;%+-5d&quot;, 11) #=&gt; &quot;+11  &quot;
+p sprintf(&quot;%+05d&quot;, 11) #=&gt; &quot;+0011&quot;
+</pre>
+<p>
+幅は「最低限必要な幅」の指定になります。結果の文字列が指定した幅を超
+える場合は幅の指定は無効になります。
+</p>
+<p>
+幅として `*' を指定すると幅の値を引数から得ることになります。
+</p>
+<pre>
+p sprintf(&quot;%#05x&quot;, 10)    #=&gt; &quot;0x00a&quot;
+p sprintf(&quot;%#0*x&quot;, 5, 10) #=&gt; &quot;0x00a&quot;
+</pre>
+<h4 >精度</h4>
+<p>
+&quot;.&quot; の後に続く数字列は精度を表します(&quot;.&quot; のみの場合 &quot;.0&quot; と同じです)。精度は
+整数の指示子
+(d, i, b, B, o, x, X, u)
+に対しては、数値列部分の長さを意味します。
+</p>
+<pre>
+p sprintf(&quot;%10.5d&quot;, 1)  #=&gt; &quot;     00001&quot;
+p sprintf(&quot;%#10.5x&quot;, 1) #=&gt; &quot;   0x00001&quot;
+p sprintf(&quot;%+10.5x&quot;, 1) #=&gt; &quot;    +00001&quot;
+</pre>
+<p>
+浮動小数点数の指示子
+(f)
+に対しては小数部の桁数を意味します。
+</p>
+<pre>
+p sprintf(&quot;%10.5f&quot;, 1)   #=&gt; &quot;   1.00000&quot;
+p sprintf(&quot;%10.5f&quot;, 10)  #=&gt; &quot;  10.00000&quot;
+</pre>
+<p>
+浮動小数点数の指示子
+(e, E, g, G)
+に対しては有効桁数を意味します。
+</p>
+<pre>
+p sprintf(&quot;%10.5e&quot;, 1)   #=&gt; &quot;1.00000e+00&quot;
+p sprintf(&quot;%10.5e&quot;, 10)  #=&gt; &quot;1.00000e+01&quot;
+p sprintf(&quot;%10.5g&quot;,  10)  #=&gt; &quot;        10&quot;
+p sprintf(&quot;%#10.5G&quot;, 10)  #=&gt; &quot;    10.000&quot;
+</pre>
+<p>
+文字列の指示子(s, p)
+に対しては引数の文字列のうち指定した数を超える分を切り捨てます。
+幅と精度を同じ値にすれば、どのような引数に対してもその
+長さだけの出力を行うことになります。
+</p>
+<pre>
+p sprintf(&quot;%10.2s&quot;, &quot;foo&quot;)  #=&gt; &quot;        fo&quot;
+
+p sprintf(&quot;%5.5s&quot;, &quot;foo&quot;)     #=&gt; &quot;  foo&quot;
+p sprintf(&quot;%5.5s&quot;, &quot;foobar&quot;)  #=&gt; &quot;fooba&quot;
+</pre>
+<p>
+精度として `*' を指定すると精度の値を引数から得ることになります。
+</p>
+<pre>
+p sprintf(&quot;%.5s&quot;, &quot;foobar&quot;)    #=&gt; &quot;fooba&quot;
+p sprintf(&quot;%.*s&quot;, 5, &quot;foobar&quot;) #=&gt; &quot;fooba&quot;
+</pre>
+<h4 >指示子</h4>
+<p>
+指示子は引数の型の解釈を示します。指示子を省略することはできません。
+指示子には大きく分けて
+</p>
+<ul>
+<li>文字列を表す指示子: c, s, p</li>
+<li>整数を表す指示子: d, i, u, b, B, o, x, X,</li>
+<li>浮動小数点数を表す指示子: f, g, e, E, G</li>
+</ul>
+<p>
+があります
+</p>
+<dl>
+<dt>c</dt>
+<dd>
+<p>
+引数の数値(0〜255)を文字コードとみなして対応する文字を出力します。
+引数が数値以外のオブジェクトの場合 to_int メソッドによる変換を試みます。
+引数として範囲内の一文字の文字列も受けつけます。文字そのものを出力します。
+</p>
+<pre>
+  p sprintf(&quot;%c&quot;, 97)  #=&gt; &quot;a&quot;
+  p sprintf(&quot;%c&quot;, 'a') #=&gt; &quot;a&quot;
+</pre>
+<p>
+フラグ `-' と幅 の指定だけが意味を持ちます。
+</p>
+</dd>
+<dt>s</dt>
+<dd>
+<p>
+文字列を出力します。
+</p>
+<p>
+引数が <a href="../class/-string.html">String</a> オブジェクトでなければ to_s メソッドにより文字列化
+したものを引数として扱います。
+</p>
+</dd>
+<dt>p</dt>
+<dd>
+<p>
+<a href="../method/-object/i/inspect.html">Object#inspect</a> の結果を出力します。
+</p>
+<pre>
+  p sprintf(&quot;%s&quot;, /e+/)  #=&gt; &quot;(?-mix:e+)&quot;
+  p sprintf(&quot;%p&quot;, /e+/)  #=&gt; &quot;/e+/&quot;
+</pre>
+</dd>
+<dt>d</dt>
+<dt>i</dt>
+<dd>
+<p>
+引数の数値を10進表現の整数として出力します。
+</p>
+<p>
+引数が整数でなければ関数 <a href="../method/-kernel/m/-integer.html">Kernel.#Integer</a> と同じ規則で整数に
+変換されます。
+</p>
+<pre>
+  p sprintf(&quot;%d&quot;, -1) #=&gt; &quot;-1&quot;
+  p sprintf(&quot;%d&quot;, 3.1) #=&gt; &quot;3&quot;
+  p sprintf(&quot;%d&quot;, '0b1010') #=&gt; &quot;10&quot;
+</pre>
+</dd>
+<dt>u</dt>
+<dd>
+<p>
+引数の数値を符号なし整数とみなして10進表現の整数として出力します。
+</p>
+<pre>
+  p sprintf(&quot;%u&quot;, '0b1010') #=&gt; &quot;10&quot;
+  p sprintf(&quot;%u&quot;, -1) #=&gt; &quot;-1&quot;
+</pre>
+</dd>
+<dt>b</dt>
+<dt>B</dt>
+<dt>o</dt>
+<dt>x</dt>
+<dt>X</dt>
+<dd>
+<p>
+整数をそれぞれ2進、2進(大文字)、8進、16進、16進(大文字)表現の文字列で出力します。
+</p>
+<p>
+`#' フラグを指定すれば &quot;0b&quot;, &quot;0B&quot;, &quot;0&quot;, &quot;0x&quot;, &quot;0X&quot; を先頭に付加します。
+</p>
+<p>
+`+', ` ' フラグがない場合、負の数には &quot;..&quot; が先頭(`#' フラグがあれば
+&quot;0x&quot; などの後)に付加されます。これは最上位桁の文字が無限に続くことを
+意味し、2の補数表現で負の数を表しています。
+</p>
+<pre>
+   p sprintf(&quot;%#b&quot;, 10)    #=&gt; &quot;0b1010&quot;
+   p sprintf(&quot;%#B&quot;, 10)    #=&gt; &quot;0B1010&quot;
+   p sprintf(&quot;%#o&quot;, 10)    #=&gt; &quot;012&quot;
+   p sprintf(&quot;%#x&quot;, 10)    #=&gt; &quot;0xa&quot;
+   p sprintf(&quot;%#X&quot;, 10)    #=&gt; &quot;0XA&quot;
+
+   # 負の数に対して &quot;..&quot; が付加されます
+   p sprintf(&quot;%#b&quot;, -1)    #=&gt; &quot;0b..1&quot;
+   p sprintf(&quot;%#o&quot;, -1)    #=&gt; &quot;0..7&quot;
+   p sprintf(&quot;%#x&quot;, -1)    #=&gt; &quot;0x..f&quot;
+
+   p sprintf(&quot;%10x&quot;, -1)   #=&gt; &quot;       ..f&quot;
+   p sprintf(&quot;%-10x&quot;, -1)  #=&gt; &quot;..f       &quot;
+
+   # ruby 1.9.1 以降では「精度」を指定した場合も、&quot;..&quot; は付加されます
+   p sprintf(&quot;%.10x&quot;, -1) #=&gt; &quot;..ffffffff&quot;
+</pre>
+</dd>
+<dt>f</dt>
+<dt>e</dt>
+<dt>E</dt>
+<dt>g</dt>
+<dt>G</dt>
+<dt>a</dt>
+<dt>A</dt>
+<dd>
+<p>
+f は小数点表現(xxx.xxx)で数値を出力します。
+</p>
+<p>
+e は指数表現(x.xxxe+xx)で数値を出力します。
+</p>
+<p>
+g は 指数が -4 より小さいか精度以上の場合に e と同じ出力を、それ以
+外では f と同じ出力を行います。ただし、小数部の末尾の0は取り除かれ
+ます。
+</p>
+<p>
+a, A は指数表現の16進数(&quot;-h.hhh±pd&quot;) で数値を出力します。ただし、<a href="../method/-float/c/-i-n-f-i-n-i-t-y.html">Float::INFINITY</a>、<a href="../method/-float/c/-n-a-n.html">Float::NAN</a> はそれぞれ 'Inf'、'NaN' になります。詳しくは <a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-dev/40650">[ruby-dev:40650]</a> を参照してください。
+</p>
+<pre>
+  p sprintf(&quot;%a&quot;, -0.0)            # =&gt; &quot;-0x0p+0&quot;
+  p sprintf(&quot;%a&quot;, 729.0/10)        # =&gt; &quot;0x1.239999999999ap+6&quot;
+  p sprintf(&quot;%a&quot;, Float::INFINITY) # =&gt; &quot;Inf&quot;
+</pre>
+<p>
+大文字の指示子(E, G)は出力のアルファベットを大文字にします。
+</p>
+<pre>
+  p sprintf(&quot;%f&quot;, 1.0) #=&gt; &quot;1.000000&quot;
+  p sprintf(&quot;%e&quot;, 1.0) #=&gt; &quot;1.000000e+00&quot;
+  p sprintf(&quot;%g&quot;, 1.0) #=&gt; &quot;1&quot;
+
+  p sprintf(&quot;%f&quot;, 10.1) #=&gt; &quot;10.100000&quot;
+  p sprintf(&quot;%e&quot;, 10.1) #=&gt; &quot;1.010000e+01&quot;
+  p sprintf(&quot;%g&quot;, 10.1) #=&gt; &quot;10.1&quot;
+
+  p sprintf(&quot;%g&quot;, 10 ** 6)  #=&gt; &quot;1e+06&quot;
+  p sprintf(&quot;%g&quot;, 10 ** -5) #=&gt; &quot;1e-05&quot;
+</pre>
+<p>
+精度の省略値は 6 です。
+</p>
+<p>
+無限大、NaN(Not a Number) に対する出力は以下のとおりです。
+</p>
+<pre>
+  p sprintf(&quot;%f&quot;,  1.0/0)  #=&gt; &quot;inf&quot;
+  p sprintf(&quot;%f&quot;, -1.0/0)  #=&gt; &quot;-inf&quot;
+  p sprintf(&quot;%f&quot;,  0.0/0)  #=&gt; &quot;nan&quot;
+
+  p sprintf(&quot;%E&quot;,  1.0/0)  #=&gt; &quot;INF&quot;
+  p sprintf(&quot;%E&quot;, -1.0/0)  #=&gt; &quot;-INF&quot;
+  p sprintf(&quot;%E&quot;,  0.0/0)  #=&gt; &quot;NAN&quot;
+</pre>
+<p>
+f, e, E, g, G に関しては <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/sprintf.html">sprintf(3)</a> の結果を利用しています。従って出力結果は
+実際にはシステムに依存することになります。
+</p>
+</dd>
+</dl>
+<h4 >引数指定</h4>
+<p>
+利用頻度が低いので最後に説明します。
+</p>
+<dl>
+<dt>nth$</dt>
+<dd>
+<p>
+nth 番目の引数のフォーマットを行うことを示します。
+</p>
+<pre>
+  p sprintf(&quot;%d, %x, %o&quot;, 1, 2, 3) #=&gt; &quot;1, 2, 3&quot;
+  p sprintf(&quot;%3$d, %2$x, %1$o&quot;, 1, 2, 3) #=&gt; &quot;3, 2, 1&quot;
+
+  p sprintf(&quot;%1$d, %1$x, %1$o&quot;, 10) #=&gt; &quot;10, a, 12&quot;
+</pre>
+<p>
+状況によってフォーマットを変えたいが引数の順序を変えたくない場合に使
+用します。
+</p>
+<pre>
+  case ENV['LC_TIME']
+  when /^ja_JP/
+    fmt = &quot;%1$d年%2$d月%3$d日&quot;
+  else
+    fmt = &quot;%2$02d/%03$2d/%1$02d&quot;
+  end
+
+  p sprintf(fmt, 1, 4, 22) #=&gt; &quot;04/22/01&quot;
+</pre>
+<p>
+&quot;*&quot; の後に指定することで幅や
+精度を引数で指定することもできます。
+</p>
+<pre>
+  p sprintf(&quot;%5.2f&quot;, 1)              #=&gt; &quot; 1.00&quot;
+  p sprintf(&quot;%*.*f&quot;, 5, 2, 1)        #=&gt; &quot; 1.00&quot;
+  p sprintf(&quot;%1$*2$.*3$f&quot;, 1, 5, 2)  #=&gt; &quot; 1.00&quot;
+</pre>
+</dd>
+<dt>%&lt;name&gt;</dt>
+<dd>
+<p>
+Symbol のインスタンス name をキーとする Hash を引数にした場合、
+対応する値をフォーマットして参照します。
+</p>
+<pre>
+  p sprintf('%&lt;foo&gt;f : %&lt;bar&gt;+d', foo: 1, bar: 2) #=&gt; &quot;1.000000 : +2&quot;
+</pre>
+</dd>
+<dt>%{name}</dt>
+<dd>
+<p>
+Symbol のインスタンス name をキーとする Hash を引数にした場合、
+対応する値をフォーマットせずに参照します。
+幅や精度を指定するために使用することができます。
+</p>
+<pre>
+  p sprintf('%{foo}f : %{bar}+d', foo: 1, bar: 2) #=&gt; &quot;1f : 2+d&quot;
+</pre>
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_--2A"><code>self * times -&gt; String</code><span class="permalink">[<a href="../method/-string/i/=2a.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-2A">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列の内容を times 回だけ繰り返した新しい文字列を作成して返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] times:</dt>
+<dd>
+整数
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+self を times 回繰り返した新しい文字列
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+引数に負数を指定したときに発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;str&quot; * 3   # =&gt; &quot;strstrstr&quot;
+
+str = &quot;abc&quot;
+p str * 4   # =&gt; &quot;abcabcabcabc&quot;
+p str * 0   # =&gt; &quot;&quot;
+p str       # =&gt; &quot;abc&quot;  (変化なし)
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--2B"><code>self + other -&gt; String</code><span class="permalink">[<a href="../method/-string/i/=2b.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-2B">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列と other を連結した新しい文字列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+文字列
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+self と other を連結した文字列
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;str&quot; + &quot;ing&quot;   # =&gt; &quot;string&quot;
+
+a = &quot;abc&quot;
+b = &quot;def&quot;
+p a + b   # =&gt; &quot;abcdef&quot;
+p a       # =&gt; &quot;abc&quot;  (変化なし)
+p b       # =&gt; &quot;def&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--2B--40"><code>+ self -&gt; String | self</code><span class="permalink">[<a href="../method/-string/i/=2b=40.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-2B-40">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self が freeze されている文字列の場合、元の文字列の複製を返します。
+freeze されていない場合は self を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_--2D--40"><code>- self -&gt; String | self</code><span class="permalink">[<a href="../method/-string/i/=2d=40.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-2D-40">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self が freeze されている文字列の場合、self を返します。
+freeze されていない場合は元の文字列の freeze された複製を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_--3C--3C"><code>self &lt;&lt; other -&gt; self</code><span class="permalink">[<a href="../method/-string/i/=3c=3c.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-3C-3C">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>concat(other) -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+self に文字列 other を破壊的に連結します。
+other が 整数である場合は other.chr(self.encoding) 相当の文字を末尾に追加します。
+</p>
+<p>
+self を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+文字列もしくは 0 以上の整数
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+str = &quot;string&quot;
+str.concat &quot;XXX&quot;
+p str    # =&gt; &quot;stringXXX&quot;
+
+str &lt;&lt; &quot;YYY&quot;
+p str    # =&gt; &quot;stringXXXYYY&quot;
+
+str &lt;&lt; 65  # 文字AのASCIIコード
+p str    # =&gt; &quot;stringXXXYYYA&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--3C--3D--3E"><code>self &lt;=&gt; other -&gt; -1 | 0 | 1 | nil</code><span class="permalink">[<a href="../method/-string/i/=3c=3d=3e.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-3C-3D-3E">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self と other を ASCII コード順で比較して、
+self が大きい時には 1、等しい時には 0、小さい時には -1 を返します。
+このメソッドは Comparable モジュールのメソッドを実装するために使われます。
+</p>
+<p>
+変数 <a href="../method/-kernel/v/=3d.html">$=</a> の値が真であるときは
+アルファベットの大文字小文字を無視して比較します。
+ただし $= 変数はいずれ廃止されることが決まっているので
+$= に頼るべきではありません。
+代わりに <a href="../method/-string/i/casecmp.html">String#casecmp</a> を使ってください。
+</p>
+<p>
+other が文字列でない場合、
+other.to_str と other.&lt;=&gt; が定義されていれば
+0 - (other &lt;=&gt; self) の結果を返します。
+そうでなければ nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+文字列
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+比較結果の整数か nil
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;aaa&quot; &lt;=&gt; &quot;xxx&quot;   # =&gt; -1
+p &quot;aaa&quot; &lt;=&gt; &quot;aaa&quot;   # =&gt; 0
+p &quot;xxx&quot; &lt;=&gt; &quot;aaa&quot;   # =&gt; 1
+
+p &quot;string&quot; &lt;=&gt; &quot;stringAA&quot;  # =&gt; -1
+p &quot;string&quot; &lt;=&gt; &quot;string&quot;    # =&gt; 0
+p &quot;stringAA&quot; &lt;=&gt; &quot;string&quot;  # =&gt; 1
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--3D--3D"><code>self == other -&gt; bool</code><span class="permalink">[<a href="../method/-string/i/=3d=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-3D-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>self === other -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+other が文字列の場合、<a href="../method/-string/i/eql=3f.html">String#eql?</a> と同様に文字列の内容を比較します。
+</p>
+<p>
+other が文字列でない場合、
+other.to_str が定義されていれば
+other == self の結果を返します。(ただし、 other.to_str は実行されません。)
+そうでなければ false を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+任意のオブジェクト
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+true か false
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+stringlike = Object.new
+
+def stringlike.==(other)
+  &quot;string&quot; == other
+end
+
+p &quot;string&quot;.eql?(stringlike) #=&gt; false
+p &quot;string&quot; == stringlike    #=&gt; false
+
+def stringlike.to_str
+  raise
+end
+
+p &quot;string&quot;.eql?(stringlike) #=&gt; false
+p &quot;string&quot; == stringlike    #=&gt; true
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/eql=3f.html">String#eql?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_--3D--7E"><code>self =~ other -&gt; Integer</code><span class="permalink">[<a href="../method/-string/i/=3d=7e.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-3D-7E">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+正規表現 other とのマッチを行います。
+マッチが成功すればマッチした位置のインデックスを、そうでなければ nil を返します。
+</p>
+<p>
+other が正規表現でも文字列でもない場合は
+other =~ self を行います。
+</p>
+<p>
+このメソッドが実行されると、組み込み変数 <a href="../method/-kernel/v/=7e.html">$~</a>, <a href="../method/-kernel/v/1.html">$1</a>, ...
+にマッチに関する情報が設定されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+正規表現もしくは =~ メソッドを持つオブジェクト
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+other が文字列の場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;string&quot; =~ /str/   # =&gt; 0
+p &quot;string&quot; =~ /not/   # =&gt; nil
+p &quot;abcfoo&quot; =~ /foo/   # =&gt; 3
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--5B--5D"><code>self[nth] -&gt; String | nil</code><span class="permalink">[<a href="../method/-string/i/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>slice(nth) -&gt; String | nil</code></dt>
+<dd class="method-description">
+<p>
+nth 番目の文字を返します。
+nth が負の場合は文字列の末尾から数えます。
+つまり、 self.size + nth 番目の文字を返します。
+</p>
+<p>
+nth が範囲外を指す場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] nth:</dt>
+<dd>
+文字の位置を表す整数
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+指定した位置の文字を表す String オブジェクト
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p 'bar'[2]       # =&gt; &quot;r&quot;
+p 'bar'[2] == ?r # =&gt; true
+p 'bar'[-1]      # =&gt; &quot;r&quot;
+p 'bar'[3]       # =&gt; nil
+p 'bar'[-4]      # =&gt; nil
+</pre>
+<p>
+このメソッドの仕様は 1.8.x 以前から大きく変更されていますので注意が必要
+です。
+</p>
+</dd>
+<dt class="method-heading" id="I_--5B--5D"><code>self[nth, len] -&gt; String | nil</code><span class="permalink">[<a href="../method/-string/i/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>slice(nth, len) -&gt; String | nil</code></dt>
+<dd class="method-description">
+<p>
+nth 文字目から長さ len 文字の部分文字列を新しく作って返します。
+nth が負の場合は文字列の末尾から数えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] nth:</dt>
+<dd>
+取得したい文字列の開始インデックスを整数で指定します。
+</dd>
+<dt class='method-param'>[PARAM] len:</dt>
+<dd>
+取得したい文字列の長さを正の整数で指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+nth が範囲外を指す場合は nil を返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+str0 = &quot;bar&quot;
+str0[2, 1]         #=&gt; &quot;r&quot;
+str0[2, 0]         #=&gt; &quot;&quot;
+str0[2, 100]       #=&gt; &quot;r&quot;  (右側を超えても平気)
+str0[-1, 1]        #=&gt; &quot;r&quot;
+str0[-1, 2]        #=&gt; &quot;r&quot;  (右に向かって len 文字)
+
+str0[3, 1]         #=&gt; &quot;&quot;
+str0[4, 1]         #=&gt; nil
+str0[-4, 1]        #=&gt; nil
+str1 = str0[0, 2]    # (str0 の「一部」を str1 とする)
+str1               #=&gt; &quot;ba&quot;
+str1[0] = &quot;XYZ&quot;
+str1               #=&gt; &quot;XYZa&quot; (str1 の内容が破壊的に変更された)
+str0               #=&gt; &quot;bar&quot; (str0 は無傷、 str1 は str0 と内容を共有していない)
+</pre>
+</dd>
+<dt class="method-heading" id="I_--5B--5D"><code>self[substr] -&gt; String | nil</code><span class="permalink">[<a href="../method/-string/i/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>slice(substr) -&gt; String | nil</code></dt>
+<dd class="method-description">
+<p>
+self が substr を含む場合、一致した文字列を新しく作って返します。
+substr を含まなければ nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] substr:</dt>
+<dd>
+取得したい文字列のパターン。文字列
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+substr = &quot;bar&quot;
+result = &quot;foobar&quot;[substr]
+p result   # =&gt; &quot;bar&quot;
+p substr.equal?(result)   # =&gt; false
+</pre>
+</dd>
+<dt class="method-heading" id="I_--5B--5D"><code>self[regexp, nth = 0] -&gt; String</code><span class="permalink">[<a href="../method/-string/i/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>slice(regexp, nth = 0) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+正規表現 regexp の nth 番目の括弧にマッチする最初の部分文字列を返します。
+nth を省略したときや 0 の場合は正規表現がマッチした部分文字列全体を返します。
+正規表現が self にマッチしなかった場合や nth に対応する括弧がないときは nil を返します。
+</p>
+<p>
+このメソッドを実行すると、
+マッチ結果に関する情報が組み込み変数 <a href="../method/-kernel/v/=7e.html">$~</a> に設定されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] regexp:</dt>
+<dd>
+取得したい文字列のパターンを示す正規表現
+</dd>
+<dt class='method-param'>[PARAM] nth:</dt>
+<dd>
+取得したい正規表現レジスタのインデックス。整数
+</dd>
+</dl>
+<pre>
+p &quot;foobar&quot;[/bar/]  # =&gt; &quot;bar&quot;
+p $~.begin(0)      # =&gt; 3
+p &quot;def getcnt(line)&quot;[ /def\s+(\w+)/, 1 ]   # =&gt; &quot;getcnt&quot;
+</pre>
+</dd>
+<dt class="method-heading" id="I_--5B--5D"><code>self[regexp, name] -&gt; String</code><span class="permalink">[<a href="../method/-string/i/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>slice(regexp, name) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+正規表現 regexp の name で指定した名前付きキャプチャにマッチする最初の
+部分文字列を返します。正規表現が self にマッチしなかった場合は nil を返
+します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] regexp:</dt>
+<dd>
+正規表現を指定します。
+</dd>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+取得したい部分文字列のパターンを示す正規表現レジスタを示す名前
+</dd>
+<dt>[EXCEPTION] IndexError:</dt>
+<dd>
+name に対応する括弧がない場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+s = &quot;FooBar&quot;
+s[/(?&lt;foo&gt;[A-Z]..)(?&lt;bar&gt;[A-Z]..)/]        # =&gt; &quot;FooBar&quot;
+s[/(?&lt;foo&gt;[A-Z]..)(?&lt;bar&gt;[A-Z]..)/, &quot;foo&quot;] # =&gt; &quot;Foo&quot;
+s[/(?&lt;foo&gt;[A-Z]..)(?&lt;bar&gt;[A-Z]..)/, &quot;bar&quot;] # =&gt; &quot;Bar&quot;
+s[/(?&lt;foo&gt;[A-Z]..)(?&lt;bar&gt;[A-Z]..)/, &quot;baz&quot;] # =&gt; IndexError
+</pre>
+</dd>
+<dt class="method-heading" id="I_--5B--5D"><code>self[range] -&gt; String</code><span class="permalink">[<a href="../method/-string/i/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>slice(range) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+rangeで指定したインデックスの範囲に含まれる部分文字列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] range:</dt>
+<dd>
+取得したい文字列の範囲を示す Range オブジェクト
+</dd>
+</dl>
+<h3 >rangeオブジェクトが終端を含む場合</h3>
+<p>
+インデックスと文字列の対応については以下の対照図も参照してください。
+</p>
+<pre>
+  0   1   2   3   4   5   (インデックス)
+ -6  -5  -4  -3  -2  -1   (負のインデックス)
+| a | b | c | d | e | f |
+|&lt;---------&gt;|                'abcdef'[0..2]  # =&gt; 'abc'
+                |&lt;-----&gt;|    'abcdef'[4..5]  # =&gt; 'ef'
+        |&lt;---------&gt;|        'abcdef'[2..4]  # =&gt; 'cde'
+</pre>
+<p>
+range.last が文字列の長さ以上のときは
+(文字列の長さ - 1) を指定したものとみなされます。
+</p>
+<p>
+range.first が 0 より小さいか文字列の長さより大きいときは nil を
+返します。ただし range.first および range.last のどちらか
+または両方が負の数のときは一度だけ文字列の長さを足して
+再試行します。
+</p>
+<p>
+例:
+</p>
+<pre>
+'abcd'[ 2 ..  1] # =&gt; &quot;&quot;
+'abcd'[ 2 ..  2] # =&gt; &quot;c&quot;
+'abcd'[ 2 ..  3] # =&gt; &quot;cd&quot;
+'abcd'[ 2 ..  4] # =&gt; &quot;cd&quot;
+
+'abcd'[ 2 .. -1] # =&gt; &quot;cd&quot;   # str[f..-1] は「f 文字目から
+'abcd'[ 3 .. -1] # =&gt; &quot;d&quot;    # 文字列の最後まで」を表す慣用句
+
+'abcd'[ 1 ..  2] # =&gt; &quot;bc&quot;
+'abcd'[ 2 ..  2] # =&gt; &quot;c&quot;
+'abcd'[ 3 ..  2] # =&gt; &quot;&quot;
+'abcd'[ 4 ..  2] # =&gt; &quot;&quot;
+'abcd'[ 5 ..  2] # =&gt; nil
+
+'abcd'[-3 ..  2] # =&gt; &quot;bc&quot;
+'abcd'[-4 ..  2] # =&gt; &quot;abc&quot;
+'abcd'[-5 ..  2] # =&gt; nil
+</pre>
+<h3 >rangeオブジェクトが終端を含まない場合</h3>
+<p>
+文字列と「隙間」の関係については以下の模式図を参照してください。
+</p>
+<pre>
+ 0   1   2   3   4   5   6  (隙間番号)
+-6  -5  -4  -3  -2  -1      (負の隙間番号)
+ | a | b | c | d | e | f |
+ |&lt;---------&gt;|                'abcdef'[0...3]  # =&gt; 'abc'
+                 |&lt;-----&gt;|    'abcdef'[4...6]  # =&gt; 'ef'
+         |&lt;---------&gt;|        'abcdef'[2...5]  # =&gt; 'cde'
+</pre>
+<p>
+range.last が文字列の長さよりも大きいときは文字列の長さを
+指定したものとみなされます。
+</p>
+<p>
+range.first が 0 より小さいか文字列の長さより大きいときは nil を返します。
+ただし range.first と range.last のどちらかまたは両方が負の数
+であるときは一度だけ文字列の長さを足して再試行します。
+</p>
+<p>
+例:
+</p>
+<pre>
+'abcd'[ 2 ... 3] # =&gt; &quot;c&quot;
+'abcd'[ 2 ... 4] # =&gt; &quot;cd&quot;
+'abcd'[ 2 ... 5] # =&gt; &quot;cd&quot;
+
+'abcd'[ 1 ... 2] # =&gt; &quot;b&quot;
+'abcd'[ 2 ... 2] # =&gt; &quot;&quot;
+'abcd'[ 3 ... 2] # =&gt; &quot;&quot;
+'abcd'[ 4 ... 2] # =&gt; &quot;&quot;
+'abcd'[ 5 ... 2] # =&gt; nil
+
+'abcd'[-3 ... 2] # =&gt; &quot;b&quot;
+'abcd'[-4 ... 2] # =&gt; &quot;ab&quot;
+'abcd'[-5 ... 2] # =&gt; nil
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--5B--5D--3D"><code>self[nth] = val</code><span class="permalink">[<a href="../method/-string/i/=5b=5d=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-5B-5D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+nth 番目の文字を文字列 val で置き換えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] nth:</dt>
+<dd>
+置き換えたい文字の位置を指定します。
+</dd>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+置き換える文字列を指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+val を返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+buf = &quot;string&quot;
+buf[1] = &quot;!!&quot;
+p buf   # =&gt; &quot;s!!ring&quot;
+</pre>
+</dd>
+<dt class="method-heading" id="I_--5B--5D--3D"><code>self[nth, len] = val</code><span class="permalink">[<a href="../method/-string/i/=5b=5d=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-5B-5D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+nth 番目の文字から len 文字の部分文字列を文字列 val で置き換えます。
+</p>
+<p>
+len が0 の場合は、単にnthの位置から文字列の追加が行われます。
+nth が負の場合は文字列の末尾から数えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] nth:</dt>
+<dd>
+置き換えたい部分文字列の開始インデックス
+</dd>
+<dt class='method-param'>[PARAM] len:</dt>
+<dd>
+置き換えたい部分文字列の長さ
+</dd>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+指定範囲の部分文字列と置き換える文字列
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+val を返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+buf = &quot;string&quot;
+buf[1, 4] = &quot;!!&quot;
+p buf   # =&gt; &quot;s!!g&quot;
+
+buf = &quot;string&quot;
+buf[1, 0] = &quot;!!&quot;
+p buf   # =&gt; &quot;s!!tring&quot;
+</pre>
+</dd>
+<dt class="method-heading" id="I_--5B--5D--3D"><code>self[substr] = val</code><span class="permalink">[<a href="../method/-string/i/=5b=5d=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-5B-5D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中の substr に一致する最初の部分文字列を文字列 val で置き換えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] substr:</dt>
+<dd>
+置き換えたい部分文字列のパターンを示す文字列
+</dd>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+指定範囲の部分文字列と置き換える文字列
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+val を返します。
+</dd>
+<dt>[EXCEPTION] IndexError:</dt>
+<dd>
+self が部分文字列 substr を含まない場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+buf = &quot;string&quot;
+buf[&quot;trin&quot;] = &quot;!!&quot;
+p buf   # =&gt; &quot;s!!g&quot;
+
+buf = &quot;string&quot;
+buf[&quot;nosuchstring&quot;] = &quot;!!&quot;   # IndexError
+</pre>
+</dd>
+<dt class="method-heading" id="I_--5B--5D--3D"><code>self[regexp, nth] = val</code><span class="permalink">[<a href="../method/-string/i/=5b=5d=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-5B-5D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+正規表現 regexp の nth 番目の括弧にマッチする
+最初の部分文字列を文字列 val で置き換えます。
+</p>
+<p>
+nth が 0 の場合は、マッチした部分文字列全体を val で置き換えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] regexp:</dt>
+<dd>
+置き換えたい部分文字列のパターンを示す正規表現
+</dd>
+<dt class='method-param'>[PARAM] nth:</dt>
+<dd>
+置き換えたい部分文字列のパターンを示す正規表現レジスタの番号
+</dd>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+指定範囲の部分文字列と置き換えたい文字列
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+val を返します。
+</dd>
+<dt>[EXCEPTION] IndexError:</dt>
+<dd>
+正規表現がマッチしなかった場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+buf = &quot;def exec(cmd)&quot;
+buf[/def\s+(\w+)/, 1] = &quot;preprocess&quot;
+p buf    # =&gt; &quot;def preprocess(cmd)&quot;
+</pre>
+</dd>
+<dt class="method-heading" id="I_--5B--5D--3D"><code>self[regexp, name] = val</code><span class="permalink">[<a href="../method/-string/i/=5b=5d=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-5B-5D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+正規表現 regexp の name で指定した名前付きキャプチャにマッチする最初の
+部分文字列を文字列 val で置き換えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] regexp:</dt>
+<dd>
+置き換えたい部分文字列のパターンを示す正規表現
+</dd>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+置き換えたい部分文字列のパターンを示す正規表現レジスタを示す名前
+</dd>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+指定範囲の部分文字列と置き換えたい文字列
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+val を返します。
+</dd>
+<dt>[EXCEPTION] IndexError:</dt>
+<dd>
+name で指定した名前付きキャプチャが存在しない場合に発
+生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+s = &quot;FooBar&quot;
+s[/(?&lt;foo&gt;[A-Z]..)(?&lt;bar&gt;[A-Z]..)/, &quot;foo&quot;] = &quot;Baz&quot;
+p s # =&gt; &quot;BazBar&quot;
+</pre>
+</dd>
+<dt class="method-heading" id="I_--5B--5D--3D"><code>self[regexp] = val</code><span class="permalink">[<a href="../method/-string/i/=5b=5d=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-5B-5D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+正規表現 regexp にマッチした部分文字列全体を val で置き換えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] regexp:</dt>
+<dd>
+置き換えたい部分文字列のパターンを示す正規表現
+</dd>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+置き換えたい文字列
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+val を返します。
+</dd>
+<dt>[EXCEPTION] IndexError:</dt>
+<dd>
+正規表現がマッチしなかった場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+buf = &quot;string&quot;
+buf[/tr../] = &quot;!!&quot;
+p buf   # =&gt; &quot;s!!g&quot;
+</pre>
+</dd>
+<dt class="method-heading" id="I_--5B--5D--3D"><code>self[range] = val</code><span class="permalink">[<a href="../method/-string/i/=5b=5d=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-5B-5D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+rangeで指定したインデックスの範囲に含まれる部分文字列を文字列 val で置き換えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] range:</dt>
+<dd>
+置き換えたい範囲を示す <a href="../class/-range.html">Range</a> オブジェクト
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+val を返します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_ASCII_ONLY--3F"><code>ascii_only? -&gt; bool</code><span class="permalink">[<a href="../method/-string/i/ascii_only=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-ascii_only-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列がASCII文字のみで構成されている場合に true を返します。さもなくば
+false を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_B"><code>b -&gt; String</code><span class="permalink">[<a href="../method/-string/i/b.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-b">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の文字エンコーディングを ASCII-8BIT にした文字列を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_BYTES"><code>bytes -&gt; [Integer]</code><span class="permalink">[<a href="../method/-string/i/bytes.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-bytes">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>bytes {|byte| ... } -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+文字列の各バイトを数値の配列で返します。(self.each_byte.to_a と同じです)
+</p>
+<pre>
+&quot;str&quot;.bytes # =&gt; [115, 116, 114]
+</pre>
+<p>
+ブロックが指定された場合は <a href="../method/-string/i/each_byte.html">String#each_byte</a> と同じように動作しま
+す。ただし obsolete のため、ブロックを指定する場合は
+<a href="../method/-string/i/each_byte.html">String#each_byte</a> を使用してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/each_byte.html">String#each_byte</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_BYTESIZE"><code>bytesize -&gt; Integer</code><span class="permalink">[<a href="../method/-string/i/bytesize.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-bytesize">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列のバイト長を整数で返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+#coding:UTF-8
+# 実行結果は文字コードによって異なります。
+p &quot;いろは&quot;.size     #=&gt; 3
+p &quot;いろは&quot;.bytesize #=&gt; 9
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/size.html">String#size</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_BYTESLICE"><code>byteslice(nth) -&gt; String | nil</code><span class="permalink">[<a href="../method/-string/i/byteslice.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-byteslice">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+nth バイト目の文字を返します。nth が負の場合は文字列の末尾から数えます。
+引数が範囲外を指定した場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] nth:</dt>
+<dd>
+文字の位置を表す整数を指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+切り出した文字列を返します。戻り値の文字エンコーディングは自身
+と同じです。
+</dd>
+</dl>
+<pre>
+&quot;hello&quot;.byteslice(1)  # =&gt; &quot;e&quot;
+&quot;hello&quot;.byteslice(-1) # =&gt; &quot;o&quot;
+&quot;\u3042&quot;.byteslice(0) # =&gt; &quot;\xE3&quot;
+&quot;\u3042&quot;.byteslice(1) # =&gt; &quot;\x81&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/slice.html">String#slice</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_BYTESLICE"><code>byteslice(nth, len) -&gt; String | nil</code><span class="permalink">[<a href="../method/-string/i/byteslice.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-byteslice">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+nth バイト目から長さ len バイトの部分文字列を新しく作って返します。
+nth が負の場合は文字列の末尾から数えます。引数が範囲外を指定した場合は
+nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] nth:</dt>
+<dd>
+取得したい文字列の開始バイトを整数で指定します。
+</dd>
+<dt class='method-param'>[PARAM] len:</dt>
+<dd>
+取得したい文字列の長さを正の整数で指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+切り出した文字列を返します。戻り値の文字エンコーディングは自身
+と同じです。
+</dd>
+</dl>
+<pre>
+&quot;hello&quot;.byteslice(1, 2)              # =&gt; &quot;el&quot;
+&quot;\u3042\u3044\u3046&quot;.byteslice(0, 3) # =&gt; &quot;\u3042&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/slice.html">String#slice</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_BYTESLICE"><code>byteslice(range) -&gt; String | nil</code><span class="permalink">[<a href="../method/-string/i/byteslice.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-byteslice">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+range で指定したバイトの範囲に含まれる部分文字列を返します。引数が範囲
+外を指定した場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] range:</dt>
+<dd>
+取得したい文字列の範囲を示す Range オブジェクト
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+切り出した文字列を返します。戻り値の文字エンコーディングは自身
+と同じです。
+</dd>
+</dl>
+<pre>
+&quot;hello&quot;.byteslice(1..2)          # =&gt; &quot;el&quot;
+&quot;\x03\u3042\xff&quot;.byteslice(1..3) # =&gt; &quot;\u3042&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/slice.html">String#slice</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CAPITALIZE"><code>capitalize -&gt; String</code><span class="permalink">[<a href="../method/-string/i/capitalize.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-capitalize">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列先頭の文字を大文字に、残りを小文字に変更した文字列を返します。
+ただし、アルファベット以外の文字は位置に関わらず変更しません。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;foobar--&quot;.capitalize   # =&gt; &quot;Foobar--&quot;
+p &quot;fooBAR--&quot;.capitalize   # =&gt; &quot;Foobar--&quot;
+p &quot;FOOBAR--&quot;.capitalize   # =&gt; &quot;Foobar--&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/capitalize=21.html">String#capitalize!</a>, <a href="../method/-string/i/upcase.html">String#upcase</a>,
+     <a href="../method/-string/i/downcase.html">String#downcase</a>, <a href="../method/-string/i/swapcase.html">String#swapcase</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CAPITALIZE--21"><code>capitalize! -&gt; self | nil</code><span class="permalink">[<a href="../method/-string/i/capitalize=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-capitalize-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列先頭の文字を大文字に、残りを小文字に変更します。
+ただし、アルファベット以外の文字は位置に関わらず変更しません。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+capitalize! は self を変更して返しますが、
+変更が起こらなかった場合は nil を返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+str = &quot;foobar&quot;
+str.capitalize!
+p str   # =&gt; &quot;Foobar&quot;
+
+str = &quot;fooBAR&quot;
+str.capitalize!
+p str   # =&gt; &quot;Foobar&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/capitalize.html">String#capitalize</a>, <a href="../method/-string/i/upcase=21.html">String#upcase!</a>,
+     <a href="../method/-string/i/downcase=21.html">String#downcase!</a>, <a href="../method/-string/i/swapcase=21.html">String#swapcase!</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CASECMP"><code>casecmp(other) -&gt; Integer | nil</code><span class="permalink">[<a href="../method/-string/i/casecmp.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-casecmp">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-string/i/=3c=3d=3e.html">String#&lt;=&gt;</a> と同様に文字列の順序を比較しますが、
+アルファベットの大文字小文字の違いを無視します。
+</p>
+<p>
+このメソッドの動作は組み込み変数 <a href="../method/-kernel/v/=3d.html">$=</a> には影響されません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+self と比較する文字列
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p 'a' &lt;=&gt; 'A'       # =&gt; 1
+p 'a'.casecmp('A')  # =&gt; 0
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/=3c=3d=3e.html">String#&lt;=&gt;</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CASECMP--3F"><code>casecmp?(other) -&gt; bool | nil</code><span class="permalink">[<a href="../method/-string/i/casecmp=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-casecmp-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+大文字小文字の違いを無視し文字列を比較します。
+文字列が一致する場合には true を返し、一致しない場合には false を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+self と比較する文字列
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+&quot;abcdef&quot;.casecmp?(&quot;abcde&quot;)     #=&gt; false
+&quot;aBcDeF&quot;.casecmp?(&quot;abcdef&quot;)    #=&gt; true
+&quot;abcdef&quot;.casecmp?(&quot;abcdefg&quot;)   #=&gt; false
+&quot;abcdef&quot;.casecmp?(&quot;ABCDEF&quot;)    #=&gt; true
+&quot;\u{e4 f6 fc}&quot;.casecmp?(&quot;\u{c4 d6 dc}&quot;) #=&gt; true
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/casecmp.html">String#casecmp</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CENTER"><code>center(width, padding = ' ') -&gt; String</code><span class="permalink">[<a href="../method/-string/i/center.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-center">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+長さ width の文字列に self を中央寄せした文字列を返します。
+self の長さが width より長い時には元の文字列の複製を返します。
+また、第 2 引数 padding を指定したときは
+空白文字の代わりに padding を詰めます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] width:</dt>
+<dd>
+返り値の文字列の最小の長さ
+</dd>
+<dt class='method-param'>[PARAM] padding:</dt>
+<dd>
+長さが width になるまで self の両側に詰める文字
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;foo&quot;.center(10)       # =&gt; &quot;   foo    &quot;
+p &quot;foo&quot;.center(9)        # =&gt; &quot;   foo   &quot;
+p &quot;foo&quot;.center(8)        # =&gt; &quot;  foo   &quot;
+p &quot;foo&quot;.center(7)        # =&gt; &quot;  foo  &quot;
+p &quot;foo&quot;.center(3)        # =&gt; &quot;foo&quot;
+p &quot;foo&quot;.center(2)        # =&gt; &quot;foo&quot;
+p &quot;foo&quot;.center(1)        # =&gt; &quot;foo&quot;
+p &quot;foo&quot;.center(10, &quot;*&quot;)  # =&gt; &quot;***foo****&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/ljust.html">String#ljust</a>, <a href="../method/-string/i/rjust.html">String#rjust</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CHARS"><code>chars -&gt; [String]</code><span class="permalink">[<a href="../method/-string/i/chars.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-chars">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>chars {|cstr| block } -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+文字列の各文字を文字列の配列で返します。(self.each_char.to_a と同じです)
+</p>
+<pre>
+&quot;hello世界&quot;.chars # =&gt; [&quot;h&quot;, &quot;e&quot;, &quot;l&quot;, &quot;l&quot;, &quot;o&quot;, &quot;世&quot;, &quot;界&quot;]
+</pre>
+<p>
+ブロックが指定された場合は <a href="../method/-string/i/each_char.html">String#each_char</a> と同じように動作しま
+す。ただし obsolete のため、ブロックを指定する場合は
+<a href="../method/-string/i/each_char.html">String#each_char</a> を使用してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/each_char.html">String#each_char</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CHOMP"><code>chomp(rs = $/) -&gt; String</code><span class="permalink">[<a href="../method/-string/i/chomp.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-chomp">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の末尾から rs で指定する改行コードを取り除いた文字列を生成して返します。
+ただし、rs が &quot;\n&quot; ($/ のデフォルト値) のときは、
+実行環境によらず &quot;\r&quot;, &quot;\r\n&quot;, &quot;\n&quot; のすべてを改行コードとみなして取り除きます。
+</p>
+<p>
+rs に nil を指定した場合、このメソッドは何もしません。
+</p>
+<p>
+rs に空文字列 (&quot;&quot;) を指定した場合は「パラグラフモード」になり、
+末尾の連続する改行コードをすべて取り除きます。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;foo\n&quot;.chomp             # =&gt; &quot;foo&quot;
+p &quot;foo\n&quot;.chomp(&quot;\n&quot;)       # =&gt; &quot;foo&quot;
+p &quot;foo\r\n&quot;.chomp(&quot;\r\n&quot;)   # =&gt; &quot;foo&quot;
+
+$/ = &quot;\n&quot;   # デフォルト値と同じ
+p &quot;foo\r&quot;.chomp    # =&gt; &quot;foo&quot;
+p &quot;foo\r\n&quot;.chomp  # =&gt; &quot;foo&quot;
+p &quot;foo\n&quot;.chomp    # =&gt; &quot;foo&quot;
+p &quot;foo\n\r&quot;.chomp  # =&gt; &quot;foo\n&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CHOMP--21"><code>chomp!(rs = $/) -&gt; self | nil</code><span class="permalink">[<a href="../method/-string/i/chomp=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-chomp-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の末尾から rs で指定する改行コードを取り除きます。
+ただし rs が &quot;\n&quot; ($/ のデフォルト値) のときは、
+システムによらず &quot;\r&quot;, &quot;\r\n&quot;, &quot;\n&quot; のすべてを改行コードとみなして取り除きます。
+</p>
+<p>
+rs に nil を指定した場合、このメソッドは何もしません。
+</p>
+<p>
+rs に空文字列 (&quot;&quot;) を指定した場合は「パラグラフモード」になり、
+末尾の連続する改行コードをすべて取り除きます。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+chomp! は通常 self を返しますが、取り除く改行がなかった場合は nil を返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+buf = &quot;string\n&quot;
+buf.chomp!
+p buf   # =&gt; &quot;string&quot;
+
+$/ = &quot;\n&quot;   # デフォルトと同じ
+p &quot;foo\r&quot;.chomp!    # =&gt; &quot;foo&quot;
+p &quot;foo\r\n&quot;.chomp!  # =&gt; &quot;foo&quot;
+p &quot;foo\n&quot;.chomp!    # =&gt; &quot;foo&quot;
+p &quot;foo\n\r&quot;.chomp!  # =&gt; &quot;foo\n&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CHOP"><code>chop -&gt; String</code><span class="permalink">[<a href="../method/-string/i/chop.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-chop">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列の最後の文字を取り除いた新しい文字列を生成して返します。
+ただし、文字列の終端が &quot;\r\n&quot; であればその 2 文字を取り除きます。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;string\n&quot;.chop    # =&gt; &quot;string&quot;
+p &quot;string\r\n&quot;.chop  # =&gt; &quot;string&quot;
+p &quot;string&quot;.chop      # =&gt; &quot;strin&quot;
+p &quot;strin&quot;.chop       # =&gt; &quot;stri&quot;
+p &quot;&quot;.chop            # =&gt; &quot;&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CHOP--21"><code>chop! -&gt; self | nil</code><span class="permalink">[<a href="../method/-string/i/chop=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-chop-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列の最後の文字を取り除きます。
+ただし、終端が &quot;\r\n&quot; であればその 2 文字を取り除きます。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+chop! は self を変更して返しますが、取り除く文字がなかった場合は nil を返します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_CHR"><code>chr -&gt; String</code><span class="permalink">[<a href="../method/-string/i/chr.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-chr">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の最初の文字だけを含む文字列を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/ord.html">String#ord</a>, <a href="../method/-integer/i/chr.html">Integer#chr</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CLEAR"><code>clear -&gt; self</code><span class="permalink">[<a href="../method/-string/i/clear.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-clear">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列の内容を削除して空にします。
+self を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+str = &quot;abc&quot;
+str.clear
+p str     # =&gt; &quot;&quot;
+
+str = &quot;&quot;
+str.clear
+p str   # =&gt; &quot;&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CODEPOINTS"><code>codepoints -&gt; [Integer]</code><span class="permalink">[<a href="../method/-string/i/codepoints.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-codepoints">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>codepoints {|codepoint| block } -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+文字列の各コードポイントの配列を返します。(self.each_codepoint.to_a と同じです)
+</p>
+<pre>
+#coding:UTF-8
+&quot;hello わーるど&quot;.codepoints
+# =&gt; [104, 101, 108, 108, 111, 32, 12431, 12540, 12427, 12393]
+</pre>
+<p>
+ブロックが指定された場合は <a href="../method/-string/i/each_codepoint.html">String#each_codepoint</a> と同じように動作
+します。ただし obsolete のため、ブロックを指定する場合は
+<a href="../method/-string/i/each_codepoint.html">String#each_codepoint</a> を使用してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/each_codepoint.html">String#each_codepoint</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_COUNT"><code>count(*chars) -&gt; Integer</code><span class="permalink">[<a href="../method/-string/i/count.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-count">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+chars で指定された文字が文字列 self にいくつあるか数えます。
+</p>
+<p>
+検索する文字を示す引数 chars の形式は <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/utilities/tr.html">tr(1)</a> と同じです。
+つまり、「&quot;a-c&quot;」は文字 a から c を意味し、
+「&quot;^0-9&quot;」のように文字列の先頭が「^」の場合は
+指定文字以外を意味します。
+</p>
+<p>
+文字「-」は文字列の両端にない場合にだけ範囲指定の意味になります。
+同様に、「^」も文字列の先頭にあるときだけ否定の効果を発揮します。
+また、「-」「^」「\」は
+バックスラッシュ (「\」) によりエスケープできます。
+</p>
+<p>
+引数を複数指定した場合は、
+すべての引数にマッチした文字だけを数えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] chars:</dt>
+<dd>
+出現回数を数える文字のパターン
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p 'abcdefg'.count('c')               # =&gt; 1
+p '123456789'.count('2378')          # =&gt; 4
+p '123456789'.count('2-8', '^4-6')   # =&gt; 4
+
+# ファイルの行数を数える
+n_lines = File.open(&quot;foo&quot;).read.count(&quot;\n&quot;)
+
+# ファイルの末尾に改行コードがない場合にも対処する
+buf = File.open(&quot;foo&quot;).read
+n_lines = buf.count(&quot;\n&quot;)
+n_lines += 1 if /[^\n]\z/ =~ buf
+    # if /\n\z/ !~ buf だと空ファイルを 1 行として数えてしまうのでダメ
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CRYPT"><code>crypt(salt) -&gt; String</code><span class="permalink">[<a href="../method/-string/i/crypt.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-crypt">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self と salt から暗号化された文字列を生成して返します。
+salt には英数字、ドット (「.」)、スラッシュ (「/」) から構成される、
+2 バイト以上の文字列を指定します。
+</p>
+<p>
+暗号化された文字列から暗号化前の文字列 (self) を求めることは一般に困難で、
+self を知っている者のみが同じ暗号化された文字列を生成できます。
+このことから self を知っているかどうかの認証に使うことが出来ます。
+</p>
+<p>
+salt には、以下の様になるべくランダムな文字列を選ぶべきです。
+他にも <a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-list/29297">[ruby-list:29297]</a> などがあります。
+</p>
+<p>
+注意:
+</p>
+<ul>
+<li>crypt の処理は <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/crypt.html">crypt(3)</a> の実装に依存しています。
+従って、crypt で処理される内容の詳細や salt の与え方については、
+利用環境の <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/crypt.html">crypt(3)</a> 等を見て確認してください。</li>
+<li>crypt の結果は利用環境が異なると変わる場合があります。
+crypt の結果を、異なる利用環境間で使用する場合には注意して下さい。</li>
+<li>典型的な DES を使用した <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/crypt.html">crypt(3)</a> の場合、
+self の最初の 8 バイト、salt の最初の 2 バイトだけが使用されます。</li>
+</ul>
+<dl>
+<dt class='method-param'>[PARAM] salt:</dt>
+<dd>
+文字列を暗号化するための鍵となる文字列。
+英数字・「.」・「/」のいずれかで構成される 2 バイト以上の文字列
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+# パスワードの暗号化
+salt = [rand(64),rand(64)].pack(&quot;C*&quot;).tr(&quot;\x00-\x3f&quot;,&quot;A-Za-z0-9./&quot;)
+passwd.crypt(salt)
+
+# UNIX のログイン認証
+require 'etc'
+
+def valid_login?(user, password)
+  ent = Etc.getpwnam(user)
+  password.crypt(ent.passwd) == ent.passwd
+end
+
+p valid_login?(&quot;taro&quot;, &quot;password&quot;)   # =&gt; 真偽値が得られる
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_DELETE"><code>delete(*strs) -&gt; String</code><span class="permalink">[<a href="../method/-string/i/delete.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-delete">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self から strs に含まれる文字を取り除いた文字列を生成して返します。
+</p>
+<p>
+str の形式は <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/utilities/tr.html">tr(1)</a> と同じです。
+つまり、`a-c' は a から c を意味し、&quot;^0-9&quot; のように
+文字列の先頭が `^' の場合は指定文字以外を意味します。
+</p>
+<p>
+「-」は文字列の両端にない場合にだけ範囲指定の意味になります。
+「^」も文字列の先頭にあるときだけ効果を発揮します。
+また、「-」「^」「\」はバックスラッシュ (「\」)
+によってエスケープできます。
+</p>
+<p>
+なお、引数を複数指定した場合は、
+すべての引数にマッチする文字だけが削除されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] strs:</dt>
+<dd>
+削除する文字列を示す文字列 (のリスト)
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;123456789&quot;.delete(&quot;2378&quot;)         #=&gt; &quot;14569&quot;
+p &quot;123456789&quot;.delete(&quot;2-8&quot;, &quot;^4-6&quot;)  #=&gt; &quot;14569&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_DELETE--21"><code>delete!(*strs) -&gt; self | nil</code><span class="permalink">[<a href="../method/-string/i/delete=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-delete-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self から strs に含まれる文字を破壊的に取り除きます。
+</p>
+<p>
+str の形式は <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/utilities/tr.html">tr(1)</a> と同じです。
+つまり、「a-c」は a から c を意味し、&quot;^0-9&quot; のように
+文字列の先頭が「^」の場合は指定文字以外を意味します。
+</p>
+<p>
+「-」は文字列の両端にない場合にだけ範囲指定の意味になります。
+「^」も文字列先頭にあるときだけ否定の効果を発揮します。
+また、「-」「^」「\」はバックスラッシュ (「\」)
+によってエスケープできます。
+</p>
+<p>
+なお、引数を複数指定した場合は、
+すべての引数にマッチする文字だけが削除されます。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+通常は self を返しますが、何も変更が起こらなかった場合は nil を返します。
+</dd>
+<dt class='method-param'>[PARAM] strs:</dt>
+<dd>
+削除する文字列を示す文字列 (のリスト)
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;123456789&quot;.delete(&quot;2-8&quot;, &quot;^4-6&quot;)  #=&gt; &quot;14569&quot;
+p &quot;123456789&quot;.delete(&quot;2378&quot;)         #=&gt; &quot;14569&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_DOWNCASE"><code>downcase -&gt; String</code><span class="permalink">[<a href="../method/-string/i/downcase.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-downcase">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+'A' から 'Z' までの
+アルファベット大文字をすべて小文字に置き換えた新しい文字列を生成して返します。
+アルファベット大文字以外の文字はすべてそのまま保存されます。
+</p>
+<p>
+このメソッドはマルチバイト文字列を認識しますが、
+それはあくまでも「1 文字を 1 文字として認識する」だけであって、
+いわゆる全角アルファベットの大文字小文字までは変換しません。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;STRing?&quot;.downcase   # =&gt; &quot;string?&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/downcase=21.html">String#downcase!</a>, <a href="../method/-string/i/upcase.html">String#upcase</a>, <a href="../method/-string/i/swapcase.html">String#swapcase</a>, <a href="../method/-string/i/capitalize.html">String#capitalize</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DOWNCASE--21"><code>downcase! -&gt; self | nil</code><span class="permalink">[<a href="../method/-string/i/downcase=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-downcase-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中の 'A' から 'Z' までの
+アルファベット大文字をすべて破壊的に小文字に置き換えます。
+アルファベット大文字以外の文字はすべてそのまま保存されます。
+</p>
+<p>
+このメソッドはマルチバイト文字列を認識しますが、
+それはあくまでも「1 文字を 1 文字として認識する」だけであって、
+いわゆる全角アルファベットの大文字小文字までは変換しません。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+self を変更して返します。変更が無かった場合は nil を返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+str = &quot;STRing?&quot;
+str.downcase!
+p str   # =&gt; &quot;string?&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/downcase.html">String#downcase</a>, <a href="../method/-string/i/upcase=21.html">String#upcase!</a>, <a href="../method/-string/i/swapcase=21.html">String#swapcase!</a>, <a href="../method/-string/i/capitalize=21.html">String#capitalize!</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DUMP"><code>dump -&gt; String</code><span class="permalink">[<a href="../method/-string/i/dump.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-dump">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中の非表示文字をバックスラッシュ記法に置き換えた文字列を返します。
+str == eval(str.dump) となることが保証されています。
+</p>
+<p>
+例:
+</p>
+<pre>
+# p だとさらにバックスラッシュが増えて見にくいので puts している
+puts &quot;abc\r\n\f\x00\b10\\\&quot;&quot;.dump   # =&gt; &quot;abc\r\n\f\000\01010\\\&quot;&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_BYTE"><code>each_byte {|byte| ... } -&gt; self</code><span class="permalink">[<a href="../method/-string/i/each_byte.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-each_byte">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_byte -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+文字列の各バイトに対して繰り返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+&quot;str&quot;.each_byte do |byte|
+  p byte
+end
+    # =&gt; 115
+    # =&gt; 116
+    # =&gt; 114
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/bytes.html">String#bytes</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_CHAR"><code>each_char {|cstr| block } -&gt; self</code><span class="permalink">[<a href="../method/-string/i/each_char.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-each_char">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_char -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+文字列の各文字に対して繰り返します。
+</p>
+<p>
+たとえば、
+</p>
+<pre>
+&quot;hello世界&quot;.each_char {|c| print c, ' ' }
+</pre>
+<p>
+は次のように出力されます。
+</p>
+<pre>
+h e l l o 世 界
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/chars.html">String#chars</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_CODEPOINT"><code>each_codepoint {|codepoint| block } -&gt; self</code><span class="permalink">[<a href="../method/-string/i/each_codepoint.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-each_codepoint">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_codepoint -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+文字列の各コードポイントに対して繰り返します。
+</p>
+<pre>
+#coding:UTF-8
+&quot;hello わーるど&quot;.each_codepoint.to_a
+# =&gt; [104, 101, 108, 108, 111, 32, 12431, 12540, 12427, 12393]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/codepoints.html">String#codepoints</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_LINE"><code>each_line(rs = $/) {|line| ... } -&gt; self</code><span class="permalink">[<a href="../method/-string/i/each_line.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-each_line">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_line(rs = $/) -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+文字列中の各行に対して繰り返します。
+行の区切りは rs に指定した文字列で、
+そのデフォルト値は変数 <a href="../method/-kernel/v/=2f.html">$/</a> の値です。
+各 line には区切りの文字列も含みます。
+</p>
+<p>
+rs に nil を指定すると行区切りなしとみなします。
+rs に空文字列 &quot;&quot; を指定すると「パラグラフモード」になり、
+改行コードが 2 つ以上連続するところで文字列を分割します
+(つまり空行で分割します)。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] rs:</dt>
+<dd>
+行末を示す文字列
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+&quot;aa\nbb\ncc\n&quot;.each_line do |line|
+  p line
+end
+    # =&gt; &quot;aa\n&quot;
+    # =&gt; &quot;bb\n&quot;
+    # =&gt; &quot;cc\n&quot;
+
+p &quot;aa\nbb\ncc\n&quot;.lines.to_a   # =&gt; [&quot;aa\n&quot;, &quot;bb\n&quot;, &quot;cc\n&quot;]
+p &quot;aa\n&quot;.lines.to_a           # =&gt; [&quot;aa\n&quot;]
+p &quot;&quot;.lines.to_a               # =&gt; []
+
+s = &quot;aa\nbb\ncc\n&quot;
+p s.lines(&quot;\n&quot;).to_a #=&gt; [&quot;aa\n&quot;, &quot;bb\n&quot;, &quot;cc\n&quot;]
+p s.lines(&quot;bb&quot;).to_a #=&gt; [&quot;aa\nbb&quot;, &quot;\ncc\n&quot;]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/lines.html">String#lines</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EMPTY--3F"><code>empty? -&gt; bool</code><span class="permalink">[<a href="../method/-string/i/empty=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-empty-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列が空 (つまり長さ 0) の時、真を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ENCODE"><code>encode(encoding, options = nil) -&gt; String</code><span class="permalink">[<a href="../method/-string/i/encode.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-encode">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>encode(encoding, from_encoding, options = nil) -&gt; String</code></dt>
+<dt class="method-heading"><code>encode(options = nil) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+self を指定したエンコーディングに変換した文字列を作成して返します。引数
+を2つ与えた場合、第二引数は変換元のエンコーディングを意味します。さもな
+くば self のエンコーディングが使われます。
+無引数の場合は、<a href="../method/-encoding/s/default_internal.html">Encoding.default_internal</a> が nil でなければそれが変換先のエンコーディングになり、かつ :invalid =&gt; replace と :undef =&gt; replace が指定されたと見なされ、nil ならば変換は行われません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] encoding:</dt>
+<dd>
+変換先のエンコーディングを表す文字列か <a href="../class/-encoding.html">Encoding</a> オブジェクトを指定します。
+</dd>
+<dt class='method-param'>[PARAM] from_encoding:</dt>
+<dd>
+変換元のエンコーディングを表す文字列か <a href="../class/-encoding.html">Encoding</a> オブジェクトを指定します。
+</dd>
+<dt class='method-param'>[PARAM] option:</dt>
+<dd>
+変換オプションをハッシュで与えます。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+変換された文字列
+</dd>
+</dl>
+<p>
+変換オプション
+</p>
+<dl>
+<dt>:invalid =&gt; nil</dt>
+<dd>
+<p>
+変換元のエンコーディングにおいて不正なバイトがあった場合に、例外 <a href="../class/-encoding=3a=3a-invalid-byte-sequence-error.html">Encoding::InvalidByteSequenceError</a> を投げます。(デフォルト)
+</p>
+</dd>
+<dt>:invalid =&gt; :replace</dt>
+<dd>
+<p>
+変換元のエンコーディングにおいて不正なバイトがあった場合に、不正なバイトを置換文字で置き換えます。
+</p>
+</dd>
+<dt>:undef =&gt; nil</dt>
+<dd>
+<p>
+変換先のエンコーディングにおいて文字が定義されていない場合に、例外 <a href="../class/-encoding=3a=3a-undefined-conversion-error.html">Encoding::UndefinedConversionError</a> を投げます。(デフォルト)
+</p>
+</dd>
+<dt>:undef =&gt; :replace</dt>
+<dd>
+<p>
+変換先のエンコーディングにおいて文字が定義されていない場合に、未定義文字を置換文字で置き換えます。
+</p>
+</dd>
+<dt>:replace =&gt; string</dt>
+<dd>
+<p>
+前述の :invalid =&gt; :replace や :undef =&gt; :replace で用いられる置換文字を指定します。デフォルトは Unicode 系のエンコーディングならば U+FFFD、それ以外では &quot;?&quot; です。
+</p>
+</dd>
+<dt>:fallback =&gt; Hash | Proc | Method</dt>
+<dd>
+<p>
+未定義の文字に対する置換文字を設定します。このオプションに与えられるオブジェクトは <a href="../class/-hash.html">Hash</a>, <a href="../class/-proc.html">Proc</a>, <a href="../class/-method.html">Method</a> のいずれかまたは [] メソッドを持つオブジェクトです。
+キーは現在のトランスコーダのソースエンコーディングで未定義の文字です。値は、変換先のエンコーディングでの変換後の文字です。
+</p>
+</dd>
+<dt>:xml =&gt; :text</dt>
+<dd>
+<p>
+文字列を XML の CharData として適するように処理します。具体的には、'&amp;'、'&lt;'、'&gt;'、をそれぞれ '&amp;amp;'、'&amp;lt;'、'&amp;gt;' に変換し、未定義文字を文字参照 (大文字16進数) に置き換えます。この出力は HTML の #PCDATA として利用することもできます。
+</p>
+</dd>
+<dt>:xml =&gt; :attr</dt>
+<dd>
+<p>
+文字列を XML の AttValue として適するように処理します。具体的には、'&amp;'、'&lt;'、'&gt;'、'&quot;'、をそれぞれ '&amp;amp;'、'&amp;lt;'、'&amp;gt;'、'&amp;quot;' に変換し、未定義文字を文字参照 (大文字16進数) に置き換えます。この出力は HTML の属性値として利用することもできます。
+</p>
+</dd>
+<dt>:universal_newline =&gt; true</dt>
+<dd>
+<p>
+CR 改行および CRLF 改行を LF 改行に置き換えます。
+</p>
+</dd>
+<dt>:cr_newline =&gt; true</dt>
+<dd>
+<p>
+LF 改行を CR 改行に置き換えます。(CRLF は CRCR になります)
+</p>
+</dd>
+<dt>:crlf_newline =&gt; true</dt>
+<dd>
+<p>
+LF 改行を CRLF 改行に置き換えます。(CRLF は CRCRLF になります)
+</p>
+</dd>
+</dl>
+<p>
+これ以上細かい指定を行いたい場合は、<a href="../method/-encoding=3a=3a-converter/i/convert.html">Encoding::Converter#convert</a> を用いましょう。
+</p>
+<p>
+例:
+</p>
+<pre>
+#coding:UTF-8
+s = &quot;いろは&quot;
+s.encode(&quot;EUC-JP&quot;)
+s.encode(Encoding::UTF_8)
+
+# U+00B7 MIDDLE DOT, U+2014 EM DASH は対応する文字が Windows-31J には
+# 存在しないのでそのまま変換しようとすると Encoding::UndefinedConversionError が発生する
+str = &quot;\u00b7\u2014&quot;
+str.encode(&quot;Windows-31J&quot;, fallback: { &quot;\u00b7&quot; =&gt; &quot;\xA5&quot;.force_encoding(&quot;Windows-31J&quot;),
+                                      &quot;\u2014&quot; =&gt; &quot;\x{815C}&quot;.force_encoding(&quot;Windows-31J&quot;) })
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/encode=21.html">String#encode!</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ENCODE--21"><code>encode!(encoding, options = nil) -&gt; self</code><span class="permalink">[<a href="../method/-string/i/encode=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-encode-21">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>encode!(encoding, from_encoding, options = nil) -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+self を指定したエンコーディングに変換し、自身を置き換えます。引数を2つ
+与えた場合、第二引数は変換元のエンコーディングを意味します。さもなくば
+self のエンコーディングが使われます。変換後の self を返します。
+</p>
+<p>
+(gsub!などと異なり)変換が行なわれなくても self を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] encoding:</dt>
+<dd>
+変換先のエンコーディングを表す文字列か Encoding オブジェクトを指定します。
+</dd>
+<dt class='method-param'>[PARAM] from_encoding:</dt>
+<dd>
+変換元のエンコーディングを表す文字列か Encoding オブジェクトを指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+変換後のself
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+#coding:UTF-8
+s = &quot;いろは&quot;
+s.encode!(&quot;EUC-JP&quot;)
+s.encode!(Encoding::UTF_8)
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/encode.html">String#encode</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ENCODING"><code>encoding -&gt; Encoding</code><span class="permalink">[<a href="../method/-string/i/encoding.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-encoding">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列のエンコーディング情報を表現した Encoding オブジェクトを返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../class/-encoding.html">Encoding</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_END_WITH--3F"><code>end_with?(*strs) -&gt; bool</code><span class="permalink">[<a href="../method/-string/i/end_with=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-end_with-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の末尾が strs のいずれかであるとき true を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] strs:</dt>
+<dd>
+パターンを表す文字列 (のリスト)
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+&quot;string&quot;.end_with?(&quot;ing&quot;)          # =&gt; true
+&quot;string&quot;.end_with?(&quot;str&quot;)          # =&gt; false
+&quot;string&quot;.end_with?(&quot;str&quot;, &quot;ing&quot;)   # =&gt; true
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/start_with=3f.html">String#start_with?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EQL--3F"><code>eql?(other) -&gt; bool</code><span class="permalink">[<a href="../method/-string/i/eql=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-eql-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列の内容が文字列 other の内容と等しいときに true を返します。
+等しくなければ false を返します。
+</p>
+<p>
+このメソッドは文字列の内容を比較します。
+同一のオブジェクトかどうかを比較するわけではありません。
+つまり、&quot;string&quot;.eql?(str) という式を実行した場合には、
+str が &quot;string&quot; という内容の文字列でありさえすれば常に true を返します。
+同一のオブジェクトであるかどうかを判定したいときは
+<a href="../method/-object/i/equal=3f.html">Object#equal?</a> を使ってください。
+</p>
+<p>
+アルファベットの大文字小文字を無視して比較したい場合は、<a href="../method/-string/i/upcase.html">String#upcase</a>,
+<a href="../method/-string/i/downcase.html">String#downcase</a> で大文字小文字を揃えてから比較してください。
+</p>
+<p>
+<a href="../class/-hash.html">Hash</a> クラス内での比較に使われます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+任意のオブジェクト
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+true か false
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;string&quot;.eql?(&quot;string&quot;)  # =&gt; true
+p &quot;string&quot;.eql?(&quot;STRING&quot;)  # =&gt; false
+p &quot;string&quot;.eql?(&quot;&quot;)        # =&gt; false
+p &quot;&quot;.eql?(&quot;string&quot;)        # =&gt; false
+
+p &quot;string&quot;.eql?(&quot;str&quot; + &quot;ing&quot;)   # =&gt; true   (内容が同じなら true)
+p &quot;string&quot;.eql?(&quot;stringX&quot;.chop)  # =&gt; true   (内容が同じなら true)
+
+p &quot;string&quot;.upcase.eql?(&quot;String&quot;.upcase)     # =&gt; true
+p &quot;string&quot;.downcase.eql?(&quot;String&quot;.downcase) # =&gt; true
+</pre>
+<p>
+[SEE_ALSO] <a href="../class/-hash.html">Hash</a>, <a href="../method/-string/i/=3c=3d=3e.html">String#&lt;=&gt;</a>, <a href="../method/-string/i/casecmp.html">String#casecmp</a>, <a href="../method/-string/i/=3d=3d.html">String#==</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FORCE_ENCODING"><code>force_encoding(encoding) -&gt; self</code><span class="permalink">[<a href="../method/-string/i/force_encoding.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-force_encoding">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列の持つエンコーディング情報を指定された encoding に変えます。
+</p>
+<p>
+このとき実際のエンコーディングは変換されず、検査もされません。
+<a href="../method/-array/i/pack.html">Array#pack</a> などで得られたバイト列のエンコーディングを指定する時に使います。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] encoding:</dt>
+<dd>
+変更するエンコーディング情報を表す文字列か Encoding オブジェクトを指定します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+s = [164, 164, 164, 237, 164, 207].pack(&quot;C*&quot;)
+p s.encoding                                  #=&gt; ASCII-8BIT
+p s.force_encoding(&quot;EUC-JP&quot;)                  #=&gt; &quot;いろは&quot;
+
+u = [12411, 12408, 12392].pack(&quot;U*&quot;)
+u.force_encoding(&quot;UTF-8&quot;)                     #=&gt; &quot;ほへと&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_GETBYTE"><code>getbyte(index) -&gt; Integer | nil</code><span class="permalink">[<a href="../method/-string/i/getbyte.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-getbyte">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+index バイト目のバイトを整数で返します。
+</p>
+<p>
+index に負を指定すると末尾から数えた位置のバイト
+を取り出します。
+範囲外を指定した場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] index:</dt>
+<dd>
+バイトを取り出す位置
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_GSUB"><code>gsub(pattern, replace) -&gt; String</code><span class="permalink">[<a href="../method/-string/i/gsub.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-gsub">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中で pattern にマッチする部分全てを
+文字列 replace で置き換えた文字列を生成して返します。
+</p>
+<p>
+置換文字列 replace 中の \&amp; と \0 はマッチした部分文字列に、
+\1 ... \9 は n 番目の括弧の内容に置き換えられます。
+置換文字列内では \`、\'、\+ も使えます。
+これらは <a href="../method/-kernel/v/=60.html">$`</a>、<a href="../method/-kernel/v/=27.html">$'</a>、<a href="../method/-kernel/v/=2b.html">$+</a> に対応します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターンを表す文字列か正規表現。
+文字列を指定した場合は全く同じ文字列にだけマッチする
+</dd>
+<dt class='method-param'>[PARAM] replace:</dt>
+<dd>
+pattern で指定した文字列と置き換える文字列
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p 'abcdefg'.gsub(/def/, '!!')          # =&gt; &quot;abc!!g&quot;
+p 'abcabc'.gsub(/b/, '&lt;&lt;\&amp;&gt;&gt;')         # =&gt; &quot;a&lt;&lt;b&gt;&gt;ca&lt;&lt;b&gt;&gt;c&quot;
+p 'xxbbxbb'.gsub(/x+(b+)/, 'X&lt;&lt;\1&gt;&gt;')  # =&gt; &quot;X&lt;&lt;bb&gt;&gt;X&lt;&lt;bb&gt;&gt;&quot;
+p '2.5'.gsub('.', ',') # =&gt; &quot;2,5&quot;
+</pre>
+<p>
+注意:
+</p>
+<p>
+第 2 引数 replace に <a href="../method/-kernel/v/1.html">$1</a> を埋め込んでも意図した結果にはなりません。
+この文字列が評価される時点ではまだ正規表現マッチが行われておらず、
+$1 がセットされていないからです。
+</p>
+<p>
+また、gsub では「\」が部分文字列との置き換えという特別な意味を持つため、
+replace に「\」自身を入れたいときは
+「\」を二重にエスケープしなければなりません。
+</p>
+<pre>
+# ひとつめの括弧の内容に置き換えるときによくある間違い
+p 'xbbb-xbbb'.gsub(/x(b+)/, &quot;#{$1}&quot;)   # =&gt; &quot;-&quot;        # NG
+p 'xbbb-xbbb'.gsub(/x(b+)/, &quot;\1&quot;)      # =&gt; &quot;1-1&quot;      # NG
+p 'xbbb-xbbb'.gsub(/x(b+)/, &quot;\\1&quot;)     # =&gt; &quot;bbb-bbb&quot;  # OK
+p 'xbbb-xbbb'.gsub(/x(b+)/, '\1')      # =&gt; &quot;bbb-bbb&quot;  # OK
+p 'xbbb-xbbb'.gsub(/x(b+)/, '\\1')     # =&gt; &quot;bbb-bbb&quot;  # OK
+
+# バックスラッシュを倍にするときによくある間違い
+puts '\n'.gsub(/\\/, &quot;\\\\&quot;)      # =&gt; \n   # NG
+puts '\n'.gsub(/\\/, '\\\\')      # =&gt; \n   # NG
+puts '\n'.gsub(/\\/, &quot;\\\\\\\\&quot;)  # =&gt; \\n  # OK
+puts '\n'.gsub(/\\/, '\\\\\\\\')  # =&gt; \\n  # OK
+</pre>
+<p>
+このような間違いを確実に防止し、コードの可読性を上げるには、
+\&amp; や \1 よりも下記のようにブロック付き形式の gsub を使うべきです。
+</p>
+<pre>
+p 'xbbb-xbbb'.gsub(/x(b+)/) { $1 }   # =&gt; &quot;bbb-bbb&quot;  # OK
+
+puts '\n'.gsub(/\\/) { '\\\\' }      # =&gt; \\n        # OK
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/sub.html">String#sub</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_GSUB"><code>gsub(pattern) {|matched| .... } -&gt; String</code><span class="permalink">[<a href="../method/-string/i/gsub.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-gsub">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>gsub(pattern) -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+文字列中で pattern にマッチした部分を順番にブロックに渡し、
+その実行結果で置き換えた文字列を生成して返します。
+ブロックなしの場合と違い、ブロックの中からは
+組み込み変数 <a href="../method/-kernel/v/1.html">$1</a>, $2, $3, ... を問題なく参照できます。
+</p>
+<p>
+なお、ブロック付きの gsub で文字列を置き換えない場合は[[String#scan]]
+と同じ動作になります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターンを表す文字列か正規表現。
+文字列を指定した場合は全く同じ文字列にだけマッチする
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+新しい文字列
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p 'abcabc'.gsub(/[bc]/) {|s| s.upcase }  #=&gt; &quot;aBCaBC&quot;
+p 'abcabc'.gsub(/[bc]/) { $&amp;.upcase }    #=&gt; &quot;aBCaBC&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/sub.html">String#sub</a>, <a href="../method/-string/i/scan.html">String#scan</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_GSUB"><code>gsub(pattern, hash) -&gt; String</code><span class="permalink">[<a href="../method/-string/i/gsub.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-gsub">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中の pattern にマッチした部分をキーにして hash を引いた値で置き換えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターン
+</dd>
+<dt class='method-param'>[PARAM] hash:</dt>
+<dd>
+置き換える文字列を与えるハッシュ
+</dd>
+</dl>
+<pre>
+hash = {'b'=&gt;'B', 'c'=&gt;'C'}
+p &quot;abcabc&quot;.gsub(/[bc]/){hash[$&amp;]} #=&gt; &quot;aBCaBC&quot;
+p &quot;abcabc&quot;.gsub(/[bc]/, hash)     #=&gt; &quot;aBCaBC&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_GSUB--21"><code>gsub!(pattern, replace) -&gt; self | nil</code><span class="permalink">[<a href="../method/-string/i/gsub=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-gsub-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中で pattern にマッチする部分全てを文字列 replace に破壊的に置き換えます。
+</p>
+<p>
+置換文字列 replace 中の \&amp; と \0 はマッチした部分文字列に、
+\1 ... \9 は n 番目の括弧の内容に置き換えられます。
+置換文字列内では \`、\'、\+ も使えます。
+これらは <a href="../method/-kernel/v/=60.html">$`</a>、<a href="../method/-kernel/v/=27.html">$'</a>、<a href="../method/-kernel/v/=2b.html">$+</a> に対応します。
+</p>
+<p>
+gsub! は通常 self を変更して返しますが、
+置換が起こらなかった場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターンを表す文字列か正規表現。
+文字列を指定した場合は全く同じ文字列にだけマッチする
+</dd>
+<dt class='method-param'>[PARAM] replace:</dt>
+<dd>
+pattern で指定した文字列と置き換える文字列
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+置換した場合は self、置換しなかった場合は nil
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+buf = &quot;String-String&quot;
+buf.gsub!(/in./, &quot;!!&quot;)
+p buf   # =&gt; &quot;Str!!-Str!!&quot;
+
+buf = &quot;String.String&quot;
+buf.gsub!(/in./, '&lt;&lt;\&amp;&gt;&gt;')
+p buf   # =&gt; &quot;Str&lt;&lt;ing&gt;&gt;-Str&lt;&lt;ing&gt;&gt;&quot;
+</pre>
+<p>
+注意:
+</p>
+<p>
+引数 replace の中で <a href="../method/-kernel/v/1.html">$1</a> を使うことはできません。
+replace は gsub メソッドの呼び出しより先に評価されるので、
+まだ gsub の正規表現マッチが行われておらず、
+$1 がセットされていないからです。
+</p>
+<p>
+また、gsub では「\」が部分文字列との置き換えという特別な意味を持つため、
+replace に「\」自身を入れたいときは
+「\」を二重にエスケープしなければなりません。
+</p>
+<p>
+例:
+</p>
+<pre>
+# ひとつめの括弧にマッチした部分に置き換えるときによくやる間違い
+'abbbcd'.gsub!(/a(b+)/, &quot;#{$1}&quot;)       # NG
+'abbbcd'.gsub!(/a(b+)/, &quot;\1&quot;)          # NG
+'abbbcd'.gsub!(/a(b+)/, &quot;\\1&quot;)         # OK
+'abbbcd'.gsub!(/a(b+)/, '\\1')         # OK
+'abbbcd'.gsub!(/a(b+)/, '\1')          # OK
+'abbbcd'.gsub!(/a(b+)/) { $1 }         # OK   これがもっとも安全
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/sub.html">String#sub</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_GSUB--21"><code>gsub!(pattern) {|matched| .... } -&gt; self | nil</code><span class="permalink">[<a href="../method/-string/i/gsub=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-gsub-21">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>gsub!(pattern) -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+文字列中で pattern にマッチする部分全てを順番にブロックに渡し、
+その評価結果に置き換えます。
+</p>
+<p>
+また、ブロックなしの場合と違い、ブロックの中からは
+組み込み変数 <a href="../method/-kernel/v/1.html">$1</a>, $2, $3, ... を問題なく参照できます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターンを表す文字列か正規表現。
+文字列を指定した場合は全く同じ文字列にだけマッチする
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+置換した場合は self、置換しなかった場合は nil
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+str = 'abcabc'
+str.gsub!(/b/) {|s| s.upcase }
+p str    #=&gt; &quot;aBcaBc&quot;
+
+str = 'abcabc'
+str.gsub!(/b/) { $&amp;.upcase }
+p str    #=&gt; &quot;aBcaBc&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/sub.html">String#sub</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_GSUB--21"><code>gsub!(pattern, hash) -&gt; self | nil</code><span class="permalink">[<a href="../method/-string/i/gsub=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-gsub-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中の pattern にマッチした部分をキーにして hash を引いた値へ破壊的に置き換えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターン
+</dd>
+<dt class='method-param'>[PARAM] hash:</dt>
+<dd>
+置き換える文字列を与えるハッシュ
+</dd>
+</dl>
+<pre>
+hash = {'b'=&gt;'B', 'c'=&gt;'C'}
+str = &quot;abcabc&quot;
+str.gsub!(/[bc]/){hash[$&amp;]}
+p str     #=&gt; &quot;aBCaBC&quot;
+
+str = &quot;abcabc&quot;
+str.gsub!(/[bc]/, hash)
+p str     #=&gt; &quot;aBCaBC&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_HASH"><code>hash -&gt; Integer</code><span class="permalink">[<a href="../method/-string/i/hash.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self のハッシュ値を返します。
+eql? で等しい文字列は、常にハッシュ値も等しくなります。
+</p>
+<p>
+[SEE_ALSO] <a href="../class/-hash.html">Hash</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_HEX"><code>hex -&gt; Integer</code><span class="permalink">[<a href="../method/-string/i/hex.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-hex">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列に 16 進数で数値が表現されていると解釈して整数に変換します。
+接頭辞 &quot;0x&quot;, &quot;0X&quot; とアンダースコアは無視されます。
+文字列が [_0-9a-fA-F] 以外の文字を含むときはその文字以降を無視します。
+</p>
+<p>
+self が空文字列のときは 0 を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;10&quot;.hex    # =&gt; 16
+p &quot;ff&quot;.hex    # =&gt; 255
+p &quot;0x10&quot;.hex  # =&gt; 16
+p &quot;-0x10&quot;.hex # =&gt; -16
+
+p &quot;xyz&quot;.hex   # =&gt; 0
+p &quot;10z&quot;.hex   # =&gt; 16
+p &quot;1_0&quot;.hex   # =&gt; 16
+
+p &quot;&quot;.hex      # =&gt; 0
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/oct.html">String#oct</a>, <a href="../method/-string/i/to_i.html">String#to_i</a>, <a href="../method/-string/i/to_f.html">String#to_f</a>,
+     <a href="../method/-kernel/m/-integer.html">Kernel.#Integer</a>, <a href="../method/-kernel/m/-float.html">Kernel.#Float</a>
+</p>
+<p>
+このメソッドの逆に数値を文字列に変換するには
+<a href="../method/-kernel/m/sprintf.html">Kernel.#sprintf</a>, <a href="../method/-string/i/=25.html">String#%</a>,
+<a href="../method/-integer/i/to_s.html">Integer#to_s</a>
+などを使ってください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INCLUDE--3F"><code>include?(substr) -&gt; bool</code><span class="permalink">[<a href="../method/-string/i/include=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-include-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中に部分文字列 substr が含まれていれば真を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] substr:</dt>
+<dd>
+検索する文字列
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_INDEX"><code>index(pattern, pos = 0) -&gt; Integer</code><span class="permalink">[<a href="../method/-string/i/index.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-index">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列のインデックス pos から右に向かって pattern を検索し、
+最初に見つかった部分文字列の左端のインデックスを返します。
+見つからなければ nil を返します。
+</p>
+<p>
+引数 pattern は探索する部分文字列または正規表現で指定します。
+</p>
+<p>
+pos が負の場合、文字列の末尾から数えた位置から探索します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+探索する部分文字列または正規表現
+</dd>
+<dt class='method-param'>[PARAM] pos:</dt>
+<dd>
+探索を開始するインデックス
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;astrochemistry&quot;.index(&quot;str&quot;)         # =&gt; 1
+p &quot;regexpindex&quot;.index(/e.*x/, 2)        # =&gt; 3
+p &quot;character&quot;.index(?c)                 # =&gt; 0
+
+p &quot;foobarfoobar&quot;.index(&quot;bar&quot;, 6)        # =&gt; 9
+p &quot;foobarfoobar&quot;.index(&quot;bar&quot;, -6)       # =&gt; 9
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/rindex.html">String#rindex</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INSERT"><code>insert(pos, other) -&gt; self</code><span class="permalink">[<a href="../method/-string/i/insert.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-insert">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+pos 番目の文字の直前に文字列 other を挿入します。
+self[pos, 0] = other と同じ操作です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pos:</dt>
+<dd>
+文字列を挿入するインデックス
+</dd>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+挿入する文字列
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+str = &quot;foobaz&quot;
+str.insert(3, &quot;bar&quot;)
+p str   # =&gt; &quot;foobarbaz&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/=5b=5d=3d.html">String#[]=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-string/i/inspect.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-inspect">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列オブジェクトの内容を、出力したときに人間が読みやすいような適当な形式に変換します。
+変換された文字列は印字可能な文字のみによって構成されます
+</p>
+<p>
+現在の実装では、Ruby のリテラル形式を使って、
+文字列中の不可視文字をエスケープシーケンスに変換します。
+</p>
+<p>
+このメソッドは主にデバッグのために用意されています。
+永続化などの目的で文字列をダンプしたいときは、
+<a href="../method/-string/i/dump.html">String#dump</a> を使うべきです。
+</p>
+<p>
+例：
+</p>
+<pre>
+# p ではないことに注意
+puts &quot;string&quot;.inspect    # =&gt; &quot;string&quot;
+puts &quot;\t\r\n&quot;.inspect    # =&gt; &quot;\t\r\n&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/dump.html">String#dump</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INTERN"><code>intern -&gt; Symbol</code><span class="permalink">[<a href="../method/-string/i/intern.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-intern">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_sym -&gt; Symbol</code></dt>
+<dd class="method-description">
+<p>
+文字列に対応するシンボル値 <a href="../class/-symbol.html">Symbol</a> を返します。
+</p>
+<p>
+なお、このメソッドの逆にシンボルに対応する文字列を得るには
+<a href="../method/-symbol/i/to_s.html">Symbol#to_s</a> または <a href="../method/-symbol/i/id2name.html">Symbol#id2name</a> を使います。
+</p>
+<p>
+シンボル文字列にはナルキャラクタ(&quot;\0&quot;)、空の文字列の使用も可能です。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;foo&quot;.intern                 # =&gt; :foo
+p &quot;foo&quot;.intern.to_s == &quot;foo&quot;   # =&gt; true
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_LENGTH"><code>length -&gt; Integer</code><span class="permalink">[<a href="../method/-string/i/length.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-length">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>size -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+文字列の文字数を返します。バイト数を知りたいときは bytesize メソッドを使ってください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/bytesize.html">String#bytesize</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LINES"><code>lines(rs = $/) -&gt; [String]</code><span class="permalink">[<a href="../method/-string/i/lines.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-lines">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>lines(rs = $/) {|line| ... } -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+文字列中の各行を文字列の配列で返します。(self.each_line.to_a と同じです)
+</p>
+<pre>
+&quot;aa\nbb\ncc\n&quot;.lines # =&gt; [&quot;aa\n&quot;, &quot;bb\n&quot;, &quot;cc\n&quot;]
+</pre>
+<p>
+行の区切りは rs に指定した文字列で、 そのデフォルト値は変数 $/ の値です。
+各 line には区切りの文字列も含みます。
+</p>
+<p>
+rs に nil を指定すると行区切りなしとみなします。 rs に空文字列 &quot;&quot; を指
+定すると「パラグラフモード」になり、 改行コードが 2 つ以上連続するとこ
+ろで文字列を分割します (つまり空行で分割します)。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] rs:</dt>
+<dd>
+行末を示す文字列
+</dd>
+</dl>
+<p>
+ブロックが指定された場合は <a href="../method/-string/i/each_line.html">String#each_line</a> と同じように動作しま
+す。ただし obsolete のため、ブロックを指定する場合は
+<a href="../method/-string/i/each_line.html">String#each_line</a> を使用してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/each_line.html">String#each_line</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LJUST"><code>ljust(width, padding = ' ') -&gt; String</code><span class="permalink">[<a href="../method/-string/i/ljust.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-ljust">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+長さ width の文字列に self を左詰めした文字列を返します。
+self の長さが width より長い時には元の文字列の複製を返します。
+また、第 2 引数 padding を指定したときは
+空白文字の代わりに padding を詰めます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] width:</dt>
+<dd>
+返り値の文字列の最小の長さ
+</dd>
+<dt class='method-param'>[PARAM] padding:</dt>
+<dd>
+長さが width になるまで self の右側に詰める文字
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;foo&quot;.ljust(10)        # =&gt; &quot;foo       &quot;
+p &quot;foo&quot;.ljust(9)         # =&gt; &quot;foo      &quot;
+p &quot;foo&quot;.ljust(8)         # =&gt; &quot;foo     &quot;
+p &quot;foo&quot;.ljust(2)         # =&gt; &quot;foo&quot;
+p &quot;foo&quot;.ljust(1)         # =&gt; &quot;foo&quot;
+p &quot;foo&quot;.ljust(10, &quot;*&quot;)   # =&gt; &quot;foo*******&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/center.html">String#center</a>, <a href="../method/-string/i/rjust.html">String#rjust</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LSTRIP"><code>lstrip -&gt; String</code><span class="permalink">[<a href="../method/-string/i/lstrip.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-lstrip">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列の先頭にある空白文字を全て取り除いた新しい文字列を返します。
+空白文字の定義は &quot; \t\r\n\f\v&quot; です。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;  abc\n&quot;.lstrip     #=&gt; &quot;abc\n&quot;
+p &quot;\t abc\n&quot;.lstrip    #=&gt; &quot;abc\n&quot;
+p &quot;abc\n&quot;.lstrip       #=&gt; &quot;abc\n&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/strip.html">String#strip</a>, <a href="../method/-string/i/rstrip.html">String#rstrip</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LSTRIP--21"><code>lstrip! -&gt; self | nil</code><span class="permalink">[<a href="../method/-string/i/lstrip=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-lstrip-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列の先頭にある空白文字を全て破壊的に取り除きます。
+空白文字の定義は &quot; \t\r\n\f\v&quot; です。
+</p>
+<p>
+lstrip! は self を変更して返します。
+ただし取り除く空白がなかったときは nil を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+str = &quot;  abc&quot;
+p str.lstrip!   # =&gt; &quot;abc&quot;
+p str           # =&gt; &quot;abc&quot;
+
+str = &quot;abc&quot;
+p str.lstrip!   # =&gt; nil
+p str           # =&gt; &quot;abc&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_MATCH"><code>match(regexp, pos = 0) -&gt; MatchData | nil</code><span class="permalink">[<a href="../method/-string/i/match.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-match">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>match(regexp, pos = 0) {|m| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+regexp.match(self, pos) と同じです。
+regexp が文字列の場合は、正規表現にコンパイルします。
+詳しくは <a href="../method/-regexp/i/match.html">Regexp#match</a> を参照してください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_NEXT"><code>succ -&gt; String</code><span class="permalink">[<a href="../method/-string/i/next.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-next">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>next -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+self の「次の」文字列を返します。
+</p>
+<p>
+「次の」文字列は、対象の文字列の右端から
+アルファベットなら アルファベット順(aの次はb, zの次はa, 大文字も同様)に、
+数字なら 10 進数(9 の次は 0)とみなして計算されます。
+</p>
+<pre>
+p &quot;aa&quot;.succ        # =&gt; &quot;ab&quot;
+p &quot;88&quot;.succ.succ   # =&gt; &quot;90&quot;
+</pre>
+<p>
+&quot;99&quot; → &quot;100&quot;, &quot;AZZ&quot; → &quot;BAA&quot; のような繰り上げも行われます。
+このとき負符号などは考慮されません。
+</p>
+<pre>
+p &quot;99&quot;.succ   # =&gt; &quot;100&quot;
+p &quot;ZZ&quot;.succ   # =&gt; &quot;AAA&quot;
+p &quot;a9&quot;.succ   # =&gt; &quot;b0&quot;
+p &quot;-9&quot;.succ   # =&gt; &quot;-10&quot;
+</pre>
+<p>
+self にアルファベットや数字とそれ以外の文字が混在している場合、
+アルファベットと数字だけが「次の」文字になり、残りは保存されます。
+</p>
+<pre>
+p &quot;1.9.9&quot;.succ # =&gt; # &quot;2.0.0&quot;
+</pre>
+<p>
+逆に self がアルファベットや数字をまったく含まない場合は、
+単純に文字コードを 1 増やします。
+</p>
+<pre>
+p &quot;.&quot;.succ     # =&gt; &quot;/&quot;
+</pre>
+<p>
+さらに、self が空文字列の場合は &quot;&quot; を返します。
+このメソッドはマルチバイト文字を意識せず、
+単に文字列をバイト列として扱います。
+</p>
+<p>
+なお、succ と逆の動作をするメソッドはありません。
+また、succ という名前の由来は successor です。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;aa&quot;.succ   # =&gt; &quot;ab&quot;
+
+# 繰り上がり
+p &quot;99&quot;.succ   # =&gt; &quot;100&quot;
+p &quot;a9&quot;.succ   # =&gt; &quot;b0&quot;
+p &quot;Az&quot;.succ   # =&gt; &quot;Ba&quot;
+p &quot;zz&quot;.succ   # =&gt; &quot;aaa&quot;
+p &quot;-9&quot;.succ   # =&gt; &quot;-10&quot;
+p &quot;9&quot;.succ    # =&gt; &quot;10&quot;
+p &quot;09&quot;.succ   # =&gt; &quot;10&quot;
+
+# アルファベット・数字とそれ以外の混在
+p &quot;1.9.9&quot;.succ # =&gt; # &quot;2.0.0&quot;
+
+# アルファベット・数字以外のみ
+p &quot;.&quot;.succ     # =&gt; &quot;/&quot;
+p &quot;\0&quot;.succ    # =&gt; &quot;\001&quot;
+p &quot;\377&quot;.succ  # =&gt; &quot;\001\000&quot;
+</pre>
+<p>
+このメソッドは文字列の <a href="../class/-range.html">Range</a> の内部で使用されます。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_NEXT--21"><code>succ! -&gt; String</code><span class="permalink">[<a href="../method/-string/i/next=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-next-21">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>next! -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+self を「次の」文字列に置き換えます。
+「次の」文字列は、アルファベットなら 16 進数、
+数字なら 10 進数とみなして計算されます。
+「次の」文字列の計算では &quot;99&quot; → &quot;100&quot; のように繰り上げも行われます。
+このとき負符号などは考慮されません。
+</p>
+<p>
+self にアルファベットや数字とそれ以外の文字が混在している場合、
+アルファベットと数字だけが「次の」文字になり、残りは保存されます。
+逆に self がアルファベットや数字をまったく含まない場合は、
+単純に文字コードを 1 増やします。
+</p>
+<p>
+さらに、self が空文字列の場合は &quot;&quot; を返します。
+</p>
+<p>
+このメソッドはマルチバイト文字を意識せず、
+単に文字列をバイト列として扱います。
+</p>
+<p>
+なお、succ! と逆の動作をするメソッドはありません。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;aa&quot;.succ   # =&gt; &quot;ab&quot;
+
+# 繰り上がり
+p &quot;99&quot;.succ   # =&gt; &quot;100&quot;
+p &quot;a9&quot;.succ   # =&gt; &quot;b0&quot;
+p &quot;Az&quot;.succ   # =&gt; &quot;Ba&quot;
+p &quot;zz&quot;.succ   # =&gt; &quot;aaa&quot;
+p &quot;-9&quot;.succ   # =&gt; &quot;-10&quot;
+p &quot;9&quot;.succ    # =&gt; &quot;10&quot;
+p &quot;09&quot;.succ   # =&gt; &quot;10&quot;
+
+# アルファベット・数字とそれ以外の混在
+p &quot;1.9.9&quot;.succ # =&gt; # &quot;2.0.0&quot;
+
+# アルファベット・数字以外のみ
+p &quot;.&quot;.succ     # =&gt; &quot;/&quot;
+p &quot;\0&quot;.succ    # =&gt; &quot;\001&quot;
+p &quot;\377&quot;.succ  # =&gt; &quot;\001\000&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/succ.html">String#succ</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OCT"><code>oct -&gt; Integer</code><span class="permalink">[<a href="../method/-string/i/oct.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-oct">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列を 8 進文字列であると解釈して、整数に変換します。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;10&quot;.oct  # =&gt; 8
+p &quot;010&quot;.oct # =&gt; 8
+p &quot;8&quot;.oct   # =&gt; 0
+</pre>
+<p>
+oct は文字列の接頭辞 (&quot;0&quot;, &quot;0b&quot;, &quot;0B&quot;, &quot;0x&quot;, &quot;0X&quot;) に応じて
+8 進以外の変換も行います。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;0b10&quot;.oct  # =&gt; 2
+p &quot;10&quot;.oct    # =&gt; 8
+p &quot;010&quot;.oct   # =&gt; 8
+p &quot;0x10&quot;.oct  # =&gt; 16
+</pre>
+<p>
+整数とみなせない文字があればそこまでを変換対象とします。
+変換対象が空文字列であれば 0 を返します。
+</p>
+<p>
+符号や _ が含まれる場合も変換対象になります。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;-010&quot;.oct     # =&gt; -8
+p &quot;-0x10&quot;.oct    # =&gt; 0
+p &quot;-0b10&quot;.oct    # =&gt; 0
+
+p &quot;1_0_1x&quot;.oct   # =&gt; 65
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/hex.html">String#hex</a>, <a href="../method/-string/i/to_i.html">String#to_i</a>, <a href="../method/-string/i/to_f.html">String#to_f</a>,
+     <a href="../method/-kernel/m/-integer.html">Kernel.#Integer</a>, <a href="../method/-kernel/m/-float.html">Kernel.#Float</a>
+</p>
+<p>
+逆に、数値を文字列に変換するには<a href="../method/-kernel/m/sprintf.html">Kernel.#sprintf</a>,
+<a href="../method/-string/i/=25.html">String#%</a>, <a href="../method/-integer/i/to_s.html">Integer#to_s</a> を使用します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ORD"><code>ord -&gt; Integer</code><span class="permalink">[<a href="../method/-string/i/ord.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-ord">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列の最初の文字の文字コードを整数で返します。
+</p>
+<p>
+self が空文字列のときは例外を発生します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+文字コードを表す整数
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+self の長さが 0 のとき発生
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;a&quot;.ord   # =&gt; 97
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-integer/i/chr.html">Integer#chr</a>, <a href="../method/-string/i/chr.html">String#chr</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PARTITION"><code>partition(sep) -&gt; [String, String, String]</code><span class="permalink">[<a href="../method/-string/i/partition.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-partition">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+セパレータ sep が最初に登場する部分で self を 3 つに分割し、
+[最初のセパレータより前の部分, セパレータ, それ以降の部分]
+の 3 要素の配列を返します。
+</p>
+<p>
+self がセパレータを含まないときは、
+返り値の第 2 要素と第 3 要素が空文字列になります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] sep:</dt>
+<dd>
+セパレータを表す文字列か正規表現を指定します。
+</dd>
+</dl>
+<p>
+例：
+</p>
+<pre>
+p &quot;axaxa&quot;.partition(&quot;x&quot;)   # =&gt; [&quot;a&quot;, &quot;x&quot;, &quot;axa&quot;]
+p &quot;aaaaa&quot;.partition(&quot;x&quot;)   # =&gt; [&quot;aaaaa&quot;, &quot;&quot;, &quot;&quot;]
+p &quot;aaaaa&quot;.partition(&quot;&quot;)    # =&gt; [&quot;&quot;, &quot;&quot;, &quot;aaaaa&quot;]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/rpartition.html">String#rpartition</a>, <a href="../method/-string/i/split.html">String#split</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PREPEND"><code>prepend(other_str) -&gt; String</code><span class="permalink">[<a href="../method/-string/i/prepend.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-prepend">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列 other_str を先頭に破壊的に追加します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other_str:</dt>
+<dd>
+追加したい文字列を指定します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+a = &quot;world&quot;
+a.prepend(&quot;hello &quot;) # =&gt; &quot;hello world&quot;
+a                   # =&gt; &quot;hello world&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_REPLACE"><code>replace(other) -&gt; String</code><span class="permalink">[<a href="../method/-string/i/replace.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-replace">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の内容を other の内容で置き換えます。
+</p>
+<p>
+例:
+</p>
+<pre>
+str = &quot;foo&quot;
+str.replace &quot;bar&quot;
+p str   # =&gt; &quot;bar&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_REVERSE"><code>reverse -&gt; String</code><span class="permalink">[<a href="../method/-string/i/reverse.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-reverse">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列を文字単位で左右逆転した文字列を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;foobar&quot;.reverse   # =&gt; &quot;raboof&quot;
+p &quot;&quot;.reverse         # =&gt; &quot;&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_REVERSE--21"><code>reverse! -&gt; self</code><span class="permalink">[<a href="../method/-string/i/reverse=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-reverse-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列を文字単位で左右逆転します。
+</p>
+<p>
+例:
+</p>
+<pre>
+str = &quot;foobar&quot;
+str.reverse!
+p str   # =&gt; &quot;raboof&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_RINDEX"><code>rindex(pattern, pos = self.size) -&gt; Integer | nil</code><span class="permalink">[<a href="../method/-string/i/rindex.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-rindex">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列のインデックス pos から左に向かって pattern を探索します。
+最初に見つかった部分文字列の左端のインデックスを返します。
+見つからなければ nil を返します。
+</p>
+<p>
+引数 pattern は探索する部分文字列または正規表現で指定します。
+</p>
+<p>
+pos が負の場合は、文字列の末尾から数えた位置から探索します。
+</p>
+<p>
+rindex と <a href="../method/-string/i/index.html">String#index</a> とでは、探索方向だけが逆になります。
+完全に左右が反転した動作をするわけではありません。
+探索はその開始位置を右から左にずらしながら行いますが、
+部分文字列の照合はどちらのメソッドも左から右に向かって行います。
+以下の例を参照してください。
+</p>
+<pre>
+# String#index の場合
+p &quot;stringstring&quot;.index(&quot;ing&quot;, 1)    # =&gt; 3
+  # ing            # ここから探索を始める
+  #  ing
+  #   ing          # 右にずらしていってここで見つかる
+
+# String#rindex の場合
+p &quot;stringstring&quot;.rindex(&quot;ing&quot;, -1)  # =&gt; 9
+  #           ing    # インデックス -1 の文字から探索を始める
+  #          ing
+  #         ing      # 左にずらしていってここで見つかる
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+探索する部分文字列または正規表現
+</dd>
+<dt class='method-param'>[PARAM] pos:</dt>
+<dd>
+探索を始めるインデックス
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;astrochemistry&quot;.rindex(&quot;str&quot;)        # =&gt; 10
+p &quot;character&quot;.rindex(?c)                # =&gt; 5
+p &quot;regexprindex&quot;.rindex(/e.*x/, 2)      # =&gt; 1
+
+p &quot;foobarfoobar&quot;.rindex(&quot;bar&quot;, 6)       # =&gt; 3
+p &quot;foobarfoobar&quot;.rindex(&quot;bar&quot;, -6)      # =&gt; 3
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/index.html">String#index</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_RJUST"><code>rjust(width, padding = ' ') -&gt; String</code><span class="permalink">[<a href="../method/-string/i/rjust.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-rjust">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+長さ width の文字列に self を右詰めした文字列を返します。
+self の長さが width より長い時には元の文字列の複製を返します。
+また、第 2 引数 padding を指定したときは
+空白文字の代わりに padding を詰めます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] width:</dt>
+<dd>
+返り値の文字列の最小の長さ
+</dd>
+<dt class='method-param'>[PARAM] padding:</dt>
+<dd>
+長さが width になるまで self の左側に詰める文字
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;foo&quot;.rjust(10)        # =&gt; &quot;       foo&quot;
+p &quot;foo&quot;.rjust(9)         # =&gt; &quot;      foo&quot;
+p &quot;foo&quot;.rjust(8)         # =&gt; &quot;     foo&quot;
+p &quot;foo&quot;.rjust(2)         # =&gt; &quot;foo&quot;
+p &quot;foo&quot;.rjust(1)         # =&gt; &quot;foo&quot;
+p &quot;foo&quot;.rjust(10, &quot;*&quot;)   # =&gt; &quot;*******foo&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/center.html">String#center</a>, <a href="../method/-string/i/ljust.html">String#ljust</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_RPARTITION"><code>rpartition(sep) -&gt; [String, String, String]</code><span class="permalink">[<a href="../method/-string/i/rpartition.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-rpartition">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+セパレータ sep が最後に登場する部分で self を 3 つに分割し、
+[最後のセパレータより前の部分, セパレータ, それ以降の部分]
+の 3 要素の配列を返します。
+</p>
+<p>
+self がセパレータを含まないときは、
+返り値の第 1 要素と第 2 要素が空文字列になります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] sep:</dt>
+<dd>
+セパレータを表す文字列か正規表現を指定します。
+</dd>
+</dl>
+<p>
+例：
+</p>
+<pre>
+p &quot;axaxa&quot;.rpartition(&quot;x&quot;)   # =&gt; [&quot;axa&quot;, &quot;x&quot;, &quot;a&quot;]
+p &quot;aaaaa&quot;.rpartition(&quot;x&quot;)   # =&gt; [&quot;&quot;, &quot;&quot;, &quot;aaaaa&quot;]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/partition.html">String#partition</a>, <a href="../method/-string/i/split.html">String#split</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_RSTRIP"><code>rstrip -&gt; String</code><span class="permalink">[<a href="../method/-string/i/rstrip.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-rstrip">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列の末尾にある空白文字を全て取り除いた新しい文字列を返します。
+空白文字の定義は &quot; \t\r\n\f\v\0&quot; です。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;  abc\n&quot;.rstrip          #=&gt; &quot;  abc&quot;
+p &quot;  abc \t\r\n\0&quot;.rstrip   #=&gt; &quot;  abc&quot;
+p &quot;  abc&quot;.rstrip            #=&gt; &quot;  abc&quot;
+p &quot;  abc\0 &quot;.rstrip         #=&gt; &quot;  abc&quot;
+
+str = &quot;abc\n&quot;
+p str.rstrip    #=&gt; &quot;abc&quot;
+p str           #=&gt; &quot;abc\n&quot;  (元の文字列は変化しない)
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/lstrip.html">String#lstrip</a>,<a href="../method/-string/i/strip.html">String#strip</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_RSTRIP--21"><code>rstrip! -&gt; self | nil</code><span class="permalink">[<a href="../method/-string/i/rstrip=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-rstrip-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列の末尾にある空白文字を全て破壊的に取り除きます。
+空白文字の定義は &quot; \t\r\n\f\v\0&quot; です。
+</p>
+<p>
+例:
+</p>
+<pre>
+str = &quot;  abc\n&quot;
+p str.rstrip!   # =&gt; &quot;  abc&quot;
+p str           # =&gt; &quot;  abc&quot;
+
+str = &quot;  abc \r\n\t\v\0&quot;
+p str.rstrip!   # =&gt; &quot;  abc&quot;
+p str           # =&gt; &quot;  abc&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/rstrip.html">String#rstrip</a>, <a href="../method/-string/i/lstrip.html">String#lstrip</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SCAN"><code>scan(pattern) -&gt; [String] | [[String]]</code><span class="permalink">[<a href="../method/-string/i/scan.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-scan">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self に対して pattern を繰り返しマッチし、
+マッチした部分文字列の配列を返します。
+</p>
+<p>
+pattern が正規表現で括弧を含む場合は、
+括弧で括られたパターンにマッチした部分文字列の配列の配列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+探索する部分文字列または正規表現
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;foobar&quot;.scan(/../)               # =&gt; [&quot;fo&quot;, &quot;ob&quot;, &quot;ar&quot;]
+p &quot;foobar&quot;.scan(&quot;o&quot;)                # =&gt; [&quot;o&quot;, &quot;o&quot;]
+p &quot;foobarbazfoobarbaz&quot;.scan(/ba./)  # =&gt; [&quot;bar&quot;, &quot;baz&quot;, &quot;bar&quot;, &quot;baz&quot;]
+
+p &quot;foobar&quot;.scan(/(.)/)
+    # =&gt; [[&quot;f&quot;], [&quot;o&quot;], [&quot;o&quot;], [&quot;b&quot;], [&quot;a&quot;], [&quot;r&quot;]]
+
+p &quot;foobarbazfoobarbaz&quot;.scan(/(ba)(.)/)
+    # =&gt; [[&quot;ba&quot;, &quot;r&quot;], [&quot;ba&quot;, &quot;z&quot;], [&quot;ba&quot;, &quot;r&quot;], [&quot;ba&quot;, &quot;z&quot;]]
+</pre>
+</dd>
+<dt class="method-heading" id="I_SCAN"><code>scan(pattern) {|s| ... } -&gt; self</code><span class="permalink">[<a href="../method/-string/i/scan.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-scan">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+pattern がマッチした部分文字列をブロックに渡して実行します。
+pattern が正規表現で括弧を含む場合は、
+括弧で括られたパターンにマッチした文字列の配列を渡します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+探索する部分文字列または正規表現
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+&quot;foobarbazfoobarbaz&quot;.scan(/ba./) {|s| p s }
+    # =&gt; &quot;bar&quot;
+    #    &quot;baz&quot;
+    #    &quot;baz&quot;
+    #    &quot;baz&quot;
+
+&quot;foobarbazfoobarbaz&quot;.scan(&quot;ba&quot;) {|s| p s }
+    # =&gt; &quot;ba&quot;
+    #    &quot;ba&quot;
+    #    &quot;ba&quot;
+    #    &quot;ba&quot;
+
+&quot;foobarbazfoobarbaz&quot;.scan(/(ba)(.)/) {|s| p s }
+    # =&gt; [&quot;ba&quot;, &quot;r&quot;]
+    #    [&quot;ba&quot;, &quot;z&quot;]
+    #    [&quot;ba&quot;, &quot;r&quot;]
+    #    [&quot;ba&quot;, &quot;z&quot;]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SCRUB"><code>scrub -&gt; String</code><span class="permalink">[<a href="../method/-string/i/scrub.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-scrub">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>scrub(repl) -&gt; String</code></dt>
+<dt class="method-heading"><code>scrub {|bytes| ... } -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+self が不正なバイト列を含む場合に別の文字列に置き換えた新しい文字列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] repl:</dt>
+<dd>
+不正なバイト列を置き換える文字列を指定します。省略した場合
+は self の文字エンコーディングが <a href="../method/-encoding/c/-u-t-f_16-b-e.html">Encoding::UTF_16BE</a>,
+<a href="../method/-encoding/c/-u-t-f_16-l-e.html">Encoding::UTF_16LE</a>, <a href="../method/-encoding/c/-u-t-f_32-b-e.html">Encoding::UTF_32BE</a>,
+<a href="../method/-encoding/c/-u-t-f_32-l-e.html">Encoding::UTF_32LE</a>, <a href="../method/-encoding/c/-u-t-f_8.html">Encoding::UTF_8</a> のいずれか
+の場合は &quot;\uFFFD&quot; を表す文字で、それ以外の場合は &quot;?&quot; で置き
+換えられます。ブロックが指定された場合は不正なバイト列はブ
+ロックの戻り値で置き換えられます。
+</dd>
+</dl>
+<pre>
+&quot;abc\u3042\x81&quot;.scrub      # =&gt; &quot;abc\u3042\uFFFD&quot;
+&quot;abc\u3042\x81&quot;.scrub(&quot;*&quot;) # =&gt; &quot;abc\u3042*&quot;
+&quot;abc\u3042\xE3\x80&quot;.scrub{|bytes| '&lt;'+bytes.unpack('H*')[0]+'&gt;' } # =&gt; &quot;abc\u3042&lt;e380&gt;&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/scrub=21.html">String#scrub!</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SCRUB--21"><code>scrub! -&gt; String</code><span class="permalink">[<a href="../method/-string/i/scrub=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-scrub-21">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>scrub!(repl) -&gt; String</code></dt>
+<dt class="method-heading"><code>scrub! {|bytes| ... } -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+self が不正なバイト列を含む場合に別の文字列に置き換えます。常に self を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] repl:</dt>
+<dd>
+不正なバイト列を置き換える文字列を指定します。省略した場合
+は self の文字エンコーディングが <a href="../method/-encoding/c/-u-t-f_16-b-e.html">Encoding::UTF_16BE</a>,
+<a href="../method/-encoding/c/-u-t-f_16-l-e.html">Encoding::UTF_16LE</a>, <a href="../method/-encoding/c/-u-t-f_32-b-e.html">Encoding::UTF_32BE</a>,
+<a href="../method/-encoding/c/-u-t-f_32-l-e.html">Encoding::UTF_32LE</a>, <a href="../method/-encoding/c/-u-t-f_8.html">Encoding::UTF_8</a> のいずれか
+の場合は &quot;\uFFFD&quot; を表す文字で、それ以外の場合は &quot;?&quot; で置き
+換えられます。ブロックが指定された場合は不正なバイト列はブ
+ロックの戻り値で置き換えられます。
+</dd>
+</dl>
+<pre>
+&quot;abc\u3042\x81&quot;.scrub!      # =&gt; &quot;abc\u3042\uFFFD&quot;
+&quot;abc\u3042\x81&quot;.scrub!(&quot;*&quot;) # =&gt; &quot;abc\u3042*&quot;
+&quot;abc\u3042\xE3\x80&quot;.scrub!{|bytes| '&lt;'+bytes.unpack('H*')[0]+'&gt;' } # =&gt; &quot;abc\u3042&lt;e380&gt;&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/scrub.html">String#scrub</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SETBYTE"><code>setbyte(index, b) -&gt; Integer</code><span class="permalink">[<a href="../method/-string/i/setbyte.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-setbyte">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+index バイト目のバイトを b に変更します。
+</p>
+<p>
+index に負を指定すると末尾から数えた位置を変更します。
+</p>
+<p>
+セットした値を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] index:</dt>
+<dd>
+バイトをセットする位置
+</dd>
+<dt class='method-param'>[PARAM] b:</dt>
+<dd>
+セットするバイト(0 から 255 までの整数)
+</dd>
+<dt>[EXCEPTION] IndexError:</dt>
+<dd>
+範囲外に値をセットしようとした場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_SLICE--21"><code>slice!(nth) -&gt; Integer</code><span class="permalink">[<a href="../method/-string/i/slice=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-slice-21">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>slice!(pos, len) -&gt; String</code></dt>
+<dt class="method-heading"><code>slice!(substr) -&gt; String</code></dt>
+<dt class="method-heading"><code>slice!(regexp, nth = 0) -&gt; String</code></dt>
+<dt class="method-heading"><code>slice!(first..last) -&gt; String</code></dt>
+<dt class="method-heading"><code>slice!(first...last) -&gt; String</code></dt>
+<dt class="method-heading"><code>slice!(regexp, nth = 0) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+指定した範囲 (<a href="../method/-string/i/=5b=5d.html">String#[]</a> 参照) を
+文字列から取り除いたうえで取り除いた部分文字列を返します。
+</p>
+<p>
+引数が範囲外を指す場合は nil を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SPLIT"><code>split(sep = $;, limit = 0) -&gt; [String] | [[String]]</code><span class="permalink">[<a href="../method/-string/i/split.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-split">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+第 1 引数 sep で指定されたセパレータによって文字列を limit 個まで分割し、
+結果を文字列の配列で返します。
+</p>
+<p>
+第 1 引数 sep は以下のいずれかです。
+</p>
+<dl>
+<dt>正規表現</dt>
+<dd>
+<p>
+正規表現にマッチする部分で分割する。
+特に、括弧によるグルーピングがあればそのグループにマッチした
+文字列も結果の配列に含まれる (後述)。
+</p>
+</dd>
+<dt>文字列</dt>
+<dd>
+<p>
+その文字列自体にマッチする部分で分割する。
+</p>
+</dd>
+<dt>1 バイトの空白文字 ' '</dt>
+<dd>
+<p>
+先頭と末尾の空白を除いたうえで、空白文字列で分割する。
+</p>
+</dd>
+<dt>nil</dt>
+<dd>
+<p>
+常に $; で分割する。 $; も nil の場合は、先頭と末尾の空白を除いたうえで、空白文字列で分割する。
+</p>
+</dd>
+<dt>空文字列 '' あるいは空文字列にマッチする正規表現</dt>
+<dd>
+<p>
+文字列を 1 文字ずつに分割する。マルチバイト文字を認識する。
+</p>
+</dd>
+</dl>
+<p>
+sep が正規表現で、かつその正規表現に括弧が含まれている場合には、
+各括弧のパターンにマッチした文字列も配列に含まれます。
+括弧が複数ある場合は、マッチしたものだけが配列に含まれます。
+</p>
+<p>
+第 2 引数 limit は以下のいずれかです。
+</p>
+<dl>
+<dt>limit &gt; 0</dt>
+<dd>
+<p>
+最大 limit 個の文字列に分割する
+</p>
+</dd>
+<dt>limit == 0</dt>
+<dd>
+<p>
+分割個数制限はなしで、配列末尾の空文字列を取り除く
+</p>
+</dd>
+<dt>limit &lt; 0</dt>
+<dd>
+<p>
+分割個数の制限はなし
+</p>
+</dd>
+</dl>
+<dl>
+<dt class='method-param'>[PARAM] sep:</dt>
+<dd>
+文字列を分割するときのセパレータのパターン
+</dd>
+<dt class='method-param'>[PARAM] limit:</dt>
+<dd>
+分割する最大個数
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;   a \t  b \n  c&quot;.split(/\s+/) # =&gt; [&quot;&quot;, &quot;a&quot;, &quot;b&quot;, &quot;c&quot;]
+
+p &quot;   a \t  b \n  c&quot;.split(nil)   # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]
+p &quot;   a \t  b \n  c&quot;.split(' ')   # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]   # split(nil) と同じ
+p &quot;   a \t  b \n  c&quot;.split        # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]   # split(nil) と同じ
+
+# 括弧を含む正規表現
+p '1-10,20'.split(/([-,])/)   # =&gt; [&quot;1&quot;, &quot;-&quot;, &quot;10&quot;, &quot;,&quot;, &quot;20&quot;]
+
+# 正規表現が空文字列にマッチする場合は 1 文字に分割
+p 'hi there'.split(/\s*/).join(':')  # =&gt; &quot;h:i:t:h:e:r:e&quot;
+
+# 文字列全体を 1 文字ずつに分割する例
+p 'hi there'.split(//).join(':')     # =&gt; &quot;h:i: :t:h:e:r:e&quot;
+
+# limit == 0 だと制限なく分割、配列末尾の空文字列は取り除かれる
+p &quot;a,b,c,,,&quot;.split(/,/, 0)   # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]
+
+# limit 省略時は 0 と同じ (最もよく使われるパターン)
+p &quot;a,b,c,,,&quot;.split(/,/)      # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]
+
+# 正の limit 使用例
+p &quot;a,b,c,d,e&quot;.split(/,/, 1)  # =&gt; [&quot;a,b,c,d,e&quot;]
+p &quot;a,b,c,d,e&quot;.split(/,/, 2)  # =&gt; [&quot;a&quot;, &quot;b,c,d,e&quot;]
+p &quot;a,b,c,d,e&quot;.split(/,/, 3)  # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c,d,e&quot;]
+p &quot;a,b,c,d,e&quot;.split(/,/, 4)  # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d,e&quot;]
+p &quot;a,b,c,d,e&quot;.split(/,/, 5)  # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot;]
+p &quot;a,b,c,d,e&quot;.split(/,/, 6)  # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot;]
+p &quot;a,b,c,d,e&quot;.split(/,/, 7)  # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot;]
+
+# limit が負の数の場合は制限なく分割
+p &quot;a,b,c,,,&quot;.split(/,/, -1)    # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/partition.html">String#partition</a>, <a href="../method/-string/i/rpartition.html">String#rpartition</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SQUEEZE"><code>squeeze(*chars) -&gt; String</code><span class="permalink">[<a href="../method/-string/i/squeeze.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-squeeze">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+chars に含まれる文字が複数並んでいたら 1 文字にまとめます。
+</p>
+<p>
+chars の形式は <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/utilities/tr.html">tr(1)</a> と同じです。つまり、
+`a-c' は a から c を意味し、&quot;^0-9&quot; のように
+文字列の先頭が `^' の場合は指定文字以外を意味します。
+</p>
+<p>
+`-' は文字列の両端にない場合にだけ範囲指定の意味になります。
+同様に、`^' もその効果は文字列の先頭にあるときだけです。また、
+`-', `^', `\' はバックスラッシュ(`\')によ
+りエスケープすることができます。
+</p>
+<p>
+引数を 1 つも指定しない場合は、すべての連続した文字を 1 文字にまとめます。
+</p>
+<p>
+引数を複数指定した場合は、すべての引数にマッチする文字を 1 文字にまとめます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] chars:</dt>
+<dd>
+１文字にまとめる文字。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;112233445566778899&quot;.squeeze          # =&gt;&quot;123456789&quot;
+p &quot;112233445566778899&quot;.squeeze(&quot;2-8&quot;)   # =&gt;&quot;11234567899&quot;
+
+# 以下の 2 つは同じ意味
+p &quot;112233445566778899&quot;.squeeze(&quot;2378&quot;)          # =&gt;&quot;11234455667899&quot;
+p &quot;112233445566778899&quot;.squeeze(&quot;2-8&quot;, &quot;^4-6&quot;)   # =&gt;&quot;11234455667899&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SQUEEZE--21"><code>squeeze!(*chars) -&gt; self | nil</code><span class="permalink">[<a href="../method/-string/i/squeeze=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-squeeze-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+chars に含まれる文字が複数並んでいたら 1 文字にまとめます。
+</p>
+<p>
+chars の形式は <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/utilities/tr.html">tr(1)</a> と同じです。つまり、
+`a-c' は a から c を意味し、&quot;^0-9&quot; のように
+文字列の先頭が `^' の場合は指定文字以外を意味します。
+</p>
+<p>
+`-' は文字列の両端にない場合にだけ範囲指定の意味になります。
+同様に、`^' もその効果は文字列の先頭にあるときだけです。また、
+`-', `^', `\' はバックスラッシュ(`\')によ
+りエスケープすることができます。
+</p>
+<p>
+引数を 1 つも指定しない場合は、すべての連続した文字を 1 文字にまとめます。
+</p>
+<p>
+引数を複数指定した場合は、すべての引数にマッチする文字を 1 文字にまとめます。
+</p>
+<p>
+1 文字もまとめられなかった場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] chars:</dt>
+<dd>
+１文字にまとめる文字。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+str = &quot;112233445566778899&quot;
+str.squeeze!
+p str    # =&gt;&quot;123456789&quot;
+
+str = &quot;112233445566778899&quot;
+str.squeeze!(&quot;2-8&quot;)
+p str    # =&gt;&quot;11234567899&quot;
+
+str = &quot;123456789&quot;
+str.squeeze! # =&gt; nil
+p str        # =&gt;&quot;123456789&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_START_WITH--3F"><code>start_with?(*strs) -&gt; bool</code><span class="permalink">[<a href="../method/-string/i/start_with=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-start_with-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の先頭が strs のいずれかであるとき true を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] strs:</dt>
+<dd>
+パターンを表す文字列 (のリスト)
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+&quot;string&quot;.start_with?(&quot;str&quot;)          # =&gt; true
+&quot;string&quot;.start_with?(&quot;ing&quot;)          # =&gt; false
+&quot;string&quot;.start_with?(&quot;ing&quot;, &quot;str&quot;)   # =&gt; true
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/end_with=3f.html">String#end_with?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_STRIP"><code>strip -&gt; String</code><span class="permalink">[<a href="../method/-string/i/strip.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-strip">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列先頭と末尾の空白文字を全て取り除いた文字列を生成して返します。
+空白文字の定義は &quot; \t\r\n\f\v&quot; です。
+また、文字列右側からは &quot;\0&quot; も取り除きますが、
+左側の &quot;\0&quot; は取り除きません。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;  abc  \r\n&quot;.strip    #=&gt; &quot;abc&quot;
+p &quot;abc\n&quot;.strip          #=&gt; &quot;abc&quot;
+p &quot;  abc&quot;.strip          #=&gt; &quot;abc&quot;
+p &quot;abc&quot;.strip            #=&gt; &quot;abc&quot;
+p &quot;  \0  abc  \0&quot;.strip  # =&gt; &quot;\000  abc&quot;   # 右側のみ &quot;\0&quot; も取り除く
+
+str = &quot;\tabc\n&quot;
+p str.strip              #=&gt; &quot;abc&quot;
+p str                    #=&gt; &quot;\tabc\n&quot; (元の文字列は変化しない)
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/lstrip.html">String#lstrip</a>, <a href="../method/-string/i/rstrip.html">String#rstrip</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_STRIP--21"><code>strip! -&gt; self | nil</code><span class="permalink">[<a href="../method/-string/i/strip=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-strip-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+先頭と末尾の空白文字を全て破壊的に取り除きます。
+空白文字の定義は &quot; \t\r\n\f\v&quot; です。
+また、文字列右側からは &quot;\0&quot; も取り除きますが、
+左側の &quot;\0&quot; は取り除きません。
+</p>
+<p>
+strip! は、内容を変更した self を返します。
+ただし取り除く空白がなかったときは nil を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+str = &quot;  abc\r\n&quot;
+p str.strip!     #=&gt; &quot;abc&quot;
+p str            #=&gt; &quot;abc&quot;
+
+str = &quot;abc&quot;
+p str.strip!     #=&gt; nil
+p str            #=&gt; &quot;abc&quot;
+
+str = &quot;  \0  abc  \0&quot;
+str.strip!
+p str            # =&gt; &quot;\000  abc&quot;   # 右側の &quot;\0&quot; のみ取り除かれる
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/strip.html">String#strip</a>, <a href="../method/-string/i/lstrip.html">String#lstrip</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SUB"><code>sub(pattern, replace) -&gt; String</code><span class="permalink">[<a href="../method/-string/i/sub.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-sub">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中で pattern にマッチした最初の部分を
+文字列 replace で置き換えた文字列を生成して返します。
+</p>
+<p>
+置換文字列 replace 中の \&amp; と \0 はマッチした部分文字列に、
+\1 ... \9 は n 番目の括弧の内容に置き換えられます。
+置換文字列内では \`、\'、\+ も使えます。
+これらは <a href="../method/-kernel/v/=60.html">$`</a>、<a href="../method/-kernel/v/=27.html">$'</a>、<a href="../method/-kernel/v/=2b.html">$+</a> に対応します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターンを表す文字列か正規表現。
+文字列を指定した場合は全く同じ文字列にだけマッチする
+</dd>
+<dt class='method-param'>[PARAM] replace:</dt>
+<dd>
+pattern で指定した文字列と置き換える文字列
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p 'abcdefg'.sub(/def/, '!!')          # =&gt; &quot;abc!!g&quot;
+p 'abcabc'.sub(/b/, '&lt;&lt;\&amp;&gt;&gt;')         # =&gt; &quot;a&lt;&lt;b&gt;&gt;cabc&quot;
+p 'xxbbxbb'.sub(/x+(b+)/, 'X&lt;&lt;\1&gt;&gt;')  # =&gt; &quot;X&lt;&lt;bb&gt;&gt;xbb&quot;
+</pre>
+<p>
+注意:
+</p>
+<p>
+第 2 引数 replace に <a href="../method/-kernel/v/1.html">$1</a> を埋め込んでも意図した結果にはなりません。
+この文字列が評価される時点ではまだ正規表現マッチが行われておらず、
+$1 がセットされていないからです。
+</p>
+<p>
+また、sub では「\」が部分文字列との置き換えという特別な意味を持つため、
+replace に「\」自身を入れたいときは
+「\」を二重にエスケープしなければなりません。
+</p>
+<pre>
+# ひとつめの括弧の内容に置き換えるときによくある間違い
+p 'xbbb-xbbb'.sub(/x(b+)/, &quot;#{$1}&quot;)   # =&gt; &quot;-xbbb&quot;     # NG
+p 'xbbb-xbbb'.sub(/x(b+)/, &quot;\1&quot;)      # =&gt; &quot;1-xbbb&quot;    # NG
+p 'xbbb-xbbb'.sub(/x(b+)/, &quot;\\1&quot;)     # =&gt; &quot;bbb-xbbb&quot;  # OK
+p 'xbbb-xbbb'.sub(/x(b+)/, '\1')      # =&gt; &quot;bbb-xbbb&quot;  # OK
+p 'xbbb-xbbb'.sub(/x(b+)/, '\\1')     # =&gt; &quot;bbb-xbbb&quot;  # OK
+
+# バックスラッシュを倍にするときによくある間違い
+puts '\n'.sub(/\\/, &quot;\\\\&quot;)      # =&gt; \n   # NG
+puts '\n'.sub(/\\/, '\\\\')      # =&gt; \n   # NG
+puts '\n'.sub(/\\/, &quot;\\\\\\\\&quot;)  # =&gt; \\n  # OK
+puts '\n'.sub(/\\/, '\\\\\\\\')  # =&gt; \\n  # OK
+</pre>
+<p>
+このような間違いを確実に防止し、コードの可読性を上げるには、
+\&amp; や \1 よりも下記のようにブロック付き形式の sub を使うべきです。
+</p>
+<pre>
+p 'xbbb-xbbb'.sub(/x(b+)/) { $1 }   # =&gt; &quot;bbb-xbbb&quot;  # OK
+
+puts '\n'.sub(/\\/) { '\\\\' }      # =&gt; \\n        # OK
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/gsub.html">String#gsub</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_SUB"><code>sub(pattern) {|matched| .... } -&gt; String</code><span class="permalink">[<a href="../method/-string/i/sub.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-sub">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中で pattern にマッチした最初の部分をブロックに渡し、
+その評価結果で置き換えた新しい文字列を返します。
+ブロックなしの sub と違い、ブロックの中からは
+組み込み変数 <a href="../method/-kernel/v/1.html">$1</a>, $2, $3, ... を問題なく参照できます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターンを表す文字列か正規表現。
+文字列を指定した場合は全く同じ文字列にだけマッチする
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p 'abcabc'.sub(/b/) {|s| s.upcase }  #=&gt; &quot;aBcabc&quot;
+p 'abcabc'.sub(/b/) { $&amp;.upcase }    #=&gt; &quot;aBcabc&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/gsub.html">String#gsub</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_SUB"><code>sub(pattern, hash) -&gt; String</code><span class="permalink">[<a href="../method/-string/i/sub.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-sub">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中の pattern にマッチした部分をキーにして hash を引いた値で置き換えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターン
+</dd>
+<dt class='method-param'>[PARAM] hash:</dt>
+<dd>
+置き換える文字列を与えるハッシュ
+</dd>
+</dl>
+<pre>
+hash = {'b'=&gt;'B', 'c'=&gt;'C'}
+p &quot;abcabc&quot;.sub(/[bc]/){hash[$&amp;]} #=&gt; &quot;aBCabc&quot;
+p &quot;abcabc&quot;.sub(/[bc]/, hash)     #=&gt; &quot;aBCabc&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SUB--21"><code>sub!(pattern, replace) -&gt; self | nil</code><span class="permalink">[<a href="../method/-string/i/sub=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-sub-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中で pattern にマッチした最初の部分を文字列 replace へ破壊的に置き換えます。
+</p>
+<p>
+置換文字列 replace 中の \&amp; と \0 はマッチした部分文字列に、
+\1 ... \9 は n 番目の括弧の内容に置き換えられます。
+置換文字列内では \`、\'、\+ も使えます。
+これらは <a href="../method/-kernel/v/=60.html">$`</a>、<a href="../method/-kernel/v/=27.html">$'</a>、<a href="../method/-kernel/v/=2b.html">$+</a> に対応します。
+</p>
+<p>
+sub! は通常 self を変更して返しますが、
+置換が起こらなかった場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターンを表す文字列か正規表現。
+文字列を指定した場合は全く同じ文字列にだけマッチする
+</dd>
+<dt class='method-param'>[PARAM] replace:</dt>
+<dd>
+pattern で指定した文字列と置き換える文字列
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+置換した場合は self、置換しなかった場合は nil
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+buf = &quot;String-String&quot;
+buf.sub!(/in./, &quot;!!&quot;)
+p buf   # =&gt; &quot;Str!!-String&quot;
+
+buf = &quot;String.String&quot;
+buf.sub!(/in./, '&lt;&lt;\&amp;&gt;&gt;')
+p buf   # =&gt; &quot;Str&lt;&lt;ing&gt;&gt;-String&quot;
+</pre>
+<p>
+注意:
+</p>
+<p>
+引数 replace の中で <a href="../method/-kernel/v/1.html">$1</a> を使うことはできません。
+replace は sub メソッドの呼び出しより先に評価されるので、
+まだ sub の正規表現マッチが行われておらず、
+$1 がセットされていないからです。
+</p>
+<p>
+また、sub では「\」が部分文字列との置き換えという特別な意味を持つため、
+replace に「\」自身を入れたいときは
+「\」を二重にエスケープしなければなりません。
+</p>
+<p>
+例:
+</p>
+<pre>
+# ひとつめの括弧にマッチした部分に置き換えるときによくやる間違い
+'abbbcd'.sub!(/a(b+)/, &quot;#{$1}&quot;)       # NG
+'abbbcd'.sub!(/a(b+)/, &quot;\1&quot;)          # NG
+'abbbcd'.sub!(/a(b+)/, &quot;\\1&quot;)         # OK
+'abbbcd'.sub!(/a(b+)/, '\\1')         # OK
+'abbbcd'.sub!(/a(b+)/, '\1')          # OK
+'abbbcd'.sub!(/a(b+)/) { $1 }         # OK   これがもっとも安全
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/gsub.html">String#gsub</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_SUB--21"><code>sub!(pattern) {|matched| .... } -&gt; self | nil</code><span class="permalink">[<a href="../method/-string/i/sub=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-sub-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中で pattern にマッチした最初の部分をブロックに渡し、
+その評価結果へ破壊的に置き換えます。
+</p>
+<p>
+また、ブロックなしの sub と違い、ブロックの中からは
+組み込み変数 <a href="../method/-kernel/v/1.html">$1</a>, $2, $3, ... を問題なく参照できます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターンを表す文字列か正規表現。
+文字列を指定した場合は全く同じ文字列にだけマッチする
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+置換した場合は self、置換しなかった場合は nil
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+str = 'abcabc'
+str.sub!(/b/) {|s| s.upcase }
+p str    #=&gt; &quot;aBcabc&quot;
+
+str = 'abcabc'
+str.sub!(/b/) { $&amp;.upcase }
+p str    #=&gt; &quot;aBcabc&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/gsub.html">String#gsub</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_SUB--21"><code>sub!(pattern, hash) -&gt; String</code><span class="permalink">[<a href="../method/-string/i/sub=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-sub-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中の pattern にマッチした部分をキーにして hash を引いた値で破壊的に置き換えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターン
+</dd>
+<dt class='method-param'>[PARAM] hash:</dt>
+<dd>
+置き換える文字列を与えるハッシュ
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+置換した場合は self、置換しなかった場合は nil
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_SUM"><code>sum(bits = 16) -&gt; Integer</code><span class="permalink">[<a href="../method/-string/i/sum.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-sum">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列の bits ビットのチェックサムを計算します。
+</p>
+<p>
+以下と同じです。
+</p>
+<pre>
+def sum(bits)
+  sum = 0
+  each_byte {|c| sum += c }
+  return 0 if sum == 0
+  sum &amp; ((1 &lt;&lt; bits) - 1)
+end
+</pre>
+<p>
+例えば以下のコードで UNIX System V の
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/utilities/sum.html">sum(1)</a> コマンドと同じ値が得られます。
+</p>
+<p>
+例:
+</p>
+<pre>
+sum = 0
+ARGF.each_line do |line|
+  sum += line.sum
+end
+sum %= 65536
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] bits:</dt>
+<dd>
+チェックサムのビット数
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_SWAPCASE"><code>swapcase -&gt; String</code><span class="permalink">[<a href="../method/-string/i/swapcase.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-swapcase">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+'A' から 'Z' までのアルファベット大文字を小文字に、
+'a' から 'z' までのアルファベット小文字を大文字に変更した文字列を返します。
+</p>
+<p>
+このメソッドはマルチバイト文字列を認識しますが、
+それはあくまでも「1 文字を 1 文字として認識する」だけであって、
+いわゆる全角アルファベットの大文字小文字までは変換しません。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;ABCxyz&quot;.swapcase   # =&gt; &quot;abcXYZ&quot;
+p &quot;Access&quot;.swapcase   # =&gt; &quot;aCCESS&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/swapcase=21.html">String#swapcase!</a>, <a href="../method/-string/i/upcase.html">String#upcase</a>, <a href="../method/-string/i/downcase.html">String#downcase</a>, <a href="../method/-string/i/capitalize.html">String#capitalize</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SWAPCASE--21"><code>swapcase! -&gt; self | nil</code><span class="permalink">[<a href="../method/-string/i/swapcase=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-swapcase-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+'A' から 'Z' までのアルファベット大文字を小文字に、
+'a' から 'z' までのアルファベット小文字を大文字に、破壊的に変更します。
+</p>
+<p>
+swapcase! は self を変更して返しますが、
+置換が起こらなかった場合は nil を返します。
+</p>
+<p>
+このメソッドはマルチバイト文字を認識しません。
+</p>
+<p>
+例:
+</p>
+<pre>
+str = &quot;ABCxyz&quot;
+str.swapcase!
+p str   # =&gt; &quot;abcXYZ&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/swapcase.html">String#swapcase</a>, <a href="../method/-string/i/upcase=21.html">String#upcase!</a>, <a href="../method/-string/i/downcase=21.html">String#downcase!</a>, <a href="../method/-string/i/capitalize=21.html">String#capitalize!</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_C"><code>to_c -&gt; Complex</code><span class="permalink">[<a href="../method/-string/i/to_c.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-to_c">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を複素数 (<a href="../class/-complex.html">Complex</a>) に変換した結果を返します。
+</p>
+<p>
+以下の形式を解析できます。i、j は大文字、小文字のどちらでも解析できます。
+</p>
+<ul>
+<li>実部+虚部i</li>
+<li>実部+虚部j</li>
+<li>絶対値@偏角</li>
+</ul>
+<p>
+それぞれの数値は以下のいずれかの形式で指定します。先頭の空白文字や複素
+数値の後にある文字列は無視されます。また、数値オブジェクトと同様に各桁
+の間に「_」を入れる事ができます。
+</p>
+<ul>
+<li>&quot;1/3&quot; のような分数の形式</li>
+<li>&quot;0.3&quot; のような10進数の形式</li>
+<li>&quot;0.3E0&quot; のような x.xEn の形式</li>
+</ul>
+<p>
+自身が解析できない値であった場合は 0+0i を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+'9'.to_c           # =&gt; (9+0i)
+'2.5'.to_c         # =&gt; (2.5+0i)
+'2.5/1'.to_c       # =&gt; ((5/2)+0i)
+'-3/2'.to_c        # =&gt; ((-3/2)+0i)
+'-i'.to_c          # =&gt; (0-1i)
+'45i'.to_c         # =&gt; (0+45i)
+'3-4i'.to_c        # =&gt; (3-4i)
+'-4e2-4e-2i'.to_c  # =&gt; (-400.0-0.04i)
+'-0.0-0.0i'.to_c   # =&gt; (-0.0-0.0i)
+'1/2+3/4i'.to_c    # =&gt; ((1/2)+(3/4)*i)
+'10@10'.to_c       # =&gt; (-8.390715290764524-5.440211108893697i)
+'-0.3_3'.to_c      # =&gt; (-0.33+0i)
+&quot; \t\r\n5+3i&quot;.to_c # =&gt; (5+3i)
+'5+3ix'.to_c       # =&gt; (5+3i)
+'ruby'.to_c        # =&gt; (0+0i)
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_F"><code>to_f -&gt; Float</code><span class="permalink">[<a href="../method/-string/i/to_f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-to_f">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列を 10 進数表現と解釈して、浮動小数点数 <a href="../class/-float.html">Float</a> に変換します。
+</p>
+<p>
+浮動小数点数とみなせなくなるところまでを変換対象とします。
+変換対象が空文字列であれば 0.0 を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;10&quot;.to_f    # =&gt; 10.0
+p &quot;10e2&quot;.to_f  # =&gt; 1000.0
+p &quot;1e-2&quot;.to_f  # =&gt; 0.01
+p &quot;.1&quot;.to_f    # =&gt; 0.1
+
+p &quot;nan&quot;.to_f   # =&gt; 0.0
+p &quot;INF&quot;.to_f   # =&gt; 0.0
+p &quot;-Inf&quot;.to_f  # =&gt; -0.0
+p((&quot;10&quot; * 1000).to_f)   # =&gt; Infinity (with warning)
+
+p &quot;&quot;.to_f      # =&gt; 0.0
+p &quot;1_0_0&quot;.to_f # =&gt; 100.0
+p &quot; \n10&quot;.to_f # =&gt; 10.0       # 先頭の空白は無視される
+p &quot;0xa.a&quot;.to_f # =&gt; 0.0
+</pre>
+<p>
+なお、このメソッドの逆に、数値を文字列に変換するには
+<a href="../method/-kernel/m/sprintf.html">Kernel.#sprintf</a>,<a href="../method/-string/i/=25.html">String#%</a>,<a href="../method/-integer/i/to_s.html">Integer#to_s</a>
+を使用します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/hex.html">String#hex</a>, <a href="../method/-string/i/oct.html">String#oct</a>, <a href="../method/-string/i/to_i.html">String#to_i</a>,
+     <a href="../method/-kernel/m/-integer.html">Kernel.#Integer</a>, <a href="../method/-kernel/m/-float.html">Kernel.#Float</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_I"><code>to_i(base = 10) -&gt; Integer</code><span class="permalink">[<a href="../method/-string/i/to_i.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-to_i">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列を 10 進数表現された整数であると解釈して、整数に変換します。
+</p>
+<pre>
+p &quot; 10&quot;.to_i    # =&gt; 10
+p &quot;+10&quot;.to_i    # =&gt; 10
+p &quot;-10&quot;.to_i    # =&gt; -10
+
+p &quot;010&quot;.to_i    # =&gt; 10
+p &quot;-010&quot;.to_i   # =&gt; -10
+</pre>
+<p>
+整数とみなせない文字があればそこまでを変換対象とします。
+変換対象が空文字列であれば 0 を返します。
+</p>
+<pre>
+p &quot;0x11&quot;.to_i   # =&gt; 0
+p &quot;&quot;.to_i       # =&gt; 0
+</pre>
+<p>
+基数を指定することでデフォルトの 10 進以外に 2 〜 36 進数表現へ変換できます。
+それぞれ Ruby の整数リテラルで使用可能なプリフィクスは無視されます。
+また、base に 0 を指定するとプリフィクスから基数を判断します。
+認識できるプリフィクスは、
+0b (2 進数)、0 (8 進数)、0o (8 進数)、0d (10 進数)、0x (16 進数) です。
+</p>
+<p>
+0, 2 〜 36 以外の引数を指定した場合は
+例外 <a href="../class/-argument-error.html">ArgumentError</a> が発生します。
+</p>
+<pre>
+p &quot;01&quot;.to_i(2)    # =&gt; 1
+p &quot;0b1&quot;.to_i(2)   # =&gt; 1
+
+p &quot;07&quot;.to_i(8)    # =&gt; 7
+p &quot;0o7&quot;.to_i(8)   # =&gt; 7
+
+p &quot;1f&quot;.to_i(16)   # =&gt; 31
+p &quot;0x1f&quot;.to_i(16) # =&gt; 31
+
+p &quot;0b10&quot;.to_i(0)  # =&gt; 2
+p &quot;0o10&quot;.to_i(0)  # =&gt; 8
+p &quot;010&quot;.to_i(0)   # =&gt; 8
+p &quot;0d10&quot;.to_i(0)  # =&gt; 10
+p &quot;0x10&quot;.to_i(0)  # =&gt; 16
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] base:</dt>
+<dd>
+進数を指定する整数。0 か、2〜36 の整数。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+整数
+</dd>
+</dl>
+<p>
+このメソッドの逆に数値を文字列に変換するには、
+<a href="../method/-kernel/m/sprintf.html">Kernel.#sprintf</a>, <a href="../method/-string/i/=25.html">String#%</a>, <a href="../method/-integer/i/to_s.html">Integer#to_s</a>
+を使用します。
+</p>
+<p>
+<a href="../method/-string/i/hex.html">String#hex</a>, <a href="../method/-string/i/oct.html">String#oct</a>, <a href="../method/-string/i/to_f.html">String#to_f</a>,
+<a href="../method/-kernel/m/-integer.html">Kernel.#Integer</a>, <a href="../method/-kernel/m/-float.html">Kernel.#Float</a>
+も参照してください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_R"><code>to_r -&gt; Rational</code><span class="permalink">[<a href="../method/-string/i/to_r.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-to_r">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を有理数(<a href="../class/-rational.html">Rational</a>)に変換した結果を返します。
+</p>
+<p>
+<a href="../method/-kernel/m/-rational.html">Kernel.#Rational</a> に文字列を指定した時のように、以下のいずれかの形
+式で指定します。
+</p>
+<ul>
+<li>&quot;1/3&quot; のような分数の形式</li>
+<li>&quot;0.3&quot; のような10進数の形式</li>
+<li>&quot;0.3E0&quot; のような x.xEn の形式</li>
+<li>数字をアンダースコアで繋いだ形式</li>
+</ul>
+<p>
+例:
+</p>
+<pre>
+'  2  '.to_r       # =&gt; (2/1)
+'1/3'.to_r         # =&gt; (1/3)
+'-9.2'.to_r        # =&gt; (-46/5)
+'-9.2E2'.to_r      # =&gt; (-920/1)
+'1_234_567'.to_r   # =&gt; (1234567/1)
+'1_234/5_678'.to_r # =&gt; (617/2839)
+</pre>
+<p>
+<a href="../method/-kernel/m/-rational.html">Kernel.#Rational</a> に文字列を指定した時とは異なる点もあります。
+</p>
+<p>
+途中に変換できないような文字列が入っていた場合は、それより先の文字列は
+無視されます。
+</p>
+<pre>
+'21 june 09'.to_r  # =&gt; (21/1)
+'21/06/09'.to_r    # =&gt; (7/2)   # 21/6 を約分して 7/2。
+</pre>
+<p>
+変換できないような文字列を指定した場合は 0/1 を返します。
+</p>
+<pre>
+'foo'.to_r         # =&gt; (0/1)
+''.to_r            # =&gt; (0/1)
+'bwv 1079'.to_r    # =&gt; (0/1)
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/m/-rational.html">Kernel.#Rational</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_S"><code>to_s -&gt; String</code><span class="permalink">[<a href="../method/-string/i/to_s.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-to_s">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_str -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+self を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;str&quot;.to_s     # =&gt; &quot;str&quot;
+p &quot;str&quot;.to_str   # =&gt; &quot;str&quot;
+</pre>
+<p>
+このメソッドは、文字列を他のクラスのインスタンスと混ぜて処理したいときに有効です。
+例えば返り値が文字列か nil であるメソッド some_method があるとき、
+to_s メソッドを使うと以下のように統一的に処理できます。
+</p>
+<pre>
+# some_method(5).downcase だと返り値が nil のときに
+# エラーになるので to_s をはさむ
+p some_method(5).to_s.downcase
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TR"><code>tr(pattern, replace) -&gt; String</code><span class="permalink">[<a href="../method/-string/i/tr.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-tr">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+pattern 文字列に含まれる文字を検索し、
+それを replace 文字列の対応する文字に置き換えます。
+</p>
+<p>
+pattern の形式は <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/utilities/tr.html">tr(1)</a> と同じです。つまり、
+`a-c' は a から c を意味し、&quot;^0-9&quot; のように
+文字列の先頭が `^' の場合は指定文字以外が置換の対象になります。
+</p>
+<p>
+replace に対しても `-' による範囲指定が可能です。
+例えば <a href="../method/-string/i/upcase.html">String#upcase</a> は tr を使って
+&quot;foo&quot;.tr('a-z', 'A-Z') と書けます。
+</p>
+<p>
+`-' は文字列の両端にない場合にだけ範囲指定の意味になります。
+`^' も文字列の先頭にあるときにだけ否定の効果を発揮します。
+また、`-', `^', `\' はバックスラッシュ (`\') によりエスケープできます。
+</p>
+<p>
+replace の範囲が pattern の範囲よりも小さい場合は、
+replace の最後の文字が無限に続くものとして扱われます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字のパターン
+</dd>
+<dt class='method-param'>[PARAM] replace:</dt>
+<dd>
+pattern で指定した文字を置き換える文字
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;foo&quot;.tr(&quot;f&quot;, &quot;X&quot;)      # =&gt; &quot;Xoo&quot;
+p &quot;foo&quot;.tr('a-z', 'A-Z')  # =&gt; &quot;FOO&quot;
+p &quot;FOO&quot;.tr('A-Z', 'a-z')  # =&gt; &quot;foo&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/tr_s.html">String#tr_s</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TR--21"><code>tr!(pattern, replace) -&gt; self | nil</code><span class="permalink">[<a href="../method/-string/i/tr=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-tr-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+pattern 文字列に含まれる文字を検索し、
+それを replace 文字列の対応する文字に破壊的に置き換えます。
+</p>
+<p>
+pattern の形式は <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/utilities/tr.html">tr(1)</a> と同じです。
+つまり、`a-c' は a から c を意味し、
+&quot;^0-9&quot; のように文字列の先頭が `^' の場合は
+指定文字以外が置換の対象になります。
+</p>
+<p>
+replace に対しても `-' による範囲指定が可能です。
+例えば、<a href="../method/-string/i/upcase.html">String#upcase</a> を tr で書くと、
+</p>
+<pre>
+p &quot;foo&quot;.tr('a-z', 'A-Z')
+=&gt; &quot;FOO&quot;
+</pre>
+<p>
+となります。
+</p>
+<p>
+`-' は文字列の両端にない場合にだけ範囲指定の意味になります。
+`^' も文字列の先頭にあるときにだけ否定の効果を発揮します。
+また、`-', `^', `\' はバックスラッシュ (`\') によりエスケープできます。
+</p>
+<p>
+replace の範囲が pattern の範囲よりも小さい場合は、
+replace の最後の文字が無限に続くものと扱われます。
+</p>
+<p>
+tr! は self を変更して返しますが、
+置換が起こらなかった場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字のパターン
+</dd>
+<dt class='method-param'>[PARAM] replace:</dt>
+<dd>
+pattern で指定した文字を置き換える文字
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/tr.html">String#tr</a>, <a href="../method/-string/i/tr_s.html">String#tr_s</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TR_S"><code>tr_s(pattern, replace) -&gt; String</code><span class="permalink">[<a href="../method/-string/i/tr_s.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-tr_s">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列の中に pattern 文字列に含まれる文字が存在したら、
+replace 文字列の対応する文字に置き換えます。さらに、
+置換した部分内に同一の文字の並びがあったらそれを 1 文字に圧縮します。
+</p>
+<p>
+pattern の形式は <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/utilities/tr.html">tr(1)</a> と同じです。
+つまり「a-c」は a から c を意味し、
+&quot;^0-9&quot; のように文字列の先頭が「^」の場合は指定した文字以外が置換の対象になります。
+</p>
+<p>
+replace でも「-」を使って範囲を指定できます。
+</p>
+<p>
+「-」は文字列の両端にない場合にだけ範囲指定の意味になります。
+同様に、「^」もその効果は文字列の先頭にあるときだけです。
+また、「-」、「^」、「\」はバックスラッシュ (「\」) でエスケープできます。
+</p>
+<p>
+replace の範囲が pattern の範囲よりも小さい場合、
+replace の最後の文字が無限に続くものとして扱われます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字のパターン
+</dd>
+<dt class='method-param'>[PARAM] replace:</dt>
+<dd>
+pattern で指定した文字を置き換える文字
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;gooooogle&quot;.tr_s(&quot;o&quot;, &quot;X&quot;)       # =&gt; &quot;gXgle&quot;
+p &quot;gooooogle&quot;.tr_s(&quot;a-z&quot;, &quot;A-Z&quot;)   # =&gt; &quot;GOGLE&quot;
+</pre>
+<p>
+注意:
+一般に、tr_s を tr と squeeze で置き換えることはできません。
+tr と squeeze の組みあわせでは tr の置換後の文字列全体を squeeze しますが、
+tr_s は置換された部分だけを squeeze します。
+以下のコードを参照してください。
+</p>
+<pre>
+p &quot;foo&quot;.tr_s(&quot;o&quot;, &quot;f&quot;)              # =&gt; &quot;ff&quot;
+p &quot;foo&quot;.tr(&quot;o&quot;, &quot;f&quot;).squeeze(&quot;f&quot;)   # =&gt; &quot;f&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/tr.html">String#tr</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TR_S--21"><code>tr_s!(pattern, replace) -&gt; self | nil</code><span class="permalink">[<a href="../method/-string/i/tr_s=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-tr_s-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列の中に pattern 文字列に含まれる文字が存在したら、
+replace 文字列の対応する文字に置き換えます。さらに、
+置換した部分内に同一の文字の並びがあったらそれを 1 文字に圧縮します。
+</p>
+<p>
+pattern の形式は <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/utilities/tr.html">tr(1)</a> と同じです。
+つまり「a-c」は a から c を意味し、
+&quot;^0-9&quot; のように文字列の先頭が「^」の場合は指定した文字以外が置換の対象になります。
+</p>
+<p>
+replace でも「-」を使って範囲を指定できます。
+</p>
+<pre>
+p &quot;gooooogle&quot;.tr_s(&quot;a-z&quot;, &quot;A-Z&quot;)   # =&gt; &quot;GOGLE&quot;
+</pre>
+<p>
+「-」は文字列の両端にない場合にだけ範囲指定の意味になります。
+同様に、「^」もその効果は文字列の先頭にあるときだけです。
+また、「-」、「^」、「\」はバックスラッシュ (「\」) でエスケープできます。
+</p>
+<p>
+replace の範囲が search の範囲よりも小さい場合、
+replace の最後の文字が無限に続くものとして扱われます。
+</p>
+<p>
+tr_s は置換後の文字列を生成して返します。
+tr_s! は self を変更して返しますが、
+置換が起こらなかった場合は nil を返します。
+</p>
+<p>
+注意:
+一般に、tr_s! を tr! と squeeze! で置き換えることはできません。
+tr! と squeeze! の組みあわせでは tr! の置換後の文字列全体を squeeze! しますが、
+tr_s! は置換された部分だけを squeeze! します。
+以下のコードを参照してください。
+</p>
+<pre>
+str = &quot;foo&quot;
+str.tr_s!(&quot;o&quot;, &quot;f&quot;)
+p str   # =&gt; &quot;ff&quot;
+
+str = &quot;foo&quot;
+str.tr!(&quot;o&quot;, &quot;f&quot;)
+str.squeeze!(&quot;f&quot;)
+p str   # =&gt; &quot;f&quot;
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字のパターン
+</dd>
+<dt class='method-param'>[PARAM] replace:</dt>
+<dd>
+pattern で指定した文字を置き換える文字
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/tr.html">String#tr</a>, <a href="../method/-string/i/tr_s.html">String#tr_s</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_UNICODE_NORMALIZE"><code>unicode_normalize(form = :nfc) -&gt; String</code><span class="permalink">[<a href="../method/-string/i/unicode_normalize.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-unicode_normalize">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self を NFC、NFD、NFKC、NFKD のいずれかの正規化形式で Unicode 正規化し
+た文字列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] form:</dt>
+<dd>
+正規化形式を :nfc、:nfd、:nfkc、:nfkd のいずれかで指定しま
+す。省略した場合は :nfc になります。
+</dd>
+<dt>[EXCEPTION] Encoding::CompatibilityError:</dt>
+<dd>
+self が Unicode 文字列ではない場合
+に発生します。
+</dd>
+</dl>
+<p>
+このメソッドでの &quot;Unicode 文字列&quot; とは、UTF-8、UTF-16BE/LE、
+UTF-32BE/LE だけではなく GB18030、UCS_2BE、and UCS_4BE を含みます。
+</p>
+<p>
+また、self が UTF-8 以外のエンコーディングであった場合は一度 UTF-8 に変
+換してから正規化されるため、UTF-8 よりも遅くなっています。
+</p>
+<p>
+例:
+</p>
+<pre>
+&quot;a\u0300&quot;.unicode_normalize        # =&gt; 'à' (&quot;\u00E0&quot; と同じ)
+&quot;a\u0300&quot;.unicode_normalize(:nfc)  # =&gt; 'à' (&quot;\u00E0&quot; と同じ)
+&quot;\u00E0&quot;.unicode_normalize(:nfd)   # =&gt; 'à' (&quot;a\u0300&quot; と同じ)
+&quot;\xE0&quot;.force_encoding('ISO-8859-1').unicode_normalize(:nfd)
+                                   # =&gt; Encoding::CompatibilityError raised
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/unicode_normalize=21.html">String#unicode_normalize!</a>, <a href="../method/-string/i/unicode_normalized=3f.html">String#unicode_normalized?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_UNICODE_NORMALIZE--21"><code>unicode_normalize!(form = :nfc) -&gt; self</code><span class="permalink">[<a href="../method/-string/i/unicode_normalize=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-unicode_normalize-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self を NFC、NFD、NFKC、NFKD のいずれかの正規化形式で Unicode 正規化し
+た文字列に置き換えます。
+</p>
+<p>
+(gsub!などと異なり)変換が行なわれなくても self を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] form:</dt>
+<dd>
+正規化形式を :nfc、:nfd、:nfkc、:nfkd のいずれかで指定しま
+す。省略した場合は :nfc になります。
+</dd>
+<dt>[EXCEPTION] Encoding::CompatibilityError:</dt>
+<dd>
+self が Unicode 文字列ではない場合
+に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/unicode_normalize.html">String#unicode_normalize</a>, <a href="../method/-string/i/unicode_normalized=3f.html">String#unicode_normalized?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_UNICODE_NORMALIZED--3F"><code>unicode_normalized?(form = :nfc) -&gt; bool</code><span class="permalink">[<a href="../method/-string/i/unicode_normalized=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-unicode_normalized-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self が引数 form で指定された正規化形式で Unicode 正規化された文字列か
+どうかを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] form:</dt>
+<dd>
+正規化形式を :nfc、:nfd、:nfkc、:nfkd のいずれかで指定しま
+す。省略した場合は :nfc になります。
+</dd>
+<dt>[EXCEPTION] Encoding::CompatibilityError:</dt>
+<dd>
+self が Unicode 文字列ではない場合
+に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+&quot;a\u0300&quot;.unicode_normalized?        # =&gt; false
+&quot;a\u0300&quot;.unicode_normalized?(:nfd)  # =&gt; true
+&quot;\u00E0&quot;.unicode_normalized?         # =&gt; true
+&quot;\u00E0&quot;.unicode_normalized?(:nfd)   # =&gt; false
+&quot;\xE0&quot;.force_encoding('ISO-8859-1').unicode_normalized?
+                                     # =&gt; Encoding::CompatibilityError raised
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/unicode_normalize.html">String#unicode_normalize</a>, <a href="../method/-string/i/unicode_normalize=21.html">String#unicode_normalize!</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_UNPACK"><code>unpack(template) -&gt; Array</code><span class="permalink">[<a href="../method/-string/i/unpack.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-unpack">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-array/i/pack.html">Array#pack</a> で生成された文字列を
+テンプレート文字列 template にしたがってアンパックし、
+それらの要素を含む配列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] template:</dt>
+<dd>
+pack テンプレート文字列
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+オブジェクトの配列
+</dd>
+</dl>
+<p>
+以下にあげるものは、<a href="../method/-array/i/pack.html">Array#pack</a>、<a href="../method/-string/i/unpack.html">String#unpack</a>
+のテンプレート文字の一覧です。テンプレート文字は後に「長さ」を表す数字
+を続けることができます。「長さ」の代わりに`*'とすることで「残り全て」
+を表すこともできます。
+</p>
+<p>
+長さの意味はテンプレート文字により異なりますが大抵、
+</p>
+<pre>
+&quot;iiii&quot;
+</pre>
+<p>
+のように連続するテンプレート文字は
+</p>
+<pre>
+&quot;i4&quot;
+</pre>
+<p>
+と書き換えることができます。
+</p>
+<p>
+テンプレート文字列中の空白類は無視されます。
+また、`#' から改行あるいはテンプレート文字列の最後まではコメントとみな
+され無視されます。
+</p>
+<h4 >整数のテンプレート文字のシステム依存性</h4>
+<p>
+各テンプレート文字の説明の中で、
+short や long はシステムによらずそれぞれ 2, 4バイトサ
+イズの数値(32ビットマシンで一般的なshort, longのサイズ)を意味していま
+す。s, S, l, L に対しては直後に _ または ! を &quot;s_&quot; あるいは &quot;s!&quot; のように
+続けることでシステム依存の short, long のサイズにすることもできます。
+</p>
+<p>
+i, I (int)のサイズは常にシステム依存であり、n, N, v, V
+のサイズは常にシステム依存ではない(!をつけられない)ことに注意してください。
+</p>
+<p>
+つまり、<a href="../method/-i-o/i/ioctl.html">IO#ioctl</a> などで C の構造体を渡すときのように、
+システム依存のサイズとエンディアンに合わせる必要があるときには
+s!, S!, i!, I!, l!, L!, q!, Q! を用います。
+また、ネットワークプロトコルやファイルフォーマットのように、
+システムに依存しないデータを扱うときには
+n, N, v, V を用います。
+</p>
+<p>
+強制的にエンディアンを指定したいときは、
+リトルエンディアンなら&lt;
+ビッグエンディアンなら&gt;
+を後ろにつけます。!と組み合わせることも可能です。
+</p>
+<p>
+まとめると以下のようになります。
+</p>
+<dl>
+<dt>エンディアン非依存、整数サイズ非依存 (ネットワークプロトコルなどに適切)</dt>
+<dd>
+<pre>
+  n: big endian unsigned 16bit
+  N: big endian unsigned 32bit
+  v: little endian unsigned 16bit
+  V: little endian unsigned 32bit
+</pre>
+</dd>
+<dt>エンディアン依存、整数サイズ依存 (C の構造体などに適切)</dt>
+<dd>
+<pre>
+  s!: signed short
+  S!: unsigned short
+  i!: signed int
+  I!: unsigned int
+  l!: signed long
+  L!: unsigned long
+  q!: signed long long
+  Q!: unsigned long long
+</pre>
+</dd>
+<dt>エンディアン依存、整数サイズ非依存 (C99 の stdint.h にある厳密な幅を持つ整数型に適切)</dt>
+<dd>
+<pre>
+  s: int16_t
+  S: uint16_t
+  l: int32_t
+  L: uint32_t
+</pre>
+</dd>
+<dt>エンディアンの強制指定(バイナリ解析などに適切)</dt>
+<dd>
+<pre>
+  S&gt;:  big endian unsigned 16bit(nと同じ)
+  s&gt;:  big endian int16_t
+  s!&gt;: big endian signed short
+  l&lt;:  little endian int32_t
+  l!&lt;: little endian signed long
+</pre>
+</dd>
+</dl>
+<h4 >各テンプレート文字の説明</h4>
+<p>
+説明中、<a href="../method/-array/i/pack.html">Array#pack</a> と <a href="../method/-string/i/unpack.html">String#unpack</a> で違いのあるものは `/' で区切って
+「Array#pack の説明 / String#unpack の説明」としています。
+</p>
+<dl>
+<dt>a</dt>
+<dd>
+<p>
+ASCII文字列(null文字を詰める/後続するnull文字やスペースを残す)
+</p>
+<pre>
+    [&quot;abc&quot;].pack(&quot;a&quot;)    # =&gt; &quot;a&quot;
+    [&quot;abc&quot;].pack(&quot;a*&quot;)   # =&gt; &quot;abc&quot;
+    [&quot;abc&quot;].pack(&quot;a4&quot;)   # =&gt; &quot;abc\0&quot;
+
+    &quot;abc\0&quot;.unpack(&quot;a4&quot;) # =&gt; [&quot;abc\0&quot;]
+    &quot;abc &quot;.unpack(&quot;a4&quot;)  # =&gt; [&quot;abc &quot;]
+</pre>
+</dd>
+<dt>A</dt>
+<dd>
+<p>
+ASCII文字列(スペースを詰める/後続するnull文字やスペースを削除)
+</p>
+<pre>
+    [&quot;abc&quot;].pack(&quot;A&quot;)    # =&gt; &quot;a&quot;
+    [&quot;abc&quot;].pack(&quot;A*&quot;)   # =&gt; &quot;abc&quot;
+    [&quot;abc&quot;].pack(&quot;A4&quot;)   # =&gt; &quot;abc &quot;
+
+    &quot;abc &quot;.unpack(&quot;A4&quot;)  # =&gt; [&quot;abc&quot;]
+    &quot;abc\0&quot;.unpack(&quot;A4&quot;) # =&gt; [&quot;abc&quot;]
+</pre>
+</dd>
+<dt>Z</dt>
+<dd>
+<p>
+null終端文字列(長さが`*'の場合も含め、null文字を詰める/後続するnull文字を削除)
+</p>
+<pre>
+    [&quot;abc&quot;].pack(&quot;Z&quot;)  # =&gt; &quot;a&quot;
+    [&quot;abc&quot;].pack(&quot;Z*&quot;) # =&gt; &quot;abc\0&quot;
+    [&quot;abc&quot;].pack(&quot;Z4&quot;) # =&gt; &quot;abc\0&quot;
+
+    &quot;abc\0&quot;.unpack(&quot;Z4&quot;) # =&gt; [&quot;abc&quot;]
+    &quot;abc &quot;.unpack(&quot;Z4&quot;)  # =&gt; [&quot;abc &quot;]
+</pre>
+</dd>
+<dt>b</dt>
+<dd>
+<p>
+ビットストリング(各バイトごとに下位ビットから上位ビット)
+</p>
+<pre>
+    &quot;\377\000&quot;.unpack(&quot;b*&quot;) # =&gt; [&quot;1111111100000000&quot;]
+    &quot;\001\002&quot;.unpack(&quot;b*&quot;) # =&gt; [&quot;1000000001000000&quot;]
+    &quot;\001\002&quot;.unpack(&quot;b3&quot;) # =&gt; [&quot;100&quot;]
+
+
+    [&quot;1000000001000000&quot;].pack(&quot;b*&quot;) # =&gt; &quot;\001\002&quot;
+</pre>
+</dd>
+<dt>B</dt>
+<dd>
+<p>
+ビットストリング(各バイトごとに上位ビットから下位ビット)
+</p>
+<pre>
+    &quot;\377\000&quot;.unpack(&quot;B*&quot;)  # =&gt; [&quot;1111111100000000&quot;]
+    &quot;\001\002&quot;.unpack(&quot;B*&quot;)  # =&gt; [&quot;0000000100000010&quot;]
+    &quot;\001\002&quot;.unpack(&quot;B9&quot;)  # =&gt; [&quot;000000010&quot;]
+    &quot;\001\002&quot;.unpack(&quot;B15&quot;) # =&gt; [&quot;000000010000001&quot;]
+
+    [&quot;0000000100000010&quot;].pack(&quot;B*&quot;)  # =&gt; &quot;\001\002&quot;
+    [&quot;0000000100000010&quot;].pack(&quot;B0&quot;)  # =&gt; &quot;&quot;
+    [&quot;0000000100000010&quot;].pack(&quot;B1&quot;)  # =&gt; &quot;\000&quot;
+    [&quot;0000000100000010&quot;].pack(&quot;B7&quot;)  # =&gt; &quot;\000&quot;
+    [&quot;0000000100000010&quot;].pack(&quot;B8&quot;)  # =&gt; &quot;\001&quot;
+    [&quot;0000000100000010&quot;].pack(&quot;B9&quot;)  # =&gt; &quot;\001\000&quot;
+    [&quot;0000000100000010&quot;].pack(&quot;B14&quot;) # =&gt; &quot;\001\000&quot;
+    [&quot;0000000100000010&quot;].pack(&quot;B15&quot;) # =&gt; &quot;\001\002&quot;
+    [&quot;0000000100000010&quot;].pack(&quot;B16&quot;) # =&gt; &quot;\001\002&quot;
+</pre>
+</dd>
+<dt>h</dt>
+<dd>
+<p>
+16進文字列(下位ニブルが先)
+</p>
+<pre>
+    &quot;\x01\xfe&quot;.unpack(&quot;h*&quot;) # =&gt; [&quot;10ef&quot;]
+    &quot;\x01\xfe&quot;.unpack(&quot;h3&quot;) # =&gt; [&quot;10e&quot;]
+
+    [&quot;10ef&quot;].pack(&quot;h*&quot;) # =&gt; &quot;\001\376&quot;
+</pre>
+</dd>
+<dt>H</dt>
+<dd>
+<p>
+16進文字列(上位ニブルが先)
+</p>
+<pre>
+    &quot;\x01\xfe&quot;.unpack(&quot;H*&quot;) # =&gt; [&quot;01fe&quot;]
+    &quot;\x01\xfe&quot;.unpack(&quot;H3&quot;) # =&gt; [&quot;01f&quot;]
+    &quot;~&quot;.unpack(&quot;H2&quot;)        # =&gt; [&quot;7e&quot;]
+
+    [&quot;01fe&quot;].pack(&quot;H*&quot;) # =&gt; &quot;\001\376&quot;
+    [&quot;7e&quot;].pack(&quot;H2&quot;)   # =&gt; &quot;~&quot;
+</pre>
+</dd>
+<dt>c</dt>
+<dd>
+<p>
+char (8bit 符号つき整数)
+</p>
+<pre>
+    &quot;\001\376&quot;.unpack(&quot;c*&quot;) # =&gt; [1, -2]
+
+    [1, -2].pack(&quot;c*&quot;)  # =&gt; &quot;\001\376&quot;
+    [1, 254].pack(&quot;c*&quot;) # =&gt; &quot;\001\376&quot;
+</pre>
+</dd>
+<dt>C</dt>
+<dd>
+<p>
+unsigned char (8bit 符号なし整数)
+</p>
+<pre>
+    &quot;\001\376&quot;.unpack(&quot;C*&quot;) # =&gt; [1, 254]
+
+    [1, -2].pack(&quot;C*&quot;)  # =&gt; &quot;\001\376&quot;
+    [1, 254].pack(&quot;C*&quot;) # =&gt; &quot;\001\376&quot;
+</pre>
+</dd>
+<dt>s</dt>
+<dd>
+<p>
+short (16bit 符号つき整数, エンディアンに依存)
+(s! は 16bit でなく、short のサイズに依存)
+</p>
+<p>
+リトルエンディアン:
+</p>
+<pre>
+    &quot;\001\002\376\375&quot;.unpack(&quot;s*&quot;) # =&gt; [513, -514]
+
+    [513, 65022].pack(&quot;s*&quot;) # =&gt; &quot;\001\002\376\375&quot;
+    [513, -514].pack(&quot;s*&quot;)  # =&gt; &quot;\001\002\376\375&quot;
+</pre>
+<p>
+ビッグエンディアン:
+</p>
+<pre>
+    &quot;\001\002\376\375&quot;.unpack(&quot;s*&quot;) # =&gt; [258, -259]
+
+    [258, 65277].pack(&quot;s*&quot;) # =&gt; &quot;\001\002\376\375&quot;
+    [258, -259].pack(&quot;s*&quot;)  # =&gt; &quot;\001\002\376\375&quot;
+</pre>
+</dd>
+<dt>S</dt>
+<dd>
+<p>
+unsigned short (16bit 符号なし整数, エンディアンに依存)
+(S! は 16bit でなく、short のサイズに依存)
+</p>
+<p>
+リトルエンディアン:
+</p>
+<pre>
+    &quot;\001\002\376\375&quot;.unpack(&quot;S*&quot;) # =&gt; [513, 65022]
+
+    [513, 65022].pack(&quot;s*&quot;) # =&gt; &quot;\001\002\376\375&quot;
+    [513, -514].pack(&quot;s*&quot;)  # =&gt; &quot;\001\002\376\375&quot;
+</pre>
+<p>
+ビッグエンディアン:
+</p>
+<pre>
+    &quot;\001\002\376\375&quot;.unpack(&quot;S*&quot;) # =&gt; [258, 65277]
+
+    [258, 65277].pack(&quot;S*&quot;) # =&gt; &quot;\001\002\376\375&quot;
+    [258, -259].pack(&quot;S*&quot;)  # =&gt; &quot;\001\002\376\375&quot;
+</pre>
+</dd>
+<dt>i</dt>
+<dd>
+<p>
+int (符号つき整数, エンディアンと int のサイズに依存)
+</p>
+<p>
+リトルエンディアン, 32bit int:
+</p>
+<pre>
+    &quot;\001\002\003\004\377\376\375\374&quot;.unpack(&quot;i*&quot;) # =&gt; [67305985, -50462977]
+
+    [67305985, 4244504319].pack(&quot;i*&quot;) # =&gt; RangeError
+    [67305985, -50462977].pack(&quot;i*&quot;)  # =&gt; &quot;\001\002\003\004\377\376\375\374&quot;
+</pre>
+<p>
+ビッグエンディアン, 32bit int:
+</p>
+<pre>
+    &quot;\001\002\003\004\377\376\375\374&quot;.unpack(&quot;i*&quot;) # =&gt; [16909060, -66052]
+
+    [16909060, 4294901244].pack(&quot;i*&quot;) # =&gt; RangeError
+    [16909060, -66052].pack(&quot;i*&quot;)     # =&gt; &quot;\001\002\003\004\377\376\375\374&quot;
+</pre>
+</dd>
+<dt>I</dt>
+<dd>
+<p>
+unsigned int (符号なし整数, エンディアンと int のサイズに依存)
+</p>
+<p>
+リトルエンディアン, 32bit int:
+</p>
+<pre>
+    &quot;\001\002\003\004\377\376\375\374&quot;.unpack(&quot;I*&quot;) # =&gt; [67305985, 4244504319]
+
+    [67305985, 4244504319].pack(&quot;I*&quot;) # =&gt; &quot;\001\002\003\004\377\376\375\374&quot;
+    [67305985, -50462977].pack(&quot;I*&quot;)  # =&gt; &quot;\001\002\003\004\377\376\375\374&quot;
+</pre>
+<p>
+ビッグエンディアン, 32bit int:
+</p>
+<pre>
+    &quot;\001\002\003\004\377\376\375\374&quot;.unpack(&quot;I*&quot;) # =&gt; [16909060, 4294901244]
+
+    [16909060, 4294901244].pack(&quot;I*&quot;) # =&gt; &quot;\001\002\003\004\377\376\375\374&quot;
+    [16909060, -66052].pack(&quot;I*&quot;)     # =&gt; &quot;\001\002\003\004\377\376\375\374&quot;
+</pre>
+</dd>
+<dt>l</dt>
+<dd>
+<p>
+long (32bit 符号つき整数, エンディアンに依存)
+(l! は 32bit でなく、long のサイズに依存)
+</p>
+<p>
+リトルエンディアン, 32bit long:
+</p>
+<pre>
+    &quot;\001\002\003\004\377\376\375\374&quot;.unpack(&quot;l*&quot;) # =&gt; [67305985, -50462977]
+
+    [67305985, 4244504319].pack(&quot;l*&quot;) # =&gt; RangeError
+    [67305985, -50462977].pack(&quot;l*&quot;)  # =&gt; &quot;\001\002\003\004\377\376\375\374&quot;
+</pre>
+</dd>
+<dt>L</dt>
+<dd>
+<p>
+unsigned long (32bit 符号なし整数, エンディアンに依存)
+(L! は 32bit でなく、long のサイズに依存)
+</p>
+<p>
+リトルエンディアン, 32bit long:
+</p>
+<pre>
+    &quot;\001\002\003\004\377\376\375\374&quot;.unpack(&quot;L*&quot;) # =&gt; [67305985, 4244504319]
+
+    [67305985, 4244504319].pack(&quot;L*&quot;) # =&gt; &quot;\001\002\003\004\377\376\375\374&quot;
+    [67305985, -50462977].pack(&quot;L*&quot;)  # =&gt; &quot;\001\002\003\004\377\376\375\374&quot;
+</pre>
+</dd>
+<dt>q</dt>
+<dd>
+<p>
+long long (符号付き整数, エンディアンと long long のサイズに依存)
+(C で long long が扱えない場合には 64bit)
+</p>
+<p>
+リトルエンディアン, 64bit long long:
+</p>
+<pre>
+    &quot;\001\002\003\004\005\006\007\010\377\376\375\374\373\372\371\370&quot;.unpack(&quot;q*&quot;)
+    # =&gt; [578437695752307201, -506097522914230529]
+
+    [578437695752307201, -506097522914230529].pack(&quot;q*&quot;)
+    # =&gt; &quot;\001\002\003\004\005\006\a\010\377\376\375\374\373\372\371\370&quot;
+    [578437695752307201, 17940646550795321087].pack(&quot;q*&quot;)
+    # =&gt; &quot;\001\002\003\004\005\006\a\010\377\376\375\374\373\372\371\370&quot;
+</pre>
+</dd>
+<dt>Q</dt>
+<dd>
+<p>
+unsigned long long (符号なし整数, エンディアンと long long のサイズに依存)
+(C で long long が扱えない場合には 64bit)
+</p>
+<p>
+リトルエンディアン, 64bit long long:
+</p>
+<pre>
+    &quot;\001\002\003\004\005\006\007\010\377\376\375\374\373\372\371\370&quot;.unpack(&quot;Q*&quot;)
+    # =&gt; [578437695752307201, 17940646550795321087]
+
+    [578437695752307201, 17940646550795321087].pack(&quot;Q*&quot;)
+    # =&gt; &quot;\001\002\003\004\005\006\a\010\377\376\375\374\373\372\371\370&quot;
+    [578437695752307201, -506097522914230529].pack(&quot;Q*&quot;)
+    # =&gt; &quot;\001\002\003\004\005\006\a\010\377\376\375\374\373\372\371\370&quot;
+</pre>
+</dd>
+<dt>m</dt>
+<dd>
+<p>
+base64された文字列。60 オクテットごと(と最後)に改行コードが付加されます。
+</p>
+<p>
+Base64は、3オクテット(8bits * 3 = 24bits)のバイナリコードをASCII文字の
+うちの65文字 ([A-Za-z0-9+/]の64文字とpaddingのための'=')だけを使用して
+4オクテット(6bits * 4 = 24bits)の印字可能文字列に変換するエンコーディ
+ング法です。<a class="external" href="http://www.ietf.org/rfc/rfc2045.txt">[RFC2045]</a>, <a class="external" href="http://www.ietf.org/rfc/rfc4648.txt">[RFC4648]</a> で定義されています。
+</p>
+<pre>
+    [&quot;&quot;].pack(&quot;m&quot;)             # =&gt; &quot;&quot;
+    [&quot;\0&quot;].pack(&quot;m&quot;)           # =&gt; &quot;AA==\n&quot;
+    [&quot;\0\0&quot;].pack(&quot;m&quot;)         # =&gt; &quot;AAA=\n&quot;
+    [&quot;\0\0\0&quot;].pack(&quot;m&quot;)       # =&gt; &quot;AAAA\n&quot;
+    [&quot;\377&quot;].pack(&quot;m&quot;)         # =&gt; &quot;/w==\n&quot;
+    [&quot;\377\377&quot;].pack(&quot;m&quot;)     # =&gt; &quot;//8=\n&quot;
+    [&quot;\377\377\377&quot;].pack(&quot;m&quot;) # =&gt; &quot;////\n&quot;
+
+    [&quot;abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;].pack(&quot;m&quot;)
+    # =&gt; &quot;YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXpBQkNERUZHSElKS0xNTk9QUVJT\nVFVWV1hZWg==\n&quot;
+    [&quot;abcdefghijklmnopqrstuvwxyz&quot;].pack(&quot;m3&quot;)
+    # =&gt; &quot;YWJj\nZGVm\nZ2hp\namts\nbW5v\ncHFy\nc3R1\ndnd4\neXo=\n&quot;
+
+    &quot;&quot;.unpack(&quot;m&quot;)       # =&gt; [&quot;&quot;]
+    &quot;AA==\n&quot;.unpack(&quot;m&quot;) # =&gt; [&quot;\000&quot;]
+    &quot;AA==&quot;.unpack(&quot;m&quot;)   # =&gt; [&quot;\000&quot;]
+
+    &quot;YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXpBQkNERUZHSElKS0xNTk9QUVJT\nVFVWV1hZWg==\n&quot;.unpack(&quot;m&quot;)
+    # =&gt; [&quot;abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;]
+    &quot;YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXpBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWg==\n&quot;.unpack(&quot;m&quot;)
+    # =&gt; [&quot;abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;]
+</pre>
+<p>
+m0 は <a class="external" href="http://www.ietf.org/rfc/rfc4648.txt">[RFC4648]</a> 対応
+</p>
+<pre>
+    [&quot;&quot;].pack(&quot;m0&quot;)             # =&gt; &quot;&quot;
+    [&quot;\0&quot;].pack(&quot;m0&quot;)           # =&gt; &quot;AA==&quot;
+    [&quot;\0\0&quot;].pack(&quot;m0&quot;)         # =&gt; &quot;AAA=&quot;
+    [&quot;\0\0\0&quot;].pack(&quot;m0&quot;)       # =&gt; &quot;AAAA&quot;
+    [&quot;\377&quot;].pack(&quot;m0&quot;)         # =&gt; &quot;/w==&quot;
+    [&quot;\377\377&quot;].pack(&quot;m0&quot;)     # =&gt; &quot;//8=&quot;
+    [&quot;\377\377\377&quot;].pack(&quot;m0&quot;) # =&gt; &quot;////&quot;
+
+    [&quot;abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;].pack(&quot;m0&quot;)
+    # =&gt; &quot;YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXpBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWg==&quot;
+
+    &quot;&quot;.unpack(&quot;m0&quot;)       # =&gt; [&quot;&quot;]
+    &quot;AA==\n&quot;.unpack(&quot;m0&quot;) # =&gt; ArgumentError
+    &quot;AA==&quot;.unpack(&quot;m0&quot;)   # =&gt; [&quot;\x00&quot;]
+
+    &quot;YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXpBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWg==&quot;.unpack(&quot;m0&quot;)
+    # =&gt; [&quot;abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;]
+</pre>
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../library/base64.html">base64</a>
+</p>
+<dl>
+<dt>M</dt>
+<dd>
+<p>
+quoted-printable encoding された文字列
+</p>
+<pre>
+    [&quot;a b c\td \ne&quot;].pack(&quot;M&quot;) # =&gt; &quot;a b c\td =\n\ne=\n&quot;
+
+    &quot;a b c\td =\n\ne=\n&quot;.unpack(&quot;M&quot;) # =&gt; [&quot;a b c\td \ne&quot;]
+</pre>
+</dd>
+<dt>n</dt>
+<dd>
+<p>
+ネットワークバイトオーダー(ビッグエンディアン)のunsigned short (16bit 符号なし整数)
+</p>
+<pre>
+    [0,1,-1,32767,-32768,65535].pack(&quot;n*&quot;)
+    # =&gt; &quot;\000\000\000\001\377\377\177\377\200\000\377\377&quot;
+
+    &quot;\000\000\000\001\377\377\177\377\200\000\377\377&quot;.unpack(&quot;n*&quot;)
+    # =&gt; [0, 1, 65535, 32767, 32768, 65535]
+</pre>
+</dd>
+<dt>N</dt>
+<dd>
+<p>
+ネットワークバイトオーダー(ビッグエンディアン)のunsigned long (32bit 符号なし整数)
+</p>
+<pre>
+    [0,1,-1].pack(&quot;N*&quot;) # =&gt; &quot;\000\000\000\000\000\000\000\001\377\377\377\377&quot;
+
+    &quot;\000\000\000\000\000\000\000\001\377\377\377\377&quot;.unpack(&quot;N*&quot;) # =&gt; [0, 1, 4294967295]
+</pre>
+</dd>
+<dt>v</dt>
+<dd>
+<p>
+&quot;VAX&quot;バイトオーダー(リトルエンディアン)のunsigned short (16bit 符号なし整数)
+</p>
+<pre>
+    [0,1,-1,32767,-32768,65535].pack(&quot;v*&quot;)
+    # =&gt; &quot;\000\000\001\000\377\377\377\177\000\200\377\377&quot;
+
+    &quot;\000\000\001\000\377\377\377\177\000\200\377\377&quot;.unpack(&quot;v*&quot;)
+    # =&gt; [0, 1, 65535, 32767, 32768, 65535]
+</pre>
+</dd>
+<dt>V</dt>
+<dd>
+<p>
+&quot;VAX&quot;バイトオーダー(リトルエンディアン)のunsigned long (32bit 符号なし整数)
+</p>
+<pre>
+    [0,1,-1].pack(&quot;V*&quot;) # =&gt; &quot;\000\000\000\000\001\000\000\000\377\377\377\377&quot;
+
+    &quot;\000\000\000\000\001\000\000\000\377\377\377\377&quot;.unpack(&quot;V*&quot;) # =&gt; [0, 1, 4294967295]
+</pre>
+</dd>
+<dt>f</dt>
+<dd>
+<p>
+単精度浮動小数点数(機種依存)
+</p>
+<p>
+IA-32 (x86) (IEEE754 単精度 リトルエンディアン):
+</p>
+<pre>
+    [1.0].pack(&quot;f&quot;)      # =&gt; &quot;\000\000\200?&quot;
+    [0.0/0.0].pack(&quot;f&quot;)  # =&gt; &quot;\000\000\300\377&quot;      # NaN
+    [1.0/0.0].pack(&quot;f&quot;)  # =&gt; &quot;\000\000\200\177&quot;      # +Inf
+    [-1.0/0.0].pack(&quot;f&quot;) # =&gt; &quot;\000\000\200\377&quot;      # -Inf
+</pre>
+<p>
+SPARC (IEEE754 単精度 ビッグエンディアン):
+</p>
+<pre>
+    [1.0].pack(&quot;f&quot;)      # =&gt; &quot;?\200\000\000&quot;
+    [0.0/0.0].pack(&quot;f&quot;)  # =&gt; &quot;\177\377\377\377&quot;      # NaN
+    [1.0/0.0].pack(&quot;f&quot;)  # =&gt; &quot;\177\200\000\000&quot;      # +Inf
+    [-1.0/0.0].pack(&quot;f&quot;) # =&gt; &quot;\377\200\000\000&quot;      # -Inf
+</pre>
+<p>
+VAX (NetBSD 3.0) (非IEEE754):
+</p>
+<pre>
+    [1.0].pack(&quot;f&quot;) # =&gt; &quot;\200@\000\000&quot;
+</pre>
+</dd>
+<dt>d</dt>
+<dd>
+<p>
+倍精度浮動小数点数(機種依存)
+</p>
+<p>
+IA-32 (IEEE754 倍精度 リトルエンディアン):
+</p>
+<pre>
+    [1.0].pack(&quot;d&quot;)      # =&gt; &quot;\000\000\000\000\000\000\360?&quot;
+    [0.0/0.0].pack(&quot;d&quot;)  # =&gt; &quot;\000\000\000\000\000\000\370\377&quot;      # NaN
+    [1.0/0.0].pack(&quot;d&quot;)  # =&gt; &quot;\000\000\000\000\000\000\360\177&quot;      # +Inf
+    [-1.0/0.0].pack(&quot;d&quot;) # =&gt; &quot;\000\000\000\000\000\000\360\377&quot;      # -Inf
+</pre>
+<p>
+SPARC (IEEE754 倍精度 ビッグエンディアン):
+</p>
+<pre>
+    [1.0].pack(&quot;d&quot;)      # =&gt; &quot;?\360\000\000\000\000\000\000&quot;
+    [0.0/0.0].pack(&quot;d&quot;)  # =&gt; &quot;\177\377\377\377\377\377\377\377&quot;      # NaN
+    [1.0/0.0].pack(&quot;d&quot;)  # =&gt; &quot;\177\360\000\000\000\000\000\000&quot;      # +Inf
+    [-1.0/0.0].pack(&quot;d&quot;) # =&gt; &quot;\377\360\000\000\000\000\000\000&quot;      # -Inf
+</pre>
+<p>
+VAX (NetBSD 3.0) (非IEEE754):
+</p>
+<pre>
+    [1.0].pack(&quot;d&quot;) # =&gt; &quot;\200@\000\000\000\000\000\000&quot;
+</pre>
+</dd>
+<dt>e</dt>
+<dd>
+<p>
+リトルエンディアンの単精度浮動小数点数(機種依存)
+</p>
+<p>
+IA-32 (IEEE754):
+</p>
+<pre>
+    [1.0].pack(&quot;e&quot;) # =&gt; &quot;\000\000\200?&quot;
+</pre>
+<p>
+SPARC (IEEE754):
+</p>
+<pre>
+    [1.0].pack(&quot;e&quot;) # =&gt; &quot;\000\000\200?&quot;
+</pre>
+</dd>
+<dt>E</dt>
+<dd>
+<p>
+リトルエンディアンの倍精度浮動小数点数(機種依存)
+</p>
+<p>
+IA-32 (IEEE754):
+</p>
+<pre>
+    [1.0].pack(&quot;E&quot;) # =&gt; &quot;\000\000\000\000\000\000\360?&quot;
+</pre>
+<p>
+SPARC (IEEE754):
+</p>
+<pre>
+    [1.0].pack(&quot;E&quot;) # =&gt; &quot;\000\000\000\000\000\000\360?&quot;
+</pre>
+</dd>
+<dt>g</dt>
+<dd>
+<p>
+ビッグエンディアンの単精度浮動小数点数(機種依存)
+</p>
+<p>
+IA-32 (IEEE754):
+</p>
+<pre>
+    [1.0].pack(&quot;g&quot;) # =&gt; &quot;?\200\000\000&quot;
+</pre>
+<p>
+SPARC (IEEE754):
+</p>
+<pre>
+    [1.0].pack(&quot;g&quot;) # =&gt; &quot;?\200\000\000&quot;
+</pre>
+<p>
+IEEE754準拠な環境の場合、以下のようにして符号、指数部、仮数部を取り出せます。
+</p>
+<pre>
+    s = [v].pack(&quot;g&quot;).unpack(&quot;B*&quot;)[0][0,1]      # 符号
+    e = [v].pack(&quot;g&quot;).unpack(&quot;B*&quot;)[0][1,8]      # 指数部
+    f = [v].pack(&quot;g&quot;).unpack(&quot;B*&quot;)[0][9,23]     # 仮数部
+</pre>
+<p>
+そして、s, e, f の意味は以下の通りです。
+</p>
+<pre>
+    sgn = s == &quot;0&quot; ? +1.0 : -1.0
+    exp = Integer(&quot;0b&quot; + e)
+    fra = Integer(&quot;0b&quot; + f)
+    if exp == 0
+      if fra == 0
+        sgn * 0                     # ±0 (positive/negative zero)
+      else
+        sgn * fra * 2**(-126-23)    # 非正規化数 (denormalized number)
+      end
+    elsif exp == 255
+      if fra == 0
+        sgn * Inf                   # ±∞ (positive/negative infinity)
+      else
+        NaN                         # 非数 (not a number)
+      end
+    else
+      fra += 1 &lt;&lt; 23                # ゲタ
+      sgn * fra * 2**(exp-127-23)   # 正規化数 (normalized number)
+    end
+</pre>
+</dd>
+<dt>G</dt>
+<dd>
+<p>
+ビッグエンディアンの倍精度浮動小数点数(機種依存)
+</p>
+<p>
+IA-32:
+</p>
+<pre>
+    [1.0].pack(&quot;G&quot;) # =&gt; &quot;?\360\000\000\000\000\000\000&quot;
+</pre>
+<p>
+SPARC:
+</p>
+<pre>
+    [1.0].pack(&quot;G&quot;) # =&gt; &quot;?\360\000\000\000\000\000\000&quot;
+</pre>
+<p>
+IEEE754準拠な環境の場合、以下のようにして符号、指数部、仮数部を取り出せます。
+</p>
+<pre>
+    s = [v].pack(&quot;G&quot;).unpack(&quot;B*&quot;)[0][0,1]    # 符号
+    e = [v].pack(&quot;G&quot;).unpack(&quot;B*&quot;)[0][1,11]   # 指数部
+    f = [v].pack(&quot;G&quot;).unpack(&quot;B*&quot;)[0][12,52]  # 仮数部
+</pre>
+<p>
+そして、s, e, f の意味は以下の通りです。
+</p>
+<pre>
+    sgn = s == &quot;0&quot; ? +1.0 : -1.0
+    exp = Integer(&quot;0b&quot; + e)
+    fra = Integer(&quot;0b&quot; + f)
+    if exp == 0
+      if fra == 0
+        sgn * 0                     # ±0 (positive/negative zero)
+      else
+        sgn * fra * 2**(-1022-52)   # 非正規化数 (denormalized number)
+      end
+    elsif exp == 2047
+      if fra == 0
+        sgn * Inf                   # ±∞ (positive/negative infinity)
+      else
+        NaN                         # 非数 (not a number)
+      end
+    else
+      fra += 1 &lt;&lt; 52                # ゲタ
+      sgn * fra * 2**(exp-1023-52)  # 正規化数 (normalized number)
+    end
+</pre>
+</dd>
+<dt>p</dt>
+<dd>
+<p>
+ナル終端の文字列へのポインタ
+</p>
+<pre>
+    [&quot;&quot;].pack(&quot;p&quot;)             # =&gt; &quot;\310\037\034\010&quot;
+    [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;].pack(&quot;p3&quot;) # =&gt; &quot; =\030\010\340^\030\010\360^\030\010&quot;
+    [nil].pack(&quot;p&quot;)            # =&gt; &quot;\000\000\000\000&quot;
+</pre>
+</dd>
+<dt>P</dt>
+<dd>
+<p>
+構造体(固定長文字列)へのポインタ
+</p>
+<pre>
+    [nil].pack(&quot;P&quot;)    # =&gt; &quot;\000\000\000\000&quot;
+    [&quot;abc&quot;].pack(&quot;P3&quot;) # =&gt; &quot;x*\024\010&quot;
+
+    [&quot;abc&quot;].pack(&quot;P4&quot;) # =&gt; ArgumentError: too short buffer for P(3 for 4)
+    [&quot;&quot;].pack(&quot;P&quot;)     # =&gt; ArgumentError: too short buffer for P(0 for 1)
+</pre>
+</dd>
+<dt>u</dt>
+<dd>
+<p>
+uuencodeされた文字列
+</p>
+<pre>
+    [&quot;&quot;].pack(&quot;u&quot;)           # =&gt; &quot;&quot;
+    [&quot;a&quot;].pack(&quot;u&quot;)          # =&gt; &quot;!80``\n&quot;
+    [&quot;abc&quot;].pack(&quot;u&quot;)        # =&gt; &quot;#86)C\n&quot;
+    [&quot;abcd&quot;].pack(&quot;u&quot;)       # =&gt; &quot;$86)C9```\n&quot;
+    [&quot;a&quot;*45].pack(&quot;u&quot;)       # =&gt; &quot;M86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A\n&quot;
+    [&quot;a&quot;*46].pack(&quot;u&quot;)       # =&gt; &quot;M86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A\n!80``\n&quot;
+    [&quot;abcdefghi&quot;].pack(&quot;u6&quot;) # =&gt; &quot;&amp;86)C9&amp;5F\n#9VAI\n&quot;
+</pre>
+</dd>
+<dt>U</dt>
+<dd>
+<p>
+UTF-8
+</p>
+<pre>
+    [0].pack(&quot;U&quot;)                               # =&gt; &quot;\000&quot;
+    [1].pack(&quot;U&quot;)                               # =&gt; &quot;\001&quot;
+    [0x7f].pack(&quot;U&quot;)                            # =&gt; &quot;\177&quot;
+    [0x80].pack(&quot;U&quot;)                            # =&gt; &quot;\302\200&quot;
+    [0x7fffffff].pack(&quot;U&quot;)                      # =&gt; &quot;\375\277\277\277\277\277&quot;
+    [0x80000000].pack(&quot;U&quot;)                      # =&gt; RangeError
+    [0,256,65536].pack(&quot;U3&quot;)                    # =&gt; &quot;\000\304\200\360\220\200\200&quot;
+
+    &quot;\000\304\200\360\220\200\200&quot;.unpack(&quot;U3&quot;) # =&gt; [0, 256, 65536]
+    &quot;\000\304\200\360\220\200\200&quot;.unpack(&quot;U&quot;)  # =&gt; [0]
+    &quot;\000\304\200\360\220\200\200&quot;.unpack(&quot;U*&quot;) # =&gt; [0, 256, 65536]
+</pre>
+</dd>
+<dt>w</dt>
+<dd>
+<p>
+BER圧縮整数
+</p>
+<p>
+1バイトあたり7ビットを使用して必要最小限のバイト数で任意サイズの
+0以上の整数を表す数値表現。各バイトの最上位ビットはデータの最後
+を除いて必ず1が立っている(つまり最上位ビットはどこまでデータがあ
+るかを示している)。
+</p>
+<p>
+ISO/IEC 8825-1:1995 : Information technology−ASN.1 encoding rules : Specification of Basic Encoding Rules(BER) に定められる整数の符号化方法。
+</p>
+<pre>
+    [0].pack(&quot;w&quot;)             # =&gt; &quot;\000&quot;
+    [1].pack(&quot;w&quot;)             # =&gt; &quot;\001&quot;
+    [127].pack(&quot;w&quot;)           # =&gt; &quot;\177&quot;
+    [128].pack(&quot;w&quot;)           # =&gt; &quot;\201\000&quot;
+    [0x3fff].pack(&quot;w&quot;)        # =&gt; &quot;\377\177&quot;
+    [0x4000].pack(&quot;w&quot;)        # =&gt; &quot;\201\200\000&quot;
+    [0x3fffffff].pack(&quot;w&quot;)    # =&gt; &quot;\203\377\377\377\177&quot;
+    [0x40000000].pack(&quot;w&quot;)    # =&gt; &quot;\204\200\200\200\000&quot;
+    [0xffffffff].pack(&quot;w&quot;)    # =&gt; &quot;\217\377\377\377\177&quot;
+    [0x100000000].pack(&quot;w&quot;)   # =&gt; &quot;\220\200\200\200\000&quot;
+
+    &quot;\0&quot;.unpack(&quot;w&quot;)          # =&gt; [0]
+    &quot;\0\201\0\1&quot;.unpack(&quot;w*&quot;) # =&gt; [0, 128, 1]
+</pre>
+<p>
+なお、BER圧縮整数でエンコードした結果は大小関係を保存しない。
+たとえば、[0x3fff].pack(&quot;w&quot;) &gt; [0x4000].pack(&quot;w&quot;) である。
+</p>
+</dd>
+<dt>x</dt>
+<dd>
+<p>
+ナルバイト/1バイト読み飛ばす
+</p>
+<pre>
+    [?a, ?b].pack(&quot;CxC&quot;)    # =&gt; &quot;a\000b&quot;
+    [?a, ?b].pack(&quot;Cx3C&quot;)   # =&gt; &quot;a\000\000\000b&quot;
+
+    &quot;a\000b&quot;.unpack(&quot;CxC&quot;)  # =&gt; [97, 98]
+    &quot;a\377b&quot;.unpack(&quot;CxC&quot;)  # =&gt; [97, 98]
+    &quot;a\377b&quot;.unpack(&quot;Cx3C&quot;) # =&gt; ArgumentError: x outside of string
+</pre>
+</dd>
+<dt>X</dt>
+<dd>
+<p>
+1バイト後退
+</p>
+<pre>
+    [?a, ?b, ?c].pack(&quot;CCXC&quot;) # =&gt; &quot;ac&quot;
+
+    &quot;abcdef&quot;.unpack(&quot;x*XC&quot;) # =&gt; [102]
+</pre>
+</dd>
+<dt>@</dt>
+<dd>
+<p>
+絶対位置への移動
+</p>
+<pre>
+    [?a, ?b].pack(&quot;C @3 C&quot;) # =&gt; &quot;a\000\000b&quot;
+
+    &quot;a\000\000b&quot;.unpack(&quot;C @3 C&quot;) # =&gt; [97, 98]
+</pre>
+</dd>
+<dt>j</dt>
+<dd>
+</dd>
+</dl>
+<p>
+intptr_t
+</p>
+<dl>
+<dt>J</dt>
+<dd>
+</dd>
+</dl>
+<p>
+uintptr_t
+</p>
+<h4 >使用例</h4>
+<p>
+以下、pack/unpack の使用例の一部です。
+</p>
+<p>
+pack を使用しなくても同じことができる場合はその例も載せています。
+pack は暗号になりやすい面があることを考慮し、pack を使いたくない人
+に別解を示すためです。
+</p>
+<dl>
+<dt>数値(文字コード)の配列を文字列に変換する例</dt>
+<dd>
+<pre>
+    [82, 117, 98, 121].pack(&quot;cccc&quot;)  # =&gt; &quot;Ruby&quot;
+    [82, 117, 98, 121].pack(&quot;c4&quot;)    # =&gt; &quot;Ruby&quot;
+    [82, 117, 98, 121].pack(&quot;c*&quot;)    # =&gt; &quot;Ruby&quot;
+
+    s = &quot;&quot;
+    [82, 117, 98, 121].each {|c| s &lt;&lt; c}
+    s    # =&gt; &quot;Ruby&quot;
+
+    [82, 117, 98, 121].collect {|c| sprintf &quot;%c&quot;, c}.join   # =&gt; &quot;Ruby&quot;
+
+    [82, 117, 98, 121].inject(&quot;&quot;) {|s, c| s &lt;&lt; c}    # =&gt; &quot;Ruby&quot;
+</pre>
+</dd>
+<dt>文字列を数値(文字コード)の配列に変換する例</dt>
+<dd>
+<pre>
+    &quot;Ruby&quot;.unpack('C*')    # =&gt; [82, 117, 98, 121]
+
+    a = []
+    &quot;Ruby&quot;.each_byte {|c| a &lt;&lt; c}
+    a    # =&gt; [82, 117, 98, 121]
+</pre>
+</dd>
+<dt>&quot;x&quot; でナルバイトを埋めることができる</dt>
+<dd>
+<pre>
+    [82, 117, 98, 121].pack(&quot;ccxxcc&quot;)    # =&gt; &quot;Ru\000\000by&quot;
+</pre>
+</dd>
+<dt>&quot;x&quot; で文字を読み飛ばす事が出来る</dt>
+<dd>
+<pre>
+    &quot;Ru\0\0by&quot;.unpack('ccxxcc')    # =&gt; [82, 117, 98, 121]
+</pre>
+</dd>
+<dt>Hexダンプを数値の配列に変換する例</dt>
+<dd>
+<pre>
+    &quot;61 62 63 64 65 66&quot;.delete(' ').to_a.pack('H*').unpack('C*')
+    # =&gt; [97, 98, 99, 100, 101, 102]
+
+    &quot;61 62 63 64 65 66&quot;.split.collect {|c| c.hex}
+    # =&gt; [97, 98, 99, 100, 101, 102]
+</pre>
+</dd>
+<dt>バイナリと16進数のpackでは長さ指定は生成されるバイト数ではなく、ビットやニブルの個数を表す</dt>
+<dd>
+<pre>
+    [0b01010010, 0b01110101, 0b01100010, 0b01111001].pack(&quot;C4&quot;)
+    # =&gt; &quot;Ruby&quot;
+    [&quot;01010010011101010110001001111001&quot;].pack(&quot;B32&quot;) # 8 bits * 4
+    # =&gt; &quot;Ruby&quot;
+
+    [0x52, 0x75, 0x62, 0x79].pack(&quot;C4&quot;)
+    # =&gt; &quot;Ruby&quot;
+    [&quot;52756279&quot;].pack(&quot;H8&quot;)  # 2 nybbles * 4
+    # =&gt; &quot;Ruby&quot;
+</pre>
+</dd>
+<dt>テンプレート文字'a'の長さ指定は1つの文字列だけに適用される</dt>
+<dd>
+<pre>
+    [&quot;RUBY&quot;, &quot;u&quot;, &quot;b&quot;, &quot;y&quot;].pack(&quot;a4&quot;)
+    # =&gt; &quot;RUBY&quot;
+
+    [&quot;RUBY&quot;, &quot;u&quot;, &quot;b&quot;, &quot;y&quot;].pack(&quot;aaaa&quot;)
+    # =&gt; &quot;Ruby&quot;
+
+    [&quot;RUBY&quot;, &quot;u&quot;, &quot;b&quot;, &quot;y&quot;].pack(&quot;a*aaa&quot;)
+    # =&gt; &quot;RUBYuby&quot;
+</pre>
+</dd>
+<dt>テンプレート文字&quot;a&quot;は、長さが足りない分をヌル文字で補う</dt>
+<dd>
+<pre>
+    [&quot;Ruby&quot;].pack(&quot;a8&quot;)
+    # =&gt; &quot;Ruby\000\000\000\000&quot;
+</pre>
+</dd>
+<dt>リトルエンディアンとビッグエンディアン</dt>
+<dd>
+<pre>
+    [1,2].pack(&quot;s2&quot;)
+    # =&gt; &quot;\000\001\000\002&quot; # ビッグエンディアンのシステムでの出力
+    # =&gt; &quot;\001\000\002\000&quot; # リトルエンディアンのシステムでの出力
+
+    [1,2].pack(&quot;n2&quot;)
+    # =&gt; &quot;\000\001\000\002&quot; # システムによらずビッグエンディアン
+
+    [1,2].pack(&quot;v2&quot;)
+    # =&gt; &quot;\001\000\002\000&quot; # システムによらずリトルエンディアン
+</pre>
+</dd>
+<dt>ネットワークバイトオーダの signed long</dt>
+<dd>
+<pre>
+      s = &quot;\xff\xff\xff\xfe&quot;
+      n = s.unpack(&quot;N&quot;)[0]
+      if n[31] == 1
+        n = -((n ^ 0xffff_ffff) + 1)
+      end
+      n # =&gt; -2
+</pre>
+</dd>
+<dt>ネットワークバイトオーダの signed long(その2)</dt>
+<dd>
+<pre>
+      s = &quot;\xff\xff\xff\xfe&quot;
+      n = s.unpack(&quot;N&quot;).pack(&quot;l&quot;).unpack(&quot;l&quot;)[0]
+      n # =&gt; -2
+</pre>
+</dd>
+<dt>IPアドレス</dt>
+<dd>
+<pre>
+      require 'socket'
+      Socket.gethostbyname(&quot;localhost&quot;)[3].unpack(&quot;C4&quot;).join(&quot;.&quot;)
+      # =&gt; &quot;127.0.0.1&quot;
+
+      &quot;127.0.0.1&quot;.split(&quot;.&quot;).collect {|c| c.to_i}.pack(&quot;C4&quot;)
+      # =&gt; &quot;\177\000\000\001&quot;
+</pre>
+</dd>
+<dt>sockaddr_in 構造体</dt>
+<dd>
+<pre>
+      require 'socket'
+      [Socket::AF_INET,
+       Socket.getservbyname('echo'),
+       127, 0, 0, 1].pack(&quot;s n C4 x8&quot;)
+      # =&gt; &quot;\002\000\000\a\177\000\000\001\000\000\000\000\000\000\000\000&quot;
+</pre>
+<p>
+pack/unpack を使う代わりに
+<a href="../method/-socket/s/pack_sockaddr_in.html">Socket.pack_sockaddr_in</a>,
+<a href="../method/-socket/s/unpack_sockaddr_in.html">Socket.unpack_sockaddr_in</a> メソッドがあります。
+</p>
+</dd>
+<dt>'\0'終端文字列のアドレス</dt>
+<dd>
+<p>
+テンプレート文字 &quot;p&quot; や &quot;P&quot; は、C 言語レベルのインタフェースのた
+めにあります(例えば <a href="../method/-i-o/i/ioctl.html">IO#ioctl</a>)。
+</p>
+<pre>
+    [&quot;foo&quot;].pack(&quot;p&quot;)    # =&gt; &quot;8\266\021\010&quot;
+</pre>
+<p>
+結果の文字列はゴミに見えますが、実際は文字列&quot;foo\0&quot;を指すアドレ
+ス(のバイナリ表現)です。以下のようにすれば見慣れた表記で見ること
+が出来ます
+</p>
+<pre>
+    printf &quot;%#010x\n&quot;, &quot;8\266\021\010&quot;.unpack(&quot;L&quot;)[0] # =&gt; 0x0811b638
+</pre>
+<p>
+アドレスが指す先のオブジェクト(この例で &quot;foo\0&quot;) は、pack の結
+果が GC されるまではGCされないことが保証されています。
+</p>
+<p>
+unpack(&quot;p&quot;), unpack(&quot;P&quot;) は、pack の結果からしか unpack できません。
+</p>
+<pre>
+    [&quot;foo&quot;].pack(&quot;p&quot;).unpack(&quot;p&quot;) # =&gt; [&quot;foo&quot;]
+    &quot;8\266\021\010&quot;.unpack(&quot;p&quot;)
+    # =&gt; -:1:in `unpack': no associated pointer (ArgumentError)
+    #         from -:1
+</pre>
+<p>
+&quot;p&quot; や &quot;P&quot; は、nil を特別に扱い NULL
+ポインタとして解釈します。(以下は、32bitマシンで一般的な結果)
+</p>
+<pre>
+      [nil].pack(&quot;p&quot;)        # =&gt; &quot;\000\000\000\000&quot;
+      &quot;\0\0\0\0&quot;.unpack(&quot;p&quot;) # =&gt; [nil]
+</pre>
+</dd>
+<dt>構造体のアドレス</dt>
+<dd>
+<p>
+例えば、
+</p>
+<pre>
+      struct {
+        int   a;
+        short b;
+        long  c;
+      } v = {1,2,3};
+</pre>
+<p>
+を表す文字列は
+</p>
+<pre>
+      v = [1,2,3].pack(&quot;i!s!l!&quot;)
+</pre>
+<p>
+です。(byte alignment の問題から実際は適当な padding が必要に
+なるかもしれません)
+</p>
+<p>
+この構造体を指すアドレスは
+</p>
+<pre>
+      [v].pack(&quot;P&quot;)  # =&gt; &quot;\300\265\021\010&quot;
+</pre>
+<p>
+で得られます。
+</p>
+</dd>
+<dt>UTF-8からUCS-2への変換 (サロゲートを処理していないので UTF-16 とはいえない)</dt>
+<dd>
+<p>
+Little endian:
+</p>
+<pre>
+    (&quot;Comments&quot;).unpack(&quot;U*&quot;).pack(&quot;v*&quot;) # =&gt; &quot;C\000o\000m\000m\000e\000n\000t\000s\000&quot;
+</pre>
+<p>
+Big endian:
+</p>
+<pre>
+    (&quot;Comments&quot;).unpack(&quot;U*&quot;).pack(&quot;n*&quot;) # =&gt; &quot;\000C\000o\000m\000m\000e\000n\000t\000s&quot;
+</pre>
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_UPCASE"><code>upcase -&gt; String</code><span class="permalink">[<a href="../method/-string/i/upcase.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-upcase">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+'a' から 'z' までのアルファベット小文字を大文字に変換した文字列を作成して返します。
+</p>
+<p>
+このメソッドはマルチバイト文字列を認識しますが、
+それはあくまでも「1 文字を 1 文字として認識する」だけであって、
+いわゆる全角アルファベットの大文字小文字までは変換しません。
+</p>
+<p>
+例:
+</p>
+<pre>
+p &quot;stRIng? STring.&quot;.upcase   # =&gt; &quot;STRING? STRING.&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/upcase=21.html">String#upcase!</a>, <a href="../method/-string/i/downcase.html">String#downcase</a>,
+     <a href="../method/-string/i/swapcase.html">String#swapcase</a>, <a href="../method/-string/i/capitalize.html">String#capitalize</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_UPCASE--21"><code>upcase! -&gt; self | nil</code><span class="permalink">[<a href="../method/-string/i/upcase=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-upcase-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ASCII 文字列の範囲内で 'a' から 'z' までの
+アルファベット小文字を全て大文字にします。
+このメソッドは self を破壊的に変更して返しますが、
+置換が起こらなかった場合は nil を返します。
+</p>
+<p>
+このメソッドはマルチバイト文字列を認識しますが、
+それはあくまでも「1 文字を 1 文字として認識する」だけであって、
+いわゆる全角アルファベットの大文字小文字までは変換しません。
+</p>
+<p>
+例:
+</p>
+<pre>
+buf = &quot;stRIng? STring.&quot;
+buf.upcase!
+p buf   # =&gt; &quot;STRING? STRING.&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/upcase.html">String#upcase</a>, <a href="../method/-string/i/downcase=21.html">String#downcase!</a>,
+     <a href="../method/-string/i/swapcase=21.html">String#swapcase!</a>, <a href="../method/-string/i/capitalize=21.html">String#capitalize!</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_UPTO"><code>upto(max, exclusive = false) {|s| ... } -&gt; self</code><span class="permalink">[<a href="../method/-string/i/upto.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-upto">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self から始めて max まで
+「次の文字列」を順番にブロックに与えて繰り返します。
+「次」の定義については <a href="../method/-string/i/succ.html">String#succ</a> を参照してください。
+</p>
+<p>
+たとえば以下のコードは a, b, c, ... z, aa, ... az, ..., za を
+出力します。
+</p>
+<pre>
+(&quot;a&quot; .. &quot;za&quot;).each do |str|
+  puts str
+end
+'a'.upto('za') do |str|
+  puts str
+end
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] max:</dt>
+<dd>
+繰り返しをやめる文字列
+</dd>
+<dt class='method-param'>[PARAM] exclusive:</dt>
+<dd>
+max を含むかどうか。false の場合は max を含む。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_VALID_ENCODING--3F"><code>valid_encoding? -&gt; bool</code><span class="permalink">[<a href="../method/-string/i/valid_encoding=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-valid_encoding-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列の内容が、現在のエンコーディングに照らしあわせて妥当であれば
+true を返します。さもなくば false を返します。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

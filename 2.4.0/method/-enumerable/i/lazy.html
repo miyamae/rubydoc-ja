@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>instance method Enumerable#lazy (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-enumerable.html">Enumerableモジュール</a>
+&gt; lazy
+
+</p>
+
+
+<h1>instance method Enumerable#lazy</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_LAZY"><code>lazy -&gt; Enumerator::Lazy</code><span class="permalink">[<a href="../../../method/-enumerable/i/lazy.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Enumerable.html#method-i-lazy">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を lazy な Enumerator に変換したものを返します。
+</p>
+<p>
+この Enumerator は、以下のメソッドが遅延評価を行う (つまり、配列ではな
+くEnumeratorを返す) ように再定義されています。
+</p>
+<ul>
+<li>map/collect</li>
+<li>flat_map/collect_concat</li>
+<li>select/find_all</li>
+<li>reject</li>
+<li>grep</li>
+<li>take, take_while</li>
+<li>drop, drop_while</li>
+<li>zip (※一貫性のため、ブロックを渡さないケースのみlazy)</li>
+<li>cycle (※一貫性のため、ブロックを渡さないケースのみlazy)</li>
+</ul>
+<p>
+以下はピタゴラス数 (a**2 + b**2 = c**2 を満たす自然数 a, b, c の組) を
+列挙するプログラムです。
+</p>
+<pre>
+def pythagorean_triples
+  (1..Float::INFINITY).lazy.flat_map {|z|
+    (1..z).flat_map {|x|
+      (x..z).select {|y|
+        x**2 + y**2 == z**2
+      }.map {|y|
+        [x, y, z]
+      }
+    }
+  }
+end
+# 最初の10個のピタゴラス数を表示する
+p pythagorean_triples.take(10).force # takeはlazyなので、forceが必要です
+p pythagorean_triples.first(10)      # firstはeagerです
+# 100より小さいピタゴラス数を表示する
+p pythagorean_triples.take_while { |*, z| z &lt; 100 }.force
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../class/-enumerator=3a=3a-lazy.html">Enumerator::Lazy</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>class String (Ruby 2.0.0)</title>
 </head>
 <body>
@@ -519,7 +520,7 @@ obj を String に変換しようと試みます。変換には <a href="../meth
 </dd>
 </dl>
 <pre>
-String.try_convert(&quot;str&quot;)     # =&gt; str
+String.try_convert(&quot;str&quot;)     # =&gt; &quot;str&quot;
 String.try_convert(/re/)      # =&gt; nil
 </pre>
 </dd>
@@ -1092,8 +1093,7 @@ p b       # =&gt; &quot;def&quot;
 <dd class="method-description">
 <p>
 self に文字列 other を破壊的に連結します。
-other が 0 から 255 のまでの整数である場合は
-その 1 バイトを末尾に追加します (つまり、整数が示す ASCII コードの文字が追加されます)。
+other が 整数である場合は other.chr(self.encoding) 相当の文字を末尾に追加します。
 </p>
 <p>
 self を返します。
@@ -1101,7 +1101,7 @@ self を返します。
 <dl>
 <dt class='method-param'>[PARAM] other:</dt>
 <dd>
-文字列もしくは 0 から 255 までの範囲の整数
+文字列もしくは 0 以上の整数
 </dd>
 </dl>
 <p>
@@ -1315,7 +1315,7 @@ str0[2, 1]         #=&gt; &quot;r&quot;
 str0[2, 0]         #=&gt; &quot;&quot;
 str0[2, 100]       #=&gt; &quot;r&quot;  (右側を超えても平気)
 str0[-1, 1]        #=&gt; &quot;r&quot;
-str0[-1, 2]        #=&gt; &quot;r&quot; (あくまでも「右に向かって len 文字」)
+str0[-1, 2]        #=&gt; &quot;r&quot;  (右に向かって len 文字)
 
 str0[3, 1]         #=&gt; &quot;&quot;
 str0[4, 1]         #=&gt; nil
@@ -1375,7 +1375,6 @@ nth を省略したときや 0 の場合は正規表現がマッチした部分�
 <pre>
 p &quot;foobar&quot;[/bar/]  # =&gt; &quot;bar&quot;
 p $~.begin(0)      # =&gt; 3
-
 p &quot;def getcnt(line)&quot;[ /def\s+(\w+)/, 1 ]   # =&gt; &quot;getcnt&quot;
 </pre>
 </dd>
@@ -2607,6 +2606,13 @@ self を指定したエンコーディングに変換した文字列を作成し
 前述の :invalid =&gt; :replace や :undef =&gt; :replace で用いられる置換文字を指定します。デフォルトは Unicode 系のエンコーディングならば U+FFFD、それ以外では &quot;?&quot; です。
 </p>
 </dd>
+<dt>:fallback =&gt; Hash | Proc | Method</dt>
+<dd>
+<p>
+未定義の文字に対する置換文字を設定します。このオプションに与えられるオブジェクトは <a href="../class/-hash.html">Hash</a>, <a href="../class/-proc.html">Proc</a>, <a href="../class/-method.html">Method</a> のいずれかまたは [] メソッドを持つオブジェクトです。
+キーは現在のトランスコーダのソースエンコーディングで未定義の文字です。値は、変換先のエンコーディングでの変換後の文字です。
+</p>
+</dd>
 <dt>:xml =&gt; :text</dt>
 <dd>
 <p>
@@ -2649,6 +2655,12 @@ LF 改行を CRLF 改行に置き換えます。(CRLF は CRCRLF になります
 s = &quot;いろは&quot;
 s.encode(&quot;EUC-JP&quot;)
 s.encode(Encoding::UTF_8)
+
+# U+00B7 MIDDLE DOT, U+2014 EM DASH は対応する文字が Windows-31J には
+# 存在しないのでそのまま変換しようとすると Encoding::UndefinedConversionError が発生する
+str = &quot;\u00b7\u2014&quot;
+str.encode(&quot;Windows-31J&quot;, fallback: { &quot;\u00b7&quot; =&gt; &quot;\xA5&quot;.force_encoding(&quot;Windows-31J&quot;),
+                                      &quot;\u2014&quot; =&gt; &quot;\x{815C}&quot;.force_encoding(&quot;Windows-31J&quot;) })
 </pre>
 <p>
 [SEE_ALSO] <a href="../method/-string/i/encode=21.html">String#encode!</a>
@@ -2913,6 +2925,10 @@ puts '\n'.gsub(/\\/) { '\\\\' }      # =&gt; \\n        # OK
 ブロックなしの場合と違い、ブロックの中からは
 組み込み変数 <a href="../method/-kernel/v/1.html">$1</a>, $2, $3, ... を問題なく参照できます。
 </p>
+<p>
+なお、ブロック付きの gsub で文字列を置き換えない場合は[[String#scan]]
+と同じ動作になります。
+</p>
 <dl>
 <dt class='method-param'>[PARAM] pattern:</dt>
 <dd>
@@ -2932,7 +2948,7 @@ p 'abcabc'.gsub(/[bc]/) {|s| s.upcase }  #=&gt; &quot;aBCaBC&quot;
 p 'abcabc'.gsub(/[bc]/) { $&amp;.upcase }    #=&gt; &quot;aBCaBC&quot;
 </pre>
 <p>
-[SEE_ALSO] <a href="../method/-string/i/sub.html">String#sub</a>
+[SEE_ALSO] <a href="../method/-string/i/sub.html">String#sub</a>, <a href="../method/-string/i/scan.html">String#scan</a>
 </p>
 </dd>
 <dt class="method-heading" id="I_GSUB"><code>gsub(pattern, hash) -&gt; String</code><span class="permalink">[<a href="../method/-string/i/gsub.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.0.0/String.html#method-i-gsub">rdoc</a>]</span></dt>
@@ -3270,7 +3286,7 @@ puts &quot;\t\r\n&quot;.inspect    # =&gt; &quot;\t\r\n&quot;
 <a href="../method/-symbol/i/to_s.html">Symbol#to_s</a> または <a href="../method/-symbol/i/id2name.html">Symbol#id2name</a> を使います。
 </p>
 <p>
-Ruby 1.9 以降では、シンボル文字列にナルキャラクタ(&quot;\0&quot;)、空の文字列が使用可能になりました。
+シンボル文字列にはナルキャラクタ(&quot;\0&quot;)、空の文字列の使用も可能です。
 </p>
 <p>
 例:
@@ -4049,10 +4065,16 @@ index に負を指定すると末尾から数えた位置を変更します。
 その文字列自体にマッチする部分で分割する。
 </p>
 </dd>
-<dt>1 バイトの空白文字 ' ' か nil</dt>
+<dt>1 バイトの空白文字 ' '</dt>
 <dd>
 <p>
 先頭と末尾の空白を除いたうえで、空白文字列で分割する。
+</p>
+</dd>
+<dt>nil</dt>
+<dd>
+<p>
+常に $; で分割する。 $; も nil の場合は、先頭と末尾の空白を除いたうえで、空白文字列で分割する。
 </p>
 </dd>
 <dt>空文字列 '' あるいは空文字列にマッチする正規表現</dt>
@@ -5188,6 +5210,12 @@ s!, S!, i!, I!, l!, L!, q!, Q! を用います。
 n, N, v, V を用います。
 </p>
 <p>
+強制的にエンディアンを指定したいときは、
+リトルエンディアンなら&lt;
+ビッグエンディアンなら&gt;
+を後ろにつけます。!と組み合わせることも可能です。
+</p>
+<p>
 まとめると以下のようになります。
 </p>
 <dl>
@@ -5220,6 +5248,16 @@ n, N, v, V を用います。
   S: uint16_t
   l: int32_t
   L: uint32_t
+</pre>
+</dd>
+<dt>エンディアンの強制指定(バイナリ解析などに適切)</dt>
+<dd>
+<pre>
+  S&gt;:  big endian unsigned 16bit(nと同じ)
+  s&gt;:  big endian int16_t
+  s!&gt;: big endian signed short
+  l&lt;:  little endian int32_t
+  l!&lt;: little endian signed long
 </pre>
 </dd>
 </dl>
@@ -6309,8 +6347,8 @@ true を返します。さもなくば false を返します。
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

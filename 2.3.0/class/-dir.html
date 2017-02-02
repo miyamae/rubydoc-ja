@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class Dir (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Dirクラス
+</p>
+
+
+<h1>class Dir</h1>
+<p>
+
+
+クラスの継承リスト: Dir
+
+      &lt; <a href="../class/-enumerable.html">Enumerable</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+ディレクトリの操作を行うためのクラスです。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_--5B--5D">[]</a>
+
+<a href="#S_--5B--5D">glob</a>
+
+<a href="#S_CHDIR">chdir</a>
+
+<a href="#S_CHROOT">chroot</a>
+
+<a href="#S_DELETE">delete</a>
+
+<a href="#S_DELETE">rmdir</a>
+
+<a href="#S_DELETE">unlink</a>
+
+<a href="#S_ENTRIES">entries</a>
+
+<a href="#S_EXIST--3F">exist?</a>
+
+<a href="#S_EXISTS--3F">exists?</a>
+
+<a href="#S_FOREACH">foreach</a>
+
+<a href="#S_GETWD">getwd</a>
+
+<a href="#S_GETWD">pwd</a>
+
+<a href="#S_HOME">home</a>
+
+<a href="#S_MKDIR">mkdir</a>
+
+<a href="#S_NEW">new</a>
+
+<a href="#S_NEW">open</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_CLOSE">close</a>
+
+<a href="#I_EACH">each</a>
+
+<a href="#I_FILENO">fileno</a>
+
+<a href="#I_INSPECT">inspect</a>
+
+<a href="#I_PATH">path</a>
+
+<a href="#I_PATH">to_path</a>
+
+<a href="#I_POS">pos</a>
+
+<a href="#I_POS">tell</a>
+
+<a href="#I_POS--3D">pos=</a>
+
+<a href="#I_POS--3D">seek</a>
+
+<a href="#I_READ">read</a>
+
+<a href="#I_REWIND">rewind</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_--5B--5D"><code>self[*pattern] -&gt; [String]</code><span class="permalink">[<a href="../method/-dir/s/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-c-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>glob(pattern, flags = 0) -&gt; [String]</code></dt>
+<dt class="method-heading"><code>glob(pattern, flags = 0) {|file| ...} -&gt; nil</code></dt>
+<dd class="method-description">
+<p>
+ワイルドカードの展開を行い、
+パターンにマッチするファイル名を文字列の配列として返します。
+パターンにマッチするファイルがない場合は空の配列を返します。
+</p>
+<p>
+ブロックが与えられたときはワイルドカードにマッチしたファイルを
+引数にそのブロックを 1 つずつ評価して nil を返します
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+パターンを文字列で指定します。
+パターンを &quot;\0&quot; で区切って 1 度に複数のパターンを指定することもで
+きます。
+パターンの区切りには &quot;\0&quot; のみ指定できます。
+配列を指定することで複数のパターンを指定できます。
+</dd>
+<dt class='method-param'>[PARAM] flags:</dt>
+<dd>
+<a href="../method/-file/s/fnmatch.html">File.fnmatch</a> に指定できるフラグと同様のフラグを指定できます。
+このフラグを指定することでマッチの挙動を変更することができます。
+<pre>
+  Dir.glob(&quot;*&quot;)                      #=&gt; [&quot;bar&quot;, &quot;foo&quot;]
+  Dir.glob(&quot;*&quot;, File::FNM_DOTMATCH)  #=&gt; [&quot;.&quot;, &quot;..&quot;, &quot;bar&quot;, &quot;foo&quot;]
+</pre>
+</dd>
+</dl>
+<p>
+ワイルドカードには以下のものがあります。これらはバックスラッシュに
+よりエスケープすることができます。ダブルクォートの文字列中では 2
+重にエスケープする必要があることに注意してください。
+ワイルドカードはデフォルトではファイル名の先頭の &quot;.&quot; にマッチしません。
+</p>
+<dl>
+<dt>*</dt>
+<dd>
+<p>
+空文字列を含む任意の文字列と一致します。
+</p>
+</dd>
+<dt>?</dt>
+<dd>
+<p>
+任意の一文字と一致します。
+</p>
+</dd>
+<dt>[ ]</dt>
+<dd>
+<p>
+鈎括弧内のいずれかの文字と一致します。- でつな
+がれた文字は範囲を表します。鈎括弧の中の最初の文字が
+^ である時には含まれない文字と一致します。
+^ の代わりに ksh や POSIX shell のように ! も同じ意
+味で使えます。
+</p>
+</dd>
+<dt>{ }</dt>
+<dd>
+<p>
+コンマで区切られた文字列の組合せに展開します。例えば、
+foo{a,b,c} は fooa, foob, fooc
+に展開されそれぞれに対してマッチ判定を行います。
+</p>
+<p>
+括弧は入れ子にすることができます。例えば、
+{foo,bar{foo,bar}} は foo, barfoo, barbar
+のそれぞれにマッチします。
+</p>
+</dd>
+<dt>**/</dt>
+<dd>
+<p>
+ワイルドカード */ の0回以上の繰り返しを意味し、
+ディレクトリを再帰的にたどってマッチを行います。
+例えば,
+foo/**/bar は foo/bar, foo/*/bar,
+foo/*/*/bar ... (以下無限に続く)に対してそれぞれ
+マッチ判定を行います。
+</p>
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+# 一般的な例
+p Dir.glob(&quot;*&quot;)          #=&gt; [&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;]
+p Dir.glob(&quot;./b*&quot;)       #=&gt; [&quot;./bar&quot;, &quot;./baz&quot;]      先頭に &quot;./&quot; が付いている。
+p Dir.glob(&quot;*/&quot;)         #=&gt; [&quot;foo/&quot;]                ディレクトリのみにマッチする。
+p Dir.glob(&quot;wrong_name&quot;) #=&gt; []                      マッチしないと空の配列を返す。
+
+Dir.glob(&quot;b*&quot;) {|f| p f }
+
+#=&gt; &quot;bar&quot;
+    &quot;baz&quot;
+
+# 複数のパターンを指定する例
+p Dir.glob(&quot;f*\0b*&quot;)     # =&gt; [&quot;foo&quot;, &quot;bar&quot;]
+p Dir.glob([&quot;f*&quot;, &quot;b*&quot;]) # =&gt; [&quot;foo&quot;, &quot;bar&quot;]
+p Dir[&quot;f*&quot;, &quot;b*&quot;]        # =&gt; [&quot;foo&quot;, &quot;bar&quot;]
+
+# ワイルドカードの例
+Dir.glob(&quot;*&quot;)            #=&gt; [&quot;foo&quot;, &quot;bar&quot;]
+Dir.glob(&quot;fo?&quot;)          #=&gt; [&quot;foo&quot;]
+Dir.glob(&quot;[^f]*&quot;)        #=&gt; [&quot;bar&quot;]
+Dir.glob(&quot;{b,f}*&quot;)       #=&gt; [&quot;bar&quot;, &quot;foo&quot;]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_CHDIR"><code>chdir -&gt; 0</code><span class="permalink">[<a href="../method/-dir/s/chdir.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-c-chdir">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>chdir(path) -&gt; 0</code></dt>
+<dt class="method-heading"><code>chdir {|path| ... } -&gt; object</code></dt>
+<dt class="method-heading"><code>chdir(path) {|path| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+カレントディレクトリを path に変更します。
+</p>
+<p>
+path を省略した場合、環境変数 HOME または LOGDIR
+が設定されていればそのディレクトリに移動します。
+カレントディレクトリの変更に成功すれば 0 を返します。
+</p>
+<p>
+ブロックが指定された場合、カレントディレクトリの変更はブロックの実行中に限
+られます。ブロックの実行結果を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+ディレクトリのパスを文字列で指定します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+失敗した場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Dir.chdir(&quot;/var/spool/mail&quot;)
+p Dir.pwd                    #=&gt; &quot;/var/spool/mail&quot;
+Dir.chdir(&quot;/tmp&quot;) do
+  p Dir.pwd                  #=&gt; &quot;/tmp&quot;
+end
+p Dir.pwd                    #=&gt; &quot;/var/spool/mail&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_CHROOT"><code>chroot(path) -&gt; 0</code><span class="permalink">[<a href="../method/-dir/s/chroot.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-c-chroot">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ルートディレクトリを path に変更します。
+</p>
+<p>
+スーパーユーザだけがルートディレクトリを変更できます。
+ルートディレクトリの変更に成功すれば 0 を返します。
+各プラットフォームのマニュアルの chroot の項も参照して下さい。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+ディレクトリのパスを文字列で指定します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+失敗した場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p Dir.glob(&quot;*&quot;)   #=&gt; [&quot;file1&quot;, &quot;file2]
+Dir.chroot(&quot;./&quot;)
+p Dir.glob(&quot;/*&quot;)  #=&gt; [&quot;/file1&quot;, &quot;/file2]
+</pre>
+<p>
+[SEE_ALSO] <a class="external" href="http://opengroup.org/onlinepubs/007908799/xsh/chroot.html">http://opengroup.org/onlinepubs/007908799/xsh/chroot.html</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_DELETE"><code>delete(path) -&gt; 0</code><span class="permalink">[<a href="../method/-dir/s/delete.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-c-delete">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>rmdir(path) -&gt; 0</code></dt>
+<dt class="method-heading"><code>unlink(path) -&gt; 0</code></dt>
+<dd class="method-description">
+<p>
+ディレクトリを削除します。ディレクトリは空でなければいけませ
+ん。ディレクトリの削除に成功すれば 0 を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+ディレクトリのパスを文字列で指定します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+失敗した場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Dir.delete(&quot;/tmp/hoge-jbrYBh.tmp&quot;)
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_ENTRIES"><code>entries(path) -&gt; [String]</code><span class="permalink">[<a href="../method/-dir/s/entries.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-c-entries">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ディレクトリ path に含まれるファイルエントリ名の
+配列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+ディレクトリのパスを文字列で指定します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+失敗した場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Dir.entries('.') #=&gt; [&quot;.&quot;, &quot;..&quot;, &quot;bar&quot;, &quot;foo&quot;]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_EXIST--3F"><code>exist?(file_name) -&gt; bool</code><span class="permalink">[<a href="../method/-dir/s/exist=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-c-exist-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+file_name で与えられたディレクトリが存在する場合に真を返します。
+そうでない場合は、偽を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] file_name:</dt>
+<dd>
+存在を確認したいディレクトリ名。
+</dd>
+</dl>
+<pre>
+Dir.exist?(&quot;.&quot;)      # =&gt; true
+Dir.exists?(&quot;.&quot;)     # =&gt; true
+File.directory?(&quot;.&quot;) # =&gt; true
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/directory=3f.html">File.directory?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_EXISTS--3F"><code>exists?(file_name) -&gt; bool</code><span class="permalink">[<a href="../method/-dir/s/exists=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-c-exists-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このメソッドは deprecated です。<a href="../method/-dir/s/exist=3f.html">Dir.exist?</a> を使用してください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_FOREACH"><code>foreach(path) {|file| ...} -&gt; nil</code><span class="permalink">[<a href="../method/-dir/s/foreach.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-c-foreach">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>foreach -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+ディレクトリ path の各エントリを表す文字列を引数として、ブロックを評価します。
+</p>
+<p>
+ブロックが与えられなかった場合、各エントリを文字列として保持する
+<a href="../class/-enumerator.html">Enumerator</a> オブジェクトを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+ディレクトリのパスを文字列で指定します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+失敗した場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Dir.foreach('.'){|f|
+  p f
+}
+#=&gt;
+&quot;.&quot;
+&quot;..&quot;
+&quot;bar&quot;
+&quot;foo&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_GETWD"><code>getwd -&gt; String</code><span class="permalink">[<a href="../method/-dir/s/getwd.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-c-getwd">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>pwd -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+カレントディレクトリのフルパスを文字列で返します。
+</p>
+<dl>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+カレントディレクトリの取得に失敗した場合に発生します(が、普通は失敗することはありません)。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Dir.chdir(&quot;/tmp&quot;)   #=&gt; 0
+Dir.getwd           #=&gt; &quot;/tmp&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_HOME"><code>home -&gt; String | nil</code><span class="permalink">[<a href="../method/-dir/s/home.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-c-home">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>home(user) -&gt; String | nil</code></dt>
+<dd class="method-description">
+<p>
+現在のユーザまたは指定されたユーザのホームディレクトリを返します。
+</p>
+<p>
+Dir.home や Dir.home(&quot;root&quot;) は
+File.expand_path(&quot;~&quot;) や File.expand_path(&quot;~root&quot;) と
+ほぼ同じです。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-file/s/expand_path.html">File.expand_path</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_MKDIR"><code>mkdir(path, mode = 0777) -&gt; 0</code><span class="permalink">[<a href="../method/-dir/s/mkdir.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-c-mkdir">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+path で指定された新しいディレクトリを作ります。パーミッションは
+mode で指定された値に umask をかけた値 (mode &amp; ~umask) になります。
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/mkdir.html">mkdir(2)</a> も参照して下さい。
+ディレクトリの作成に成功すれば 0 を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+ディレクトリのパスを文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+ディレクトリのモードを整数で与えます。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+ディレクトリの作成に失敗した場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p File.umask                                  #=&gt; 2
+Dir.mkdir('t', 0666)
+p &quot;%#o&quot; % (07777 &amp; File.stat('t').mode)  #=&gt; &quot;0664&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-file-utils/m/makedirs.html">FileUtils.#makedirs</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_NEW"><code>new(path) -&gt; Dir</code><span class="permalink">[<a href="../method/-dir/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>open(path) -&gt; Dir</code></dt>
+<dt class="method-heading"><code>open(path) {|dir| ...} -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+path に対するディレクトリストリームをオープンして返します。
+</p>
+<p>
+ブロックを指定して呼び出した場合は、ディレクトリストリームを
+引数としてブロックを実行します。ブロックの実行が終了すると、
+ディレクトリは自動的にクローズされます。
+ブロックの実行結果を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+ディレクトリのパスを文字列で指定します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+オープンに失敗した場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_CLOSE"><code>close -&gt; nil</code><span class="permalink">[<a href="../method/-dir/i/close.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-i-close">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ディレクトリストリームをクローズします。以降のディレクトリに
+対する操作は例外 <a href="../class/-i-o-error.html">IOError</a> を発生させます。
+クローズに成功すれば nil を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+close に失敗した場合に発生します。また既に自身が close している場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH"><code>each {|item| ... } -&gt; self</code><span class="permalink">[<a href="../method/-dir/i/each.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-i-each">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+ディレクトリの各エントリを表す文字列を引数として、ブロックを評価します。
+</p>
+<p>
+ブロックが与えられなかった場合、各エントリを文字列として保持する
+<a href="../class/-enumerator.html">Enumerator</a>
+オブジェクトを返します。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に自身が close している場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Dir.open('.').each{|f|
+  p f
+}
+#=&gt;
+&quot;.&quot;
+&quot;..&quot;
+&quot;bar&quot;
+&quot;foo&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_FILENO"><code>fileno -&gt; Integer</code><span class="permalink">[<a href="../method/-dir/i/fileno.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-i-fileno">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self に関連づけられたファイル記述子を表す整数を返します。
+</p>
+<pre>
+d = Dir.new(&quot;..&quot;)
+d.fileno   #=&gt; 8
+</pre>
+<p>
+本メソッドでは POSIX 2008 で定義されている dirfd() 関数を使用します。
+</p>
+<dl>
+<dt>[EXCEPTION] NotImplementedError:</dt>
+<dd>
+Windows などの dirfd() 関数が存在しないプラッ
+トフォームで発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/fileno.html">IO#fileno</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-dir/i/inspect.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-i-inspect">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の情報を人間に読みやすい文字列にして返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PATH"><code>path -&gt; String</code><span class="permalink">[<a href="../method/-dir/i/path.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-i-path">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_path -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+オープンしているディレクトリのパス名を文字列で返します。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に自身が close している場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_POS"><code>pos -&gt; Integer</code><span class="permalink">[<a href="../method/-dir/i/pos.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-i-pos">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>tell -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+ディレクトリストリームの現在の位置を整数で返します。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に自身が close している場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Dir.open(&quot;/tmp&quot;) {|d|
+  d.each {|f|
+    p d.pos
+  }
+}
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_POS--3D"><code>pos=(pos)</code><span class="permalink">[<a href="../method/-dir/i/pos=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-i-pos-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>seek(pos) -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+ディレクトリストリームの読み込み位置を pos に移動させます。
+pos は <a href="../method/-dir/i/tell.html">Dir#tell</a> で与えられた値でなければなりま
+せん。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pos:</dt>
+<dd>
+変更したい位置を整数で与えます。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に自身が close している場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+d = Dir.new(&quot;testdir&quot;)   #=&gt; #&lt;Dir:0x401b3c40&gt;
+d.read                   #=&gt; &quot;.&quot;
+i = d.tell               #=&gt; 12
+d.read                   #=&gt; &quot;..&quot;
+d.seek(i)                #=&gt; #&lt;Dir:0x401b3c40&gt;
+d.read                   #=&gt; &quot;..&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_READ"><code>read -&gt; String | nil</code><span class="permalink">[<a href="../method/-dir/i/read.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-i-read">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ディレクトリストリームから次の要素を読み出して返します。最後の要素
+まで読み出していれば nil を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+ディレクトリの読み出しに失敗した場合に発生します。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に自身が close している場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_REWIND"><code>rewind -&gt; self</code><span class="permalink">[<a href="../method/-dir/i/rewind.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Dir.html#method-i-rewind">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ディレクトリストリームの読み込み位置を先頭に移動させます。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に自身が close している場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+d = Dir.new(&quot;testdir&quot;)
+d.read     #=&gt; &quot;.&quot;
+d.rewind   #=&gt; #&lt;Dir:0x401b3fb0&gt;
+d.read     #=&gt; &quot;.&quot;
+</pre>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

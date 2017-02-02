@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>library yaml/store (Ruby 1.9.2)</title>
 </head>
 <body>
@@ -24,13 +25,37 @@
 <p>
 RubyのオブジェクトをYAML形式の外部ファイルに格納するためのクラスです。
 </p>
+<p>
+例:
+</p>
 <pre>
-require &quot;yaml/store&quot;
+require 'yaml/store'
 
-db = YAML::Store.new(&quot;sample.yml&quot;)
-db.transaction do
-  db[&quot;hoge&quot;] = {1 =&gt; 100, &quot;bar&quot; =&gt; 101}
+Person = Struct.new :first_name, :last_name
+
+people = [Person.new(&quot;Bob&quot;, &quot;Smith&quot;), Person.new(&quot;Mary&quot;, &quot;Johnson&quot;)]
+
+store = YAML::Store.new &quot;test.store&quot;
+
+store.transaction do
+  store[&quot;people&quot;] = people
+  store[&quot;greeting&quot;] = { &quot;hello&quot; =&gt; &quot;world&quot; }
 end
+</pre>
+<p>
+上記のコードを実行すると &quot;test.store&quot; は以下のようになります。
+</p>
+<pre>
+---
+people:
+- !ruby/struct:Person
+  first_name: Bob
+  last_name: Smith
+- !ruby/struct:Person
+  first_name: Mary
+  last_name: Johnson
+greeting:
+  hello: world
 </pre>
 
 
@@ -78,8 +103,8 @@ Rubyのオブジェクトを外部ファイルに格納するためのライブ�
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

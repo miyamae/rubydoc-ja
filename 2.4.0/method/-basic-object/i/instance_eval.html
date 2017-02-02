@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>instance method BasicObject#instance_eval (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-basic-object.html">BasicObjectクラス</a>
+&gt; instance_eval
+
+</p>
+
+
+<h1>instance method BasicObject#instance_eval</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_INSTANCE_EVAL"><code>instance_eval(expr, filename = &quot;(eval)&quot;, lineno = 1) -&gt; object</code><span class="permalink">[<a href="../../../method/-basic-object/i/instance_eval.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/BasicObject.html#method-i-instance_eval">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>instance_eval {|obj| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+オブジェクトのコンテキストで文字列 expr またはオブジェクト自身をブロックパラメータとするブロックを
+評価してその結果を返します。
+</p>
+<p>
+オブジェクトのコンテキストで評価するとは評価中の self をそのオブジェクトにして実行するということです。
+また、文字列 expr やブロック中でメソッドを定義すればそのオブジェクトの特異メソッドが定義されます。
+</p>
+<p>
+ただし、ローカル変数だけは、文字列 expr の評価では instance_eval の外側のスコープと、ブロックの評価ではそのブロックの外側のスコープと、共有します。
+</p>
+<p>
+メソッド定義の中で instance_eval でメソッドを定義した場合は、囲むメソッドが実行されたときに
+初めて instance_eval 内のメソッドが定義されます。これはメソッド定義のネストと同じです。
+<a href="../../../doc/spec=2fdef.html#nest_method">クラス／メソッドの定義/メソッド定義のネスト</a> を参照してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] expr:</dt>
+<dd>
+評価する文字列です。
+</dd>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+文字列を指定します。ファイル filename に文字列 expr が
+書かれているかのように実行されます。スタックトレースの
+表示などを差し替えることができます。
+</dd>
+<dt class='method-param'>[PARAM] lineno:</dt>
+<dd>
+整数を指定します。行番号 lineno から文字列 expr が書かれているかのように実行されます。
+スタックトレースの表示などを差し替えることができます。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+class Foo
+  def initialize data
+    @key = data
+  end
+  private
+  def do_fuga
+    p 'secret'
+  end
+end
+
+some = Foo.new 'XXX'
+some.instance_eval{p @key} #=&gt; &quot;XXX&quot;
+some.instance_eval{do_fuga } #=&gt; &quot;secret&quot; # private メソッドも呼び出せる
+
+some.instance_eval 'raise' # ..:10: (eval):1:  (RuntimeError)
+messg = 'unknown'
+some.instance_eval 'raise messg','file.rb',999 # file.rb:999: unknown (RuntimeError)
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-module/i/module_eval.html">Module#module_eval</a>, <a href="../../../method/-kernel/m/eval.html">Kernel.#eval</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

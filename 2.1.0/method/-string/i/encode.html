@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../../../style.css">
   <link rel="icon" type="image/png" href="../../../rurema.png">
+  
   <title>instance method String#encode (Ruby 2.1.0)</title>
 </head>
 <body>
@@ -84,6 +85,13 @@ self を指定したエンコーディングに変換した文字列を作成し
 前述の :invalid =&gt; :replace や :undef =&gt; :replace で用いられる置換文字を指定します。デフォルトは Unicode 系のエンコーディングならば U+FFFD、それ以外では &quot;?&quot; です。
 </p>
 </dd>
+<dt>:fallback =&gt; Hash | Proc | Method</dt>
+<dd>
+<p>
+未定義の文字に対する置換文字を設定します。このオプションに与えられるオブジェクトは <a href="../../../class/-hash.html">Hash</a>, <a href="../../../class/-proc.html">Proc</a>, <a href="../../../class/-method.html">Method</a> のいずれかまたは [] メソッドを持つオブジェクトです。
+キーは現在のトランスコーダのソースエンコーディングで未定義の文字です。値は、変換先のエンコーディングでの変換後の文字です。
+</p>
+</dd>
 <dt>:xml =&gt; :text</dt>
 <dd>
 <p>
@@ -126,6 +134,12 @@ LF 改行を CRLF 改行に置き換えます。(CRLF は CRCRLF になります
 s = &quot;いろは&quot;
 s.encode(&quot;EUC-JP&quot;)
 s.encode(Encoding::UTF_8)
+
+# U+00B7 MIDDLE DOT, U+2014 EM DASH は対応する文字が Windows-31J には
+# 存在しないのでそのまま変換しようとすると Encoding::UndefinedConversionError が発生する
+str = &quot;\u00b7\u2014&quot;
+str.encode(&quot;Windows-31J&quot;, fallback: { &quot;\u00b7&quot; =&gt; &quot;\xA5&quot;.force_encoding(&quot;Windows-31J&quot;),
+                                      &quot;\u2014&quot; =&gt; &quot;\x{815C}&quot;.force_encoding(&quot;Windows-31J&quot;) })
 </pre>
 <p>
 [SEE_ALSO] <a href="../../../method/-string/i/encode=21.html">String#encode!</a>
@@ -137,8 +151,8 @@ s.encode(Encoding::UTF_8)
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

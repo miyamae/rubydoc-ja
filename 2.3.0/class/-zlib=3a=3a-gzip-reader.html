@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class Zlib::GzipReader (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/zlib.html">zlibライブラリ</a>
+&gt; Zlib::GzipReaderクラス
+</p>
+
+
+<h1>class Zlib::GzipReader</h1>
+<p>
+
+
+クラスの継承リスト: Zlib::GzipReader
+
+      &lt; <a href="../class/-enumerable.html">Enumerable</a>
+      
+
+      &lt; <a href="../class/-zlib=3a=3a-gzip-file.html">Zlib::GzipFile</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+gzip 形式の圧縮ファイルを読み込むラッパークラスです。
+IO クラスのインスタンス (又は IO クラスのインスタンスと同じメソッドを
+持つオブジェクト) と関連付けて使用します。
+</p>
+<pre>
+require 'zlib'
+=begin
+# hoge.gz がない場合は下記で作成できる。
+Zlib::GzipWriter.open('hoge.gz') { |gz|
+  gz.puts 'hoge'
+}
+=end
+
+Zlib::GzipReader.open('hoge.gz') {|gz|
+  print gz.read
+}
+
+f = File.open('hoge.gz')
+gz = Zlib::GzipReader.new(f)
+print gz.read
+gz.close
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+<a href="#S_OPEN">open</a>
+
+<a href="#S_WRAP">wrap</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_EACH">each</a>
+
+<a href="#I_EACH">each_line</a>
+
+<a href="#I_EACH_BYTE">each_byte</a>
+
+<a href="#I_EOF">eof</a>
+
+<a href="#I_EOF">eof?</a>
+
+<a href="#I_GETC">getc</a>
+
+<a href="#I_GETS">gets</a>
+
+<a href="#I_LINENO">lineno</a>
+
+<a href="#I_LINENO--3D">lineno=</a>
+
+<a href="#I_POS">pos</a>
+
+<a href="#I_POS">tell</a>
+
+<a href="#I_READ">read</a>
+
+<a href="#I_READCHAR">readchar</a>
+
+<a href="#I_READLINE">readline</a>
+
+<a href="#I_READLINES">readlines</a>
+
+<a href="#I_READPARTIAL">readpartial</a>
+
+<a href="#I_REWIND">rewind</a>
+
+<a href="#I_UNGETC">ungetc</a>
+
+<a href="#I_UNUSED">unused</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(io) -&gt; Zlib::GzipReader</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+io と関連付けられた GzipReader オブジェクトを作成します。
+</p>
+<p>
+GzipReader オブジェクトは io からデータを逐次リードして
+解析/展開を行います。io には少なくとも、<a href="../method/-i-o/i/read.html">IO#read</a> と
+同じ動作をする read メソッドが定義されている必要があります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] io:</dt>
+<dd>
+IO オブジェクト、もしくは少なくとも <a href="../method/-i-o/i/read.html">IO#read</a> と同じ動作を
+する read メソッドが定義されているオブジェクト
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::Error:</dt>
+<dd>
+ヘッダーの解析に失敗した場合発生します。
+</dd>
+</dl>
+<pre>
+File.open('hoge.txt', &quot;w&quot;) { |fp|
+  fp.puts 'hoge'
+}
+
+f = File.open('hoge.txt')
+begin
+  Zlib::GzipReader.new(f)
+rescue Zlib::GzipFile::Error =&gt; err
+  puts &quot;error&quot;, err #=&gt; error
+                    #=&gt; not in gzip format
+end
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_OPEN"><code>open(filename) -&gt; Zlib::GzipReader</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/s/open.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-c-open">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>open(filename) {|gz| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+filename で指定されるファイルを gzip ファイルとして
+オープンします。GzipReader オブジェクトを返します。
+その他詳細は <a href="../method/-zlib=3a=3a-gzip-reader/s/new.html">Zlib::GzipReader.new</a> や <a href="../method/-zlib=3a=3a-gzip-reader/s/wrap.html">Zlib::GzipReader.wrap</a> と
+同じです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+gzip ファイル名を文字列で指定します。
+</dd>
+</dl>
+<pre>
+require 'zlib'
+
+=begin
+# hoge.gz がない場合はこれで作成する。
+Zlib::GzipWriter.open('hoge.gz') { |gz|
+  gz.puts 'hoge'
+}
+=end
+
+Zlib::GzipReader.open('hoge.gz'){|gz|
+  print gz.read
+}
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_WRAP"><code>wrap(io) -&gt; Zlib::GzipReader</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/s/wrap.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-c-wrap">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>wrap(io) {|gz| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+io と関連付けられた GzipReader オブジェクトを作成します。
+</p>
+<p>
+ブロックが与えられた場合は、それを引数としてブロックを実行します。
+ブロックの実行が終了すると、GzipReader オブジェクトは自動的に
+クローズされます。関連付けられている IO オブジェクトまで
+クローズしたくない時は、ブロック中で <a href="../method/-zlib=3a=3a-gzip-file/i/finish.html">Zlib::GzipFile#finish</a>
+メソッドを呼び出して下さい。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] io:</dt>
+<dd>
+IO オブジェクトを指定します。
+</dd>
+</dl>
+<pre>
+require 'zlib'
+
+=begin
+# hoge.gz がない場合はこれで作成する。
+Zlib::GzipWriter.open('hoge.gz') { |gz|
+  gz.puts 'hoge'
+}
+=end
+
+f = File.open('hoge.gz')
+Zlib::GzipReader.wrap(f){|gz|
+  print gz.read
+}
+p f.closed? #=&gt; true
+
+f = File.open('hoge.gz')
+Zlib::GzipReader.wrap(f){|gz|
+  print gz.read
+  gz.finish
+}
+p f.closed? #=&gt; false
+</pre>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_EACH"><code>each(rs = $/) {|line| ... } -&gt; self</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/i/each.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-i-each">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_line(rs = $/) {|line| ... } -&gt; self</code></dt>
+<dt class="method-heading"><code>each(rs = $/) -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>each_line(rs = $/) -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+IO クラスの同名メソッド<a href="../method/-i-o/i/each.html">IO#each</a>, <a href="../method/-i-o/i/each_line.html">IO#each_line</a>と同じです。
+</p>
+<p>
+但し、gzip ファイル中に
+エラーがあった場合 <a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> 例外や
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a> 例外が発生します。
+</p>
+<p>
+gzip ファイルのフッターの処理に注意して下さい。
+gzip ファイルのフッターには圧縮前データのチェックサムが
+記録されています。GzipReader オブジェクトは、次の時に展開した
+データとフッターの照合を行い、エラーがあった場合は
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>, <a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>,
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a> 例外を発生させます。
+</p>
+<ul>
+<li>EOF (圧縮データの最後) を越えて読み込み要求を受けた時。
+すなわち <a href="../method/-zlib=3a=3a-gzip-reader/i/read.html">Zlib::GzipReader#read</a>,
+<a href="../method/-zlib=3a=3a-gzip-reader/i/gets.html">Zlib::GzipReader#gets</a> メソッド等が nil を返す時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-file/i/close.html">Zlib::GzipFile#close</a> メソッドが
+呼び出された時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-reader/i/unused.html">Zlib::GzipReader#unused</a> メソッドが
+呼び出された時。</li>
+</ul>
+<dl>
+<dt class='method-param'>[PARAM] rs:</dt>
+<dd>
+行の区切りを文字列で指定します。
+</dd>
+<dt>[EXCEPTION] Zlib::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::NoFooter:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::CRCError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::LengthError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a>を参照
+</dd>
+</dl>
+<pre>
+=begin
+# hoge.gz がない場合は下記で作成できる。
+Zlib::GzipWriter.open('hoge.gz') { |gz|
+  gz.puts 'hoge'
+  gz.puts 'fuga'
+}
+=end
+
+Zlib::GzipReader.open('hoge.gz') { |gz|
+  gz.each { |line|
+    puts line
+  }
+}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/each.html">IO#each</a>, <a href="../method/-i-o/i/each_line.html">IO#each_line</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_BYTE"><code>each_byte {|byte| ... } -&gt; nil</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/i/each_byte.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-i-each_byte">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_byte -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+IO クラスの同名メソッド<a href="../method/-i-o/i/each_byte.html">IO#each_byte</a>と同じです。
+</p>
+<p>
+但し、gzip ファイル中に
+エラーがあった場合 <a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> 例外や
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a> 例外が発生します。
+</p>
+<p>
+gzip ファイルのフッターの処理に注意して下さい。
+gzip ファイルのフッターには圧縮前データのチェックサムが
+記録されています。GzipReader オブジェクトは、次の時に展開した
+データとフッターの照合を行い、エラーがあった場合は
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>, <a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>,
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a> 例外を発生させます。
+</p>
+<ul>
+<li>EOF (圧縮データの最後) を越えて読み込み要求を受けた時。
+すなわち <a href="../method/-zlib=3a=3a-gzip-reader/i/read.html">Zlib::GzipReader#read</a>,
+<a href="../method/-zlib=3a=3a-gzip-reader/i/gets.html">Zlib::GzipReader#gets</a> メソッド等が nil を返す時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-file/i/close.html">Zlib::GzipFile#close</a> メソッドが
+呼び出された時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-reader/i/unused.html">Zlib::GzipReader#unused</a> メソッドが
+呼び出された時。</li>
+</ul>
+<dl>
+<dt>[EXCEPTION] Zlib::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::NoFooter:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::CRCError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::LengthError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a>を参照
+</dd>
+</dl>
+<pre>
+=begin
+# hoge.gz がない場合は下記で作成できる。
+Zlib::GzipWriter.open('hoge.gz') { |gz|
+  gz.puts 'hoge'
+}
+=end
+
+Zlib::GzipReader.open('hoge.gz') { |gz|
+  gz.each_byte { |b|
+    printf &quot;%d -&gt; %c\n&quot;, b, b
+  }
+}
+#=&gt; 104 -&gt; h
+#=&gt; 111 -&gt; o
+#=&gt; 103 -&gt; g
+#=&gt; 101 -&gt; e
+#=&gt; 10 -&gt;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/each_byte.html">IO#each_byte</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EOF"><code>eof -&gt; bool</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/i/eof.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-i-eof">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>eof? -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+圧縮データの終端に達した場合真を返します。
+フッターが読み込まれていなくても真を返すことに注意して下さい。
+</p>
+<pre>
+=begin
+# hoge.gz がない場合はこれで作成する。
+Zlib::GzipWriter.open('hoge.gz') { |gz|
+  gz.puts 'hoge'
+  gz.puts 'fuga'
+  gz.puts 'foga'
+}
+=end
+
+Zlib::GzipReader.open('hoge.gz'){|gz|
+  gz.each_line{|line|
+    puts line
+  }
+  p gz.eof? #=&gt; true
+}
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_GETC"><code>getc -&gt; Fixnum | nil</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/i/getc.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-i-getc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO クラスの同名メソッド<a href="../method/-i-o/i/getc.html">IO#getc</a>と同じです。
+</p>
+<p>
+但し、gzip ファイル中に
+エラーがあった場合 <a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> 例外や
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a> 例外が発生します。
+</p>
+<p>
+gzip ファイルのフッターの処理に注意して下さい。
+gzip ファイルのフッターには圧縮前データのチェックサムが
+記録されています。GzipReader オブジェクトは、次の時に展開した
+データとフッターの照合を行い、エラーがあった場合は
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>, <a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>,
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a> 例外を発生させます。
+</p>
+<ul>
+<li>EOF (圧縮データの最後) を越えて読み込み要求を受けた時。
+すなわち <a href="../method/-zlib=3a=3a-gzip-reader/i/read.html">Zlib::GzipReader#read</a>,
+<a href="../method/-zlib=3a=3a-gzip-reader/i/gets.html">Zlib::GzipReader#gets</a> メソッド等が nil を返す時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-file/i/close.html">Zlib::GzipFile#close</a> メソッドが
+呼び出された時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-reader/i/unused.html">Zlib::GzipReader#unused</a> メソッドが
+呼び出された時。</li>
+</ul>
+<dl>
+<dt>[EXCEPTION] Zlib::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::NoFooter:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::CRCError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::LengthError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a>を参照
+</dd>
+</dl>
+<pre>
+=begin
+# hoge.gz がない場合は下記で作成できる。
+Zlib::GzipWriter.open('hoge.gz') { |gz|
+  gz.puts 'hoge'
+}
+=end
+
+Zlib::GzipReader.open('hoge.gz') { |gz|
+  while c = gz.getc
+    puts c
+  end
+}
+#=&gt; 104
+#=&gt; 111
+#=&gt; 103
+#=&gt; 101
+#=&gt; 10
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/getc.html">IO#getc</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_GETS"><code>gets(rs = $/) -&gt; String | nil</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/i/gets.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-i-gets">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO クラスの同名メソッド<a href="../method/-i-o/i/gets.html">IO#gets</a>と同じです。
+</p>
+<p>
+但し、gzip ファイル中に
+エラーがあった場合 <a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> 例外や
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a> 例外が発生します。
+</p>
+<p>
+gzip ファイルのフッターの処理に注意して下さい。
+gzip ファイルのフッターには圧縮前データのチェックサムが
+記録されています。GzipReader オブジェクトは、次の時に展開した
+データとフッターの照合を行い、エラーがあった場合は
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>, <a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>,
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a> 例外を発生させます。
+</p>
+<ul>
+<li>EOF (圧縮データの最後) を越えて読み込み要求を受けた時。
+すなわち <a href="../method/-zlib=3a=3a-gzip-reader/i/read.html">Zlib::GzipReader#read</a>,
+<a href="../method/-zlib=3a=3a-gzip-reader/i/gets.html">Zlib::GzipReader#gets</a> メソッド等が nil を返す時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-file/i/close.html">Zlib::GzipFile#close</a> メソッドが
+呼び出された時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-reader/i/unused.html">Zlib::GzipReader#unused</a> メソッドが
+呼び出された時。</li>
+</ul>
+<dl>
+<dt class='method-param'>[PARAM] rs:</dt>
+<dd>
+行の区切りを文字列で指定します。
+</dd>
+<dt>[EXCEPTION] Zlib::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::NoFooter:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::CRCError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::LengthError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a>を参照
+</dd>
+</dl>
+<pre>
+=begin
+# hoge.gz がない場合は下記で作成できる。
+Zlib::GzipWriter.open('hoge.gz') { |gz|
+  gz.puts 'hoge'
+  gz.puts 'fuga'
+}
+=end
+
+Zlib::GzipReader.open('hoge.gz') { |gz|
+  while l = gz.gets
+    puts l
+  end
+}
+#=&gt; hoge
+#=&gt; fuga
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_LINENO"><code>lineno -&gt; Fixnum | Bignum</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/i/lineno.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-i-lineno">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO クラスの同名メソッド<a href="../method/-i-o/i/lineno.html">IO#lineno</a>と同じです。
+</p>
+<p>
+但し、gzip ファイル中に
+エラーがあった場合 <a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> 例外や
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a> 例外が発生します。
+</p>
+<p>
+gzip ファイルのフッターの処理に注意して下さい。
+gzip ファイルのフッターには圧縮前データのチェックサムが
+記録されています。GzipReader オブジェクトは、次の時に展開した
+データとフッターの照合を行い、エラーがあった場合は
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>, <a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>,
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a> 例外を発生させます。
+</p>
+<ul>
+<li>EOF (圧縮データの最後) を越えて読み込み要求を受けた時。
+すなわち <a href="../method/-zlib=3a=3a-gzip-reader/i/read.html">Zlib::GzipReader#read</a>,
+<a href="../method/-zlib=3a=3a-gzip-reader/i/gets.html">Zlib::GzipReader#gets</a> メソッド等が nil を返す時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-file/i/close.html">Zlib::GzipFile#close</a> メソッドが
+呼び出された時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-reader/i/unused.html">Zlib::GzipReader#unused</a> メソッドが
+呼び出された時。</li>
+</ul>
+<dl>
+<dt>[EXCEPTION] Zlib::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::NoFooter:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::CRCError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::LengthError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a>を参照
+</dd>
+</dl>
+<pre>
+=begin
+# hoge.gz がない場合は下記で作成できる。
+Zlib::GzipWriter.open('hoge.gz') { |gz|
+  gz.puts 'h'
+  gz.puts 'o'
+  gz.puts 'g'
+  gz.puts 'e'
+}
+=end
+
+Zlib::GzipReader.open('hoge.gz') { |gz|
+  while l = gz.gets
+    l.chomp!
+    printf &quot;%s %d\n&quot;, l, gz.lineno
+  end
+}
+#=&gt; h 1
+#=&gt; o 2
+#=&gt; g 3
+#=&gt; e 4
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/lineno.html">IO#lineno</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LINENO--3D"><code>lineno=(num)</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/i/lineno=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-i-lineno-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO クラスの同名メソッド<a href="../method/-i-o/i/lineno=3d.html">IO#lineno=</a>と同じです。
+</p>
+<p>
+但し、gzip ファイル中に
+エラーがあった場合 <a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> 例外や
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a> 例外が発生します。
+</p>
+<p>
+gzip ファイルのフッターの処理に注意して下さい。
+gzip ファイルのフッターには圧縮前データのチェックサムが
+記録されています。GzipReader オブジェクトは、次の時に展開した
+データとフッターの照合を行い、エラーがあった場合は
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>, <a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>,
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a> 例外を発生させます。
+</p>
+<ul>
+<li>EOF (圧縮データの最後) を越えて読み込み要求を受けた時。
+すなわち <a href="../method/-zlib=3a=3a-gzip-reader/i/read.html">Zlib::GzipReader#read</a>,
+<a href="../method/-zlib=3a=3a-gzip-reader/i/gets.html">Zlib::GzipReader#gets</a> メソッド等が nil を返す時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-file/i/close.html">Zlib::GzipFile#close</a> メソッドが
+呼び出された時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-reader/i/unused.html">Zlib::GzipReader#unused</a> メソッドが
+呼び出された時。</li>
+</ul>
+<dl>
+<dt class='method-param'>[PARAM] num:</dt>
+<dd>
+新たな行番号を整数で指定します。
+</dd>
+<dt>[EXCEPTION] Zlib::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::NoFooter:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::CRCError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::LengthError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a>を参照
+</dd>
+</dl>
+<pre>
+=begin
+# hoge.gz がない場合は下記で作成できる。
+Zlib::GzipWriter.open('hoge.gz') { |gz|
+  gz.puts 'h'
+  gz.puts 'o'
+  gz.puts 'g'
+  gz.puts 'e'
+}
+=end
+
+Zlib::GzipReader.open('hoge.gz') { |gz|
+  while l = gz.gets
+    l.chomp!
+    gz.lineno = 1000 if l == &quot;o&quot;
+    printf &quot;%s %d\n&quot;, l, gz.lineno
+  end
+}
+#=&gt; h 1
+#=&gt; o 1001
+#=&gt; g 1002
+#=&gt; e 1003
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/lineno=3d.html">IO#lineno=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_POS"><code>pos -&gt; Fixnum</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/i/pos.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-i-pos">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>tell -&gt; Fixnum</code></dt>
+<dd class="method-description">
+<p>
+現在までに展開したデータの長さの合計を返します。
+ファイルポインタの位置ではないことに注意して下さい。
+</p>
+<pre>
+Zlib::GzipWriter.open('hoge.gz') { |gz|
+  gz.puts 'hoge'
+}
+
+Zlib::GzipReader.open('hoge.gz'){|gz|
+  while c = gz.getc
+    printf &quot;%c, %d\n&quot;, c, gz.pos
+  end
+}
+# 実行例
+#=&gt; h, 1
+#=&gt; o, 2
+#=&gt; g, 3
+#=&gt; e, 4
+#=&gt;
+#=&gt; , 5
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_READ"><code>read(length = nil) -&gt; String | nil</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/i/read.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-i-read">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO クラスの同名メソッド<a href="../method/-i-o/i/read.html">IO#read</a>と同じです。
+</p>
+<p>
+但し、gzip ファイル中に
+エラーがあった場合 <a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> 例外や
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a> 例外が発生します。
+</p>
+<p>
+gzip ファイルのフッターの処理に注意して下さい。
+gzip ファイルのフッターには圧縮前データのチェックサムが
+記録されています。GzipReader オブジェクトは、次の時に展開した
+データとフッターの照合を行い、エラーがあった場合は
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>, <a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>,
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a> 例外を発生させます。
+</p>
+<ul>
+<li>EOF (圧縮データの最後) を越えて読み込み要求を受けた時。
+すなわち <a href="../method/-zlib=3a=3a-gzip-reader/i/read.html">Zlib::GzipReader#read</a>,
+<a href="../method/-zlib=3a=3a-gzip-reader/i/gets.html">Zlib::GzipReader#gets</a> メソッド等が nil を返す時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-file/i/close.html">Zlib::GzipFile#close</a> メソッドが
+呼び出された時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-reader/i/unused.html">Zlib::GzipReader#unused</a> メソッドが
+呼び出された時。</li>
+</ul>
+<dl>
+<dt class='method-param'>[PARAM] length:</dt>
+<dd>
+読み込む文字列の文字数を整数で指定します。
+省略した場合は、全てのデータを読み込みます。
+</dd>
+<dt>[EXCEPTION] Zlib::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::NoFooter:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::CRCError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::LengthError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a>を参照
+</dd>
+</dl>
+<pre>
+=begin
+# hoge.gz がない場合は下記で作成できる。
+Zlib::GzipWriter.open('hoge.gz') { |gz|
+  gz.puts 'hoge_fuga'
+}
+=end
+
+Zlib::GzipReader.open('hoge.gz') { |gz|
+  p gz.read(4)  #=&gt; &quot;hoge&quot;
+  p gz.read     #=&gt; &quot;_fuga\n&quot;
+  p gz.read(1)  #=&gt; nil
+}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/read.html">IO#read</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_READCHAR"><code>readchar -&gt; Fixnum</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/i/readchar.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-i-readchar">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO クラスの同名メソッド<a href="../method/-i-o/i/readchar.html">IO#readchar</a>と同じです。
+</p>
+<p>
+但し、gzip ファイル中に
+エラーがあった場合 <a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> 例外や
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a> 例外が発生します。
+</p>
+<p>
+gzip ファイルのフッターの処理に注意して下さい。
+gzip ファイルのフッターには圧縮前データのチェックサムが
+記録されています。GzipReader オブジェクトは、次の時に展開した
+データとフッターの照合を行い、エラーがあった場合は
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>, <a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>,
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a> 例外を発生させます。
+</p>
+<ul>
+<li>EOF (圧縮データの最後) を越えて読み込み要求を受けた時。
+すなわち <a href="../method/-zlib=3a=3a-gzip-reader/i/read.html">Zlib::GzipReader#read</a>,
+<a href="../method/-zlib=3a=3a-gzip-reader/i/gets.html">Zlib::GzipReader#gets</a> メソッド等が nil を返す時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-file/i/close.html">Zlib::GzipFile#close</a> メソッドが
+呼び出された時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-reader/i/unused.html">Zlib::GzipReader#unused</a> メソッドが
+呼び出された時。</li>
+</ul>
+<dl>
+<dt>[EXCEPTION] EOFError:</dt>
+<dd>
+EOF に到達したとき発生します。
+</dd>
+<dt>[EXCEPTION] Zlib::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::NoFooter:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::CRCError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::LengthError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a>を参照
+</dd>
+</dl>
+<pre>
+=begin
+# hoge.gz がない場合は下記で作成できる。
+Zlib::GzipWriter.open('hoge.gz') { |gz|
+  gz.puts 'hoge'
+}
+=end
+
+Zlib::GzipReader.open('hoge.gz') { |gz|
+  begin
+    puts gz.readchar
+  rescue EOFError =&gt; err
+    puts err
+    break
+  end while true
+}
+#=&gt; 104
+#=&gt; 111
+#=&gt; 103
+#=&gt; 101
+#=&gt; 10
+#=&gt; end of file reached
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_READLINE"><code>readline(rs = $/) -&gt; String</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/i/readline.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-i-readline">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO クラスの同名メソッド<a href="../method/-i-o/i/readline.html">IO#readline</a>と同じです。
+</p>
+<p>
+但し、gzip ファイル中に
+エラーがあった場合 <a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> 例外や
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a> 例外が発生します。
+</p>
+<p>
+gzip ファイルのフッターの処理に注意して下さい。
+gzip ファイルのフッターには圧縮前データのチェックサムが
+記録されています。GzipReader オブジェクトは、次の時に展開した
+データとフッターの照合を行い、エラーがあった場合は
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>, <a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>,
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a> 例外を発生させます。
+</p>
+<ul>
+<li>EOF (圧縮データの最後) を越えて読み込み要求を受けた時。
+すなわち <a href="../method/-zlib=3a=3a-gzip-reader/i/read.html">Zlib::GzipReader#read</a>,
+<a href="../method/-zlib=3a=3a-gzip-reader/i/gets.html">Zlib::GzipReader#gets</a> メソッド等が nil を返す時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-file/i/close.html">Zlib::GzipFile#close</a> メソッドが
+呼び出された時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-reader/i/unused.html">Zlib::GzipReader#unused</a> メソッドが
+呼び出された時。</li>
+</ul>
+<dl>
+<dt class='method-param'>[PARAM] rs:</dt>
+<dd>
+行の区切りを文字列で指定します。
+</dd>
+<dt>[EXCEPTION] EOFError:</dt>
+<dd>
+EOF に到達したとき発生します。
+</dd>
+<dt>[EXCEPTION] Zlib::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::NoFooter:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::CRCError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::LengthError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a>を参照
+</dd>
+</dl>
+<pre>
+=begin
+# hoge.gz がない場合は下記で作成できる。
+Zlib::GzipWriter.open('hoge.gz') { |gz|
+  gz.puts 'hoge'
+  gz.puts 'fuga'
+}
+=end
+
+Zlib::GzipReader.open('hoge.gz') { |gz|
+  begin
+    puts gz.readline
+  rescue EOFError =&gt; err
+    puts err
+    break
+  end while true
+}
+#=&gt; hoge
+#=&gt; fuga
+#=&gt; end of file reached
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/readline.html">IO#readline</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_READLINES"><code>readlines(rs = $/) -&gt; Array</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/i/readlines.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-i-readlines">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO クラスの同名メソッド<a href="../method/-i-o/i/readlines.html">IO#readlines</a>と同じです。
+</p>
+<p>
+但し、gzip ファイル中に
+エラーがあった場合 <a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> 例外や
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a> 例外が発生します。
+</p>
+<p>
+gzip ファイルのフッターの処理に注意して下さい。
+gzip ファイルのフッターには圧縮前データのチェックサムが
+記録されています。GzipReader オブジェクトは、次の時に展開した
+データとフッターの照合を行い、エラーがあった場合は
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>, <a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>,
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a> 例外を発生させます。
+</p>
+<ul>
+<li>EOF (圧縮データの最後) を越えて読み込み要求を受けた時。
+すなわち <a href="../method/-zlib=3a=3a-gzip-reader/i/read.html">Zlib::GzipReader#read</a>,
+<a href="../method/-zlib=3a=3a-gzip-reader/i/gets.html">Zlib::GzipReader#gets</a> メソッド等が nil を返す時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-file/i/close.html">Zlib::GzipFile#close</a> メソッドが
+呼び出された時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-reader/i/unused.html">Zlib::GzipReader#unused</a> メソッドが
+呼び出された時。</li>
+</ul>
+<dl>
+<dt class='method-param'>[PARAM] rs:</dt>
+<dd>
+行の区切りを文字列で指定します。
+</dd>
+<dt>[EXCEPTION] Zlib::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::NoFooter:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::CRCError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::LengthError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a>を参照
+</dd>
+</dl>
+<pre>
+=begin
+# hoge.gz がない場合は下記で作成できる。
+Zlib::GzipWriter.open('hoge.gz') { |gz|
+  gz.puts 'hoge'
+  gz.puts 'fuga'
+}
+=end
+
+Zlib::GzipReader.open('hoge.gz') { |gz|
+  p gz.readlines #=&gt;  [&quot;hoge\n&quot;, &quot;fuga\n&quot;]
+}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/readlines.html">IO#readlines</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_READPARTIAL"><code>readpartial(maxlen, outbuf = nil) -&gt; String</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/i/readpartial.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-i-readpartial">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO クラスの同名メソッド <a href="../method/-i-o/i/readpartial.html">IO#readpartial</a> と同じです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] maxlen:</dt>
+<dd>
+読み込む長さの上限を整数で指定します。
+</dd>
+<dt class='method-param'>[PARAM] outbuf:</dt>
+<dd>
+文字列で指定します。読み込んだデータを outbuf に破壊的に格納し、
+返り値は outbuf となります。outbuf は一旦 maxlen 長に拡張(あるいは縮小)されたあと、
+実際に読み込んだデータのサイズになります。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+maxlen に負の値が入力された場合発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/readpartial.html">IO#readpartial</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_REWIND"><code>rewind -&gt; 0</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/i/rewind.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-i-rewind">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ファイルポインタを <a href="../method/-zlib=3a=3a-gzip-reader/s/new.html">Zlib::GzipReader.new</a> を呼び出した直後の
+時点に戻します。関連付けられている IO オブジェクトに
+seek メソッドが定義されている必要があります。
+</p>
+<pre>
+=begin
+# hoge.gz がない場合はこれで作成する。
+Zlib::GzipWriter.open('hoge.gz') { |gz|
+  gz.puts 'hoge'
+  gz.puts 'fuga'
+}
+=end
+
+gz = Zlib::GzipReader.open('hoge.gz')
+puts gz.gets #=&gt; hoge
+puts gz.gets #=&gt; fuga
+gz.rewind  #=&gt; 0
+puts gz.gets #=&gt; hoge
+gz.close
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_UNGETC"><code>ungetc(char) -&gt; nil</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/i/ungetc.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-i-ungetc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO クラスの同名メソッド <a href="../method/-i-o/i/ungetc.html">IO#ungetc</a> と同じです。
+</p>
+<p>
+IO クラスの同名メソッドと同じですが、gzip ファイル中に
+エラーがあった場合 <a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> 例外や
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a> 例外が発生します。
+</p>
+<p>
+gzip ファイルのフッターの処理に注意して下さい。
+gzip ファイルのフッターには圧縮前データのチェックサムが
+記録されています。GzipReader オブジェクトは、次の時に展開した
+データとフッターの照合を行い、エラーがあった場合は
+Zlib::GzipFile::NoFooter, Zlib::GzipFile::CRCError,
+Zlib::GzipFile::LengthError 例外を発生させます。
+</p>
+<ul>
+<li>EOF (圧縮データの最後) を越えて読み込み要求を受けた時。
+すなわち <a href="../method/-zlib=3a=3a-gzip-reader/i/read.html">Zlib::GzipReader#read</a>,
+<a href="../method/-zlib=3a=3a-gzip-reader/i/gets.html">Zlib::GzipReader#gets</a> メソッド等が nil を返す時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-file/i/close.html">Zlib::GzipFile#close</a> メソッドが
+呼び出された時。</li>
+<li>EOF まで読み込んだ後、<a href="../method/-zlib=3a=3a-gzip-reader/i/unused.html">Zlib::GzipReader#unused</a> メソッドが
+呼び出された時。</li>
+</ul>
+<dl>
+<dt class='method-param'>[PARAM] char:</dt>
+<dd>
+読み戻したい1文字かそのコードポイントを指定します。
+</dd>
+<dt>[EXCEPTION] Zlib::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-error.html">Zlib::Error</a> を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::Error:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-error.html">Zlib::GzipFile::Error</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::NoFooter:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-no-footer.html">Zlib::GzipFile::NoFooter</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::CRCError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-c-r-c-error.html">Zlib::GzipFile::CRCError</a>を参照
+</dd>
+<dt>[EXCEPTION] Zlib::GzipFile::LengthError:</dt>
+<dd>
+<a href="../class/-zlib=3a=3a-gzip-file=3a=3a-length-error.html">Zlib::GzipFile::LengthError</a>を参照
+</dd>
+</dl>
+<pre>
+=begin
+# hoge.gz がない場合はこれで作成する。
+Zlib::GzipWriter.open('hoge.gz') { |gz|
+  gz.print 'hogefuga'
+}
+=end
+
+Zlib::GzipReader.open('hoge.gz') { |gz|
+  begin
+    c1 = gz.getc
+    c2 = gz.getc
+    break if c2.nil?
+    printf &quot;%c -&gt; %c\n&quot;, c1, c2
+    gz.ungetc(c2)
+  end while true
+}
+
+#=&gt; h -&gt; o
+#=&gt; o -&gt; g
+#=&gt; g -&gt; e
+#=&gt; e -&gt; f
+#=&gt; f -&gt; u
+#=&gt; u -&gt; g
+#=&gt; g -&gt; a
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/ungetc.html">IO#ungetc</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_UNUSED"><code>unused -&gt; String | nil</code><span class="permalink">[<a href="../method/-zlib=3a=3a-gzip-reader/i/unused.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Zlib/GzipReader.html#method-i-unused">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+gzip フォーマットの解析のために読み込んだ余剰のデータを返します。
+gzip ファイルが最後まで解析されていない場合は nil を返します。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

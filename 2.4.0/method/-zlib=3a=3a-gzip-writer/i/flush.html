@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>instance method Zlib::GzipWriter#flush (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/zlib.html">zlibライブラリ</a>
+&gt; <a href="../../../class/-zlib=3a=3a-gzip-writer.html">Zlib::GzipWriterクラス</a>
+&gt; flush
+
+</p>
+
+
+<h1>instance method Zlib::GzipWriter#flush</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_FLUSH"><code>flush(flush = Zlib::SYNC_FLUSH) -&gt; self</code><span class="permalink">[<a href="../../../method/-zlib=3a=3a-gzip-writer/i/flush.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Zlib/GzipWriter.html#method-i-flush">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+まだ書き出されていないデータをフラッシュします。
+</p>
+<p>
+flush は <a href="../../../method/-zlib=3a=3a-deflate/i/deflate.html">Zlib::Deflate#deflate</a> と同じです。
+省略時は <a href="../../../method/-zlib/c/-s-y-n-c_-f-l-u-s-h.html">Zlib::SYNC_FLUSH</a> が使用されます。
+flush に <a href="../../../method/-zlib/c/-n-o_-f-l-u-s-h.html">Zlib::NO_FLUSH</a> を指定することは無意味です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] flush:</dt>
+<dd>
+<a href="../../../method/-zlib/c/-n-o_-f-l-u-s-h.html">Zlib::NO_FLUSH</a> <a href="../../../method/-zlib/c/-s-y-n-c_-f-l-u-s-h.html">Zlib::SYNC_FLUSH</a> <a href="../../../method/-zlib/c/-f-u-l-l_-f-l-u-s-h.html">Zlib::FULL_FLUSH</a> などを指定します。
+</dd>
+</dl>
+<pre>
+require 'zlib'
+
+def case1
+  filename='hoge1.gz'
+  fw = File.open(filename, &quot;w&quot;)
+  Zlib::GzipWriter.wrap(fw, Zlib::BEST_COMPRESSION){|gz|
+    gz.puts &quot;fuga&quot;
+    gz.puts &quot;ugo&quot;
+  }
+  p File.read(filename)
+end
+
+def case2
+  filename='hoge1.gz'
+  fw = File.open(filename, &quot;w&quot;)
+  Zlib::GzipWriter.wrap(fw, Zlib::BEST_COMPRESSION){|gz|
+    gz.puts &quot;fuga&quot;
+    gz.flush
+    gz.puts &quot;ugo\n&quot;
+    gz.flush
+  }
+  p File.read(filename)
+end
+
+case1
+#=&gt; &quot;\037\213\b\000p\257pH\002\003K+MO\344*M\317\347\002\000&lt;\326\000\371\t\000\000\000&quot;
+case2
+#=&gt; &quot;\037\213\b\000p\257pH\002\003J+MO\344\002\000\000\000\377\377*M\317\347\002\000\000\000\377\377\003\000&lt;\326\000\371\t\000\000\000&quot;
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

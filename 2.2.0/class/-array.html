@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>class Array (Ruby 2.2.0)</title>
 </head>
 <body>
@@ -288,7 +289,7 @@ p SubArray[1, 2, 3] # =&gt; [1, 2, 3]
 </p>
 <p>
 要素毎に val が複製されるわけではないことに注意してください。
-全要素が同じオブジェクト val を参照します[[trap:Array]]。
+全要素が同じオブジェクト val を参照します。
 後述の例では、配列の各要素は全て同一の文字列を指します。
 </p>
 <dl>
@@ -938,6 +939,7 @@ p ary.assoc(15)          # =&gt; nil
 
 
 <dt class="method-heading" id="I_BSEARCH"><code>bsearch { |x| ... } -&gt; object | nil</code><span class="permalink">[<a href="../method/-array/i/bsearch.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.2.0/Array.html#method-i-bsearch">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>bsearch -&gt; Enumerator</code></dt>
 <dd class="method-description">
 <p>
 ブロックの評価結果で範囲内の各要素の判定を行い、条件を満たす値を二分探
@@ -997,19 +999,18 @@ ary.bsearch {|x| 4 - x / 2 } # =&gt; nil
 また、二分探索の各イテレーションで値がどのような順序で選ばれるかは
 未規定です。
 </p>
+<p>
+ブロックが与えられなかった場合は、 <a href="../class/-enumerator.html">Enumerator</a> のインスタンスを返します。
+</p>
 <dl>
 <dt>[EXCEPTION] TypeError:</dt>
 <dd>
 ブロックの評価結果が true、false、nil、数値以外であっ
 た場合に発生します。
 </dd>
-<dt>[EXCEPTION] LocalJumpError:</dt>
-<dd>
-ブロックを指定しなかった場合に発生します。
-</dd>
 </dl>
 <p>
-[SEE_ALSO] <a href="../method/-range/i/bsearch.html">Range#bsearch</a>, <a class="external" href="http://jp.rubyist.net/magazine/?0041-200Special-note#l15">http://jp.rubyist.net/magazine/?0041-200Special-note#l15</a>
+[SEE_ALSO] <a href="../method/-range/i/bsearch.html">Range#bsearch</a>, <a class="external" href="http://magazine.rubyist.net/?0041-200Special-note#l15">http://magazine.rubyist.net/?0041-200Special-note#l15</a>
 </p>
 </dd>
 
@@ -1610,16 +1611,16 @@ p ary.first(4)
 <dt class="method-heading"><code>flatten!(lv = nil) -&gt; self | nil</code></dt>
 <dd class="method-description">
 <p>
-flatten は自身を再帰的に平滑化した配列を生成して返します。flatten! は
-自身を再帰的かつ破壊的に平滑化し、平滑化が行われた場合は self をそうでない
+flatten は自身を再帰的に平坦化した配列を生成して返します。flatten! は
+自身を再帰的かつ破壊的に平坦化し、平坦化が行われた場合は self をそうでない
 場合は nil を返します。
-lv が指定された場合、lv の深さまで再帰的に平滑化します。
+lv が指定された場合、lv の深さまで再帰的に平坦化します。
 </p>
 <dl>
 <dt class='method-param'>[PARAM] lv:</dt>
 <dd>
-平滑化の再帰の深さを整数で指定します。nil を指定した場合、再
-帰の深さの制限無しに平滑化します。
+平坦化の再帰の深さを整数で指定します。nil を指定した場合、再
+帰の深さの制限無しに平坦化します。
 整数以外のオブジェクトを指定した場合は to_int メソッドによる暗
 黙の型変換を試みます。
 </dd>
@@ -1634,20 +1635,20 @@ lv が指定された場合、lv の深さまで再帰的に平滑化します�
 </dd>
 </dl>
 <pre>
-# 自身を再帰的に平滑化する例。
+# 自身を再帰的に平坦化する例。
 a = [1, [2, 3, [4], 5]]
 p a.flatten                     #=&gt; [1, 2, 3, 4, 5]
 p a                             #=&gt; [1, [2, 3, [4], 5]]
 
-# 自身を破壊的に平滑化する例。
+# 自身を破壊的に平坦化する例。
 a = [[[1, [2, 3]]]]
 p a.flatten!                    #=&gt; [1, 2, 3]
 p a                             #=&gt; [1, 2, 3]
 
-# 平滑化が行われない場合は nil を返す。
+# 平坦化が行われない場合は nil を返す。
 p [1, 2, 3].flatten!            #=&gt; nil
 
-# 平滑化の再帰の深さを指定する例。
+# 平坦化の再帰の深さを指定する例。
 a = [ 1, 2, [3, [4, 5] ] ]
 a.flatten(1)              #=&gt; [1, 2, 3, [4, 5]]
 </pre>
@@ -1943,6 +1944,12 @@ s!, S!, i!, I!, l!, L!, q!, Q! を用います。
 n, N, v, V を用います。
 </p>
 <p>
+強制的にエンディアンを指定したいときは、
+リトルエンディアンなら&lt;
+ビッグエンディアンなら&gt;
+を後ろにつけます。!と組み合わせることも可能です。
+</p>
+<p>
 まとめると以下のようになります。
 </p>
 <dl>
@@ -1975,6 +1982,16 @@ n, N, v, V を用います。
   S: uint16_t
   l: int32_t
   L: uint32_t
+</pre>
+</dd>
+<dt>エンディアンの強制指定(バイナリ解析などに適切)</dt>
+<dd>
+<pre>
+  S&gt;:  big endian unsigned 16bit(nと同じ)
+  s&gt;:  big endian int16_t
+  s!&gt;: big endian signed short
+  l&lt;:  little endian int32_t
+  l!&lt;: little endian signed long
 </pre>
 </dd>
 </dl>
@@ -3168,7 +3185,7 @@ p a.rassoc(2)    # =&gt; [25, 2]
 <dl>
 <dt class='method-param'>[PARAM] n:</dt>
 <dd>
-生成される配列のサイズを整数で指定します。。
+生成される配列のサイズを整数で指定します。
 整数以外のオブジェクトを指定した場合は to_int メソッドによる暗
 黙の型変換を試みます。
 </dd>
@@ -3211,7 +3228,7 @@ a.repeated_combination(0).to_a  #=&gt; [[]] # one combination of length 0
 <dl>
 <dt class='method-param'>[PARAM] n:</dt>
 <dd>
-生成する配列のサイズを整数で指定します。。
+生成する配列のサイズを整数で指定します。
 整数以外のオブジェクトを指定した場合は to_int メソッドによる暗
 黙の型変換を試みます。
 </dd>
@@ -3994,8 +4011,8 @@ p [1,2,3].zip([4,5,6], [7,8,9]) {|ary|
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

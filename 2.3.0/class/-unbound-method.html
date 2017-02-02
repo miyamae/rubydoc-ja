@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class UnboundMethod (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; UnboundMethodクラス
+</p>
+
+
+<h1>class UnboundMethod</h1>
+<p>
+
+
+クラスの継承リスト: UnboundMethod
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+レシーバを持たないメソッドを表すクラスです。
+呼び出すためにはレシーバにバインドする必要があります。
+</p>
+<p>
+<a href="../method/-module/i/instance_method.html">Module#instance_method</a> や
+<a href="../method/-method/i/unbind.html">Method#unbind</a> により生成し、後で
+<a href="../method/-unbound-method/i/bind.html">UnboundMethod#bind</a> によりレシーバを
+割り当てた <a href="../class/-method.html">Method</a> オブジェクトを作ることができます。
+</p>
+<p>
+例: <a href="../class/-method.html">Method</a> クラスの冒頭にある例を UnboundMethod で書くと以下のようになります。
+</p>
+<pre>
+class Foo
+  def foo() &quot;foo&quot; end
+  def bar() &quot;bar&quot; end
+  def baz() &quot;baz&quot; end
+end
+
+# 任意のキーとメソッドの関係をハッシュに保持しておく
+# レシーバの情報がここにはないことに注意
+methods = {1 =&gt; Foo.instance_method(:foo),
+           2 =&gt; Foo.instance_method(:bar),
+           3 =&gt; Foo.instance_method(:baz)}
+
+# キーを使って関連するメソッドを呼び出す
+# レシーバは任意(Foo クラスのインスタンスでなければならない)
+p methods[1].bind(Foo.new).call      # =&gt; &quot;foo&quot;
+p methods[2].bind(Foo.new).call      # =&gt; &quot;bar&quot;
+p methods[3].bind(Foo.new).call      # =&gt; &quot;baz&quot;
+</pre>
+<p>
+例: 以下はメソッドの再定義を UnboundMethod を使って行う方法です。普通は
+alias や super を使います。
+</p>
+<pre>
+class Foo
+  def foo
+    p :foo
+  end
+  @@orig_foo = instance_method :foo
+  def foo
+    p :bar
+    @@orig_foo.bind(self).call
+  end
+end
+
+Foo.new.foo
+
+=&gt; :bar
+   :foo
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--3D--3D">==</a>
+
+<a href="#I_--3D--3D">eql?</a>
+
+<a href="#I_ARITY">arity</a>
+
+<a href="#I_BIND">bind</a>
+
+<a href="#I_CLONE">clone</a>
+
+<a href="#I_HASH">hash</a>
+
+<a href="#I_INSPECT">inspect</a>
+
+<a href="#I_INSPECT">to_s</a>
+
+<a href="#I_NAME">name</a>
+
+<a href="#I_OWNER">owner</a>
+
+<a href="#I_PARAMETERS">parameters</a>
+
+<a href="#I_SOURCE_LOCATION">source_location</a>
+
+<a href="#I_SUPER_METHOD">super_method</a>
+
+</dd>
+
+</dl>
+
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--3D--3D"><code>self == other -&gt; bool</code><span class="permalink">[<a href="../method/-unbound-method/i/=3d=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/UnboundMethod.html#method-i-3D-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>eql?(other) -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+自身と other が同じクラスあるいは同じモジュールの同じメソッドを表す場合に
+true を返します。そうでない場合に false を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身と比較したいオブジェクトを指定します。
+</dd>
+</dl>
+<pre>
+a = String.instance_method(:size)
+b = String.instance_method(:size)
+p a == b                            #=&gt; true
+
+c = Array.instance_method(:size)
+p a == c                            #=&gt; false
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ARITY"><code>arity -&gt; Integer</code><span class="permalink">[<a href="../method/-unbound-method/i/arity.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/UnboundMethod.html#method-i-arity">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+メソッドが受け付ける引数の数を返します。
+</p>
+<p>
+ただし、メソッドが可変長引数を受け付ける場合、負の整数
+</p>
+<pre>
+-(必要とされる引数の数 + 1)
+</pre>
+<p>
+を返します。C 言語レベルで実装されたメソッドが可変長引数を
+受け付ける場合、-1 を返します。
+</p>
+<pre>
+class C
+  def one;    end
+  def two(a); end
+  def three(*a);  end
+  def four(a, b); end
+  def five(a, b, *c);    end
+  def six(a, b, *c, &amp;d); end
+end
+
+p C.instance_method(:one).arity     #=&gt; 0
+p C.instance_method(:two).arity     #=&gt; 1
+p C.instance_method(:three).arity   #=&gt; -1
+p C.instance_method(:four).arity    #=&gt; 2
+p C.instance_method(:five).arity    #=&gt; -3
+p C.instance_method(:six).arity     #=&gt; -3
+
+
+String.instance_method(:size).arity      #=&gt; 0
+String.instance_method(:replace).arity   #=&gt; 1
+String.instance_method(:squeeze).arity   #=&gt; -1
+String.instance_method(:count).arity     #=&gt; -1
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_BIND"><code>bind(obj) -&gt; Method</code><span class="permalink">[<a href="../method/-unbound-method/i/bind.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/UnboundMethod.html#method-i-bind">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self を obj にバインドした <a href="../class/-method.html">Method</a> オブジェクトを生成して返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+自身をバインドしたいオブジェクトを指定します。ただしバインドできるのは、
+生成元のクラスかそのサブクラスのインスタンスのみです。
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+objがbindできないオブジェクトである場合に発生します
+</dd>
+</dl>
+<pre>
+# クラスのインスタンスメソッドの UnboundMethod の場合
+class Foo
+  def foo
+    &quot;foo&quot;
+  end
+end
+
+# UnboundMethod `m' を生成
+p m = Foo.instance_method(:foo) # =&gt; #&lt;UnboundMethod: Foo#foo&gt;
+
+# Foo のインスタンスをレシーバとする Method オブジェクトを生成
+p m.bind(Foo.new)               # =&gt; #&lt;Method: Foo#foo&gt;
+
+# Foo のサブクラス Bar のインスタンスをレシーバとする Method
+class Bar &lt; Foo
+end
+p m.bind(Bar.new)               # =&gt; #&lt;Method: Bar(Foo)#foo&gt;
+
+
+# モジュールのインスタンスメソッドの UnboundMethod の場合
+module Foo
+  def foo
+    &quot;foo&quot;
+  end
+end
+
+# UnboundMethod `m' を生成
+p m = Foo.instance_method(:foo) # =&gt; #&lt;UnboundMethod: Foo#foo&gt;
+
+# Foo をインクルードしたクラス Bar のインスタンスをレシーバと
+# する Method オブジェクトを生成
+class Bar
+  include Foo
+end
+p m.bind(Bar.new)               # =&gt; #&lt;Method: Bar(Foo)#foo&gt;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CLONE"><code>clone -&gt; Method</code><span class="permalink">[<a href="../method/-unbound-method/i/clone.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/UnboundMethod.html#method-i-clone">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を複製した <a href="../class/-unbound-method.html">UnboundMethod</a> オブジェクトを作成して返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_HASH"><code>hash -&gt; Integer</code><span class="permalink">[<a href="../method/-unbound-method/i/hash.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/UnboundMethod.html#method-i-hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身のハッシュ値を返します。
+</p>
+<pre>
+a = method(:==).unbind
+b = method(:eql?).unbind
+p a.eql? b          # =&gt; true
+p a.hash == b.hash  # =&gt; true
+p [a, b].uniq.size  # =&gt; 1
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-unbound-method/i/inspect.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/UnboundMethod.html#method-i-inspect">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_s -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+self を読みやすい文字列として返します。
+</p>
+<p>
+詳しくは <a href="../method/-method/i/inspect.html">Method#inspect</a> を参照してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-method/i/inspect.html">Method#inspect</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_NAME"><code>name -&gt; Symbol</code><span class="permalink">[<a href="../method/-unbound-method/i/name.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/UnboundMethod.html#method-i-name">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このメソッドの名前を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OWNER"><code>owner -&gt; Class | Module</code><span class="permalink">[<a href="../method/-unbound-method/i/owner.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/UnboundMethod.html#method-i-owner">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このメソッドが定義されている class か module を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PARAMETERS"><code>parameters -&gt; [object]</code><span class="permalink">[<a href="../method/-unbound-method/i/parameters.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/UnboundMethod.html#method-i-parameters">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+UnboundMethod オブジェクトの引数の情報を返します。
+</p>
+<p>
+詳しくは <a href="../method/-method/i/parameters.html">Method#parameters</a> を参照してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-proc/i/parameters.html">Proc#parameters</a>, <a href="../method/-method/i/parameters.html">Method#parameters</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SOURCE_LOCATION"><code>source_location -&gt; [String, Fixnum] | nil</code><span class="permalink">[<a href="../method/-unbound-method/i/source_location.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/UnboundMethod.html#method-i-source_location">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ソースコードのファイル名と行番号を配列で返します。
+</p>
+<p>
+その手続オブジェクトが ruby で定義されていない(つまりネイティブ
+である)場合は nil を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-proc/i/source_location.html">Proc#source_location</a>, <a href="../method/-method/i/source_location.html">Method#source_location</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SUPER_METHOD"><code>super_method -&gt; UnboundMethod | nil</code><span class="permalink">[<a href="../method/-unbound-method/i/super_method.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/UnboundMethod.html#method-i-super_method">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self 内で super を実行した際に実行されるメソッドを <a href="../class/-unbound-method.html">UnboundMethod</a> オブジェ
+クトにして返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-method/i/super_method.html">Method#super_method</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

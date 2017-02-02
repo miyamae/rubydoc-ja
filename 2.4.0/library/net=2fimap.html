@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>library net/imap (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; net/imapライブラリ
+</p>
+
+<h1>library net/imap</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+このライブラリは Internet Message Access Protocol (IMAP) の
+クライアントライブラリです。<a class="external" href="http://www.ietf.org/rfc/rfc2060.txt">[RFC2060]</a> を元に
+実装されています。
+</p>
+<h2 >IMAP の概要</h2>
+<p>
+IMAPを利用するには、まずサーバに接続し、
+<a href="../method/-net=3a=3a-i-m-a-p/i/authenticate.html">Net::IMAP#authenticate</a> もしくは
+<a href="../method/-net=3a=3a-i-m-a-p/i/login.html">Net::IMAP#login</a> で認証します。
+IMAP ではメールボックスという概念が重要です。
+メールボックスは階層的な名前を持ちます。
+各メールボックスはメールを保持することができます。
+メールボックスの実装はサーバソフトウェアによって異なります。
+Unixシステムでは、ディレクトリ階層上の
+ファイルを個々のメールボックスとみなして実装されることが多いです。
+</p>
+<p>
+メールボックス内のメッセージ(メール)を処理する場合、
+まず <a href="../method/-net=3a=3a-i-m-a-p/i/select.html">Net::IMAP#select</a> もしくは
+<a href="../method/-net=3a=3a-i-m-a-p/i/examine.html">Net::IMAP#examine</a> で処理対象のメールボックスを
+指定する必要があります。これらの操作が成功したならば、
+「selected」状態に移行し、そのメールボックスが「処理対象の」
+メールボックスとなります。このようにしてメールボックスを
+選択してから、selected状態を終える(別のメールボックスを選択したり、
+接続を終了したり)までをセッションと呼びます。
+</p>
+<p>
+メッセージには2種類の識別子が存在します。message sequence number と
+UID です。
+</p>
+<p>
+message sequence number はメールボックス内の各メッセージに1から順に
+振られた番号です。セッション中に処理対象のメールボックスに
+新たなメッセージが追加された場合、そのメッセージの
+message sequence number は
+最後のメッセージの message sequence number+1となります。
+メッセージをメールボックスから消した場合には、連番の穴を埋めるように
+message sequence number が付け替えられます。
+</p>
+<p>
+一方、UID はセッションを越えて恒久的に保持されます。
+あるメールボックス内の異なる2つのメッセージが同じ  UID
+を持つことはありません。
+これは、メッセージがメールボックスから削除された後でも成立します。
+</p>
+<p>
+しかし、UID はメールボックス内で昇順であることが
+規格上要請されているので、
+IMAP を使わないメールアプリケーションがメールの順番を
+変えてしまった場合は、UID が振り直されます。
+</p>
+<h2 >例</h2>
+<p>
+デフォルトのメールボックス(INBOX)の送り元とサブジェクトを表示する。
+</p>
+<pre>
+imap = Net::IMAP.new('mail.example.com')
+imap.authenticate('LOGIN', 'joe_user', 'joes_password')
+imap.examine('INBOX')
+imap.search([&quot;RECENT&quot;]).each do |message_id|
+  envelope = imap.fetch(message_id, &quot;ENVELOPE&quot;)[0].attr[&quot;ENVELOPE&quot;]
+  puts &quot;#{envelope.from[0].name}: \t#{envelope.subject}&quot;
+end
+</pre>
+<p>
+2003年4月のメールをすべて Mail/sent-mail から &quot;Mail/sent-apr03&quot; へ移動させる
+</p>
+<pre>
+imap = Net::IMAP.new('mail.example.com')
+imap.authenticate('LOGIN', 'joe_user', 'joes_password')
+imap.select('Mail/sent-mail')
+if not imap.list('Mail/', 'sent-apr03')
+  imap.create('Mail/sent-apr03')
+end
+imap.search([&quot;BEFORE&quot;, &quot;30-Apr-2003&quot;, &quot;SINCE&quot;, &quot;1-Apr-2003&quot;]).each do |message_id|
+  imap.copy(message_id, &quot;Mail/sent-apr03&quot;)
+  imap.store(message_id, &quot;+FLAGS&quot;, [:Deleted])
+end
+imap.expunge
+</pre>
+<h2 >スレッド安全性</h2>
+<p>
+Net::IMAP は並列実行をサポートしています。例として、
+</p>
+<pre>
+imap = Net::IMAP.new(&quot;imap.foo.net&quot;, &quot;imap2&quot;)
+imap.authenticate(&quot;cram-md5&quot;, &quot;bar&quot;, &quot;password&quot;)
+imap.select(&quot;inbox&quot;)
+fetch_thread = Thread.start { imap.fetch(1..-1, &quot;UID&quot;) }
+search_result = imap.search([&quot;BODY&quot;, &quot;hello&quot;])
+fetch_result = fetch_thread.value
+imap.disconnect
+</pre>
+<p>
+とすると FETCH コマンドと SEARCH コマンドを並列に実行します。
+</p>
+<h2 >エラーについて</h2>
+<p>
+IMAP サーバは以下の3種類のエラーを送ります。
+</p>
+<dl>
+<dt>NO</dt>
+<dd>
+<p>
+コマンドが正常に完了しなかったことを意味します。
+例えば、ログインでのユーザ名/パスワードが間違っていた、
+選択したメールボックスが存在しない、などです。
+</p>
+</dd>
+<dt>BAD</dt>
+<dd>
+<p>
+クライアントからのリクエストをサーバが理解できなかった
+ことを意味します。
+クライアントの現在の状態では使えないコマンドを使おうとした
+場合にも発生します。例えば、
+selected状態(SELECT/EXAMINEでこの状態に移行する)にならずに
+SEARCH コマンドを使おうとした場合に発生します。
+サーバの内部エラー(ディスクが壊れたなど)の場合も
+このエラーが発生します。
+</p>
+</dd>
+<dt>BYE</dt>
+<dd>
+<p>
+サーバが接続を切ろうとしていることを意味します。
+これは通常のログアウト処理で発生します。
+また、ログイン時にサーバが(なんらかの理由で)接続
+したくない場合にも発生します。
+それ以外では、サーバがシャットダウンする場合か
+サーバがタイムアウトする場合に発生します。
+</p>
+</dd>
+</dl>
+<p>
+これらのエラーはそれぞれ
+</p>
+<ul>
+<li><a href="../class/-net=3a=3a-i-m-a-p=3a=3a-no-response-error.html">Net::IMAP::NoResponseError</a></li>
+<li><a href="../class/-net=3a=3a-i-m-a-p=3a=3a-bad-response-error.html">Net::IMAP::BadResponseError</a></li>
+<li><a href="../class/-net=3a=3a-i-m-a-p=3a=3a-bye-response-error.html">Net::IMAP::ByeResponseError</a></li>
+</ul>
+<p>
+という例外クラスに対応しています。
+原理的には、これらの例外はサーバにコマンドを送った場合には
+常に発生する可能性があります。しかし、このドキュメントでは
+よくあるエラーのみ解説します。
+</p>
+<p>
+IMAP は Socket で通信をするため、IMAPクラスのメソッドは
+Socket 関連のエラーが発生するかもしれません。例えば、
+通信中に接続が切れると <a href="../class/-errno=3a=3a-e-p-i-p-e.html">Errno::EPIPE</a> 例外が
+発生します。詳しくは <a href="../class/-socket.html">Socket</a> などを見てください。
+</p>
+<p>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-data-format-error.html">Net::IMAP::DataFormatError</a>、
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-response-parse-error.html">Net::IMAP::ResponseParseError</a> という例外クラスも
+存在します。前者はデータのフォーマットが正しくない場合に、
+後者はサーバからのレスポンスがパースできない場合に発生します。
+これらのエラーはこのライブラリもしくはサーバに深刻な問題が
+あることを意味します。
+</p>
+<h2 >tagged response と untagged response</h2>
+<p>
+IMAP プロトコルにおいてサーバからの応答には tagged なものと
+untagged なものの2通り存在します。
+tagged な応答は、クライアントからのコマンドが
+成功もしくは失敗のいずれかで完了したことを表すものです。
+一方 untagged な応答はそれ以外の情報を渡すためのものです。
+untagged な応答はクライアントからのコマンドの結果の情報を
+渡すためにも用いられますし、そうでない(サーバのシャットダウンなど)
+自発的応答にも用いられます。
+</p>
+<p>
+これはそれぞれ
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-tagged-response.html">Net::IMAP::TaggedResponse</a> と <a href="../class/-net=3a=3a-i-m-a-p=3a=3a-untagged-response.html">Net::IMAP::UntaggedResponse</a>
+に対応します。
+</p>
+<p>
+untagged な応答はコマンドの送信とは非同期的にサーバから送られるため、
+<a href="../class/-net=3a=3a-i-m-a-p.html">Net::IMAP</a> オブジェクトはユーザのためこれを
+<a href="../method/-net=3a=3a-i-m-a-p/i/responses.html">Net::IMAP#responses</a> に記録しておきます。
+</p>
+<h2 >References</h2>
+<ul>
+<li>[IMAP]
+M. Crispin, &quot;INTERNET MESSAGE ACCESS PROTOCOL - VERSION 4rev1&quot;,
+RFC 2060, December 1996.</li>
+</ul>
+<ul>
+<li>[LANGUAGE-TAGS]
+Alvestrand, H., &quot;Tags for the Identification of
+Languages&quot;, RFC 1766, March 1995.</li>
+</ul>
+<ul>
+<li>[MD5]
+Myers, J., and M. Rose, &quot;The Content-MD5 Header Field&quot;, RFC
+1864, October 1995.</li>
+</ul>
+<ul>
+<li>[MIME-IMB]
+Freed, N., and N. Borenstein, &quot;MIME (Multipurpose Internet
+Mail Extensions) Part One: Format of Internet Message Bodies&quot;, RFC
+2045, November 1996.</li>
+</ul>
+<ul>
+<li>[RFC-822]
+Crocker, D., &quot;Standard for the Format of ARPA Internet Text
+Messages&quot;, STD 11, RFC 822, University of Delaware, August 1982.</li>
+</ul>
+<ul>
+<li>[RFC-2087]
+Myers, J., &quot;IMAP4 QUOTA extension&quot;, RFC 2087, January 1997.</li>
+</ul>
+<ul>
+<li>[RFC-2086]
+Myers, J., &quot;IMAP4 ACL extension&quot;, RFC 2086, January 1997.</li>
+</ul>
+<ul>
+<li>[OSSL]
+<a class="external" href="http://www.openssl.org">http://www.openssl.org</a></li>
+</ul>
+<ul>
+<li>[RSSL]
+<a class="external" href="http://savannah.gnu.org/projects/rubypki">http://savannah.gnu.org/projects/rubypki</a></li>
+</ul>
+<p>
+以上のうち、いくつかの RFC は obsolete になって置き換えられています。
+<a class="external" href="http://www.ietf.org/rfc/rfc2060.txt">[RFC2060]</a> は <a class="external" href="http://www.ietf.org/rfc/rfc3501.txt">[RFC3501]</a> に、<a class="external" href="http://www.ietf.org/rfc/rfc822.txt">[RFC822]</a> は <a class="external" href="http://www.ietf.org/rfc/rfc2822.txt">[RFC2822]</a> に、
+置き換えられています。
+</p>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p.html">Net::IMAP</a>
+</td>
+<td class="description"><p>
+IMAP 接続を表現するクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-fetch-data.html">Net::IMAP::FetchData</a>
+</td>
+<td class="description"><p>
+FETCH コマンドの応答を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-address.html">Net::IMAP::Address</a>
+</td>
+<td class="description"><p>
+メールアドレスを表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-body-type-basic.html">Net::IMAP::BodyTypeBasic</a>
+</td>
+<td class="description"><p>
+text 型(<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-body-type-text.html">Net::IMAP::BodyTypeText</a>)、
+multipart 型(<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-body-type-multipart.html">Net::IMAP::BodyTypeMultipart</a>)、
+message 型(<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-body-type-message.html">Net::IMAP::BodyTypeMessage</a>)、
+のいずれでもないようなメッセージボディ構造を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-body-type-message.html">Net::IMAP::BodyTypeMessage</a>
+</td>
+<td class="description"><p>
+Content-Type が &quot;message&quot; であるメッセージを表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-body-type-multipart.html">Net::IMAP::BodyTypeMultipart</a>
+</td>
+<td class="description"><p>
+マルチパートなメッセージを表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-body-type-text.html">Net::IMAP::BodyTypeText</a>
+</td>
+<td class="description"><p>
+Content-Type が text であるメッセージを表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-content-disposition.html">Net::IMAP::ContentDisposition</a>
+</td>
+<td class="description"><p>
+<a class="external" href="http://www.ietf.org/rfc/rfc1806.txt">[RFC1806]</a>, <a class="external" href="http://www.ietf.org/rfc/rfc2183.txt">[RFC2183]</a> で定義されている MIME の
+Content-Disposition フィールドを表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-continuation-request.html">Net::IMAP::ContinuationRequest</a>
+</td>
+<td class="description"><p>
+IMAP の continuation request (命令継続要求) を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-envelope.html">Net::IMAP::Envelope</a>
+</td>
+<td class="description"><p>
+メッセージのエンベロープを表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-mailbox-a-c-l-item.html">Net::IMAP::MailboxACLItem</a>
+</td>
+<td class="description"><p>
+GETACL の応答の各要素を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-mailbox-list.html">Net::IMAP::MailboxList</a>
+</td>
+<td class="description"><p>
+<a href="../method/-net=3a=3a-i-m-a-p/i/list.html">Net::IMAP#list</a>、<a href="../method/-net=3a=3a-i-m-a-p/i/xlist.html">Net::IMAP#xlist</a>、<a href="../method/-net=3a=3a-i-m-a-p/i/lsub.html">Net::IMAP#lsub</a>
+で返されるメールボックスのデータを表します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-mailbox-quota.html">Net::IMAP::MailboxQuota</a>
+</td>
+<td class="description"><p>
+<a href="../method/-net=3a=3a-i-m-a-p/i/getquota.html">Net::IMAP#getquota</a> や <a href="../method/-net=3a=3a-i-m-a-p/i/getquotaroot.html">Net::IMAP#getquotaroot</a> で得られる
+quota の情報を表すオブジェクトです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-mailbox-quota-root.html">Net::IMAP::MailboxQuotaRoot</a>
+</td>
+<td class="description"><p>
+<a href="../method/-net=3a=3a-i-m-a-p/i/getquotaroot.html">Net::IMAP#getquotaroot</a> の結果として得られる
+quota root 情報を表わすオブジェクトです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-response-code.html">Net::IMAP::ResponseCode</a>
+</td>
+<td class="description"><p>
+応答のレスポンスコードを表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-response-text.html">Net::IMAP::ResponseText</a>
+</td>
+<td class="description"><p>
+応答のテキストを表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-status-data.html">Net::IMAP::StatusData</a>
+</td>
+<td class="description"><p>
+STATUS 応答を表わすクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-tagged-response.html">Net::IMAP::TaggedResponse</a>
+</td>
+<td class="description"><p>
+IMAP のタグ付きレスポンスを表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-thread-member.html">Net::IMAP::ThreadMember</a>
+</td>
+<td class="description"><p>
+<a href="../method/-net=3a=3a-i-m-a-p/i/thread.html">Net::IMAP#thread</a>、 <a href="../method/-net=3a=3a-i-m-a-p/i/uid_thread.html">Net::IMAP#uid_thread</a> から
+得られるスレッドの木構造のノードを表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-untagged-response.html">Net::IMAP::UntaggedResponse</a>
+</td>
+<td class="description"><p>
+IMAP のタグ付きレスポンスを表すクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-error.html">Net::IMAP::Error</a>
+</td>
+<td class="description"><p>
+すべての IMAP 例外クラスのスーパークラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-data-format-error.html">Net::IMAP::DataFormatError</a>
+</td>
+<td class="description"><p>
+データフォーマットが正しくない場合に発生する例外のクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-flag-count-error.html">Net::IMAP::FlagCountError</a>
+</td>
+<td class="description"><p>
+サーバからのレスポンスに含まれるフラグが多すぎるときに発生する例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-response-error.html">Net::IMAP::ResponseError</a>
+</td>
+<td class="description"><p>
+サーバからのレスポンスがエラーを示している場合に発生する例外
+のクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-bad-response-error.html">Net::IMAP::BadResponseError</a>
+</td>
+<td class="description"><p>
+サーバから &quot;BAD&quot; レスポンスが来た場合に発生する例外のクラスです。
+クライアントからのコマンドが IMAP の規格から外れている場合や
+サーバ内部エラーの場合に発生します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-bye-response-error.html">Net::IMAP::ByeResponseError</a>
+</td>
+<td class="description"><p>
+サーバから &quot;BYE&quot; レスポンスが来た場合に発生する例外のクラスです。
+ログインが拒否された場合や、クライアントが無反応で
+タイムアウトした場合に発生します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-no-response-error.html">Net::IMAP::NoResponseError</a>
+</td>
+<td class="description"><p>
+サーバから &quot;NO&quot; レスポンスが来た場合に発生する例外のクラスです。
+コマンドが正常に完了しなかった場合に発生します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-net=3a=3a-i-m-a-p=3a=3a-response-parse-error.html">Net::IMAP::ResponseParseError</a>
+</td>
+<td class="description"><p>
+サーバからのレスポンスが正しくパースできない場合に発生する
+例外のクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../../../style.css">
   <link rel="icon" type="image/png" href="../../../rurema.png">
+  
   <title>instance method Regexp#match (Ruby 1.8.7)</title>
 </head>
 <body>
@@ -22,17 +23,57 @@
 <h1>instance method Regexp#match</h1>
 <dl class="methodlist">
 
-<dt class="method-heading" id="I_MATCH"><code>match(str) -&gt; MatchData | nil</code><span class="permalink">[<a href="../../../method/-regexp/i/match.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Regexp.html#method-i-match">rdoc</a>]</span></dt>
+<dt class="method-heading" id="I_MATCH"><code>match(str, pos = 0) -&gt; MatchData | nil</code><span class="permalink">[<a href="../../../method/-regexp/i/match.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Regexp.html#method-i-match">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>match(str, pos = 0) {|m| ... } -&gt; object | nil</code></dt>
 <dd class="method-description">
 <p>
-指定された文字列 str に対して
-自身が表す正規表現によるマッチングを行います。マッチした場合には結果を MatchData オブジェクトで返します。
+指定された文字列 str に対して位置 pos から自身が表す正規表現によるマッ
+チングを行います。マッチした場合には結果を MatchData オブジェクトで返し
+ます。
 マッチしなかった場合 nil を返します。
 </p>
+<p>
+省略可能な第二引数 pos を指定すると、マッチの開始位置を pos から行
+うよう制御できます(pos のデフォルト値は 0)。
+</p>
+<pre>
+p(/(.).(.)/.match(&quot;foobar&quot;, 3).captures)   # =&gt; [&quot;b&quot;, &quot;r&quot;]
+p(/(.).(.)/.match(&quot;foobar&quot;, -3).captures)  # =&gt; [&quot;b&quot;, &quot;r&quot;]
+</pre>
+<p>
+pos を指定しても <a href="../../../method/-match-data/i/offset.html">MatchData#offset</a> 等の結果
+には影響しません。つまり、
+</p>
+<pre>
+re.match(str[pos..-1])
+</pre>
+<p>
+と
+</p>
+<pre>
+re.match(str, pos)
+</pre>
+<p>
+は異なります。
+</p>
+<p>
+ブロックを渡すと、マッチした場合に限り MatchData オブジェクトがブロック引数に渡されて実行されます。
+マッチした場合はブロックの値を返し、マッチしなかった場合は nil を返します。
+</p>
+<pre>
+results = []
+/((.)\2)/.match(&quot;foo&quot;) {|m| results &lt;&lt; m[0] } #=&gt; [&quot;oo&quot;]
+/((.)\2)/.match(&quot;bar&quot;) {|m| results &lt;&lt; m[0] } #=&gt; nil
+results #=&gt; [&quot;oo&quot;]
+</pre>
 <dl>
 <dt class='method-param'>[PARAM] str:</dt>
 <dd>
 文字列を指定します。str との正規表現マッチを行います。
+</dd>
+<dt class='method-param'>[PARAM] pos:</dt>
+<dd>
+整数を指定します。マッチの開始位置を pos から行うよう制御できます(pos のデフォルト値は 0)。
 </dd>
 </dl>
 <p>
@@ -92,8 +133,8 @@ foo, bar, baz = /(foo)(bar)(baz)/.match(&quot;foobar&quot;).captures
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

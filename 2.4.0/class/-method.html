@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class Method (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Methodクラス
+</p>
+
+
+<h1>class Method</h1>
+<p>
+
+
+クラスの継承リスト: Method
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+<a href="../method/-object/i/method.html">Object#method</a> によりオブジェクト化され
+たメソッドオブジェクトのクラスです。
+</p>
+<p>
+メソッドの実体（名前でなく）とレシーバの組を封入します。
+<a href="../class/-proc.html">Proc</a> オブジェクトと違ってコンテキストを保持しません。
+</p>
+<h2 >Proc との差</h2>
+<p>
+<a href="../class/-method.html">Method</a> は取り出しの対象であるメソッドが
+なければ作れませんが、<a href="../class/-proc.html">Proc</a> は準備なしに作れます。その点から
+<a href="../class/-proc.html">Proc</a> は使い捨てに向き、<a href="../class/-method.html">Method</a> は何度も繰り返し生成する
+場合に向くと言えます。また内包するコードの大きさという点では
+<a href="../class/-proc.html">Proc</a> は小規模、<a href="../class/-method.html">Method</a> は大規模コードに向くと言えます。
+</p>
+<p>
+既存のメソッドを <a href="../class/-method.html">Method</a> オブジェクト化する。
+</p>
+<pre>
+class Foo
+  def foo(arg)
+    &quot;foo called with arg #{arg}&quot;
+  end
+end
+
+m = Foo.new.method(:foo)
+
+p m             # =&gt; #&lt;Method: Foo#foo&gt;
+p m.call(1)     # =&gt; &quot;foo called with arg 1&quot;
+</pre>
+<p>
+名前のないメソッド(の代わり)が必要なら <a href="../class/-proc.html">Proc</a> を使うと良い。
+</p>
+<pre>
+pr = Proc.new {|arg|
+  &quot;proc called with arg #{arg}&quot;
+}
+
+p pr            # =&gt; #&lt;Proc:0x401b1fcc&gt;
+p pr.call(1)    # =&gt; &quot;proc called with arg 1&quot;
+</pre>
+<p>
+<a href="../class/-method.html">Method</a> オブジェクトが有用なのは以下のような場合。
+</p>
+<pre>
+class Foo
+  def foo() &quot;foo&quot; end
+  def bar() &quot;bar&quot; end
+  def baz() &quot;baz&quot; end
+end
+
+obj = Foo.new
+
+# 任意のキーとメソッドの関係をハッシュに保持しておく
+methods = {1 =&gt; obj.method(:foo),
+           2 =&gt; obj.method(:bar),
+           3 =&gt; obj.method(:baz)}
+
+# キーを使って関連するメソッドを呼び出す
+p methods[1].call       # =&gt; &quot;foo&quot;
+p methods[2].call       # =&gt; &quot;bar&quot;
+p methods[3].call       # =&gt; &quot;baz&quot;
+</pre>
+<p>
+しかし、レシーバを固定させる(Method オブジェクトはレシーバを保持する)必
+要がないなら <a href="../method/-object/i/send.html">Object#send</a>を使う方法も有用。
+</p>
+<pre>
+class Foo
+  def foo() &quot;foo&quot; end
+  def bar() &quot;bar&quot; end
+  def baz() &quot;baz&quot; end
+end
+
+# 任意のキーとメソッド(の名前)の関係をハッシュに保持しておく
+# レシーバの情報がここにはないことに注意
+methods = {1 =&gt; :foo,
+           2 =&gt; :bar,
+           3 =&gt; :baz}
+
+# キーを使って関連するメソッドを呼び出す
+# レシーバは任意(Foo クラスのインスタンスである必要もない)
+p Foo.new.send(methods[1])      # =&gt; &quot;foo&quot;
+p Foo.new.send(methods[2])      # =&gt; &quot;bar&quot;
+p Foo.new.send(methods[3])      # =&gt; &quot;baz&quot;
+</pre>
+<p>
+@see <a href="../method/-object/i/method.html">Object#method</a>
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--3D--3D">==</a>
+
+<a href="#I_--3D--3D">eql?</a>
+
+<a href="#I_--5B--5D">[]</a>
+
+<a href="#I_--5B--5D">call</a>
+
+<a href="#I_ARITY">arity</a>
+
+<a href="#I_CLONE">clone</a>
+
+<a href="#I_CURRY">curry</a>
+
+<a href="#I_HASH">hash</a>
+
+<a href="#I_INSPECT">inspect</a>
+
+<a href="#I_INSPECT">to_s</a>
+
+<a href="#I_NAME">name</a>
+
+<a href="#I_OWNER">owner</a>
+
+<a href="#I_PARAMETERS">parameters</a>
+
+<a href="#I_RECEIVER">receiver</a>
+
+<a href="#I_SOURCE_LOCATION">source_location</a>
+
+<a href="#I_SUPER_METHOD">super_method</a>
+
+<a href="#I_TO_PROC">to_proc</a>
+
+<a href="#I_UNBIND">unbind</a>
+
+</dd>
+
+</dl>
+
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--3D--3D"><code>self == other -&gt; bool</code><span class="permalink">[<a href="../method/-method/i/=3d=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Method.html#method-i-3D-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>eql?(other) -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+自身と other が同じインスタンスの同じメソッドを表す場合に
+true を返します。そうでない場合に false を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身と比較したいオブジェクトを指定します。
+</dd>
+</dl>
+<pre>
+s = &quot;bar&quot;
+a = s.method(:size)
+b = s.method(:size)
+p a == b                            #=&gt; true
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--5B--5D"><code>self[*args] -&gt; object</code><span class="permalink">[<a href="../method/-method/i/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Method.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>call(*args) -&gt; object</code></dt>
+<dt class="method-heading"><code>call(*args) { ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+メソッドオブジェクトに封入されているメソッドを起動します。
+</p>
+<p>
+引数やブロックはそのままメソッドに渡されます。
+</p>
+<p>
+self[] の形の呼び出しは通常のメソッド呼び出しに見た目を
+近付けるためだけに用意されたもので、Array#[]のような
+他の [] メソッドとの意味的な関連性はありません。
+</p>
+<p>
+メソッドオブジェクトが汚染されている場合、そのメソッドは、セーフレベル 4 で実行されます
+</p>
+<dl>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+self に渡される引数。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../doc/spec=2fsafelevel.html">セキュリティモデル</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ARITY"><code>arity -&gt; Fixnum</code><span class="permalink">[<a href="../method/-method/i/arity.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Method.html#method-i-arity">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+メソッドが受け付ける引数の数を返します。
+</p>
+<p>
+ただし、メソッドが可変長引数を受け付ける場合、負の整数
+</p>
+<pre>
+-(必要とされる引数の数 + 1)
+</pre>
+<p>
+を返します。C 言語レベルで実装されたメソッドが可変長引数を
+受け付ける場合、-1 を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+class C
+  def u;               end
+  def v(a);            end
+  def w(*a);           end
+  def x(a, b);         end
+  def y(a, b, *c);     end
+  def z(a, b, *c, &amp;d); end
+end
+
+c = C.new
+p c.method(:u).arity     #=&gt; 0
+p c.method(:v).arity     #=&gt; 1
+p c.method(:w).arity     #=&gt; -1
+p c.method(:x).arity     #=&gt; 2
+p c.method(:y).arity     #=&gt; -3
+p c.method(:z).arity     #=&gt; -3
+
+s = &quot;xyz&quot;
+s.method(:size).arity      #=&gt; 0
+s.method(:replace).arity   #=&gt; 1
+s.method(:squeeze).arity   #=&gt; -1
+s.method(:count).arity     #=&gt; -1
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CLONE"><code>clone -&gt; Method</code><span class="permalink">[<a href="../method/-method/i/clone.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Method.html#method-i-clone">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を複製した <a href="../class/-method.html">Method</a> オブジェクトを作成して返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CURRY"><code>curry -&gt; Proc</code><span class="permalink">[<a href="../method/-method/i/curry.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Method.html#method-i-curry">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>curry(arity) -&gt; Proc</code></dt>
+<dd class="method-description">
+<p>
+self を元にカリー化した <a href="../class/-proc.html">Proc</a> を返します。
+</p>
+<p>
+カリー化した <a href="../class/-proc.html">Proc</a> はいくつかの引数をとります。十分な数の引数が与
+えられると、元の <a href="../class/-proc.html">Proc</a> に引数を渡し て実行し、結果を返します。引数
+の個数が足りないときは、部分適用したカリー化 <a href="../class/-proc.html">Proc</a> を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] arity:</dt>
+<dd>
+引数の個数を指定します。可変長の引数を指定できるメソッドを
+カリー化する際には必ず指定する必要があります。
+</dd>
+</dl>
+<pre>
+def foo(a,b,c)
+  [a, b, c]
+end
+
+proc  = self.method(:foo).curry
+proc2 = proc.call(1, 2)          #=&gt; #&lt;Proc&gt;
+proc2.call(3)                    #=&gt; [1,2,3]
+
+def vararg(*args)
+  args
+end
+
+proc = self.method(:vararg).curry(4)
+proc2 = proc.call(:x)      #=&gt; #&lt;Proc&gt;
+proc3 = proc2.call(:y, :z) #=&gt; #&lt;Proc&gt;
+proc3.call(:a)             #=&gt; [:x, :y, :z, :a]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-proc/i/curry.html">Proc#curry</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_HASH"><code>hash -&gt; Integer</code><span class="permalink">[<a href="../method/-method/i/hash.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Method.html#method-i-hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身のハッシュ値を返します。
+</p>
+<pre>
+a = method(:==)
+b = method(:eql?)
+p a.eql? b          # =&gt; true
+p a.hash == b.hash  # =&gt; true
+p [a, b].uniq.size  # =&gt; 1
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-method/i/inspect.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Method.html#method-i-inspect">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_s -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+self を読みやすい文字列として返します。
+</p>
+<p>
+以下の形式の文字列を返します。
+</p>
+<pre>
+#&lt;Method: klass1(klass2)#method&gt;                (形式1)
+</pre>
+<p>
+klass1 は、<a href="../method/-method/i/inspect.html">Method#inspect</a> では、レシーバのクラス名、
+<a href="../method/-unbound-method/i/inspect.html">UnboundMethod#inspect</a> では、<a href="../class/-unbound-method.html">UnboundMethod</a> オブジェクトの生成
+元となったクラス／モジュール名です。
+</p>
+<p>
+klass2 は、実際にそのメソッドを定義しているクラス／モジュール名、
+method は、メソッド名を表します。
+</p>
+<pre>
+module Foo
+  def foo
+    &quot;foo&quot;
+  end
+end
+class Bar
+  include Foo
+  def bar
+  end
+end
+
+p Bar.new.method(:foo)        # =&gt; #&lt;Method: Bar(Foo)#foo&gt;
+p Bar.new.method(:bar)        # =&gt; #&lt;Method: Bar(Bar)#bar&gt;
+</pre>
+<p>
+klass1 と klass2 が同じ場合は以下の形式になります。
+</p>
+<pre>
+#&lt;Method: klass1#method&gt;                        (形式2)
+</pre>
+<p>
+特異メソッドに対しては、
+</p>
+<pre>
+#&lt;Method: obj.method&gt;                           (形式3)
+#&lt;Method: klass1(klass2).method&gt;                (形式4)
+</pre>
+<p>
+という形式の文字列を返します。二番目の形式では klass1 はレシーバ、
+klass2 は実際にそのメソッドを定義しているオブジェクトになります。
+</p>
+<pre>
+# オブジェクトの特異メソッド
+obj = &quot;&quot;
+class &lt;&lt;obj
+  def foo
+  end
+end
+p obj.method(:foo)      # =&gt; #&lt;Method: &quot;&quot;.foo&gt;
+
+# クラスメソッド(クラスの特異メソッド)
+class Foo
+  def Foo.foo
+  end
+end
+p Foo.method(:foo)      # =&gt; #&lt;Method: Foo.foo&gt;
+
+# スーパークラスのクラスメソッド
+class Bar &lt; Foo
+end
+p Bar.method(:foo)      # =&gt; #&lt;Method: Bar(Foo).foo&gt;
+
+# 以下は(形式1)の出力になる
+module Baz
+  def baz
+  end
+end
+
+class &lt;&lt;obj
+  include Baz
+end
+p obj.method(:baz)      # =&gt; #&lt;Method: Object(Baz)#baz&gt;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-object/i/inspect.html">Object#inspect</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_NAME"><code>name -&gt; Symbol</code><span class="permalink">[<a href="../method/-method/i/name.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Method.html#method-i-name">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このメソッドの名前を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OWNER"><code>owner -&gt; Class | Module</code><span class="permalink">[<a href="../method/-method/i/owner.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Method.html#method-i-owner">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このメソッドが定義されている class か module を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PARAMETERS"><code>parameters -&gt; [object]</code><span class="permalink">[<a href="../method/-method/i/parameters.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Method.html#method-i-parameters">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Method オブジェクトの引数の情報を返します。
+</p>
+<p>
+Method オブジェクトが引数を取らなければ空の配列を返します。引数を取る場合は、配列の配列を返し、
+各配列の要素は引数の種類に応じた以下のような Symbol と、仮引数の名前を表す Symbol の 2 要素です。
+組み込みのメソッドでは、仮引数の名前が取れません。
+</p>
+<dl>
+<dt>:req</dt>
+<dd>
+<p>
+必須の引数
+</p>
+</dd>
+<dt>:opt</dt>
+<dd>
+<p>
+デフォルト値が指定されたオプショナルな引数
+</p>
+</dd>
+<dt>:rest</dt>
+<dd>
+<p>
+* で指定された残りすべての引数
+</p>
+</dd>
+<dt>:block</dt>
+<dd>
+<p>
+&amp; で指定されたブロック引数
+</p>
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+m = Class.new{define_method(:m){|x, y=42, *other, &amp;b|}}.instance_method(:m)
+m.parameters #=&gt; [[:req, :x], [:opt, :y], [:rest, :other], [:block, :b]]
+File.method(:symlink).parameters #=&gt; [[:req], [:req]]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-proc/i/parameters.html">Proc#parameters</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_RECEIVER"><code>receiver -&gt; object</code><span class="permalink">[<a href="../method/-method/i/receiver.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Method.html#method-i-receiver">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このメソッドオブジェクトのレシーバを返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SOURCE_LOCATION"><code>source_location -&gt; [String, Fixnum] | nil</code><span class="permalink">[<a href="../method/-method/i/source_location.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Method.html#method-i-source_location">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ソースコードのファイル名と行番号を配列で返します。
+</p>
+<p>
+その手続オブジェクトが ruby で定義されていない(つまりネイティブ
+である)場合は nil を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-proc/i/source_location.html">Proc#source_location</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SUPER_METHOD"><code>super_method -&gt; Method | nil</code><span class="permalink">[<a href="../method/-method/i/super_method.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Method.html#method-i-super_method">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self 内で super を実行した際に実行されるメソッドを <a href="../class/-method.html">Method</a> オブジェ
+クトにして返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-unbound-method/i/super_method.html">UnboundMethod#super_method</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_PROC"><code>to_proc -&gt; Proc</code><span class="permalink">[<a href="../method/-method/i/to_proc.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Method.html#method-i-to_proc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self を call する <a href="../class/-proc.html">Proc</a> オブジェクトを生成して返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_UNBIND"><code>unbind -&gt; UnboundMethod</code><span class="permalink">[<a href="../method/-method/i/unbind.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Method.html#method-i-unbind">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self のレシーバとの関連を取り除いた <a href="../class/-unbound-method.html">UnboundMethod</a> オブ
+ジェクトを生成して返します。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

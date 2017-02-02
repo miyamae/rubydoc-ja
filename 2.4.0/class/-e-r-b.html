@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class ERB (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/erb.html">erbライブラリ</a>
+&gt; ERBクラス
+</p>
+
+
+<h1>class ERB</h1>
+<p>
+
+
+クラスの継承リスト: ERB
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+eRuby スクリプトを処理するクラス。
+</p>
+<p>
+従来 ERbLight と呼ばれていたもので、
+標準出力への印字が文字列の挿入とならない点が eruby と異なります。
+</p>
+<ul>
+<li><a class="external" href="http://magazine.rubyist.net/?0017-BundledLibraries">http://magazine.rubyist.net/?0017-BundledLibraries</a></li>
+</ul>
+<h2 >使い方</h2>
+<p>
+ERB クラスを使うためには require 'erb' する必要があります。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'erb'
+
+ERB.new($&lt;.read).run
+</pre>
+<h2 >trim_mode</h2>
+<p>
+trim_mode は整形の挙動を変更するオプションです。次の振舞いを指定できます。
+</p>
+<ul>
+<li>改行の扱い</li>
+<li>%ではじまる行の扱い (ERB 2.0 から追加されました)</li>
+</ul>
+<p>
+trim_mode に指定できる値は次の通りです。
+</p>
+<ul>
+<li>ERb-1.4.x 互換の指定方法<ul>
+<li>nil, 0: そのまま変換</li>
+<li>1: 行末が%&gt;のとき改行を出力しない</li>
+<li>2: 行頭が&lt;%で行末が%&gt;のとき改行を出力しない</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>2.0 からの指定方法<ul>
+<li>nil, &quot;&quot;: そのまま変換</li>
+<li>&quot;&gt;&quot;: 1と同じ</li>
+<li>&quot;&lt;&gt;&quot;: 2と同じ</li>
+<li>&quot;-&quot;: 行末が-%&gt;のとき改行を出力しない。また、行頭が&lt;%-のとき行頭の空白文字を削除する</li>
+<li>&quot;%&quot;: %ではじまる行を&lt;%..%&gt;とみなして変換する。この行の改行は出力しない</li>
+<li>&quot;%&gt;&quot;, &quot;&gt;%&quot;: 1と&quot;%&quot;の両方を行なう</li>
+<li>&quot;%&lt;&gt;&quot;, &quot;&lt;&gt;%&quot;: 2と&quot;%&quot;の両方を行なう</li>
+<li>&quot;%-&quot;: &quot;-&quot;と&quot;%&quot;の両方を行なう</li>
+</ul>
+</li>
+</ul>
+<p>
+実行例:
+</p>
+<pre>
+# スクリプト
+&lt;% 3.times do |n| %&gt;
+% n = 0
+* &lt;%= n%&gt;
+&lt;% end %&gt;
+
+# trim_mode = nil, '', 0
+
+% n = 0
+* 0
+
+% n = 0
+* 1
+
+% n = 0
+* 2
+
+# trim_mode = 1, '&gt;'
+% n = 0
+* 0% n = 0
+* 1% n = 0
+* 2
+
+# trim_mode = 2, '&lt;&gt;'
+% n = 0
+* 0
+% n = 0
+* 1
+% n = 0
+* 2
+
+# trim_mode = '%'
+
+* 0
+
+* 0
+
+* 0
+
+# trim_mode = '%&gt;', '&gt;%'
+* 0* 0* 0
+
+# trim_mode = '%&lt;&gt;', '&lt;&gt;%'
+* 0
+* 0
+* 0
+
+# スクリプト
+&lt;% 3.times do |n| -%&gt;
+% n = 0
+  &lt;%- m = 0 %&gt;*
+* &lt;%= n%&gt;
+&lt;% end -%&gt;
+
+# trim_mode = '%-'
+*
+* 0
+*
+* 0
+*
+* 0
+
+# スクリプト
+&lt;% 3.times do |n| %&gt;
+% n = 0
+  &lt;%- m = 0 %&gt;*
+* &lt;%= n%&gt;
+&lt;% end %&gt;
+
+# trim_mode = '%'
+
+  *
+* 0
+
+  *
+* 0
+
+  *
+* 0
+</pre>
+<h2 >エンコーディング</h2>
+<p>
+ERB は入力した文字列と同じエンコーディングの文字列を返すのがデフォルト
+の動作ですが、以下のようにマジックコメントを指定すると、ERB によって生
+成される文字列のエンコーディングを指定することができます。
+</p>
+<pre>
+# -*- coding: UTF-8 -*-
+require 'erb'
+
+template = ERB.new &lt;&lt;EOF
+&lt;%#-*- coding: Big5 -*-%&gt;
+  __ENCODING__ is &lt;%= __ENCODING__ %&gt;.
+EOF
+puts template.result # =&gt; __ENCODING__ is Big5
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+<a href="#S_VERSION">version</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_DEF_CLASS">def_class</a>
+
+<a href="#I_DEF_METHOD">def_method</a>
+
+<a href="#I_DEF_MODULE">def_module</a>
+
+<a href="#I_FILENAME">filename</a>
+
+<a href="#I_FILENAME--3D">filename=</a>
+
+<a href="#I_RESULT">result</a>
+
+<a href="#I_RUN">run</a>
+
+<a href="#I_SET_EOUTVAR">set_eoutvar</a>
+
+<a href="#I_SRC">src</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(str, safe_level=nil, trim_mode=nil, eoutvar='_erbout') -&gt; ERB</code><span class="permalink">[<a href="../method/-e-r-b/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/ERB.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+eRubyスクリプト から ERB オブジェクトを生成して返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+eRubyスクリプトを表す文字列
+</dd>
+<dt class='method-param'>[PARAM] safe_level:</dt>
+<dd>
+eRubyスクリプトが実行されるときのセーフレベル
+</dd>
+<dt class='method-param'>[PARAM] trim_mode:</dt>
+<dd>
+整形の挙動を変更するオプション
+</dd>
+<dt class='method-param'>[PARAM] eoutvar:</dt>
+<dd>
+eRubyスクリプトの中で出力をためていく変数の名前を表す文
+字列。eRuby スクリプトの中でさらに ERB を使うときに変更
+します。通常は指定する必要はありません。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_VERSION"><code>version -&gt; String</code><span class="permalink">[<a href="../method/-e-r-b/s/version.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/ERB.html#method-c-version">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+erb.rbのリビジョン情報を返します。
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_DEF_CLASS"><code>def_class(superklass=Object, methodname='erb') -&gt; Class</code><span class="permalink">[<a href="../method/-e-r-b/i/def_class.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/ERB.html#method-i-def_class">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+変換した Ruby スクリプトをメソッドとして定義した無名のクラスを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] superklass:</dt>
+<dd>
+無名クラスのスーパークラス
+</dd>
+<dt class='method-param'>[PARAM] methodname:</dt>
+<dd>
+メソッド名
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_DEF_METHOD"><code>def_method(mod, methodname, fname='(ERB)') -&gt; nil</code><span class="permalink">[<a href="../method/-e-r-b/i/def_method.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/ERB.html#method-i-def_method">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+変換した Ruby スクリプトをメソッドとして定義します。
+</p>
+<p>
+定義先のモジュールは mod で指定し、メソッド名は methodname で指定します。
+fname はスクリプトを定義する際のファイル名です。主にエラー時に活躍します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] mod:</dt>
+<dd>
+メソッドを定義するモジュール（またはクラス）
+</dd>
+<dt class='method-param'>[PARAM] methodname:</dt>
+<dd>
+メソッド名
+</dd>
+<dt class='method-param'>[PARAM] fname:</dt>
+<dd>
+スクリプトを定義する際のファイル名
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+erb = ERB.new(script)
+erb.def_method(MyClass, 'foo(bar)', 'foo.erb')
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_DEF_MODULE"><code>def_module(methodname='erb') -&gt; Module</code><span class="permalink">[<a href="../method/-e-r-b/i/def_module.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/ERB.html#method-i-def_module">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+変換した Ruby スクリプトをメソッドとして定義した無名のモジュールを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] methodname:</dt>
+<dd>
+メソッド名
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_FILENAME"><code>filename -&gt; String</code><span class="permalink">[<a href="../method/-e-r-b/i/filename.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/ERB.html#method-i-filename">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+エラーメッセージを表示する際のファイル名を取得します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FILENAME--3D"><code>filename= -&gt; String</code><span class="permalink">[<a href="../method/-e-r-b/i/filename=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/ERB.html#method-i-filename-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+エラーメッセージを表示する際のファイル名を設定します。
+</p>
+<p>
+filename を設定しておくことにより、エラーが発生した eRuby スクリプトの特定が容易になります。filename を設定していない場合は、エラー発生箇所は「 (ERB) 」という出力となります。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_RESULT"><code>result(b=TOPLEVEL_BINDING) -&gt; String</code><span class="permalink">[<a href="../method/-e-r-b/i/result.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/ERB.html#method-i-result">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ERB を b の binding で実行し、結果の文字列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] b:</dt>
+<dd>
+eRubyスクリプトが実行されるときのbinding
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_RUN"><code>run(b=TOPLEVEL_BINDING) -&gt; nil</code><span class="permalink">[<a href="../method/-e-r-b/i/run.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/ERB.html#method-i-run">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ERB を b の binding で実行し、結果を標準出力へ印字します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] b:</dt>
+<dd>
+eRubyスクリプトが実行されるときのbinding
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_SET_EOUTVAR"><code>set_eoutvar(compiler, eoutvar = '_erbout') -&gt; Array</code><span class="permalink">[<a href="../method/-e-r-b/i/set_eoutvar.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/ERB.html#method-i-set_eoutvar">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ERBの中でeRubyスクリプトの出力をためていく変数を設定します。
+</p>
+<p>
+ERBでeRubyスクリプトの出力をためていく変数を設定するために使用します。
+この設定は ERB#new でも行えるため、通常はそちらを使用した方がより容易です。
+本メソッドを使用するためには、引数にて指定する eRuby コンパイラを事前に生成しておく必要があります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] compiler:</dt>
+<dd>
+eRubyコンパイラ
+</dd>
+<dt class='method-param'>[PARAM] eoutvar:</dt>
+<dd>
+eRubyスクリプトの中で出力をためていく変数
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_SRC"><code>src -&gt; String</code><span class="permalink">[<a href="../method/-e-r-b/i/src.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/ERB.html#method-i-src">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+変換した Ruby スクリプトを取得します。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

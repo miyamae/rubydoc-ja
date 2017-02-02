@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class Rational (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Rationalクラス
+</p>
+
+
+<h1>class Rational</h1>
+<p>
+
+
+クラスの継承リスト: Rational
+
+      &lt; <a href="../class/-numeric.html">Numeric</a>
+      
+
+      &lt; <a href="../class/-comparable.html">Comparable</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+有理数を扱うクラスです。
+</p>
+<p>
+「1/3」のような有理数を扱う事ができます。<a href="../class/-integer.html">Integer</a> や <a href="../class/-float.html">Float</a>
+と同様に Rational.new ではなく、 <a href="../method/-kernel/m/-rational.html">Kernel.#Rational</a> を使用して
+<a href="../class/-rational.html">Rational</a> オブジェクトを作成します。
+</p>
+<p>
+例:
+</p>
+<pre>
+Rational(1, 3)       # =&gt; (1/3)
+Rational('1/3')      # =&gt; (1/3)
+Rational('0.33')     # =&gt; (33/100)
+Rational.new(1, 3)   # =&gt; NoMethodError
+</pre>
+<p>
+ただし、1.8系とは異なり、<a href="../class/-rational.html">Rational</a> オブジェクトは常に既約(それ以上
+約分できない状態)である事に注意してください。
+</p>
+<pre>
+Rational(2, 6)       # =&gt; (1/3)
+Rational(1, 3) * 3   # =&gt; (1/1)
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--2A">*</a>
+
+<a href="#I_--2A--2A">**</a>
+
+<a href="#I_--2A--2A">**</a>
+
+<a href="#I_--2B">+</a>
+
+<a href="#I_--2D">-</a>
+
+<a href="#I_--2F">/</a>
+
+<a href="#I_--2F">quo</a>
+
+<a href="#I_--3C--3D--3E"><=></a>
+
+<a href="#I_--3D--3D">==</a>
+
+<a href="#I_CEIL">ceil</a>
+
+<a href="#I_COERCE">coerce</a>
+
+<a href="#I_DENOMINATOR">denominator</a>
+
+<a href="#I_FDIV">fdiv</a>
+
+<a href="#I_FLOOR">floor</a>
+
+<a href="#I_HASH">hash</a>
+
+<a href="#I_INSPECT">inspect</a>
+
+<a href="#I_NUMERATOR">numerator</a>
+
+<a href="#I_RATIONALIZE">rationalize</a>
+
+<a href="#I_ROUND">round</a>
+
+<a href="#I_TO_F">to_f</a>
+
+<a href="#I_TO_I">to_i</a>
+
+<a href="#I_TO_I">truncate</a>
+
+<a href="#I_TO_R">to_r</a>
+
+<a href="#I_TO_S">to_s</a>
+
+</dd>
+
+<dt>privateメソッド</dt>
+<dd>
+
+<a href="#I_CONVERT">convert</a>
+
+<a href="#I_MARSHAL_DUMP">marshal_dump</a>
+
+</dd>
+
+</dl>
+
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--2A"><code>self * other -&gt; Rational | Float</code><span class="permalink">[<a href="../method/-rational/i/=2a.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-2A">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+積を計算します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身に掛ける数
+</dd>
+</dl>
+<p>
+other に <a href="../class/-float.html">Float</a> を指定した場合は、計算結果を <a href="../class/-float.html">Float</a> で返しま
+す。
+</p>
+<p>
+例:
+</p>
+<pre>
+r = Rational(3, 4)
+r * 2                # =&gt; (3/2)
+r * 4                # =&gt; (3/1)
+r * 0.5              # =&gt; 0.375
+r * Rational(1, 2)   # =&gt; (3/8)
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--2A--2A"><code>self ** other -&gt; Rational | Float</code><span class="permalink">[<a href="../method/-rational/i/=2a=2a.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-2A-2A">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+冪(べき)乗を計算します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身を other 乗する数
+</dd>
+</dl>
+<p>
+other に <a href="../class/-float.html">Float</a> を指定した場合は、計算結果を <a href="../class/-float.html">Float</a> で返しま
+す。other が有理数であっても、計算結果が無理数だった場合は <a href="../class/-float.html">Float</a>
+を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+r = Rational(3, 4)
+r ** Rational(2, 1)  # =&gt; (9/16)
+r ** 2               # =&gt; (9/16)
+r ** 2.0             # =&gt; 0.5625
+r ** Rational(1, 2)  # =&gt; 0.866025403784439
+</pre>
+<p>
+注意:
+</p>
+<p>
+1.8 系とは計算結果のオブジェクトが異なる場合がある事に注意してください。
+other に <a href="../class/-rational.html">Rational</a> を指定した場合には戻り値は必ず <a href="../class/-float.html">Float</a> を返
+していました。
+</p>
+<pre>
+# 1.8.7 の場合
+r = Rational(3, 4)
+r ** Rational(2, 1) # =&gt; 0.5625
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--2A--2A"><code>self ** rhs -&gt; Numeric</code><span class="permalink">[<a href="../method/-rational/i/=2a=2a.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-2A-2A">rdoc</a>]</span> <span class="kindinfo">[redefined by <a href="../library/mathn.html">mathn</a>]</span>
+</dt>
+<dd class="method-description">
+<p class="todo">
+[TODO]
+</p>
+<p>
+self のべき乗を返します。 Rational になるようであれば Rational で返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_--2B"><code>self + other -&gt; Rational | Float</code><span class="permalink">[<a href="../method/-rational/i/=2b.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-2B">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+和を計算します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身に足す数
+</dd>
+</dl>
+<p>
+other に <a href="../class/-float.html">Float</a> を指定した場合は、計算結果を <a href="../class/-float.html">Float</a> で返しま
+す。
+</p>
+<p>
+例:
+</p>
+<pre>
+r = Rational(3, 4)
+r + Rational(1, 2)     # =&gt; (5/4)
+r + 1                  # =&gt; (7/4)
+r + 0.5                # =&gt; 1.25
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--2D"><code>self - other -&gt; Rational | Float</code><span class="permalink">[<a href="../method/-rational/i/=2d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-2D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+差を計算します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身から引く数
+</dd>
+</dl>
+<p>
+other に <a href="../class/-float.html">Float</a> を指定した場合は、計算結果を <a href="../class/-float.html">Float</a> で返しま
+す。
+</p>
+<p>
+例:
+</p>
+<pre>
+r = Rational(3, 4)
+r - 1                # =&gt; (-1/4)
+r - 0.5              # =&gt; 0.25
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--2F"><code>self / other -&gt; Rational | Float</code><span class="permalink">[<a href="../method/-rational/i/=2f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-2F">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>quo(other) -&gt; Rational | Float</code></dt>
+<dd class="method-description">
+<p>
+商を計算します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身を割る数
+</dd>
+</dl>
+<p>
+other に <a href="../class/-float.html">Float</a> を指定した場合は、計算結果を <a href="../class/-float.html">Float</a> で返しま
+す。
+ただし 0 以外の整数に等しい場合は <a href="../class/-rational.html">Rational</a> で返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+r = Rational(3, 4)
+r / 2                # =&gt; (3/8)
+r / 2.0              # =&gt; (3/8)
+r / 0.5              # =&gt; 1.5
+r / Rational(1, 2)   # =&gt; (3/2)
+r / 0                # =&gt; ZeroDivisionError
+</pre>
+<dl>
+<dt>[EXCEPTION] ZeroDivisionError:</dt>
+<dd>
+other が 0 の時に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-numeric/i/quo.html">Numeric#quo</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_--3C--3D--3E"><code>self &lt;=&gt; other -&gt; -1 | 0 | 1 | nil</code><span class="permalink">[<a href="../method/-rational/i/=3c=3d=3e.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-3C-3D-3E">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self と other を比較して、self が大きい時に 1、等しい時に 0、小さい時に
+-1 を返します。
+比較できない場合はnilを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身と比較する数値
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+-1 か 0 か 1 か nil を返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Rational(2, 3)  &lt;=&gt; Rational(2, 3)  # =&gt; 0
+Rational(5)     &lt;=&gt; 5               # =&gt; 0
+Rational(2, 3)  &lt;=&gt; Rational(1,3)   # =&gt; 1
+Rational(1, 3)  &lt;=&gt; 1               # =&gt; -1
+Rational(1, 3)  &lt;=&gt; 0.3             # =&gt; 1
+Rational(1, 3)  &lt;=&gt; nil             # =&gt; nil
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--3D--3D"><code>self == other -&gt; bool</code><span class="permalink">[<a href="../method/-rational/i/=3d=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-3D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+数値として等しいか判定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身と比較する数値
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+self と other が等しい場合 true を返します。
+そうでなければ false を返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Rational(2, 3)  == Rational(2, 3)   # =&gt; true
+Rational(5)     == 5                # =&gt; true
+Rational(0)     == 0.0              # =&gt; true
+Rational('1/3') == 0.33             # =&gt; false
+Rational('1/2') == '1/2'            # =&gt; false
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CEIL"><code>ceil(precision = 0) -&gt; Integer | Rational</code><span class="permalink">[<a href="../method/-rational/i/ceil.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-ceil">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身と等しいかより大きな整数のうち最小のものを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] precision:</dt>
+<dd>
+計算結果の精度
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+precision に整数以外のものを指定すると発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Rational(3).ceil      # =&gt; 3
+Rational(2, 3).ceil   # =&gt; 1
+Rational(-3, 2).ceil  # =&gt; -1
+</pre>
+<p>
+precision を指定した場合は指定した桁数の数値と、上述の性質に最も近い整
+数か <a href="../class/-rational.html">Rational</a> を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+Rational('-123.456').ceil(+1)       # =&gt; (-617/5)
+Rational('-123.456').ceil(+1).to_f  # =&gt; -123.4
+Rational('-123.456').ceil(0)        # =&gt; -123
+Rational('-123.456').ceil(-1)       # =&gt; -120
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-rational/i/floor.html">Rational#floor</a>, <a href="../method/-rational/i/round.html">Rational#round</a>, <a href="../method/-rational/i/truncate.html">Rational#truncate</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_COERCE"><code>coerce(other) -&gt; Array</code><span class="permalink">[<a href="../method/-rational/i/coerce.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-coerce">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身と other が同じクラスになるよう、自身か other を変換し [other, self] という
+配列にして返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+比較または変換するオブジェクト
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Rational(1).coerce(2)   # =&gt; [(2/1), (1/1)]
+Rational(1).coerce(2.2) # =&gt; [2.2, 1.0]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_DENOMINATOR"><code>denominator -&gt; Integer</code><span class="permalink">[<a href="../method/-rational/i/denominator.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-denominator">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+分母を返します。常に正の整数を返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+分母を返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Rational(7).denominator       # =&gt; 1
+Rational(7, 1).denominator    # =&gt; 1
+Rational(9, -4).denominator   # =&gt; 4
+Rational(-2, -10).denominator # =&gt; 5
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-rational/i/numerator.html">Rational#numerator</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FDIV"><code>fdiv(other) -&gt; Float</code><span class="permalink">[<a href="../method/-rational/i/fdiv.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-fdiv">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self を other で割った商を <a href="../class/-float.html">Float</a> で返します。
+other に虚数を指定することは出来ません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身を割る数
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Rational(2, 3).fdiv(1)   # =&gt; 0.6666666666666666
+Rational(2, 3).fdiv(0.5) # =&gt; 1.3333333333333333
+Rational(2).fdiv(3)      # =&gt; 0.6666666666666666
+
+Rational(1).fdiv(Complex(1, 0))  # =&gt; 1.0
+Rational(1).fdiv(Complex(0, 1))  # =&gt; RangeError
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_FLOOR"><code>floor(precision = 0) -&gt; Integer | Rational</code><span class="permalink">[<a href="../method/-rational/i/floor.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-floor">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身と等しいかより小さな整数のうち最大のものを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] precision:</dt>
+<dd>
+計算結果の精度
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+precision に整数以外のものを指定すると発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Rational(3).floor     # =&gt; 3
+Rational(2, 3).floor  # =&gt; 0
+Rational(-3, 2).floor # =&gt; -2
+</pre>
+<p>
+<a href="../method/-rational/i/to_i.html">Rational#to_i</a> とは違う結果を返す事に注意してください。
+</p>
+<p>
+例:
+</p>
+<pre>
+Rational(+7, 4).to_i  # =&gt; 1
+Rational(+7, 4).floor # =&gt; 1
+Rational(-7, 4).to_i  # =&gt; -1
+Rational(-7, 4).floor # =&gt; -2
+</pre>
+<p>
+precision を指定した場合は指定した桁数の数値と、上述の性質に最も近い整
+数か <a href="../class/-rational.html">Rational</a> を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+Rational('-123.456').floor(+1)       # =&gt; (-247/2)
+Rational('-123.456').floor(+1).to_f  # =&gt; -123.5
+Rational('-123.456').floor(0)        # =&gt; -124
+Rational('-123.456').floor(-1)       # =&gt; -130
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-rational/i/ceil.html">Rational#ceil</a>, <a href="../method/-rational/i/round.html">Rational#round</a>, <a href="../method/-rational/i/truncate.html">Rational#truncate</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_HASH"><code>hash -&gt; Integer</code><span class="permalink">[<a href="../method/-rational/i/hash.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身のハッシュ値を返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+ハッシュ値を返します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-rational/i/inspect.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-inspect">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を人間が読みやすい形の文字列表現にして返します。
+</p>
+<p>
+&quot;(3/5)&quot;, &quot;(-17/7)&quot; のように10進数の表記を返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+有理数の表記にした文字列を返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Rational(5, 8).inspect  # =&gt; &quot;(5/8)&quot;
+Rational(2).inspect     # =&gt; &quot;(2/1)&quot;
+Rational(-8, 6).inspect # =&gt; &quot;(-4/3)&quot;
+Rational(0.5).inspect   # =&gt; &quot;(1/2)&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-rational/i/to_s.html">Rational#to_s</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_NUMERATOR"><code>numerator -&gt; Integer</code><span class="permalink">[<a href="../method/-rational/i/numerator.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-numerator">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+分子を返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+分子を返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Rational(7).numerator       # =&gt; 7
+Rational(7, 1).numerator    # =&gt; 7
+Rational(9, -4).numerator   # =&gt; -9
+Rational(-2, -10).numerator # =&gt; 1
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-rational/i/denominator.html">Rational#denominator</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_RATIONALIZE"><code>rationalize(eps = 0) -&gt; Rational</code><span class="permalink">[<a href="../method/-rational/i/rationalize.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-rationalize">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身から eps で指定した許容誤差の範囲に収まるような <a href="../class/-rational.html">Rational</a> を返
+します。
+</p>
+<p>
+eps を省略した場合は self を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] eps:</dt>
+<dd>
+許容する誤差
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+r = Rational(5033165, 16777216)
+r.rationalize                   # =&gt; (5033165/16777216)
+r.rationalize(Rational(0.01))   # =&gt; (3/10)
+r.rationalize(Rational(0.1))    # =&gt; (1/3)
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ROUND"><code>round(precision = 0) -&gt; Integer | Rational</code><span class="permalink">[<a href="../method/-rational/i/round.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-round">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身ともっとも近い整数を返します。
+</p>
+<p>
+中央値 0.5, -0.5 はそれぞれ 1,-1 に切り上げされます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] precision:</dt>
+<dd>
+計算結果の精度
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+precision に整数以外のものを指定すると発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Rational(3).round     # =&gt; 3
+Rational(2, 3).round  # =&gt; 1
+Rational(-3, 2).round # =&gt; -2
+</pre>
+<p>
+precision を指定した場合は指定した桁数の数値と、上述の性質に最も近い整
+数か <a href="../class/-rational.html">Rational</a> を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+Rational('-123.456').round(+1)      # =&gt; (-247/2)
+Rational('-123.456').round(+1).to_f # =&gt; -123.5
+Rational('-123.456').round(0)       # =&gt; -123
+Rational('-123.456').round(-1)      # =&gt; -120
+Rational('-123.456').round(-2)      # =&gt; -100
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-rational/i/ceil.html">Rational#ceil</a>, <a href="../method/-rational/i/floor.html">Rational#floor</a>, <a href="../method/-rational/i/truncate.html">Rational#truncate</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_F"><code>to_f -&gt; Float</code><span class="permalink">[<a href="../method/-rational/i/to_f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-to_f">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身の値を最も良く表現する <a href="../class/-float.html">Float</a> に変換します。
+</p>
+<p>
+絶対値が極端に小さい、または大きい場合にはゼロや無限大が返ることがあります。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+<a href="../class/-float.html">Float</a> を返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Rational(2).to_f             # =&gt; 2.0
+Rational(9, 4).to_f          # =&gt; 2.25
+Rational(-3, 4).to_f         # =&gt; -0.75
+Rational(20, 3).to_f         # =&gt; 6.666666666666667
+Rational(1, 10**1000).to_f   # =&gt; 0.0
+Rational(-1, 10**1000).to_f  # =&gt; -0.0
+Rational(10**1000).to_f      # =&gt; Infinity
+Rational(-10**1000).to_f     # =&gt; -Infinity
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_I"><code>to_i -&gt; Integer</code><span class="permalink">[<a href="../method/-rational/i/to_i.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-to_i">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>truncate(precision = 0) -&gt; Rational | Integer</code></dt>
+<dd class="method-description">
+<p>
+小数点以下を切り捨てて値を整数に変換します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] precision:</dt>
+<dd>
+計算結果の精度
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+precision に整数以外のものを指定すると発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Rational(2, 3).to_i   # =&gt; 0
+Rational(3).to_i      # =&gt; 3
+Rational(300.6).to_i  # =&gt; 300
+Rational(98, 71).to_i # =&gt; 1
+Rational(-30, 2).to_i # =&gt; -15
+</pre>
+<p>
+precision を指定した場合は指定した桁数で切り捨てた整数か
+<a href="../class/-rational.html">Rational</a> を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+Rational('-123.456').truncate(+1)       # =&gt; (-617/5)
+Rational('-123.456').truncate(+1).to_f  # =&gt; -123.4
+Rational('-123.456').truncate(0)        # =&gt; -123
+Rational('-123.456').truncate(-1)       # =&gt; -120
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-rational/i/ceil.html">Rational#ceil</a>, <a href="../method/-rational/i/floor.html">Rational#floor</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_R"><code>to_r -&gt; Rational</code><span class="permalink">[<a href="../method/-rational/i/to_r.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-to_r">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+自身を返します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_S"><code>to_s -&gt; String</code><span class="permalink">[<a href="../method/-rational/i/to_s.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-to_s">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を人間が読みやすい形の文字列表現にして返します。
+</p>
+<p>
+&quot;3/5&quot;, &quot;-17/7&quot; のように10進数の表記を返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+有理数の表記にした文字列を返します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Rational(3, 4).to_s  # =&gt; &quot;3/4&quot;
+Rational(8).to_s     # =&gt; &quot;8&quot;
+Rational(-8, 6).to_s # =&gt; &quot;-4/3&quot;
+Rational(0.5).to_s   # =&gt; &quot;1/2&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-rational/i/inspect.html">Rational#inspect</a>
+</p>
+</dd>
+
+
+</dl>
+
+<h2>privateメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_CONVERT"><code>convert(*arg) -&gt; Rational</code><span class="permalink">[<a href="../method/-rational/i/convert.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-convert">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数を有理数(<a href="../class/-rational.html">Rational</a>)に変換した結果を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] arg:</dt>
+<dd>
+変換対象のオブジェクトです。
+</dd>
+</dl>
+<p>
+<a href="../method/-kernel/m/-rational.html">Kernel.#Rational</a> の本体です。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/m/-rational.html">Kernel.#Rational</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_MARSHAL_DUMP"><code>marshal_dump -&gt; Array</code><span class="permalink">[<a href="../method/-rational/i/marshal_dump.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Rational.html#method-i-marshal_dump">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-marshal/m/load.html">Marshal.#load</a> のためのメソッドです。
+Rational::compatible#marshal_load で復元可能な配列を返します。
+</p>
+<p>
+2.0 以降では <a href="../method/-marshal/m/load.html">Marshal.#load</a> で 1.8 系の <a href="../class/-rational.html">Rational</a> オブジェク
+トを保存した文字列も復元できます。
+</p>
+<p>
+[注意] Rational::compatible は通常の方法では参照する事ができません。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

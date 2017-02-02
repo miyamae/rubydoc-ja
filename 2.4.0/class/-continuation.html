@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class Continuation (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/continuation.html">continuationライブラリ</a>
+&gt; Continuationクラス
+</p>
+
+
+<h1>class Continuation</h1>
+<p>
+
+
+クラスの継承リスト: Continuation
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+継続を表すクラスです。
+</p>
+<p>
+<a href="../method/-kernel/m/callcc.html">Kernel.#callcc</a> { |cont| ... } の呼び出し
+は、直前の状態(ローカル変数の定義、スタックフレーム)を cont に記憶
+してブロックを実行します。cont は、Continuation クラスのインスタ
+ンスで、<a href="../method/-continuation/i/call.html">Continuation#call</a> メソッドを実行するこ
+とでいつでも記憶した状態を継続することができます。
+</p>
+<p>
+C 言語の setjmp()/longjmp() がわかる人は
+</p>
+<pre>
+setjmp() == callcc {|c| }
+longjmp() == c.call
+</pre>
+<p>
+と考えれば、わかりやすいかも知れません(ただし、callcc はスタックが深く
+なる方向にもジャンプ出来るという違いがあります)
+</p>
+<p>
+callcc() は、ブロックの戻り値を返しますが、Continuation#call(args)
+が呼び出されたときは args を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+以下は、Continuationによる無限ループの例
+
+def LOOP
+  c = nil
+  yield callcc {|cnt| c = cnt; true }
+  c.call(false)
+end
+
+LOOP {|v| p v}
+
+=&gt; true
+   false
+   false
+   false
+     :
+     :
+</pre>
+<p>
+callcc とは、call-with-current-continuation の略です。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--5B--5D">[]</a>
+
+<a href="#I_--5B--5D">call</a>
+
+</dd>
+
+</dl>
+
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--5B--5D"><code>self[*ret] -&gt; ()</code><span class="permalink">[<a href="../method/-continuation/i/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Continuation.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>call(*ret) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+self が記憶した状態を継続します。引数は そのまま
+<a href="../method/-kernel/m/callcc.html">Kernel.#callcc</a> の戻り値になります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] ret:</dt>
+<dd>
+継続に復帰した時に返す値を指定します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

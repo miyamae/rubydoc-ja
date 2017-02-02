@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>instance method Enumerable#slice_when (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-enumerable.html">Enumerableモジュール</a>
+&gt; slice_when
+
+</p>
+
+
+<h1>instance method Enumerable#slice_when</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_SLICE_WHEN"><code>slice_when {|elt_before, elt_after| bool } -&gt; Enumerator</code><span class="permalink">[<a href="../../../method/-enumerable/i/slice_when.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Enumerable.html#method-i-slice_when">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+要素を前から順にブロックで評価し、その結果によって要素をチャンクに分け
+た(グループ化した)要素を持つ<a href="../../../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<p>
+隣り合う値をブロックパラメータ elt_before、elt_after に渡し、ブロックの
+評価値が真になる所でチャンクを区切ります。
+</p>
+<p>
+ブロックは self の長さ - 1 回呼び出されます。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+チャンクごとの配列をブロックパラメータに渡す <a href="../../../class/-enumerator.html">Enumerator</a>
+を返します。eachメソッドは以下のように呼び出します。
+<pre>
+  enum.slice_when { |elt_before, elt_after| bool }.each { |ary| ... }
+</pre>
+to_a や map などのその他の <a href="../../../class/-enumerable.html">Enumerable</a> モジュールのメソッ
+ドも有用です。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+# 1ずつ増加する部分配列ごとに分ける。
+a = [1,2,4,9,10,11,12,15,16,19,20,21]
+b = a.slice_when {|i, j| i+1 != j }
+p b.to_a # =&gt; [[1, 2], [4], [9, 10, 11, 12], [15, 16], [19, 20, 21]]
+c = b.map {|a| a.length &lt; 3 ? a : &quot;#{a.first}-#{a.last}&quot; }
+p c # =&gt; [[1, 2], [4], &quot;9-12&quot;, [15, 16], &quot;19-21&quot;]
+d = c.join(&quot;,&quot;)
+p d # =&gt; &quot;1,2,4,9-12,15,16,19-21&quot;
+
+# ソート済の配列を近い値(差が6以内)の部分配列ごとに分ける。
+a = [3, 11, 14, 25, 28, 29, 29, 41, 55, 57]
+p a.slice_when {|i, j| 6 &lt; j - i }.to_a
+# =&gt; [[3], [11, 14], [25, 28, 29, 29], [41], [55, 57]]
+
+# 増加のみの部分配列ごとに分ける。
+a = [0, 9, 2, 2, 3, 2, 7, 5, 9, 5]
+p a.slice_when {|i, j| i &gt; j }.to_a
+# =&gt; [[0, 9], [2, 2, 3], [2, 7], [5, 9], [5]]
+
+# 隣り合う偶数同士、奇数同士の部分配列ごとに分ける。
+# (Enumerable#chunk を使って実現する事も可能)
+a = [7, 5, 9, 2, 0, 7, 9, 4, 2, 0]
+p a.slice_when {|i, j| i.even? != j.even? }.to_a
+# =&gt; [[7, 5, 9], [2, 0], [7, 9], [4, 2, 0]]
+
+# 段落(空行が後ろに続く非空行の文字列)ごとに分ける。
+# (Enumerable#chunk で空行を無視して実現する事も可能)
+lines = [&quot;foo\n&quot;, &quot;bar\n&quot;, &quot;\n&quot;, &quot;baz\n&quot;, &quot;qux\n&quot;]
+p lines.slice_when {|l1, l2| /\A\s*\z/ =~ l1 &amp;&amp; /\S/ =~ l2 }.to_a
+# =&gt; [[&quot;foo\n&quot;, &quot;bar\n&quot;, &quot;\n&quot;], [&quot;baz\n&quot;, &quot;qux\n&quot;]]
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-enumerable/i/chunk_while.html">Enumerable#chunk_while</a>, <a href="../../../method/-enumerable/i/chunk.html">Enumerable#chunk</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

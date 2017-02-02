@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>singleton method WEBrick::HTTPProxyServer.new (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/webrick=2fhttpproxy.html">webrick/httpproxyライブラリ</a>
+&gt; <a href="../../../class/-w-e-brick=3a=3a-h-t-t-p-proxy-server.html">WEBrick::HTTPProxyServerクラス</a>
+&gt; new
+
+</p>
+
+
+<h1>singleton method WEBrick::HTTPProxyServer.new</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_NEW"><code>new(config, default = WEBrick::Config::HTTP) -&gt; WEBrick::HTTPProxyServer</code><span class="permalink">[<a href="../../../method/-w-e-brick=3a=3a-h-t-t-p-proxy-server/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/WEBrick/HTTPProxyServer.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+プロクシオブジェクトを生成して返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] config:</dt>
+<dd>
+設定を保存したハッシュを指定します。
+設定として有効なハッシュのキーとその値は <a href="../../../method/-w-e-brick=3a=3a-h-t-t-p-server/s/new.html">WEBrick::HTTPServer.new</a> と同じです。
+それに加えて以下のキーが有効です。
+</dd>
+</dl>
+<dl>
+<dt>:ProxyAuthProc</dt>
+<dd>
+<p>
+プロクシ認証を行う <a href="../../../class/-proc.html">Proc</a> オブジェクトを指定します。この proc は
+<a href="../../../class/-w-e-brick=3a=3a-h-t-t-p-response.html">WEBrick::HTTPResponse</a> オブジェクトと <a href="../../../class/-w-e-brick=3a=3a-h-t-t-p-request.html">WEBrick::HTTPRequest</a> オブジェクトを引数として
+proc.call(req, res) のように呼ばれます。
+認証に失敗した場合 proc は適切な例外を発生させなければいけません。nil を指定した場合すべての接続を
+受け付けます。デフォルトは nil です。通常は <a href="../../../class/-w-e-brick=3a=3a-h-t-t-p-auth=3a=3a-proxy-basic-auth.html">WEBrick::HTTPAuth::ProxyBasicAuth</a> か
+<a href="../../../class/-w-e-brick=3a=3a-h-t-t-p-auth=3a=3a-proxy-digest-auth.html">WEBrick::HTTPAuth::ProxyDigestAuth</a> を使用します。
+</p>
+<pre>
+ auth_proc = proc{|req, res|
+   unless c = req['proxy-authorization']
+     res['Proxy-Authenticate'] = 'Basic realm=&quot;WEBrick Proxy&quot;'
+     raise WEBrick::HTTPStatus::ProxyAuthenticationRequired
+   else
+     # 略
+   end
+ }
+ s = WEBrick::HTTPProxyServer.new( {:ProxyAuthProc =&gt; auth_proc} )
+</pre>
+</dd>
+<dt>:ProxyContentHandler</dt>
+<dd>
+<p>
+接続先の HTTP サーバからの内容を処理する <a href="../../../class/-proc.html">Proc</a> オブジェクトを指定します。
+レスポンスの内容を書き換えたりする事が出来ます。<a href="../../../class/-w-e-brick=3a=3a-h-t-t-p-response.html">WEBrick::HTTPResponse</a> オブジェクトと
+<a href="../../../class/-w-e-brick=3a=3a-h-t-t-p-request.html">WEBrick::HTTPRequest</a> オブジェクトを引数として proc.call(req, res) のように呼ばれます。
+nil を指定した場合なにもしません。デフォルトは nil です。
+</p>
+<pre>
+ handler = proc{|req, res|
+   res.body.gsub!(/です。/e, 'でんがな。')
+   res.body.gsub!(/ます。/e, 'まんがな。')
+ }
+ s = WEBrick::HTTPProxyServer.new( { :ProxyContentHandler =&gt; handler } )
+</pre>
+</dd>
+<dt>:ProxyVia</dt>
+<dd>
+<p>
+true を指定した場合 接続先の HTTP サーバへのリクエストに Via ヘッダを付けます。デフォルトは
+true です。
+</p>
+</dd>
+<dt>:ProxyTimeout</dt>
+<dd>
+<p>
+true を指定した場合 接続先の HTTP サーバへのリクエストにタイムアウトを設定します。
+タイムアウトまでの時間は設定できません。
+</p>
+</dd>
+<dt>:ProxyURI</dt>
+<dd>
+<p>
+HTTP サーバへの接続にさらに別の Proxy サーバを使う場合にその Proxy の URI
+を <a href="../../../class/-u-r-i.html">URI</a> オブジェクトで指定します。
+</p>
+<pre>
+  require 'uri'
+  u = URI.parse('http://localhost:18080/')
+  s = WEBrick::HTTPProxyServer.new( { :ProxyURI =&gt; u } )
+</pre>
+</dd>
+</dl>
+<dl>
+<dt class='method-param'>[PARAM] default:</dt>
+<dd>
+デフォルトは <a href="../../../method/-w-e-brick=3a=3a-config/c/-h-t-t-p.html">WEBrick::Config::HTTP</a> です。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

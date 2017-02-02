@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>instance method Encoding::Converter#primitive_errinfo (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-encoding=3a=3a-converter.html">Encoding::Converterクラス</a>
+&gt; primitive_errinfo
+
+</p>
+
+
+<h1>instance method Encoding::Converter#primitive_errinfo</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_PRIMITIVE_ERRINFO"><code>primitive_errinfo -&gt; Array</code><span class="permalink">[<a href="../../../method/-encoding=3a=3a-converter/i/primitive_errinfo.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Encoding/Converter.html#method-i-primitive_errinfo">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+直前の <a href="../../../method/-encoding=3a=3a-converter/i/primitive_convert.html">Encoding::Converter#primitive_convert</a> による変換の結果を保持する五要素の配列を返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+[result, enc1, enc2, error_bytes, readagain_bytes] という五要素の配列
+</dd>
+</dl>
+<p>
+result は直前の primitive_convert の戻り値です。
+それ以外の四要素は :invalid_byte_sequence か :incomplete_input か :undefined_conversion だった場合に意味を持ちます。
+enc1 はエラーの発生した原始変換の変換元のエンコーディング、enc2 は変換先のエンコーディングです。
+error_bytes はエラーの発生原因となったバイト列、readagain_bytes は先読みによって変換器内部に保持されているバイト列です。
+</p>
+<p>
+primitive_errinfo はもっぱら <a href="../../../method/-encoding=3a=3a-converter/i/primitive_convert.html">Encoding::Converter#primitive_convert</a> と組み合わせて使います。<a href="../../../method/-encoding=3a=3a-converter/i/convert.html">Encoding::Converter#convert</a> を用いている場合にも取得することはできますが、有用な使い方は難しいでしょう。
+</p>
+<pre>
+# \xff is invalid as EUC-JP.
+ec = Encoding::Converter.new(&quot;EUC-JP&quot;, &quot;Shift_JIS&quot;)
+ec.primitive_convert(src=&quot;\xff&quot;, dst=&quot;&quot;, nil, 10)
+p ec.primitive_errinfo
+#=&gt; [:invalid_byte_sequence, &quot;EUC-JP&quot;, &quot;UTF-8&quot;, &quot;\xFF&quot;, &quot;&quot;]
+
+# HIRAGANA LETTER A (\xa4\xa2 in EUC-JP) is not representable in ISO-8859-1.
+# Since this error is occur in UTF-8 to ISO-8859-1 conversion,
+# error_bytes is HIRAGANA LETTER A in UTF-8 (\xE3\x81\x82).
+ec = Encoding::Converter.new(&quot;EUC-JP&quot;, &quot;ISO-8859-1&quot;)
+ec.primitive_convert(src=&quot;\xa4\xa2&quot;, dst=&quot;&quot;, nil, 10)
+p ec.primitive_errinfo
+#=&gt; [:undefined_conversion, &quot;UTF-8&quot;, &quot;ISO-8859-1&quot;, &quot;\xE3\x81\x82&quot;, &quot;&quot;]
+
+# partial character is invalid
+ec = Encoding::Converter.new(&quot;EUC-JP&quot;, &quot;ISO-8859-1&quot;)
+ec.primitive_convert(src=&quot;\xa4&quot;, dst=&quot;&quot;, nil, 10)
+p ec.primitive_errinfo
+#=&gt; [:incomplete_input, &quot;EUC-JP&quot;, &quot;UTF-8&quot;, &quot;\xA4&quot;, &quot;&quot;]
+
+# Encoding::Converter::PARTIAL_INPUT prevents invalid errors by
+# partial characters.
+ec = Encoding::Converter.new(&quot;EUC-JP&quot;, &quot;ISO-8859-1&quot;)
+ec.primitive_convert(src=&quot;\xa4&quot;, dst=&quot;&quot;, nil, 10, Encoding::Converter::PARTIAL_INPUT)
+p ec.primitive_errinfo
+#=&gt; [:source_buffer_empty, nil, nil, nil, nil]
+
+# \xd8\x00\x00@ is invalid as UTF-16BE because
+# no low surrogate after high surrogate (\xd8\x00).
+# It is detected by 3rd byte (\00) which is part of next character.
+# So the high surrogate (\xd8\x00) is discarded and
+# the 3rd byte is read again later.
+# Since the byte is buffered in ec, it is dropped from src.
+ec = Encoding::Converter.new(&quot;UTF-16BE&quot;, &quot;UTF-8&quot;)
+ec.primitive_convert(src=&quot;\xd8\x00\x00@&quot;, dst=&quot;&quot;, nil, 10)
+p ec.primitive_errinfo
+#=&gt; [:invalid_byte_sequence, &quot;UTF-16BE&quot;, &quot;UTF-8&quot;, &quot;\xD8\x00&quot;, &quot;\x00&quot;]
+p src
+#=&gt; &quot;@&quot;
+
+# Similar to UTF-16BE, \x00\xd8@\x00 is invalid as UTF-16LE.
+# The problem is detected by 4th byte.
+ec = Encoding::Converter.new(&quot;UTF-16LE&quot;, &quot;UTF-8&quot;)
+ec.primitive_convert(src=&quot;\x00\xd8@\x00&quot;, dst=&quot;&quot;, nil, 10)
+p ec.primitive_errinfo
+#=&gt; [:invalid_byte_sequence, &quot;UTF-16LE&quot;, &quot;UTF-8&quot;, &quot;\x00\xD8&quot;, &quot;@\x00&quot;]
+p src
+#=&gt; &quot;&quot;
+</pre>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

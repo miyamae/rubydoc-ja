@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>instance method String#split (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-string.html">Stringクラス</a>
+&gt; split
+
+</p>
+
+
+<h1>instance method String#split</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_SPLIT"><code>split(sep = $;, limit = 0) -&gt; [String] | [[String]]</code><span class="permalink">[<a href="../../../method/-string/i/split.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/String.html#method-i-split">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+第 1 引数 sep で指定されたセパレータによって文字列を limit 個まで分割し、
+結果を文字列の配列で返します。
+</p>
+<p>
+第 1 引数 sep は以下のいずれかです。
+</p>
+<dl>
+<dt>正規表現</dt>
+<dd>
+<p>
+正規表現にマッチする部分で分割する。
+特に、括弧によるグルーピングがあればそのグループにマッチした
+文字列も結果の配列に含まれる (後述)。
+</p>
+</dd>
+<dt>文字列</dt>
+<dd>
+<p>
+その文字列自体にマッチする部分で分割する。
+</p>
+</dd>
+<dt>1 バイトの空白文字 ' '</dt>
+<dd>
+<p>
+先頭と末尾の空白を除いたうえで、空白文字列で分割する。
+</p>
+</dd>
+<dt>nil</dt>
+<dd>
+<p>
+常に $; で分割する。 $; も nil の場合は、先頭と末尾の空白を除いたうえで、空白文字列で分割する。
+</p>
+</dd>
+<dt>空文字列 '' あるいは空文字列にマッチする正規表現</dt>
+<dd>
+<p>
+文字列を 1 文字ずつに分割する。マルチバイト文字を認識する。
+</p>
+</dd>
+</dl>
+<p>
+sep が正規表現で、かつその正規表現に括弧が含まれている場合には、
+各括弧のパターンにマッチした文字列も配列に含まれます。
+括弧が複数ある場合は、マッチしたものだけが配列に含まれます。
+</p>
+<p>
+第 2 引数 limit は以下のいずれかです。
+</p>
+<dl>
+<dt>limit &gt; 0</dt>
+<dd>
+<p>
+最大 limit 個の文字列に分割する
+</p>
+</dd>
+<dt>limit == 0</dt>
+<dd>
+<p>
+分割個数制限はなしで、配列末尾の空文字列を取り除く
+</p>
+</dd>
+<dt>limit &lt; 0</dt>
+<dd>
+<p>
+分割個数の制限はなし
+</p>
+</dd>
+</dl>
+<dl>
+<dt class='method-param'>[PARAM] sep:</dt>
+<dd>
+文字列を分割するときのセパレータのパターン
+</dd>
+<dt class='method-param'>[PARAM] limit:</dt>
+<dd>
+分割する最大個数
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+p &quot;   a \t  b \n  c&quot;.split(/\s+/) # =&gt; [&quot;&quot;, &quot;a&quot;, &quot;b&quot;, &quot;c&quot;]
+
+p &quot;   a \t  b \n  c&quot;.split(nil)   # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]
+p &quot;   a \t  b \n  c&quot;.split(' ')   # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]   # split(nil) と同じ
+p &quot;   a \t  b \n  c&quot;.split        # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]   # split(nil) と同じ
+
+# 括弧を含む正規表現
+p '1-10,20'.split(/([-,])/)   # =&gt; [&quot;1&quot;, &quot;-&quot;, &quot;10&quot;, &quot;,&quot;, &quot;20&quot;]
+
+# 正規表現が空文字列にマッチする場合は 1 文字に分割
+p 'hi there'.split(/\s*/).join(':')  # =&gt; &quot;h:i:t:h:e:r:e&quot;
+
+# 文字列全体を 1 文字ずつに分割する例
+p 'hi there'.split(//).join(':')     # =&gt; &quot;h:i: :t:h:e:r:e&quot;
+
+# limit == 0 だと制限なく分割、配列末尾の空文字列は取り除かれる
+p &quot;a,b,c,,,&quot;.split(/,/, 0)   # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]
+
+# limit 省略時は 0 と同じ (最もよく使われるパターン)
+p &quot;a,b,c,,,&quot;.split(/,/)      # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]
+
+# 正の limit 使用例
+p &quot;a,b,c,d,e&quot;.split(/,/, 1)  # =&gt; [&quot;a,b,c,d,e&quot;]
+p &quot;a,b,c,d,e&quot;.split(/,/, 2)  # =&gt; [&quot;a&quot;, &quot;b,c,d,e&quot;]
+p &quot;a,b,c,d,e&quot;.split(/,/, 3)  # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c,d,e&quot;]
+p &quot;a,b,c,d,e&quot;.split(/,/, 4)  # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d,e&quot;]
+p &quot;a,b,c,d,e&quot;.split(/,/, 5)  # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot;]
+p &quot;a,b,c,d,e&quot;.split(/,/, 6)  # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot;]
+p &quot;a,b,c,d,e&quot;.split(/,/, 7)  # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot;]
+
+# limit が負の数の場合は制限なく分割
+p &quot;a,b,c,,,&quot;.split(/,/, -1)    # =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;]
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-string/i/partition.html">String#partition</a>, <a href="../../../method/-string/i/rpartition.html">String#rpartition</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

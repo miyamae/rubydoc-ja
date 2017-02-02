@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class Thread::Queue (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Thread::Queueクラス
+</p>
+
+
+<h1>class Thread::Queue</h1>
+<p>
+
+
+クラスの継承リスト: Thread::Queue
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+<br>aliases: Queue
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+Queue はスレッド間の FIFO(first in first out) の通信路です。ス
+レッドが空のキューを読み出そうとすると停止します。キューになんら
+かの情報が書き込まれると実行は再開されます。
+</p>
+<p>
+最大サイズが指定できる Queue のサブクラス <a href="../class/-thread=3a=3a-sized-queue.html">Thread::SizedQueue</a> も提供されています。
+</p>
+<h2 >例</h2>
+<pre>
+require 'thread'
+
+q = Queue.new
+
+th1 = Thread.start do
+  while resource = q.pop
+    puts resource
+  end
+end
+
+[:resource1, :resource2, :resource3, nil].each{|r|
+  q.push(r)
+}
+
+th1.join
+</pre>
+<p>
+実行すると以下のように出力します。
+</p>
+<pre>
+$ ruby que.rb
+resource1
+resource2
+resource3
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--3C--3C"><<</a>
+
+<a href="#I_--3C--3C">enq</a>
+
+<a href="#I_--3C--3C">push</a>
+
+<a href="#I_CLEAR">clear</a>
+
+<a href="#I_CLOSE">close</a>
+
+<a href="#I_CLOSED--3F">closed?</a>
+
+<a href="#I_DEQ">deq</a>
+
+<a href="#I_DEQ">pop</a>
+
+<a href="#I_DEQ">shift</a>
+
+<a href="#I_EMPTY--3F">empty?</a>
+
+<a href="#I_LENGTH">length</a>
+
+<a href="#I_LENGTH">size</a>
+
+<a href="#I_NUM_WAITING">num_waiting</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new -&gt; Thread::Queue</code><span class="permalink">[<a href="../method/-thread=3a=3a-queue/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Thread/Queue.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+新しいキューオブジェクトを生成します。
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--3C--3C"><code>push(value) -&gt; ()</code><span class="permalink">[<a href="../method/-thread=3a=3a-queue/i/=3c=3c.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Thread/Queue.html#method-i-3C-3C">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>self &lt;&lt; value -&gt; ()</code></dt>
+<dt class="method-heading"><code>enq(value) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+キューの値を追加します。待っているスレッドがいれば実行を再開
+させます。返り値は不定です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CLEAR"><code>clear -&gt; ()</code><span class="permalink">[<a href="../method/-thread=3a=3a-queue/i/clear.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Thread/Queue.html#method-i-clear">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+キューを空にします。返り値は不定です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CLOSE"><code>close -&gt; self</code><span class="permalink">[<a href="../method/-thread=3a=3a-queue/i/close.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Thread/Queue.html#method-i-close">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+キューを close します。close 済みのキューを再度 open することはできません。
+</p>
+<p>
+close 後は以下のように動作します。
+</p>
+<ul>
+<li><a href="../method/-thread=3a=3a-queue/i/closed=3f.html">Thread::Queue#closed?</a> は true を返します</li>
+<li><a href="../method/-thread=3a=3a-queue/i/close.html">Thread::Queue#close</a> は無視されます</li>
+<li><a href="../method/-thread=3a=3a-queue/i/enq.html">Thread::Queue#enq</a>/push/&lt;&lt; は nil を返します</li>
+<li><a href="../method/-thread=3a=3a-queue/i/empty=3f.html">Thread::Queue#empty?</a> が false を返す場合は <a href="../method/-thread=3a=3a-queue/i/deq.html">Thread::Queue#deq</a>/pop/shift は通常通りオブジェクトを返します</li>
+</ul>
+<p>
+また、<a href="../class/-closed-queue-error.html">ClosedQueueError</a> は <a href="../class/-stop-iteration.html">StopIteration</a> を継承しているため、
+close する事でループから脱出する事もできます。
+</p>
+<p>
+例:
+</p>
+<pre>
+q = Queue.new
+Thread.new{
+  while e = q.deq # wait for nil to break loop
+    # ...
+  end
+}
+q.close
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CLOSED--3F"><code>closed? -&gt; bool</code><span class="permalink">[<a href="../method/-thread=3a=3a-queue/i/closed=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Thread/Queue.html#method-i-closed-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+キューが close されている時に true を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DEQ"><code>pop(non_block = false) -&gt; object</code><span class="permalink">[<a href="../method/-thread=3a=3a-queue/i/deq.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Thread/Queue.html#method-i-deq">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>shift(non_block = false) -&gt; object</code></dt>
+<dt class="method-heading"><code>deq(non_block = false) -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+キューからひとつ値を取り出します。キューが空の時、呼出元のスレッドは停止します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] non_block:</dt>
+<dd>
+true を与えると、キューが空の時に例外 <a href="../class/-thread-error.html">ThreadError</a> が発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_EMPTY--3F"><code>empty? -&gt; bool</code><span class="permalink">[<a href="../method/-thread=3a=3a-queue/i/empty=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Thread/Queue.html#method-i-empty-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+キューが空の時、真を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LENGTH"><code>length -&gt; Fixnum</code><span class="permalink">[<a href="../method/-thread=3a=3a-queue/i/length.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Thread/Queue.html#method-i-length">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>size -&gt; Fixnum</code></dt>
+<dd class="method-description">
+<p>
+キューの長さを返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_NUM_WAITING"><code>num_waiting -&gt; Fixnum</code><span class="permalink">[<a href="../method/-thread=3a=3a-queue/i/num_waiting.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Thread/Queue.html#method-i-num_waiting">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+キューを待っているスレッドの数を返します。
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

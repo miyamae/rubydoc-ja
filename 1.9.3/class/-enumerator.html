@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>class Enumerator (Ruby 1.9.3)</title>
 </head>
 <body>
@@ -56,10 +57,9 @@ Enumerator を介することにより <a href="../method/-string/i/each_byte.ht
 異なる名前のイテレータについても each と同様に Enumerable の機能を利用できます。
 </p>
 <p>
-Enumerator を生成するには
-<a href="../method/-enumerator/s/new.html">Enumerator.new</a>
-あるいは <a href="../method/-object/i/to_enum.html">Object#to_enum</a>, <a href="../method/-object/i/enum_for.html">Object#enum_for</a> を利用します。
-また、一部のイテレータはブロックを渡さずに呼び出すと繰り返しを実行する代わりに
+Enumerator を生成するには <a href="../method/-enumerator/s/new.html">Enumerator.new</a>あるいは
+<a href="../method/-object/i/to_enum.html">Object#to_enum</a>, <a href="../method/-object/i/enum_for.html">Object#enum_for</a> を利用します。また、一部の
+イテレータはブロックを渡さずに呼び出すと繰り返しを実行する代わりに
 enumerator を生成して返します。
 </p>
 <h2 >注意</h2>
@@ -108,6 +108,8 @@ p a.next
 
 <a href="#I_REWIND">rewind</a>
 
+<a href="#I_SIZE">size</a>
+
 <a href="#I_WITH_INDEX">with_index</a>
 
 <a href="#I_WITH_OBJECT">with_object</a>
@@ -151,7 +153,7 @@ enum = Enumerator.new(str, :each_byte)
 p enum.map {|b| '%02x' % b }   # =&gt; [&quot;78&quot;, &quot;79&quot;, &quot;7a&quot;]
 </pre>
 </dd>
-<dt class="method-heading" id="S_NEW"><code>new {|y| ... } -&gt; Enumerator</code><span class="permalink">[<a href="../method/-enumerator/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.3/Enumerator.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading" id="S_NEW"><code>new(size=nil) {|y| ... } -&gt; Enumerator</code><span class="permalink">[<a href="../method/-enumerator/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.3/Enumerator.html#method-c-new">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 Enumerator オブジェクトを生成して返します。与えられたブロックは Enumerator::Yielder オブジェクトを
@@ -166,6 +168,15 @@ each に渡されたブロックが繰り返されます。
 new に渡されたブロックが終了した時点で each の繰り返しが終わります。
 このときのブロックの返り値が each の返り値となります。
 </p>
+<dl>
+<dt class='method-param'>[PARAM] size:</dt>
+<dd>
+生成する Enumerator オブジェクトの要素数を指定します。
+<a href="../class/-integer.html">Integer</a>、<a href="../method/-float/c/-i-n-f-i-n-i-t-y.html">Float::INFINITY</a>、<a href="../class/-proc.html">Proc</a> オブジェク
+ト、nil のいずれかを指定します。<a href="../method/-enumerator/i/size.html">Enumerator#size</a> の実
+行時に参照されます。
+</dd>
+</dl>
 <p>
 例:
 </p>
@@ -200,13 +211,24 @@ p fib.take(10) #=&gt; [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
 <dl>
 
 <dt class="method-heading" id="I_EACH"><code>each {...} -&gt; object</code><span class="permalink">[<a href="../method/-enumerator/i/each.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.3/Enumerator.html#method-i-each">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each -&gt; self</code></dt>
+<dt class="method-heading"><code>each(*args) {...} -&gt; object</code></dt>
+<dt class="method-heading"><code>each(*args) -&gt; Enumerator</code></dt>
 <dd class="method-description">
 <p>
 生成時のパラメータに従ってブロックを繰り返します。
+*args を渡した場合は、生成時のパラメータ内引数末尾へ *args を追加した状態で繰り返します。
+ブロック付きで呼び出された場合は、
 生成時に指定したイテレータの戻り値をそのまま返します。
 </p>
+<dl>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+末尾へ追加する引数
+</dd>
+</dl>
 <p>
-例:
+例1:
 </p>
 <pre>
 str = &quot;Yet Another Ruby Hacker&quot;
@@ -221,6 +243,33 @@ str.scan(/\w+/) {|word| p word }        # =&gt; &quot;Yet&quot;
                                         #    &quot;Another&quot;
                                         #    &quot;Ruby&quot;
                                         #    &quot;Hacker&quot;
+</pre>
+<p>
+例2:
+</p>
+<pre>
+&quot;Hello, world!&quot;.scan(/\w+/)                     # =&gt; [&quot;Hello&quot;, &quot;world&quot;]
+&quot;Hello, world!&quot;.to_enum(:scan, /\w+/).to_a      # =&gt; [&quot;Hello&quot;, &quot;world&quot;]
+&quot;Hello, world!&quot;.to_enum(:scan).each(/\w+/).to_a # =&gt; [&quot;Hello&quot;, &quot;world&quot;]
+
+obj = Object.new
+
+def obj.each_arg(a, b=:b, *rest)
+  yield a
+  yield b
+  yield rest
+  :method_returned
+end
+
+enum = obj.to_enum :each_arg, :a, :x
+
+enum.each.to_a                  # =&gt; [:a, :x, []]
+enum.each.equal?(enum)          # =&gt; true
+enum.each { |elm| elm }         # =&gt; :method_returned
+
+enum.each(:y, :z).to_a          # =&gt; [:a, :x, [:y, :z]]
+enum.each(:y, :z).equal?(enum)  # =&gt; false
+enum.each(:y, :z) { |elm| elm } # =&gt; :method_returned
 </pre>
 </dd>
 
@@ -542,6 +591,28 @@ p enum.next # =&gt; 120
 </dd>
 
 
+<dt class="method-heading" id="I_SIZE"><code>size -&gt; Integer | Float::INFINITY | nil</code><span class="permalink">[<a href="../method/-enumerator/i/size.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.3/Enumerator.html#method-i-size">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の要素数を返します。
+</p>
+<p>
+要素数が無限の場合は <a href="../method/-float/c/-i-n-f-i-n-i-t-y.html">Float::INFINITY</a> を返します。
+<a href="../method/-enumerator/s/new.html">Enumerator.new</a> に <a href="../class/-proc.html">Proc</a> オブジェクトを指定していた場合はその
+実行結果を返します。呼び出した時に要素数が不明であった場合は nil を返し
+ます。
+</p>
+<pre>
+(1..100).to_a.permutation(4).size # =&gt; 94109400
+loop.size # =&gt; Float::INFINITY
+(1..100).drop_while.size # =&gt; nil
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-enumerator/s/new.html">Enumerator.new</a>
+</p>
+</dd>
+
+
 <dt class="method-heading" id="I_WITH_INDEX"><code>with_index(offset = 0) {|(*args), idx| ... } -&gt; object</code><span class="permalink">[<a href="../method/-enumerator/i/with_index.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.3/Enumerator.html#method-i-with_index">rdoc</a>]</span></dt>
 <dt class="method-heading"><code>with_index(offset = 0) -&gt; Enumerator</code></dt>
 <dd class="method-description">
@@ -626,8 +697,8 @@ end
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

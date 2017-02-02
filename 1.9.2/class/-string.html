@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>class String (Ruby 1.9.2)</title>
 </head>
 <body>
@@ -280,11 +281,13 @@ p a + b                            #=&gt; &quot;abcabc&quot;
 
 <a href="#I_ASCII_ONLY--3F">ascii_only?</a>
 
+<a href="#I_B">b</a>
+
 <a href="#I_BYTES">bytes</a>
 
-<a href="#I_BYTES">each_byte</a>
-
 <a href="#I_BYTESIZE">bytesize</a>
+
+<a href="#I_BYTESLICE">byteslice</a>
 
 <a href="#I_CAPITALIZE">capitalize</a>
 
@@ -295,8 +298,6 @@ p a + b                            #=&gt; &quot;abcabc&quot;
 <a href="#I_CENTER">center</a>
 
 <a href="#I_CHARS">chars</a>
-
-<a href="#I_CHARS">each_char</a>
 
 <a href="#I_CHOMP">chomp</a>
 
@@ -312,8 +313,6 @@ p a + b                            #=&gt; &quot;abcabc&quot;
 
 <a href="#I_CODEPOINTS">codepoints</a>
 
-<a href="#I_CODEPOINTS">each_codepoint</a>
-
 <a href="#I_COUNT">count</a>
 
 <a href="#I_CRYPT">crypt</a>
@@ -328,9 +327,13 @@ p a + b                            #=&gt; &quot;abcabc&quot;
 
 <a href="#I_DUMP">dump</a>
 
-<a href="#I_EACH_LINE">each_line</a>
+<a href="#I_EACH_BYTE">each_byte</a>
 
-<a href="#I_EACH_LINE">lines</a>
+<a href="#I_EACH_CHAR">each_char</a>
+
+<a href="#I_EACH_CODEPOINT">each_codepoint</a>
+
+<a href="#I_EACH_LINE">each_line</a>
 
 <a href="#I_EMPTY--3F">empty?</a>
 
@@ -372,6 +375,8 @@ p a + b                            #=&gt; &quot;abcabc&quot;
 
 <a href="#I_LENGTH">size</a>
 
+<a href="#I_LINES">lines</a>
+
 <a href="#I_LJUST">ljust</a>
 
 <a href="#I_LSTRIP">lstrip</a>
@@ -393,6 +398,8 @@ p a + b                            #=&gt; &quot;abcabc&quot;
 <a href="#I_ORD">ord</a>
 
 <a href="#I_PARTITION">partition</a>
+
+<a href="#I_PREPEND">prepend</a>
 
 <a href="#I_REPLACE">replace</a>
 
@@ -513,7 +520,7 @@ obj を String に変換しようと試みます。変換には <a href="../meth
 </dd>
 </dl>
 <pre>
-String.try_convert(&quot;str&quot;)     # =&gt; str
+String.try_convert(&quot;str&quot;)     # =&gt; &quot;str&quot;
 String.try_convert(/re/)      # =&gt; nil
 </pre>
 </dd>
@@ -1086,8 +1093,7 @@ p b       # =&gt; &quot;def&quot;
 <dd class="method-description">
 <p>
 self に文字列 other を破壊的に連結します。
-other が 0 から 255 のまでの整数である場合は
-その 1 バイトを末尾に追加します (つまり、整数が示す ASCII コードの文字が追加されます)。
+other が 整数である場合は other.chr(self.encoding) 相当の文字を末尾に追加します。
 </p>
 <p>
 self を返します。
@@ -1095,7 +1101,7 @@ self を返します。
 <dl>
 <dt class='method-param'>[PARAM] other:</dt>
 <dd>
-文字列もしくは 0 から 255 までの範囲の整数
+文字列もしくは 0 以上の整数
 </dd>
 </dl>
 <p>
@@ -1309,7 +1315,7 @@ str0[2, 1]         #=&gt; &quot;r&quot;
 str0[2, 0]         #=&gt; &quot;&quot;
 str0[2, 100]       #=&gt; &quot;r&quot;  (右側を超えても平気)
 str0[-1, 1]        #=&gt; &quot;r&quot;
-str0[-1, 2]        #=&gt; &quot;r&quot; (あくまでも「右に向かって len 文字」)
+str0[-1, 2]        #=&gt; &quot;r&quot;  (右に向かって len 文字)
 
 str0[3, 1]         #=&gt; &quot;&quot;
 str0[4, 1]         #=&gt; nil
@@ -1369,7 +1375,6 @@ nth を省略したときや 0 の場合は正規表現がマッチした部分�
 <pre>
 p &quot;foobar&quot;[/bar/]  # =&gt; &quot;bar&quot;
 p $~.begin(0)      # =&gt; 3
-
 p &quot;def getcnt(line)&quot;[ /def\s+(\w+)/, 1 ]   # =&gt; &quot;getcnt&quot;
 </pre>
 </dd>
@@ -1744,25 +1749,31 @@ false を返します。
 </dd>
 
 
-<dt class="method-heading" id="I_BYTES"><code>each_byte {|byte| ... } -&gt; self</code><span class="permalink">[<a href="../method/-string/i/bytes.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/String.html#method-i-bytes">rdoc</a>]</span></dt>
-<dt class="method-heading"><code>bytes {|byte| ... } -&gt; self</code></dt>
-<dt class="method-heading"><code>each_byte -&gt; Enumerator</code></dt>
-<dt class="method-heading"><code>bytes -&gt; Enumerator</code></dt>
+<dt class="method-heading" id="I_B"><code>b -&gt; String</code><span class="permalink">[<a href="../method/-string/i/b.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/String.html#method-i-b">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
-文字列の各バイトに対して繰り返します。
+self の文字エンコーディングを ASCII-8BIT にした文字列を返します。
 </p>
+</dd>
+
+
+<dt class="method-heading" id="I_BYTES"><code>bytes -&gt; [Integer]</code><span class="permalink">[<a href="../method/-string/i/bytes.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/String.html#method-i-bytes">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>bytes {|byte| ... } -&gt; self</code></dt>
+<dd class="method-description">
 <p>
-例:
+文字列の各バイトを数値の配列で返します。(self.each_byte.to_a と同じです)
 </p>
 <pre>
-&quot;str&quot;.each_byte do |byte|
-  p byte
-end
-    # =&gt; 115
-    # =&gt; 116
-    # =&gt; 114
+&quot;str&quot;.bytes # =&gt; [115, 116, 114]
 </pre>
+<p>
+ブロックが指定された場合は <a href="../method/-string/i/each_byte.html">String#each_byte</a> と同じように動作しま
+す。ただし obsolete のため、ブロックを指定する場合は
+<a href="../method/-string/i/each_byte.html">String#each_byte</a> を使用してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/each_byte.html">String#each_byte</a>
+</p>
 </dd>
 
 
@@ -1782,6 +1793,90 @@ p &quot;いろは&quot;.bytesize #=&gt; 9
 </pre>
 <p>
 [SEE_ALSO] <a href="../method/-string/i/size.html">String#size</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_BYTESLICE"><code>byteslice(nth) -&gt; String | nil</code><span class="permalink">[<a href="../method/-string/i/byteslice.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/String.html#method-i-byteslice">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+nth バイト目の文字を返します。nth が負の場合は文字列の末尾から数えます。
+引数が範囲外を指定した場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] nth:</dt>
+<dd>
+文字の位置を表す整数を指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+切り出した文字列を返します。戻り値の文字エンコーディングは自身
+と同じです。
+</dd>
+</dl>
+<pre>
+&quot;hello&quot;.byteslice(1)  # =&gt; &quot;e&quot;
+&quot;hello&quot;.byteslice(-1) # =&gt; &quot;o&quot;
+&quot;\u3042&quot;.byteslice(0) # =&gt; &quot;\xE3&quot;
+&quot;\u3042&quot;.byteslice(1) # =&gt; &quot;\x81&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/slice.html">String#slice</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_BYTESLICE"><code>byteslice(nth, len) -&gt; String | nil</code><span class="permalink">[<a href="../method/-string/i/byteslice.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/String.html#method-i-byteslice">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+nth バイト目から長さ len バイトの部分文字列を新しく作って返します。
+nth が負の場合は文字列の末尾から数えます。引数が範囲外を指定した場合は
+nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] nth:</dt>
+<dd>
+取得したい文字列の開始バイトを整数で指定します。
+</dd>
+<dt class='method-param'>[PARAM] len:</dt>
+<dd>
+取得したい文字列の長さを正の整数で指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+切り出した文字列を返します。戻り値の文字エンコーディングは自身
+と同じです。
+</dd>
+</dl>
+<pre>
+&quot;hello&quot;.byteslice(1, 2)              # =&gt; &quot;el&quot;
+&quot;\u3042\u3044\u3046&quot;.byteslice(0, 3) # =&gt; &quot;\u3042&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/slice.html">String#slice</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_BYTESLICE"><code>byteslice(range) -&gt; String | nil</code><span class="permalink">[<a href="../method/-string/i/byteslice.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/String.html#method-i-byteslice">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+range で指定したバイトの範囲に含まれる部分文字列を返します。引数が範囲
+外を指定した場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] range:</dt>
+<dd>
+取得したい文字列の範囲を示す Range オブジェクト
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+切り出した文字列を返します。戻り値の文字エンコーディングは自身
+と同じです。
+</dd>
+</dl>
+<pre>
+&quot;hello&quot;.byteslice(1..2)          # =&gt; &quot;el&quot;
+&quot;\x03\u3042\xff&quot;.byteslice(1..3) # =&gt; &quot;\u3042&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/slice.html">String#slice</a>
 </p>
 </dd>
 
@@ -1904,26 +1999,23 @@ p &quot;foo&quot;.center(10, &quot;*&quot;)  # =&gt; &quot;***foo****&quot;
 </dd>
 
 
-<dt class="method-heading" id="I_CHARS"><code>each_char {|cstr| block } -&gt; self</code><span class="permalink">[<a href="../method/-string/i/chars.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/String.html#method-i-chars">rdoc</a>]</span></dt>
+<dt class="method-heading" id="I_CHARS"><code>chars -&gt; [String]</code><span class="permalink">[<a href="../method/-string/i/chars.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/String.html#method-i-chars">rdoc</a>]</span></dt>
 <dt class="method-heading"><code>chars {|cstr| block } -&gt; self</code></dt>
-<dt class="method-heading"><code>each_char -&gt; Enumerator</code></dt>
-<dt class="method-heading"><code>chars -&gt; Enumerator</code></dt>
 <dd class="method-description">
 <p>
-文字列の各文字に対して繰り返します。
-</p>
-<p>
-たとえば、
+文字列の各文字を文字列の配列で返します。(self.each_char.to_a と同じです)
 </p>
 <pre>
-&quot;hello世界&quot;.each_char {|c| print c, ' ' }
+&quot;hello世界&quot;.chars # =&gt; [&quot;h&quot;, &quot;e&quot;, &quot;l&quot;, &quot;l&quot;, &quot;o&quot;, &quot;世&quot;, &quot;界&quot;]
 </pre>
 <p>
-は次のように出力されます。
+ブロックが指定された場合は <a href="../method/-string/i/each_char.html">String#each_char</a> と同じように動作しま
+す。ただし obsolete のため、ブロックを指定する場合は
+<a href="../method/-string/i/each_char.html">String#each_char</a> を使用してください。
 </p>
-<pre>
-h e l l o 世 界
-</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/each_char.html">String#each_char</a>
+</p>
 </dd>
 
 
@@ -2061,19 +2153,25 @@ p str   # =&gt; &quot;&quot;
 </dd>
 
 
-<dt class="method-heading" id="I_CODEPOINTS"><code>each_codepoint {|codepoint| block } -&gt; self</code><span class="permalink">[<a href="../method/-string/i/codepoints.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/String.html#method-i-codepoints">rdoc</a>]</span></dt>
+<dt class="method-heading" id="I_CODEPOINTS"><code>codepoints -&gt; [Integer]</code><span class="permalink">[<a href="../method/-string/i/codepoints.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/String.html#method-i-codepoints">rdoc</a>]</span></dt>
 <dt class="method-heading"><code>codepoints {|codepoint| block } -&gt; self</code></dt>
-<dt class="method-heading"><code>each_codepoint -&gt; Enumerator</code></dt>
-<dt class="method-heading"><code>codepoints -&gt; Enumerator</code></dt>
 <dd class="method-description">
 <p>
-文字列の各コードポイントに対して繰り返します。
+文字列の各コードポイントの配列を返します。(self.each_codepoint.to_a と同じです)
 </p>
 <pre>
 #coding:UTF-8
-&quot;hello わーるど&quot;.each_codepoint.to_a
+&quot;hello わーるど&quot;.codepoints
 # =&gt; [104, 101, 108, 108, 111, 32, 12431, 12540, 12427, 12393]
 </pre>
+<p>
+ブロックが指定された場合は <a href="../method/-string/i/each_codepoint.html">String#each_codepoint</a> と同じように動作
+します。ただし obsolete のため、ブロックを指定する場合は
+<a href="../method/-string/i/each_codepoint.html">String#each_codepoint</a> を使用してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/each_codepoint.html">String#each_codepoint</a>
+</p>
 </dd>
 
 
@@ -2328,10 +2426,72 @@ puts &quot;abc\r\n\f\x00\b10\\\&quot;&quot;.dump   # =&gt; &quot;abc\r\n\f\000\0
 </dd>
 
 
+<dt class="method-heading" id="I_EACH_BYTE"><code>each_byte {|byte| ... } -&gt; self</code><span class="permalink">[<a href="../method/-string/i/each_byte.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/String.html#method-i-each_byte">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_byte -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+文字列の各バイトに対して繰り返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+&quot;str&quot;.each_byte do |byte|
+  p byte
+end
+    # =&gt; 115
+    # =&gt; 116
+    # =&gt; 114
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/bytes.html">String#bytes</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_CHAR"><code>each_char {|cstr| block } -&gt; self</code><span class="permalink">[<a href="../method/-string/i/each_char.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/String.html#method-i-each_char">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_char -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+文字列の各文字に対して繰り返します。
+</p>
+<p>
+たとえば、
+</p>
+<pre>
+&quot;hello世界&quot;.each_char {|c| print c, ' ' }
+</pre>
+<p>
+は次のように出力されます。
+</p>
+<pre>
+h e l l o 世 界
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/chars.html">String#chars</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_CODEPOINT"><code>each_codepoint {|codepoint| block } -&gt; self</code><span class="permalink">[<a href="../method/-string/i/each_codepoint.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/String.html#method-i-each_codepoint">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_codepoint -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+文字列の各コードポイントに対して繰り返します。
+</p>
+<pre>
+#coding:UTF-8
+&quot;hello わーるど&quot;.each_codepoint.to_a
+# =&gt; [104, 101, 108, 108, 111, 32, 12431, 12540, 12427, 12393]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/codepoints.html">String#codepoints</a>
+</p>
+</dd>
+
+
 <dt class="method-heading" id="I_EACH_LINE"><code>each_line(rs = $/) {|line| ... } -&gt; self</code><span class="permalink">[<a href="../method/-string/i/each_line.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/String.html#method-i-each_line">rdoc</a>]</span></dt>
-<dt class="method-heading"><code>lines(rs = $/) {|line| ... } -&gt; self</code></dt>
 <dt class="method-heading"><code>each_line(rs = $/) -&gt; Enumerator</code></dt>
-<dt class="method-heading"><code>lines(rs = $/) -&gt; Enumerator</code></dt>
 <dd class="method-description">
 <p>
 文字列中の各行に対して繰り返します。
@@ -2370,6 +2530,9 @@ s = &quot;aa\nbb\ncc\n&quot;
 p s.lines(&quot;\n&quot;).to_a #=&gt; [&quot;aa\n&quot;, &quot;bb\n&quot;, &quot;cc\n&quot;]
 p s.lines(&quot;bb&quot;).to_a #=&gt; [&quot;aa\nbb&quot;, &quot;\ncc\n&quot;]
 </pre>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/lines.html">String#lines</a>
+</p>
 </dd>
 
 
@@ -2443,6 +2606,13 @@ self を指定したエンコーディングに変換した文字列を作成し
 前述の :invalid =&gt; :replace や :undef =&gt; :replace で用いられる置換文字を指定します。デフォルトは Unicode 系のエンコーディングならば U+FFFD、それ以外では &quot;?&quot; です。
 </p>
 </dd>
+<dt>:fallback =&gt; Hash | Proc | Method</dt>
+<dd>
+<p>
+未定義の文字に対する置換文字を設定します。このオプションに与えられるオブジェクトは <a href="../class/-hash.html">Hash</a>, <a href="../class/-proc.html">Proc</a>, <a href="../class/-method.html">Method</a> のいずれかまたは [] メソッドを持つオブジェクトです。
+キーは現在のトランスコーダのソースエンコーディングで未定義の文字です。値は、変換先のエンコーディングでの変換後の文字です。
+</p>
+</dd>
 <dt>:xml =&gt; :text</dt>
 <dd>
 <p>
@@ -2485,6 +2655,12 @@ LF 改行を CRLF 改行に置き換えます。(CRLF は CRCRLF になります
 s = &quot;いろは&quot;
 s.encode(&quot;EUC-JP&quot;)
 s.encode(Encoding::UTF_8)
+
+# U+00B7 MIDDLE DOT, U+2014 EM DASH は対応する文字が Windows-31J には
+# 存在しないのでそのまま変換しようとすると Encoding::UndefinedConversionError が発生する
+str = &quot;\u00b7\u2014&quot;
+str.encode(&quot;Windows-31J&quot;, fallback: { &quot;\u00b7&quot; =&gt; &quot;\xA5&quot;.force_encoding(&quot;Windows-31J&quot;),
+                                      &quot;\u2014&quot; =&gt; &quot;\x{815C}&quot;.force_encoding(&quot;Windows-31J&quot;) })
 </pre>
 <p>
 [SEE_ALSO] <a href="../method/-string/i/encode=21.html">String#encode!</a>
@@ -2749,6 +2925,10 @@ puts '\n'.gsub(/\\/) { '\\\\' }      # =&gt; \\n        # OK
 ブロックなしの場合と違い、ブロックの中からは
 組み込み変数 <a href="../method/-kernel/v/1.html">$1</a>, $2, $3, ... を問題なく参照できます。
 </p>
+<p>
+なお、ブロック付きの gsub で文字列を置き換えない場合は[[String#scan]]
+と同じ動作になります。
+</p>
 <dl>
 <dt class='method-param'>[PARAM] pattern:</dt>
 <dd>
@@ -2768,7 +2948,7 @@ p 'abcabc'.gsub(/[bc]/) {|s| s.upcase }  #=&gt; &quot;aBCaBC&quot;
 p 'abcabc'.gsub(/[bc]/) { $&amp;.upcase }    #=&gt; &quot;aBCaBC&quot;
 </pre>
 <p>
-[SEE_ALSO] <a href="../method/-string/i/sub.html">String#sub</a>
+[SEE_ALSO] <a href="../method/-string/i/sub.html">String#sub</a>, <a href="../method/-string/i/scan.html">String#scan</a>
 </p>
 </dd>
 <dt class="method-heading" id="I_GSUB"><code>gsub(pattern, hash) -&gt; String</code><span class="permalink">[<a href="../method/-string/i/gsub.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/String.html#method-i-gsub">rdoc</a>]</span></dt>
@@ -3106,7 +3286,7 @@ puts &quot;\t\r\n&quot;.inspect    # =&gt; &quot;\t\r\n&quot;
 <a href="../method/-symbol/i/to_s.html">Symbol#to_s</a> または <a href="../method/-symbol/i/id2name.html">Symbol#id2name</a> を使います。
 </p>
 <p>
-Ruby 1.9 以降では、シンボル文字列にナルキャラクタ(&quot;\0&quot;)、空の文字列が使用可能になりました。
+シンボル文字列にはナルキャラクタ(&quot;\0&quot;)、空の文字列の使用も可能です。
 </p>
 <p>
 例:
@@ -3126,6 +3306,41 @@ p &quot;foo&quot;.intern.to_s == &quot;foo&quot;   # =&gt; true
 </p>
 <p>
 [SEE_ALSO] <a href="../method/-string/i/bytesize.html">String#bytesize</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LINES"><code>lines(rs = $/) -&gt; [String]</code><span class="permalink">[<a href="../method/-string/i/lines.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/String.html#method-i-lines">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>lines(rs = $/) {|line| ... } -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+文字列中の各行を文字列の配列で返します。(self.each_line.to_a と同じです)
+</p>
+<pre>
+&quot;aa\nbb\ncc\n&quot;.lines # =&gt; [&quot;aa\n&quot;, &quot;bb\n&quot;, &quot;cc\n&quot;]
+</pre>
+<p>
+行の区切りは rs に指定した文字列で、 そのデフォルト値は変数 $/ の値です。
+各 line には区切りの文字列も含みます。
+</p>
+<p>
+rs に nil を指定すると行区切りなしとみなします。 rs に空文字列 &quot;&quot; を指
+定すると「パラグラフモード」になり、 改行コードが 2 つ以上連続するとこ
+ろで文字列を分割します (つまり空行で分割します)。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] rs:</dt>
+<dd>
+行末を示す文字列
+</dd>
+</dl>
+<p>
+ブロックが指定された場合は <a href="../method/-string/i/each_line.html">String#each_line</a> と同じように動作しま
+す。ただし obsolete のため、ブロックを指定する場合は
+<a href="../method/-string/i/each_line.html">String#each_line</a> を使用してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-string/i/each_line.html">String#each_line</a>
 </p>
 </dd>
 
@@ -3465,6 +3680,28 @@ p &quot;aaaaa&quot;.partition(&quot;&quot;)    # =&gt; [&quot;&quot;, &quot;&quo
 <p>
 [SEE_ALSO] <a href="../method/-string/i/rpartition.html">String#rpartition</a>, <a href="../method/-string/i/split.html">String#split</a>
 </p>
+</dd>
+
+
+<dt class="method-heading" id="I_PREPEND"><code>prepend(other_str) -&gt; String</code><span class="permalink">[<a href="../method/-string/i/prepend.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/String.html#method-i-prepend">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列 other_str を先頭に破壊的に追加します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other_str:</dt>
+<dd>
+追加したい文字列を指定します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+a = &quot;world&quot;
+a.prepend(&quot;hello &quot;) # =&gt; &quot;hello world&quot;
+a                   # =&gt; &quot;hello world&quot;
+</pre>
 </dd>
 
 
@@ -3828,10 +4065,16 @@ index に負を指定すると末尾から数えた位置を変更します。
 その文字列自体にマッチする部分で分割する。
 </p>
 </dd>
-<dt>1 バイトの空白文字 ' ' か nil</dt>
+<dt>1 バイトの空白文字 ' '</dt>
 <dd>
 <p>
 先頭と末尾の空白を除いたうえで、空白文字列で分割する。
+</p>
+</dd>
+<dt>nil</dt>
+<dd>
+<p>
+常に $; で分割する。 $; も nil の場合は、先頭と末尾の空白を除いたうえで、空白文字列で分割する。
 </p>
 </dd>
 <dt>空文字列 '' あるいは空文字列にマッチする正規表現</dt>
@@ -6088,8 +6331,8 @@ true を返します。さもなくば false を返します。
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

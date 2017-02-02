@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>module TSort (Ruby 1.9.2)</title>
 </head>
 <body>
@@ -55,6 +56,21 @@ TSort がオブジェクトをグラフとして解釈するには2つのメソ�
 <h2>目次</h2>
 <dl>
 
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_EACH_STRONGLY_CONNECTED_COMPONENT">each_strongly_connected_component</a>
+
+<a href="#S_EACH_STRONGLY_CONNECTED_COMPONENT_FROM">each_strongly_connected_component_from</a>
+
+<a href="#S_STRONGLY_CONNECTED_COMPONENTS">strongly_connected_components</a>
+
+<a href="#S_TSORT">tsort</a>
+
+<a href="#S_TSORT_EACH">tsort_each</a>
+
+</dd>
+
 <dt>インスタンスメソッド</dt>
 <dd>
 
@@ -77,13 +93,247 @@ TSort がオブジェクトをグラフとして解釈するには2つのメソ�
 </dl>
 
 
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_EACH_STRONGLY_CONNECTED_COMPONENT"><code>each_strongly_connected_component(each_node, each_child) {|nodes| ...} -&gt; nil</code><span class="permalink">[<a href="../method/-t-sort/s/each_strongly_connected_component.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/TSort.html#method-c-each_strongly_connected_component">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-t-sort/s/strongly_connected_components.html">TSort.strongly_connected_components</a> メソッドのイテレータ版です。
+</p>
+<p>
+引数 each_node と each_child でグラフを表します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] each_node:</dt>
+<dd>
+グラフ上の頂点をそれぞれ評価するcallメソッドを持つオブ
+ジェクトを指定します。
+</dd>
+<dt class='method-param'>[PARAM] each_child:</dt>
+<dd>
+引数で与えられた頂点の子をそれぞれ評価するcallメソッ
+ドを持つオブジェクトを指定します。
+</dd>
+</dl>
+<p>
+使用例
+</p>
+<pre>
+g = {1=&gt;[2, 3], 2=&gt;[4], 3=&gt;[2, 4], 4=&gt;[]}
+each_node = lambda {|&amp;b| g.each_key(&amp;b) }
+each_child = lambda {|n, &amp;b| g[n].each(&amp;b) }
+TSort.each_strongly_connected_component(each_node, each_child) {|scc| p scc }
+
+# =&gt; [4]
+#    [2]
+#    [3]
+#    [1]
+
+g = {1=&gt;[2], 2=&gt;[3, 4], 3=&gt;[2], 4=&gt;[]}
+each_node = lambda {|&amp;b| g.each_key(&amp;b) }
+each_child = lambda {|n, &amp;b| g[n].each(&amp;b) }
+TSort.each_strongly_connected_component(each_node, each_child) {|scc| p scc }
+
+# =&gt; [4]
+#    [2, 3]
+#    [1]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-t-sort/i/each_strongly_connected_component.html">TSort#each_strongly_connected_component</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_EACH_STRONGLY_CONNECTED_COMPONENT_FROM"><code>each_strongly_connected_component_from(node, each_child, id_map={}, stack=[]) {|nodes| ...} -&gt; ()</code><span class="permalink">[<a href="../method/-t-sort/s/each_strongly_connected_component_from.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/TSort.html#method-c-each_strongly_connected_component_from">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+node から到達可能な強連結成分についてのイテレータです。
+</p>
+<p>
+引数 node と each_child でグラフを表します。
+</p>
+<p>
+返す値は規定されていません。
+</p>
+<p>
+TSort.each_strongly_connected_component_fromは<a href="../class/-t-sort.html">TSort</a>をincludeして
+グラフを表現する必要のないクラスメソッドです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] node:</dt>
+<dd>
+ノードを指定します。
+</dd>
+<dt class='method-param'>[PARAM] each_child:</dt>
+<dd>
+引数で与えられた頂点の子をそれぞれ評価するcallメソッ
+ドを持つオブジェクトを指定します。
+</dd>
+</dl>
+<p>
+使用例
+</p>
+<pre>
+graph = {1=&gt;[2], 2=&gt;[3, 4], 3=&gt;[2], 4=&gt;[]}
+each_child = lambda {|n, &amp;b| graph[n].each(&amp;b) }
+TSort.each_strongly_connected_component_from(1, each_child) {|scc|
+  p scc
+}
+# =&gt; [4]
+#    [2, 3]
+#    [1]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-t-sort/i/each_strongly_connected_component_from.html">TSort#each_strongly_connected_component_from</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_STRONGLY_CONNECTED_COMPONENTS"><code>strongly_connected_components(each_node, each_child) -&gt; Array</code><span class="permalink">[<a href="../method/-t-sort/s/strongly_connected_components.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/TSort.html#method-c-strongly_connected_components">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+強連結成分の集まりを配列の配列として返します。
+この配列は子から親に向かってソートされています。
+各要素は強連結成分を表す配列です。
+</p>
+<p>
+引数 each_node と each_child でグラフを表します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] each_node:</dt>
+<dd>
+グラフ上の頂点をそれぞれ評価するcallメソッドを持つオブ
+ジェクトを指定します。
+</dd>
+<dt class='method-param'>[PARAM] each_child:</dt>
+<dd>
+引数で与えられた頂点の子をそれぞれ評価するcallメソッ
+ドを持つオブジェクトを指定します。
+</dd>
+</dl>
+<p>
+使用例
+</p>
+<pre>
+g = {1=&gt;[2, 3], 2=&gt;[4], 3=&gt;[2, 4], 4=&gt;[]}
+each_node = lambda {|&amp;b| g.each_key(&amp;b) }
+each_child = lambda {|n, &amp;b| g[n].each(&amp;b) }
+p TSort.strongly_connected_components(each_node, each_child)
+# =&gt; [[4], [2], [3], [1]]
+
+g = {1=&gt;[2], 2=&gt;[3, 4], 3=&gt;[2], 4=&gt;[]}
+each_node = lambda {|&amp;b| g.each_key(&amp;b) }
+each_child = lambda {|n, &amp;b| g[n].each(&amp;b) }
+p TSort.strongly_connected_components(each_node, each_child)
+# =&gt; [[4], [2, 3], [1]]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-t-sort/i/strongly_connected_components.html">TSort#strongly_connected_components</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_TSORT"><code>tsort(each_node, each_child) -&gt; Array</code><span class="permalink">[<a href="../method/-t-sort/s/tsort.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/TSort.html#method-c-tsort">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+頂点をトポロジカルソートして得られる配列を返します。
+この配列は子から親に向かってソートされています。
+すなわち、最初の要素は子を持たず、最後の要素は親を持ちません。
+</p>
+<p>
+引数 each_node と each_child でグラフを表します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] each_node:</dt>
+<dd>
+グラフ上の頂点をそれぞれ評価するcallメソッドを持つオブ
+ジェクトを指定します。
+</dd>
+<dt class='method-param'>[PARAM] each_child:</dt>
+<dd>
+引数で与えられた頂点の子をそれぞれ評価するcallメソッ
+ドを持つオブジェクトを指定します。
+</dd>
+<dt>[EXCEPTION] TSort::Cyclic:</dt>
+<dd>
+閉路が存在するとき、発生します。
+</dd>
+</dl>
+<p>
+使用例
+</p>
+<pre>
+require 'tsort'
+
+g = {1=&gt;[2, 3], 2=&gt;[4], 3=&gt;[2, 4], 4=&gt;[]}
+each_node = lambda {|&amp;b| g.each_key(&amp;b) }
+each_child = lambda {|n, &amp;b| g[n].each(&amp;b) }
+p TSort.tsort(each_node, each_child) # =&gt; [4, 2, 3, 1]
+
+g = {1=&gt;[2], 2=&gt;[3, 4], 3=&gt;[2], 4=&gt;[]}
+each_node = lambda {|&amp;b| g.each_key(&amp;b) }
+each_child = lambda {|n, &amp;b| g[n].each(&amp;b) }
+p TSort.tsort(each_node, each_child) # raises TSort::Cyclic
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-t-sort/i/tsort.html">TSort#tsort</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_TSORT_EACH"><code>tsort_each(each_node, each_child) {|node| ...} -&gt; nil</code><span class="permalink">[<a href="../method/-t-sort/s/tsort_each.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/TSort.html#method-c-tsort_each">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-t-sort/s/tsort.html">TSort.tsort</a> メソッドのイテレータ版です。
+</p>
+<p>
+引数 each_node と each_child でグラフを表します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] each_node:</dt>
+<dd>
+グラフ上の頂点をそれぞれ評価するcallメソッドを持つオブ
+ジェクトを指定します。
+</dd>
+<dt class='method-param'>[PARAM] each_child:</dt>
+<dd>
+引数で与えられた頂点の子をそれぞれ評価するcallメソッ
+ドを持つオブジェクトを指定します。
+</dd>
+<dt>[EXCEPTION] TSort::Cyclic:</dt>
+<dd>
+閉路が存在するとき、発生します.
+</dd>
+</dl>
+<p>
+使用例
+</p>
+<pre>
+g = {1=&gt;[2, 3], 2=&gt;[4], 3=&gt;[2, 4], 4=&gt;[]}
+each_node = lambda {|&amp;b| g.each_key(&amp;b) }
+each_child = lambda {|n, &amp;b| g[n].each(&amp;b) }
+TSort.tsort_each(each_node, each_child) {|n| p n }
+# =&gt; 4
+#    2
+#    3
+#    1
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-t-sort/i/tsort_each.html">TSort#tsort_each</a>
+</p>
+</dd>
+
+
+</dl>
+
 <h2>インスタンスメソッド</h2>
 <dl>
 
 <dt class="method-heading" id="I_EACH_STRONGLY_CONNECTED_COMPONENT"><code>each_strongly_connected_component {|nodes| ...} -&gt; nil</code><span class="permalink">[<a href="../method/-t-sort/i/each_strongly_connected_component.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/TSort.html#method-i-each_strongly_connected_component">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
-strongly_connected_components メソッドのイテレータ版です。
+<a href="../method/-t-sort/i/strongly_connected_components.html">TSort#strongly_connected_components</a> メソッドのイテレータ版です。
 obj.each_strongly_connected_component は
 obj.strongly_connected_components.each に似ていますが、
 ブロックの評価中に obj が変更された場合は予期しない結果になる
@@ -117,10 +367,13 @@ non_sort.each_strongly_connected_component{|nodes|
 #=&gt; [2, 3]
 #=&gt; [1]
 </pre>
+<p>
+[SEE_ALSO] <a href="../method/-t-sort/s/each_strongly_connected_component.html">TSort.each_strongly_connected_component</a>
+</p>
 </dd>
 
 
-<dt class="method-heading" id="I_EACH_STRONGLY_CONNECTED_COMPONENT_FROM"><code>each_strongly_connected_component_from(node) {|nodes| ...} -&gt; ()</code><span class="permalink">[<a href="../method/-t-sort/i/each_strongly_connected_component_from.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/TSort.html#method-i-each_strongly_connected_component_from">rdoc</a>]</span></dt>
+<dt class="method-heading" id="I_EACH_STRONGLY_CONNECTED_COMPONENT_FROM"><code>each_strongly_connected_component_from(node, id_map={}, stack=[]) {|nodes| ...} -&gt; ()</code><span class="permalink">[<a href="../method/-t-sort/i/each_strongly_connected_component_from.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/TSort.html#method-i-each_strongly_connected_component_from">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 node から到達可能な強連結成分についてのイテレータです。
@@ -174,6 +427,9 @@ non_sort.each_strongly_connected_component{|nodes|
 #=&gt; 1 -&gt; 2,3
 #=&gt; 1 -&gt; 1
 </pre>
+<p>
+[SEE_ALSO] <a href="../method/-t-sort/s/each_strongly_connected_component_from.html">TSort.each_strongly_connected_component_from</a>
+</p>
 </dd>
 
 
@@ -183,6 +439,9 @@ non_sort.each_strongly_connected_component{|nodes|
 強連結成分の集まりを配列の配列として返します。
 この配列は子から親に向かってソートされています。
 各要素は強連結成分を表す配列です。
+</p>
+<p>
+使用例
 </p>
 <pre>
 require 'tsort'
@@ -200,6 +459,9 @@ non_sort = {1=&gt;[2], 2=&gt;[3, 4], 3=&gt;[2], 4=&gt;[]}
 p non_sort.strongly_connected_components
 #=&gt; [[4], [2, 3], [1]]
 </pre>
+<p>
+[SEE_ALSO] <a href="../method/-t-sort/s/strongly_connected_components.html">TSort.strongly_connected_components</a>
+</p>
 </dd>
 
 
@@ -210,13 +472,10 @@ p non_sort.strongly_connected_components
 この配列は子から親に向かってソートされています。
 すなわち、最初の要素は子を持たず、最後の要素は親を持ちません。
 </p>
-<p>
-閉路が存在するとき、例外<a href="../class/-t-sort=3a=3a-cyclic.html">TSort::Cyclic</a>を起こします。
-</p>
 <dl>
 <dt>[EXCEPTION] TSort::Cyclic:</dt>
 <dd>
-閉路が存在するとき、発生します.
+閉路が存在するとき、発生します。
 </dd>
 </dl>
 <p>
@@ -236,13 +495,16 @@ end
 sorted = {1=&gt;[2, 3], 2=&gt;[3], 3=&gt;[], 4=&gt;[]}.tsort
 p sorted #=&gt; [3, 2, 1, 4]
 </pre>
+<p>
+[SEE_ALSO] <a href="../method/-t-sort/s/tsort.html">TSort.tsort</a>
+</p>
 </dd>
 
 
 <dt class="method-heading" id="I_TSORT_EACH"><code>tsort_each {|node| ...} -&gt; nil</code><span class="permalink">[<a href="../method/-t-sort/i/tsort_each.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.9.2/TSort.html#method-i-tsort_each">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
-tsort メソッドのイテレータ版です。
+<a href="../method/-t-sort/i/tsort.html">TSort#tsort</a> メソッドのイテレータ版です。
 obj.tsort_each は obj.tsort.each と似ていますが、
 ブロックの評価中に obj が変更された場合は予期しない結果になる
 ことがあります。
@@ -284,6 +546,9 @@ non_sort.tsort_each {|node|
 #=&gt; 1 -&gt; 2
 #=&gt; 1 -&gt; 3
 </pre>
+<p>
+[SEE_ALSO] <a href="../method/-t-sort/s/tsort_each.html">TSort.tsort_each</a>
+</p>
 </dd>
 
 
@@ -330,8 +595,8 @@ TSort で拡張されるクラスで定義されていない場合発生しま�
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

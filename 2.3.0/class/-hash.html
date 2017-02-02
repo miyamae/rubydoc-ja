@@ -1,0 +1,1849 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class Hash (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/_builtin.html">組み込みライブラリ</a>
+&gt; Hashクラス
+</p>
+
+
+<h1>class Hash</h1>
+<p>
+
+
+クラスの継承リスト: Hash
+
+      &lt; <a href="../class/-enumerable.html">Enumerable</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+<br> dynamic include:
+ <a href="../class/-j-s-o-n=3a=3a-generator=3a=3a-generator-methods=3a=3a-hash.html">JSON::Generator::GeneratorMethods::Hash</a> (by <a href="../library/json.html">json</a>)
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+ハッシュテーブル(連想配列とも呼ぶ)のクラスです。ハッシュは任意の種類のオブ
+ジェクト(キー)から任意の種類のオブジェクト(値)への関連づけを行うことができます。
+</p>
+<p>
+ハッシュ生成は多くの場合以下のようなリテラル (<a href="../doc/spec=2fliteral.html#hash">リテラル/ハッシュ式</a>) で行われます。
+</p>
+<pre>
+{a =&gt; b, ... }   # aはキー、bは値となる
+{s: b , ... }    # { :s =&gt; b, ... } と同じ。キーがシンボルの場合の省略した書き方
+{&quot;a+&quot;: b , ... } # { :&quot;a+&quot; =&gt; b, ... } と同じ。上の表現に空白や記号を含めたい場合
+</pre>
+<p>
+キーには任意の種類のオブジェクトを用いることができますが、
+以下の２つのメソッドが適切に定義してある必要があります。
+</p>
+<ul>
+<li><a href="../method/-object/i/hash.html">Object#hash</a> ハッシュの格納に用いられるハッシュ値の計算</li>
+<li><a href="../method/-object/i/eql=3f.html">Object#eql?</a> キーの同一性判定</li>
+</ul>
+<p>
+破壊的操作によってキーとして与えたオブジェクトの内容が変化し、<a href="../method/-object/i/hash.html">Object#hash</a> の返す
+値が変わるとハッシュから値が取り出せなくなりますから、
+<a href="../class/-array.html">Array</a>、<a href="../class/-hash.html">Hash</a>
+などのインスタンスはキーに向きません。<a href="../method/-hash/i/rehash.html">Hash#rehash</a> を参照。
+</p>
+<p>
+ただし、 更新不可 (<a href="../method/-object/i/frozen=3f.html">Object#frozen?</a> が true) では無い文字列をキーとして与えた場合は、文字列をコピーし、コピーを更新不可に設定 (<a href="../method/-object/i/freeze.html">Object#freeze</a>) してキーとして
+使用します。この為、キーとして使われている文字列を更新しようとすると例外
+<a href="../class/-runtime-error.html">RuntimeError</a>
+が発生するので rehash を呼ぶ必要性は生じません。
+</p>
+<p>
+ハッシュにはデフォルト値を設定することができます。存在しないキーを探索したときに返す値で、未設定時は nil です。
+デフォルト値には値形式とブロック形式があります。
+実際にデフォルト値がどのように扱われるかは各メソッドの説明を参照してください。
+</p>
+<p>
+ハッシュに含まれる要素の順序が保持されるようになりました。
+ハッシュにキーが追加された順序で列挙します。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_--5B--5D">[]</a>
+
+<a href="#S_NEW">new</a>
+
+<a href="#S_TRY_CONVERT">try_convert</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_--3C"><</a>
+
+<a href="#I_--3C--3D"><=</a>
+
+<a href="#I_--3D--3D">==</a>
+
+<a href="#I_--3D--3D">===</a>
+
+<a href="#I_--3D--3D">eql?</a>
+
+<a href="#I_--3E">></a>
+
+<a href="#I_--3E--3D">>=</a>
+
+<a href="#I_--5B--5D">[]</a>
+
+<a href="#I_--5B--5D--3D">[]=</a>
+
+<a href="#I_--5B--5D--3D">store</a>
+
+<a href="#I_ASSOC">assoc</a>
+
+<a href="#I_CLEAR">clear</a>
+
+<a href="#I_CLONE">clone</a>
+
+<a href="#I_CLONE">dup</a>
+
+<a href="#I_COMPARE_BY_IDENTITY">compare_by_identity</a>
+
+<a href="#I_COMPARE_BY_IDENTITY--3F">compare_by_identity?</a>
+
+<a href="#I_DEFAULT">default</a>
+
+<a href="#I_DEFAULT--3D">default=</a>
+
+<a href="#I_DEFAULT_PROC">default_proc</a>
+
+<a href="#I_DEFAULT_PROC--3D">default_proc=</a>
+
+<a href="#I_DELETE">delete</a>
+
+<a href="#I_DELETE_IF">delete_if</a>
+
+<a href="#I_DELETE_IF">reject!</a>
+
+<a href="#I_DIG">dig</a>
+
+<a href="#I_EACH">each</a>
+
+<a href="#I_EACH">each_pair</a>
+
+<a href="#I_EACH_KEY">each_key</a>
+
+<a href="#I_EACH_VALUE">each_value</a>
+
+<a href="#I_EMPTY--3F">empty?</a>
+
+<a href="#I_EQUAL--3F">equal?</a>
+
+<a href="#I_FETCH">fetch</a>
+
+<a href="#I_FETCH_VALUES">fetch_values</a>
+
+<a href="#I_FLATTEN">flatten</a>
+
+<a href="#I_HAS_KEY--3F">has_key?</a>
+
+<a href="#I_HAS_KEY--3F">include?</a>
+
+<a href="#I_HAS_KEY--3F">key?</a>
+
+<a href="#I_HAS_KEY--3F">member?</a>
+
+<a href="#I_HAS_VALUE--3F">has_value?</a>
+
+<a href="#I_HAS_VALUE--3F">value?</a>
+
+<a href="#I_HASH">hash</a>
+
+<a href="#I_INDEX">index</a>
+
+<a href="#I_INDEX">key</a>
+
+<a href="#I_INSPECT">inspect</a>
+
+<a href="#I_INSPECT">to_s</a>
+
+<a href="#I_INVERT">invert</a>
+
+<a href="#I_KEEP_IF">keep_if</a>
+
+<a href="#I_KEEP_IF">select!</a>
+
+<a href="#I_KEYS">keys</a>
+
+<a href="#I_LENGTH">length</a>
+
+<a href="#I_LENGTH">size</a>
+
+<a href="#I_MERGE">merge</a>
+
+<a href="#I_MERGE">merge!</a>
+
+<a href="#I_RASSOC">rassoc</a>
+
+<a href="#I_REHASH">rehash</a>
+
+<a href="#I_REJECT">reject</a>
+
+<a href="#I_REPLACE">replace</a>
+
+<a href="#I_SELECT">select</a>
+
+<a href="#I_SHIFT">shift</a>
+
+<a href="#I_SORT">sort</a>
+
+<a href="#I_TO_A">to_a</a>
+
+<a href="#I_TO_H">to_h</a>
+
+<a href="#I_TO_HASH">to_hash</a>
+
+<a href="#I_TO_PROC">to_proc</a>
+
+<a href="#I_UPDATE">update</a>
+
+<a href="#I_VALUES">values</a>
+
+<a href="#I_VALUES_AT">values_at</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_--5B--5D"><code>self[other] -&gt; Hash</code><span class="permalink">[<a href="../method/-hash/s/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-c-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+新しいハッシュを生成します。
+引数otherと同一のキーと値を持つ新たなハッシュを生成して返します。
+</p>
+<p>
+引数otherがハッシュではない場合、otherのメソッドto_hashを使って暗黙の変換を試みます。
+</p>
+<p>
+デフォルト値はコピーしません。生成されたハッシュのデフォルト値は nil です。
+</p>
+<p>
+引数otherと生成したハッシュは同じオブジェクトを参照することになるので、
+一方でキーや値に破壊的操作を行うともう片方にも影響します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+生成元となるハッシュまたはメソッド to_hash でハッシュに変換できるオブジェクトです。
+</dd>
+</dl>
+<pre>
+h = {1 =&gt; &quot;value&quot;}
+h.default = &quot;none&quot;
+
+g = Hash[h]
+p g #=&gt; {1=&gt;&quot;value&quot;}
+
+p h[:no] #=&gt; &quot;none&quot;
+p g[:no] #=&gt; nil
+
+h[:add] = &quot;some&quot;
+p h #=&gt; {1=&gt;&quot;value&quot;, :add=&gt;&quot;some&quot;}
+p g #=&gt; {1=&gt;&quot;value&quot;}
+
+h[1] &lt;&lt; 'plus' #破壊的操作
+p h #=&gt; {1=&gt;&quot;valueplus&quot;, :add=&gt;&quot;some&quot;}
+p g #=&gt; {1=&gt;&quot;valueplus&quot;}
+</pre>
+</dd>
+<dt class="method-heading" id="S_--5B--5D"><code>self[*key_and_value] -&gt; Hash</code><span class="permalink">[<a href="../method/-hash/s/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-c-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+新しいハッシュを生成します。
+引数は必ず偶数個指定しなければなりません。奇数番目がキー、偶数番目が値になります。
+</p>
+<p>
+このメソッドでは生成するハッシュにデフォルト値を指定することはできません。
+<a href="../method/-hash/s/new.html">Hash.new</a>を使うか、<a href="../method/-hash/i/default=3d.html">Hash#default=</a>で後から指定してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key_and_value:</dt>
+<dd>
+生成するハッシュのキーと値の組です。必ず偶数個(0を含む)指定しなければいけません。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+奇数個の引数を与えたときに発生します。
+</dd>
+</dl>
+<p>
+以下は配列からハッシュを生成する方法の例です。
+</p>
+<p>
+(1) [キー, 値, ...] の配列からハッシュへ
+</p>
+<pre>
+ary = [1,&quot;a&quot;, 2,&quot;b&quot;, 3,[&quot;c&quot;]]
+p Hash[*ary]  # =&gt; {1=&gt;&quot;a&quot;, 2=&gt;&quot;b&quot;, 3=&gt;[&quot;c&quot;]}
+</pre>
+<p>
+(2) キーと値のペアの配列からハッシュへ
+</p>
+<pre>
+alist = [[1,&quot;a&quot;], [2,&quot;b&quot;], [3,[&quot;c&quot;]]]
+p Hash[*alist.flatten(1)]  # =&gt; {1=&gt;&quot;a&quot;, 2=&gt;&quot;b&quot;, 3=&gt;[&quot;c&quot;]}
+</pre>
+<p>
+(3) キーと値の配列のペアからハッシュへ
+</p>
+<pre>
+keys = [1, 2, 3]
+vals = [&quot;a&quot;, &quot;b&quot;, [&quot;c&quot;]]
+alist = keys.zip(vals)     # あるいは alist = [keys,vals].transpose
+p Hash[alist]  # =&gt; {1=&gt;&quot;a&quot;, 2=&gt;&quot;b&quot;, 3=&gt;[&quot;c&quot;]}
+</pre>
+<p>
+(4) キーや値が配列の場合
+</p>
+<pre>
+alist = [[1,[&quot;a&quot;]], [2,[&quot;b&quot;]], [3,[&quot;c&quot;]], [[4,5], [&quot;a&quot;, &quot;b&quot;]]]
+hash = Hash[alist] # =&gt; {1=&gt;[&quot;a&quot;], 2=&gt;[&quot;b&quot;], 3=&gt;[&quot;c&quot;], [4, 5]=&gt;[&quot;a&quot;, &quot;b&quot;]}
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_NEW"><code>new(ifnone = nil) -&gt; Hash</code><span class="permalink">[<a href="../method/-hash/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+空の新しいハッシュを生成します。ifnone はキーに対
+応する値が存在しない時のデフォルト値です。設定したデフォルト値は<a href="../method/-hash/i/default.html">Hash#default</a>で参照できます。
+</p>
+<p>
+ifnoneを省略した Hash.new は {} と同じです。
+</p>
+<p>
+デフォルト値として、毎回同一のオブジェクトifnoneを返します。
+それにより、一箇所のデフォルト値の変更が他の値のデフォルト値にも影響します。
+</p>
+<pre>
+h = Hash.new([])
+h[0] &lt;&lt; 0
+h[1] &lt;&lt; 1
+p h.default #=&gt; [0, 1]
+</pre>
+<p>
+これを避けるには、破壊的でないメソッドで再代入する必要が有ります。
+また、このようなミスを防ぐためにもifnoneは freeze して破壊的操作を禁止しておくのが無難です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] ifnone:</dt>
+<dd>
+キーに対応する値が存在しない時のデフォルト値です。
+</dd>
+</dl>
+<pre>
+h = Hash.new([])
+
+p h[1]                  #=&gt; []
+p h[1].object_id        #=&gt; 6127150
+p h[1] &lt;&lt; &quot;bar&quot;         #=&gt; [&quot;bar&quot;]
+p h[1]                  #=&gt; [&quot;bar&quot;]
+
+p h[2]                  #=&gt; [&quot;bar&quot;]
+p h[2].object_id        #=&gt; 6127150
+
+p h                     #=&gt; {}
+
+
+h = Hash.new([].freeze)
+h[0] += [0] #破壊的でないメソッドはOK
+h[1] &lt;&lt; 1
+# エラー `&lt;&lt;': can't modify frozen array (TypeError)
+</pre>
+</dd>
+<dt class="method-heading" id="S_NEW"><code>new {|hash, key| ... } -&gt; Hash</code><span class="permalink">[<a href="../method/-hash/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+空の新しいハッシュを生成します。ブロックの評価結果がデフォルト値になりま
+す。設定したデフォルト値は<a href="../method/-hash/i/default_proc.html">Hash#default_proc</a>で参照できます。
+</p>
+<p>
+値が設定されていないハッシュ要素を参照するとその都度ブロックを
+実行し、その結果を返します。
+ブロックにはそのハッシュとハッシュを参照したときのキーが渡されます。
+</p>
+<dl>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+ブロックと通常引数を同時に与えると発生します。
+</dd>
+</dl>
+<pre>
+# ブロックではないデフォルト値は全部同一のオブジェクトなので、
+# 破壊的変更によって他のキーに対応する値も変更されます。
+h = Hash.new(&quot;foo&quot;)
+
+p h[1]                  #=&gt; &quot;foo&quot;
+p h[1].object_id        #=&gt; 6127170
+p h[1] &lt;&lt; &quot;bar&quot;         #=&gt; &quot;foobar&quot;
+p h[1]                  #=&gt; &quot;foobar&quot;
+
+p h[2]                  #=&gt; &quot;foobar&quot;
+p h[2].object_id        #=&gt; 6127170
+
+p h                     #=&gt; {}
+
+# ブロックを与えると、対応する値がまだ無いキーが呼び出される度に
+# ブロックを評価するので、全て別のオブジェクトになります。
+h = Hash.new {|hash, key| hash[key] = &quot;foo&quot;}
+
+p h[1]                  #=&gt; &quot;foo&quot;
+p h[1].object_id        #=&gt; 6126900
+p h[1] &lt;&lt; &quot;bar&quot;         #=&gt; &quot;foobar&quot;
+p h[1]                  #=&gt; &quot;foobar&quot;
+
+p h[2]                  #=&gt; &quot;foo&quot;
+p h[2].object_id        #=&gt; 6126840
+
+p h                     #=&gt; {1=&gt;&quot;foobar&quot;, 2=&gt;&quot;foo&quot;}
+
+# 値が設定されていないときに(fetchのように)例外をあげるようにもできる
+h = Hash.new {|hash, key|
+                raise(IndexError, &quot;hash[#{key}] has no value&quot;)
+             }
+h[1]
+# エラー hash[1] has no value (IndexError)
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/default=3d.html">Hash#default=</a>,<a href="../method/-hash/i/default.html">Hash#default</a>,<a href="../method/-hash/i/default_proc.html">Hash#default_proc</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_TRY_CONVERT"><code>try_convert(obj) -&gt; Hash | nil</code><span class="permalink">[<a href="../method/-hash/s/try_convert.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-c-try_convert">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+to_hash メソッドを用いて obj をハッシュに変換しようとします。
+</p>
+<p>
+何らかの理由で変換できないときには nil を返します。
+このメソッドは引数がハッシュであるかどうかを調べるために使えます。
+</p>
+<pre>
+Hash.try_convert({1=&gt;2})   # =&gt; {1=&gt;2}
+Hash.try_convert(&quot;1=&gt;2&quot;)   # =&gt; nil
+</pre>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--3C"><code>self &lt; other -&gt; bool</code><span class="permalink">[<a href="../method/-hash/i/=3c.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-3C">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self が other のサブセットである場合に真を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身と比較したい Hash オブジェクトを指定します。
+</dd>
+</dl>
+<pre>
+h1 = {a:1, b:2}
+h2 = {a:1, b:2, c:3}
+h1 &lt; h2    # =&gt; true
+h2 &lt; h1    # =&gt; false
+h1 &lt; h1    # =&gt; false
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/=3c=3d.html">Hash#&lt;=</a>, <a href="../method/-hash/i/=3e=3d.html">Hash#&gt;=</a>, <a href="../method/-hash/i/=3e.html">Hash#&gt;</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_--3C--3D"><code>self &lt;= other -&gt; bool</code><span class="permalink">[<a href="../method/-hash/i/=3c=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-3C-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self が other のサブセットか同じである場合に真を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身と比較したい Hash オブジェクトを指定します。
+</dd>
+</dl>
+<pre>
+h1 = {a:1, b:2}
+h2 = {a:1, b:2, c:3}
+h1 &lt;= h2   # =&gt; true
+h2 &lt;= h1   # =&gt; false
+h1 &lt;= h1   # =&gt; true
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/=3c.html">Hash#&lt;</a>, <a href="../method/-hash/i/=3e=3d.html">Hash#&gt;=</a>, <a href="../method/-hash/i/=3e.html">Hash#&gt;</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_--3D--3D"><code>self == other -&gt; bool</code><span class="permalink">[<a href="../method/-hash/i/=3d=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-3D-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>self === other -&gt; bool</code></dt>
+<dt class="method-heading"><code>eql?(other) -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+自身と other が同じ数のキーを保持し、キーが eql? メソッドで比較して全て等しく、
+値が == メソッドで比較して全て等しい場合に真を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身と比較したい Hash オブジェクトを指定します。
+</dd>
+</dl>
+<pre>
+#(出力関数は省略)
+{ 1 =&gt; :a } == { 1 =&gt; :a }               #=&gt; true
+{ 1 =&gt; :a } == { 1 =&gt; :a, 2 =&gt; :b }      #=&gt; false
+{ 1 =&gt; :a } == { 1.0 =&gt; :a }             #=&gt; false  ( 1.eql?(1.0) は false なので)
+
+{ :x =&gt; 1 } == { :x =&gt; 1.0 }             #=&gt; true   ( 1 == 1.0 は true なので)
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/equal=3f.html">Hash#equal?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_--3E"><code>self &gt; other -&gt; bool</code><span class="permalink">[<a href="../method/-hash/i/=3e.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-3E">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+other が self のサブセットである場合に真を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身と比較したい Hash オブジェクトを指定します。
+</dd>
+</dl>
+<pre>
+h1 = {a:1, b:2}
+h2 = {a:1, b:2, c:3}
+h1 &gt; h2    # =&gt; false
+h2 &gt; h1    # =&gt; true
+h1 &gt; h1    # =&gt; false
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/=3c=3d.html">Hash#&lt;=</a>, <a href="../method/-hash/i/=3c.html">Hash#&lt;</a>, <a href="../method/-hash/i/=3e=3d.html">Hash#&gt;=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_--3E--3D"><code>self &gt;= other -&gt; bool</code><span class="permalink">[<a href="../method/-hash/i/=3e=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-3E-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+other が self のサブセットか同じである場合に真を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身と比較したい Hash オブジェクトを指定します。
+</dd>
+</dl>
+<pre>
+h1 = {a:1, b:2}
+h2 = {a:1, b:2, c:3}
+h1 &gt;= h2   # =&gt; false
+h2 &gt;= h1   # =&gt; true
+h1 &gt;= h1   # =&gt; true
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/=3c=3d.html">Hash#&lt;=</a>, <a href="../method/-hash/i/=3c.html">Hash#&lt;</a>, <a href="../method/-hash/i/=3e.html">Hash#&gt;</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_--5B--5D"><code>self[key] -&gt; object | nil</code><span class="permalink">[<a href="../method/-hash/i/=5b=5d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+key に関連づけられた値を返します。
+</p>
+<p>
+該当するキーが登録されていない時には、デフォルト値を返します。
+</p>
+<p>
+デフォルト値と値としての nil を区別する必要が
+ある場合は <a href="../method/-hash/i/fetch.html">Hash#fetch</a> または <a href="../method/-hash/i/has_key=3f.html">Hash#has_key?</a> を使ってください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+探索するキーを指定します。
+</dd>
+</dl>
+<pre>
+h = {:ab =&gt; &quot;some&quot; , :cd =&gt; &quot;all&quot;}
+p h[:ab]             #=&gt; &quot;some&quot;
+p h[:ef]             #=&gt; nil
+
+h1 = Hash.new(&quot;default value&quot;)
+p h1[:non]             #=&gt; &quot;default value&quot;
+
+h2 = Hash.new {|*arg| arg}
+p h2[:non]             #=&gt; [{}, :non]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/s/new.html">Hash.new</a>, <a href="../method/-hash/i/fetch.html">Hash#fetch</a>,<a href="../method/-hash/i/values_at.html">Hash#values_at</a>,<a href="../method/-hash/i/has_key=3f.html">Hash#has_key?</a>, <a href="../method/-hash/i/default.html">Hash#default</a>, <a href="../method/-hash/i/default_proc.html">Hash#default_proc</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_--5B--5D--3D"><code>self[key] = value</code><span class="permalink">[<a href="../method/-hash/i/=5b=5d=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-5B-5D-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>store(key, value) -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+key に対して value を関連づけます。value を返し
+ます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+キーを指定します。
+</dd>
+<dt class='method-param'>[PARAM] value:</dt>
+<dd>
+値を指定します。
+</dd>
+</dl>
+<pre>
+h = {}
+
+h[:key] = &quot;value&quot;
+p h #=&gt;{:key =&gt; &quot;value&quot;}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/=5b=5d.html">Hash#[]</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ASSOC"><code>assoc(key) -&gt; Array | nil</code><span class="permalink">[<a href="../method/-hash/i/assoc.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-assoc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ハッシュが key をキーとして持つとき、見つかった要素のキーと値のペア
+を配列として返します。
+</p>
+<p>
+キーの同一性判定には eql? メソッドではなく == メソッドを使います。
+key が見つからなかった場合は、nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+検索するキー
+</dd>
+</dl>
+<pre>
+h = {&quot;colors&quot;  =&gt; [&quot;red&quot;, &quot;blue&quot;, &quot;green&quot;],
+     &quot;letters&quot; =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot; ]}
+h.assoc(&quot;letters&quot;)  #=&gt; [&quot;letters&quot;, [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]]
+h.assoc(&quot;foo&quot;)      #=&gt; nil
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-array/i/assoc.html">Array#assoc</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CLEAR"><code>clear -&gt; self</code><span class="permalink">[<a href="../method/-hash/i/clear.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-clear">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ハッシュの中身を空にします。
+</p>
+<p>
+空にした後のselfを返します。
+デフォルト値の設定はクリアされません。
+</p>
+<pre>
+h = Hash.new(&quot;default value&quot;)
+h[:some] = &quot;some&quot;
+p h #=&gt; {:some=&gt;&quot;some&quot;}
+
+h.clear
+
+p h #=&gt; {}
+p h.default #=&gt; &quot;default value&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CLONE"><code>clone -&gt; Hash</code><span class="permalink">[<a href="../method/-hash/i/clone.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-clone">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>dup -&gt; Hash</code></dt>
+<dd class="method-description">
+<p>
+selfと同じ内容を持つ新しいハッシュを返します。
+</p>
+<p>
+clone は frozen tainted singleton-class の情報も含めてコピーしますが、 dup は内容だけをコピーします。
+またどちらのメソッドも要素それ自体のコピーはしません。つまり参照しているオブジェクトが
+変わらない「浅い(shallow)」コピーを行います。
+</p>
+<pre>
+h1 = {&quot;have&quot; =&gt; &quot;have a&quot;,&quot;as&quot; =&gt; &quot;as a&quot; }
+h2 = h1.dup
+
+h2[&quot;have&quot;] = &quot;has&quot;
+p h2 #=&gt; {&quot;have&quot;=&gt;&quot;has&quot;, &quot;as&quot;=&gt;&quot;as a&quot;}
+p h1 #=&gt; {&quot;have&quot;=&gt;&quot;have a&quot;, &quot;as&quot;=&gt;&quot;as a&quot;}
+
+h2[&quot;as&quot;].upcase!
+p h2 #=&gt; {&quot;have&quot;=&gt;&quot;has&quot;, &quot;as&quot;=&gt;&quot;AS A&quot;}
+p h1 #=&gt; {&quot;have&quot;=&gt;&quot;have a&quot;, &quot;as&quot;=&gt;&quot;AS A&quot;}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-object/i/clone.html">Object#clone</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_COMPARE_BY_IDENTITY"><code>compare_by_identity -&gt; self</code><span class="permalink">[<a href="../method/-hash/i/compare_by_identity.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-compare_by_identity">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ハッシュのキーの一致判定をオブジェクトの同一性で判定するように変更します。
+</p>
+<p>
+デフォルトでは、キーのオブジェクトによっては内容が同じならキーが一致しているとみなされますが、より厳密に
+<a href="../method/-object/i/object_id.html">Object#object_id</a>が一致しているかどうかを条件とするようにselfを変更します。
+</p>
+<p>
+selfが変化する破壊的メソッドです。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+selfを返します。
+</dd>
+</dl>
+<pre>
+h1 = { &quot;a&quot; =&gt; 100, &quot;b&quot; =&gt; 200, :c =&gt; &quot;c&quot; }
+p h1.compare_by_identity? #=&gt; false
+p h1[&quot;a&quot;]        #=&gt; 100
+
+h1.compare_by_identity
+
+p h1.compare_by_identity? #=&gt; true
+p h1[&quot;a&quot;]        #=&gt; nil  # この&quot;a&quot;と最初の&quot;a&quot;とは違うオブジェクト
+p h1[:c]         #=&gt; &quot;c&quot;  # 同じ内容のシンボルはすべて同一
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/compare_by_identity=3f.html">Hash#compare_by_identity?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_COMPARE_BY_IDENTITY--3F"><code>compare_by_identity? -&gt; bool</code><span class="permalink">[<a href="../method/-hash/i/compare_by_identity=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-compare_by_identity-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ハッシュがキーの一致判定をオブジェクトの同一性を用いて行っているならば真を返します。
+</p>
+<pre>
+h1 = {}
+p h1.compare_by_identity? #=&gt; false
+
+h1.compare_by_identity
+
+p h1.compare_by_identity? #=&gt; true
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/compare_by_identity.html">Hash#compare_by_identity</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DEFAULT"><code>default -&gt; object | nil</code><span class="permalink">[<a href="../method/-hash/i/default.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-default">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>default(key) -&gt; object | nil</code></dt>
+<dd class="method-description">
+<p>
+ハッシュのデフォルト値を返します。
+</p>
+<p>
+ハッシュのデフォルト値がブロックで与えられている場合、 1 番目の形式だと
+返り値が nil になることに注意してください。この場合、ハッシュのデフォルト値に
+ついて調べるには 2 番目の形式か <a href="../method/-hash/i/default_proc.html">Hash#default_proc</a> を使ってください。
+</p>
+<p>
+2 番目の形式はハッシュがデフォルト値としてブロックを持つ場合に、
+self と引数 key をブロックに渡して評価し、その結果を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+デフォルトのブロックにキーとして渡されます。
+</dd>
+</dl>
+<pre>
+h = Hash.new(&quot;default&quot;)
+p h.default        #=&gt; &quot;default&quot;
+p h.default(:some) #=&gt; &quot;default&quot;
+p h #=&gt;{}
+
+h = Hash.new{|hash, key| hash[key] =&quot;default&quot; }
+p h.default        #=&gt; nil
+p h.default(:some) #=&gt; &quot;default&quot;
+p h                #=&gt; {:some=&gt;&quot;default&quot;}
+
+h = Hash.new
+p h.default        #=&gt; nil
+p h.default(:some) #=&gt; nil
+p h                #=&gt; {}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/default=3d.html">Hash#default=</a>, <a href="../method/-hash/i/default_proc.html">Hash#default_proc</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DEFAULT--3D"><code>default=(value)</code><span class="permalink">[<a href="../method/-hash/i/default=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-default-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ハッシュのデフォルト値を value に変更します。対応する値が存
+在しないキーで検索した時にはこの値を返すようになります。
+</p>
+<p>
+デフォルト値（ブロックを含む）が既に設定してあった場合も value で上書きします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] value:</dt>
+<dd>
+設定するデフォルト値です。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+value を返します。
+</dd>
+</dl>
+<pre>
+h = {}
+p h.default #=&gt;nil
+
+h.default = &quot;default&quot;
+p h.default #=&gt;&quot;default&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/default.html">Hash#default</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DEFAULT_PROC"><code>default_proc -&gt; Proc | nil</code><span class="permalink">[<a href="../method/-hash/i/default_proc.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-default_proc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ハッシュのデフォルト値を返す <a href="../class/-proc.html">Proc</a> オブジェクトを返します。
+ハッシュがブロック形式のデフォルト値を持たない場合 nil を返します。
+</p>
+<pre>
+h = Hash.new {|hash, key| &quot;The #{key} not exist in #{hash.inspect}&quot;}
+p h.default              #=&gt; nil
+p block = h.default_proc #=&gt; #&lt;Proc:0x0x401a9ff4&gt;
+p block.call({},:foo)    #=&gt; &quot;The foo not exist in {}&quot;
+
+h = Hash.new(&quot;default&quot;)
+p h.default              #=&gt; &quot;default&quot;
+p h.default_proc         #=&gt; nil
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/default.html">Hash#default</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DEFAULT_PROC--3D"><code>default_proc=(pr)</code><span class="permalink">[<a href="../method/-hash/i/default_proc=3d.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-default_proc-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ハッシュのデフォルト値を返す <a href="../class/-proc.html">Proc</a> オブジェクトを
+変更します。
+</p>
+<p>
+以前のデフォルトは値(<a href="../method/-hash/i/default.html">Hash#default</a>)の場合も
+Proc の場合(<a href="../method/-hash/i/default_proc.html">Hash#default_proc</a>)でも上書きされます。
+</p>
+<p>
+引数には to_proc で <a href="../class/-proc.html">Proc</a> オブジェクトに変換できる
+オブジェクトも受け付けます。
+</p>
+<p>
+nil を指定した場合は現在の <a href="../method/-hash/i/default_proc.html">Hash#default_proc</a> をクリアします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pr:</dt>
+<dd>
+デフォルト値を返す手続きオブジェクト
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/default_proc.html">Hash#default_proc</a>, <a href="../method/-hash/i/default.html">Hash#default</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DELETE"><code>delete(key) -&gt; object | nil</code><span class="permalink">[<a href="../method/-hash/i/delete.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-delete">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>delete(key) {|key| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+key に対応する要素を取り除きます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+取り除くキーを指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+取り除かれた要素の値を返します。
+key に対応する要素が存在しない時には nil を返します。
+
+与えられたブロックは key にマッチする要素がなかった時に評価され、その結果を返します。
+</dd>
+</dl>
+<pre>
+h = {:ab =&gt; &quot;some&quot; , :cd =&gt; &quot;all&quot;}
+
+p h.delete(:ab) #=&gt; &quot;some&quot;
+p h.delete(:ef) #=&gt; nil
+p h.delete(:ef){|key|&quot;#{key} Nothing&quot;} #=&gt; &quot;ef Nothing&quot;
+
+p h #=&gt; {:cd=&gt;&quot;all&quot;}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/delete_if.html">Hash#delete_if</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DELETE_IF"><code>delete_if -&gt; Enumerator</code><span class="permalink">[<a href="../method/-hash/i/delete_if.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-delete_if">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>reject! -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>delete_if {|key, value| ... } -&gt; self</code></dt>
+<dt class="method-heading"><code>reject! {|key, value| ... } -&gt; self|nil</code></dt>
+<dd class="method-description">
+<p>
+キーと値を引数としてブロックを評価した結果が真であ
+るような要素を self から削除します。
+</p>
+<p>
+delete_if は常に self を返します。
+reject! は、要素を削除しなかった場合には nil を返し、
+そうでなければ self を返します。
+</p>
+<p>
+ブロックを省略した場合は <a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<pre>
+h = { 2 =&gt; &quot;8&quot; ,4 =&gt; &quot;6&quot; ,6 =&gt; &quot;4&quot; ,8 =&gt; &quot;2&quot; }
+
+p h.reject!{|key, value| key.to_i &lt; value.to_i }   #=&gt; { 6 =&gt; &quot;4&quot;, 8 =&gt; &quot;2&quot; }
+p h                                                #=&gt; { 6 =&gt; &quot;4&quot;, 8 =&gt; &quot;2&quot; }
+
+p h.delete_if{|key, value| key.to_i &lt; value.to_i } #=&gt; { 6 =&gt; &quot;4&quot;, 8 =&gt; &quot;2&quot; }
+p h.reject!{|key, value| key.to_i &lt; value.to_i }   #=&gt; nil
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/reject.html">Hash#reject</a>,<a href="../method/-hash/i/delete.html">Hash#delete</a>
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/keep_if.html">Hash#keep_if</a>,<a href="../method/-hash/i/select=21.html">Hash#select!</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DIG"><code>dig(key, ...) -&gt; object | nil</code><span class="permalink">[<a href="../method/-hash/i/dig.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-dig">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self 以下のネストしたオブジェクトを dig メソッドで再帰的に参照して返し
+ます。途中のオブジェクトが nil であった場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+キーを任意個指定します。
+</dd>
+</dl>
+<pre>
+h = { foo: {bar: {baz: 1}}}
+
+h.dig(:foo, :bar, :baz)      # =&gt; 1
+h.dig(:foo, :zot, :xyz)      # =&gt; nil
+
+g = { foo: [10, 11, 12] }
+g.dig(:foo, 1)               # =&gt; 11
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-array/i/dig.html">Array#dig</a>, <a href="../method/-struct/i/dig.html">Struct#dig</a>, <a href="../method/-open-struct/i/dig.html">OpenStruct#dig</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH"><code>each {|key, value| ... } -&gt; self</code><span class="permalink">[<a href="../method/-hash/i/each.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-each">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_pair {|key, value| ... } -&gt; self</code></dt>
+<dt class="method-heading"><code>each -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>each_pair -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+ハッシュのキーと値を引数としてブロックを評価します。
+</p>
+<p>
+反復の際の評価順序はキーが追加された順です。
+ブロック付きの場合 self を、
+無しで呼ばれた場合 <a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<p>
+each_pair は each のエイリアスです。
+</p>
+<pre>
+{:a=&gt;1, :b=&gt;2}.each {|a| p a}
+#=&gt; [:a, 1]
+    [:b, 2]
+
+{:a=&gt;1, :b=&gt;2}.each_pair {|*a| p a}
+#=&gt; [[:a, 1]]
+    [[:b, 2]]
+
+{:a=&gt;1, :b=&gt;2}.each {|k, v| p [k, v]}  #each_pairでも同じ結果
+#=&gt; [:a, 1]
+    [:b, 2]
+
+p({:a=&gt;1, :b=&gt;2}.each_pair)  # =&gt; #&lt;Enumerator: {:a=&gt;1, :b=&gt;2}:each_pair&gt;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/each_key.html">Hash#each_key</a>,<a href="../method/-hash/i/each_value.html">Hash#each_value</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_KEY"><code>each_key {|key| ... } -&gt; self</code><span class="permalink">[<a href="../method/-hash/i/each_key.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-each_key">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_key -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+ハッシュのキーを引数としてブロックを評価します。
+</p>
+<p>
+反復の際の評価順序はキーが追加された順です。
+ブロック付きの場合selfを、
+無しで呼ばれた場合<a href="../class/-enumerator.html">Enumerator</a>を返します。
+</p>
+<pre>
+{:a=&gt;1, :b=&gt;2}.each_key {|k| p k}
+#=&gt; :a
+    :b
+
+p({:a=&gt;1, :b=&gt;2}.each_key)  # =&gt; #&lt;Enumerator: {:a=&gt;1, :b=&gt;2}:each_key&gt;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/each_pair.html">Hash#each_pair</a>,<a href="../method/-hash/i/each_value.html">Hash#each_value</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_VALUE"><code>each_value {|value| ... } -&gt; self</code><span class="permalink">[<a href="../method/-hash/i/each_value.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-each_value">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_value -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+ハッシュの値を引数としてブロックを評価します。
+</p>
+<p>
+反復の際の評価順序はキーが追加された順です。
+ブロック付きの場合selfを、
+無しで呼ばれた場合 <a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<pre>
+{:a=&gt;1, :b=&gt;2}.each_value {|v| p v}
+#=&gt; 1
+    2
+
+p({:a=&gt;1, :b=&gt;2}.each_value)  # =&gt; #&lt;Enumerator: {:a=&gt;1, :b=&gt;2}:each_value&gt;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/each_pair.html">Hash#each_pair</a>,<a href="../method/-hash/i/each_key.html">Hash#each_key</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EMPTY--3F"><code>empty? -&gt; bool</code><span class="permalink">[<a href="../method/-hash/i/empty=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-empty-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ハッシュが空の時、真を返します。
+</p>
+<pre>
+puts({}.empty?) #=&gt; true
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_EQUAL--3F"><code>equal?(other) -&gt; bool</code><span class="permalink">[<a href="../method/-hash/i/equal=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-equal-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+指定された other が self 自身である場合のみ真を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身と比較したい Hash オブジェクトを指定します。
+</dd>
+</dl>
+<pre>
+p({}.equal?({}))     #=&gt; false
+a = {}
+p a.equal?(a)        #=&gt; true
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/=3d=3d.html">Hash#==</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FETCH"><code>fetch(key, default = nil) {|key| ... } -&gt; object</code><span class="permalink">[<a href="../method/-hash/i/fetch.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-fetch">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+key に関連づけられた値を返します。該当するキーが登録されてい
+ない時には、引数 default が与えられていればその値を、ブロッ
+クが与えられていればそのブロックを評価した値を返します。
+</p>
+<p>
+fetchはハッシュ自身にデフォルト値が設定されていても単に無視します（挙動に変化がありません）。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+探索するキーを指定します。
+</dd>
+<dt class='method-param'>[PARAM] default:</dt>
+<dd>
+該当するキーが登録されていない時の返り値を指定します。
+</dd>
+<dt>[EXCEPTION] KeyError:</dt>
+<dd>
+引数defaultもブロックも与えられてない時、キーの探索に失敗すると発生します。
+</dd>
+</dl>
+<pre>
+h = {one: nil}
+p h[:one],h[:two]                        #=&gt; nil,nil これではキーが存在するのか判別できない。
+p h.fetch(:one)                          #=&gt; nil
+p h.fetch(:two)                          # エラー key not found (KeyError)
+p h.fetch(:two,&quot;error&quot;)                  #=&gt; &quot;error&quot;
+p h.fetch(:two){|key|&quot;#{key} not exist&quot;} #=&gt; &quot;two not exist&quot;
+p h.fetch(:two, &quot;error&quot;){|key|           #=&gt; &quot;two not exist&quot;
+    &quot;#{key} not exit&quot;                    #  warning: block supersedes default value argument
+  }                                      #  警告が表示される。
+
+h.default = &quot;default&quot;
+p h.fetch(:two)                          # エラー key not found (KeyError)
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/=5b=5d.html">Hash#[]</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FETCH_VALUES"><code>fetch_values(key, ...) -&gt; [object]</code><span class="permalink">[<a href="../method/-hash/i/fetch_values.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-fetch_values">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>fetch_values(key, ...) { |key| ... } -&gt; [object]</code></dt>
+<dd class="method-description">
+<p>
+引数で指定されたキーに関連づけられた値の配列を返します。
+</p>
+<p>
+該当するキーが登録されていない時には、ブロックが与えられていればそのブ
+ロックを評価した値を返します。ブロックが与えられていない時は
+<a href="../class/-key-error.html">KeyError</a> が発生します。
+</p>
+<p>
+self にデフォルト値が設定されていても無視されます（挙動に変化がありません）。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+探索するキーを任意個指定します。
+</dd>
+<dt>[EXCEPTION] KeyError:</dt>
+<dd>
+ブロックが与えられてない時にキーの探索に失敗すると発生します。
+</dd>
+</dl>
+<pre>
+h = { &quot;cat&quot; =&gt; &quot;feline&quot;, &quot;dog&quot; =&gt; &quot;canine&quot;, &quot;cow&quot; =&gt; &quot;bovine&quot; }
+
+h.fetch_values(&quot;cow&quot;, &quot;cat&quot;)                   # =&gt; [&quot;bovine&quot;, &quot;feline&quot;]
+h.fetch_values(&quot;cow&quot;, &quot;bird&quot;)                  # raises KeyError
+h.fetch_values(&quot;cow&quot;, &quot;bird&quot;) { |k| k.upcase } # =&gt; [&quot;bovine&quot;, &quot;BIRD&quot;]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/values_at.html">Hash#values_at</a>, <a href="../method/-hash/i/fetch.html">Hash#fetch</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FLATTEN"><code>flatten(level = 1) -&gt; Array</code><span class="permalink">[<a href="../method/-hash/i/flatten.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-flatten">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を平坦化した配列を生成して返します。
+</p>
+<p>
+全てのキーと値を新しい配列の要素として展開します。
+<a href="../method/-array/i/flatten.html">Array#flatten</a> と違って、デフォルトではこのメソッドは自身を
+再帰的に平坦化しません。level を指定すると指定されたレベルまで
+再帰的に平坦化します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] level:</dt>
+<dd>
+展開するレベル
+</dd>
+</dl>
+<pre>
+a =  {1=&gt; &quot;one&quot;, 2 =&gt; [2,&quot;two&quot;], 3 =&gt; &quot;three&quot;}
+a.flatten     #=&gt; [1, &quot;one&quot;, 2, [2, &quot;two&quot;], 3, &quot;three&quot;]
+a.flatten(1)  #=&gt; [1, &quot;one&quot;, 2, [2, &quot;two&quot;], 3, &quot;three&quot;]
+a.flatten(2)  #=&gt; [1, &quot;one&quot;, 2, 2, &quot;two&quot;, 3, &quot;three&quot;]
+a.flatten(0)  #=&gt; [[1, &quot;one&quot;], [2, [2, &quot;two&quot;]], [3, &quot;three&quot;]]
+a.flatten(-1) #=&gt; [1, &quot;one&quot;, 2, 2, &quot;two&quot;, 3, &quot;three&quot;]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-array/i/flatten.html">Array#flatten</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_HAS_KEY--3F"><code>has_key?(key) -&gt; bool</code><span class="permalink">[<a href="../method/-hash/i/has_key=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-has_key-3F">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>include?(key) -&gt; bool</code></dt>
+<dt class="method-heading"><code>key?(key) -&gt; bool</code></dt>
+<dt class="method-heading"><code>member?(key) -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+ハッシュが key をキーとして持つ時真を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+探索するキーを指定します。
+</dd>
+</dl>
+<pre>
+p({1 =&gt; &quot;one&quot;}.has_key?(1)) #=&gt; true
+p({1 =&gt; &quot;one&quot;}.has_key?(2)) #=&gt; false
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/has_value=3f.html">Hash#has_value?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_HAS_VALUE--3F"><code>has_value?(value) -&gt; bool</code><span class="permalink">[<a href="../method/-hash/i/has_value=3f.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-has_value-3F">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>value?(value) -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+ハッシュが value を値として持つ時真を返します。
+値の一致判定は == で行われます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] value:</dt>
+<dd>
+探索する値を指定します。
+</dd>
+</dl>
+<pre>
+p({1 =&gt; &quot;one&quot;}.has_value?(&quot;one&quot;)) #=&gt; true
+p({1 =&gt; &quot;one&quot;}.has_value?(&quot;two&quot;)) #=&gt; false
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/has_key=3f.html">Hash#has_key?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_HASH"><code>hash -&gt; Integer</code><span class="permalink">[<a href="../method/-hash/i/hash.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身が保持するキーと値のハッシュ値を元にして算出した整数を返します。
+自身が保持するキーや値が変化すればこのメソッドが返す値も変化します。
+</p>
+<pre>
+a = {}
+p a.hash     #=&gt; 0
+a[1] = :x
+p a.hash     #=&gt; 329543
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_INDEX"><code>key(val) -&gt; object</code><span class="permalink">[<a href="../method/-hash/i/index.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-index">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>index(val) -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+値 val に対応するキーを返します。対応する要素が存在しない時には
+nil を返します。
+</p>
+<p>
+該当するキーが複数存在する場合、どのキーを返すかは不定です。
+</p>
+<p>
+Hash#index は obsolete です。
+使用すると警告メッセージが表示されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+探索に用いる値を指定します。
+</dd>
+</dl>
+<pre>
+h = {:ab =&gt; &quot;some&quot; , :cd =&gt; &quot;all&quot; , :ef =&gt; &quot;all&quot;}
+
+p h.key(&quot;some&quot;) #=&gt; :ab
+p h.key(&quot;all&quot;) #=&gt; :cd
+p h.key(&quot;at&quot;) #=&gt; nil
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/invert.html">Hash#invert</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>to_s -&gt; String</code><span class="permalink">[<a href="../method/-hash/i/inspect.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-inspect">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>inspect -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+ハッシュの内容を人間に読みやすい文字列にして返します。
+</p>
+<pre>
+h = { &quot;c&quot; =&gt; 300, &quot;a&quot; =&gt; 100, &quot;d&quot; =&gt; 400, &quot;c&quot; =&gt; 300  }
+h.inspect   # =&gt; &quot;{\&quot;a\&quot;=&gt;100, \&quot;c\&quot;=&gt;300, \&quot;d\&quot;=&gt;400}&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_INVERT"><code>invert -&gt; Hash</code><span class="permalink">[<a href="../method/-hash/i/invert.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-invert">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+値からキーへのハッシュを作成して返します。
+</p>
+<p>
+異なるキーに対して等しい値が登録されている場合、最後に定義されている値が使用されます。
+</p>
+<pre>
+h = { &quot;a&quot; =&gt; 0, &quot;b&quot; =&gt; 100, &quot;c&quot; =&gt; 200, &quot;d&quot; =&gt; 300, &quot;e&quot; =&gt; 300 }
+p h.invert   #=&gt; {0=&gt;&quot;a&quot;, 100=&gt;&quot;b&quot;, 200=&gt;&quot;c&quot;, 300=&gt;&quot;e&quot;}
+</pre>
+<h4 >参考</h4>
+<p>
+値が重複していたときに備えて、変換後の値を配列として保持するには、次のようにします。
+</p>
+<pre>
+def safe_invert(orig_hash)
+  result = Hash.new{|h,key| h[key] = [] }
+  orig_hash.each{|key, value|
+    result[value] &lt;&lt; key
+  }
+  result
+end
+p safe_invert({&quot;a&quot;=&gt;1, &quot;b&quot;=&gt;1, &quot;c&quot;=&gt;3})
+    #=&gt; {1=&gt;[&quot;a&quot;, &quot;b&quot;], 3=&gt;[&quot;c&quot;]}
+
+#転載：Rubyレシピブック No.120
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/key.html">Hash#key</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_KEEP_IF"><code>keep_if {|key, value| ... } -&gt; self</code><span class="permalink">[<a href="../method/-hash/i/keep_if.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-keep_if">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>select! {|key, value| ... } -&gt; self | nil</code></dt>
+<dt class="method-heading"><code>keep_if -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>select! -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+キーと値を引数としてブロックを評価した結果が真であるような要素を self
+に残します。
+</p>
+<p>
+keep_if は常に self を返します。
+select! はオブジェクトが変更された場合に self を、
+されていない場合に nil を返します。
+</p>
+<p>
+ブロックが与えられなかった場合は、自身と keep_if から生成した
+<a href="../class/-enumerator.html">Enumerator</a> オブジェクトを返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/select.html">Hash#select</a>, <a href="../method/-hash/i/delete_if.html">Hash#delete_if</a>,<a href="../method/-hash/i/reject=21.html">Hash#reject!</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_KEYS"><code>keys -&gt; [object]</code><span class="permalink">[<a href="../method/-hash/i/keys.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-keys">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+全キーの配列を返します。
+</p>
+<pre>
+h1 = { &quot;a&quot; =&gt; 100, 2 =&gt; [&quot;some&quot;], :c =&gt; &quot;c&quot; }
+p h1.keys           #=&gt; [&quot;a&quot;, 2, :c]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/values.html">Hash#values</a>,<a href="../method/-hash/i/to_a.html">Hash#to_a</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LENGTH"><code>length -&gt; Integer</code><span class="permalink">[<a href="../method/-hash/i/length.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-length">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>size -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+ハッシュの要素の数を返します。
+</p>
+<pre>
+puts({ant: 9 ,dog: 101 ,cat: 3}.length) #=&gt; 3
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_MERGE"><code>merge(other) -&gt; Hash</code><span class="permalink">[<a href="../method/-hash/i/merge.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-merge">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>merge(other) {|key, self_val, other_val| ... } -&gt; Hash</code></dt>
+<dt class="method-heading"><code>merge!(other) -&gt; self</code></dt>
+<dt class="method-heading"><code>merge!(other) {|key, self_val, other_val| ... } -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+selfとotherのハッシュの内容をマージ(統合)した結果を返します。デフォルト値はselfの設定のままです。
+</p>
+<p>
+self と other に同じキーがあった場合はブロック付きか否かで
+判定方法が違います。ブロック付きのときはブロックを呼び出して
+その返す値を重複キーに対応する値にします。ブロック付きでない
+場合は常に other の値を使います。
+</p>
+<p>
+Hash#merge! は、マージの結果でselfを変更する破壊的メソッドで、<a href="../method/-hash/i/update.html">Hash#update</a> の別名です。
+</p>
+<p>
+otherがハッシュではない場合、otherのメソッドto_hashを使って暗黙の変換を試みます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+マージ用のハッシュまたはメソッド to_hash でハッシュに変換できるオブジェクトです。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+マージした結果を返します
+</dd>
+</dl>
+<pre>
+foo = {1 =&gt; 'a', 2 =&gt; 'b', 3 =&gt; 'c'}
+bar = {2 =&gt; 'B', 3 =&gt; 'C', 4 =&gt; 'D'}
+
+p foo.merge(bar) #=&gt; {1=&gt;&quot;a&quot;, 2=&gt;&quot;B&quot;, 3=&gt;&quot;C&quot;, 4=&gt;&quot;D&quot;}
+p foo  #=&gt; {1=&gt;&quot;a&quot;, 2=&gt;&quot;b&quot;, 3=&gt;&quot;c&quot;}
+
+p foo.merge!(bar) {|key, foo_val, bar_val| foo_val + bar_val } #=&gt; {1=&gt;&quot;a&quot;, 2=&gt;&quot;bB&quot;, 3=&gt;&quot;cC&quot;, 4=&gt;&quot;D&quot;}
+p foo  #=&gt; {1=&gt;&quot;a&quot;, 2=&gt;&quot;bB&quot;, 3=&gt;&quot;cC&quot;, 4=&gt;&quot;D&quot;}
+
+class Foo
+  def to_hash
+    {:Australia =&gt; 'Sydney',
+     :France =&gt; 'Paris'
+     }
+  end
+end
+
+h = {:Germany =&gt; 'Berlin',
+     :Australia =&gt; 'Canberra',
+     :France =&gt; 'Paris'
+     }
+h.merge!(Foo.new) #暗黙の変換
+p h #=&gt; {:Germany=&gt;&quot;Berlin&quot;, :Australia=&gt;&quot;Sydney&quot;, :France=&gt;&quot;Paris&quot;}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/update.html">Hash#update</a>,<a href="../method/-hash/i/replace.html">Hash#replace</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_RASSOC"><code>rassoc(value) -&gt; Array | nil</code><span class="permalink">[<a href="../method/-hash/i/rassoc.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-rassoc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ハッシュ内を検索して，引数 obj と 一致する値を探します。
+</p>
+<p>
+比較は == メソッドを使用して行われます。一致する値があれば，
+該当するキーとその値とを要素とするサイズ 2 の配列を返します。
+ない場合には nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] value:</dt>
+<dd>
+探索する値。
+</dd>
+</dl>
+<pre>
+a = {1=&gt; &quot;one&quot;, 2 =&gt; &quot;two&quot;, 3 =&gt; &quot;three&quot;, &quot;ii&quot; =&gt; &quot;two&quot;}
+a.rassoc(&quot;two&quot;)    #=&gt; [2, &quot;two&quot;]
+a.rassoc(&quot;four&quot;)   #=&gt; nil
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/assoc.html">Hash#assoc</a>, <a href="../method/-array/i/rassoc.html">Array#rassoc</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_REHASH"><code>rehash -&gt; self</code><span class="permalink">[<a href="../method/-hash/i/rehash.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-rehash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+キーのハッシュ値を再計算します。
+</p>
+<p>
+キーになっているオブジェクトの内容が変化した時など、
+ハッシュ値が変わってしまった場合はこのメソッドを使ってハッシュ値を再計算しない
+限り、そのキーに対応する値を取り出すことができなくなります。
+</p>
+<dl>
+<dt>[EXCEPTION] RuntimeError:</dt>
+<dd>
+<a href="../method/-hash/i/each.html">Hash#each</a>などのイテレータの評価途中でrehashすると発生します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+selfを返します。
+</dd>
+</dl>
+<pre>
+a = [ &quot;a&quot;, &quot;b&quot; ]
+h = { a =&gt; 100 }
+
+p h[a]       #=&gt; 100
+
+a[0] = &quot;z&quot;
+p h[a]       #=&gt; nil
+
+h.rehash
+p h[a]       #=&gt; 100
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-object/i/hash.html">Object#hash</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_REJECT"><code>reject {|key, value| ... } -&gt; Hash</code><span class="permalink">[<a href="../method/-hash/i/reject.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-reject">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>reject -&gt; Enumerable::Enumerator</code></dt>
+<dd class="method-description">
+<p>
+self を複製して、ブロックを評価した値が真になる要
+素を削除したハッシュを返します。
+</p>
+<p>
+ハッシュを返すことを除けば
+<a href="../method/-enumerable/i/reject.html">Enumerable#reject</a> とほぼ同じです。
+selfを破壊的に変更したい場合はかわりに<a href="../method/-hash/i/delete_if.html">Hash#delete_if</a>か<a href="../method/-hash/i/reject=21.html">Hash#reject!</a>を使います。
+</p>
+<pre>
+h = { 2 =&gt;&quot;8&quot; ,4 =&gt;&quot;6&quot; ,6 =&gt;&quot;4&quot; ,8 =&gt;&quot;2&quot; }
+
+p h.reject{|key, value| key.to_i &lt; value.to_i} #=&gt; {6=&gt;&quot;4&quot;, 8=&gt;&quot;2&quot;}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/delete_if.html">Hash#delete_if</a>,<a href="../method/-hash/i/delete.html">Hash#delete</a>,<a href="../method/-enumerable/i/reject.html">Enumerable#reject</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_REPLACE"><code>replace(other) -&gt; self</code><span class="permalink">[<a href="../method/-hash/i/replace.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-replace">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ハッシュの内容を other の内容で置き換えます。
+</p>
+<p>
+デフォルト値の設定もotherの内容になります。
+otherがハッシュではない場合、otherのメソッドto_hashを使って暗黙の変換を試みます。
+</p>
+<p>
+self = other.to_hash.dup と同じです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+ハッシュまたはメソッド to_hash でハッシュに変換できるオブジェクトです。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+self を返します。
+</dd>
+</dl>
+<pre>
+foo = {1 =&gt; 'a', 2 =&gt; 'b'}
+bar = {2 =&gt; 'B', 3 =&gt; 'C'}
+
+foo.replace(bar)
+p foo  #=&gt; {2=&gt;&quot;B&quot;, 3=&gt;&quot;C&quot;}
+
+zoo = {}
+zoo = bar.dup
+p zoo  #=&gt; {2=&gt;&quot;B&quot;, 3=&gt;&quot;C&quot;}
+
+class Foo
+  def to_hash
+    {:japan =&gt; 'kyoto'}
+  end
+end
+
+h = Hash.new
+h.replace(Foo.new) #暗黙の変換
+p h #=&gt; {:japan=&gt;&quot;kyoto&quot;}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/dup.html">Hash#dup</a>,<a href="../method/-hash/i/merge.html">Hash#merge</a>,<a href="../method/-object/i/to_hash.html">Object#to_hash</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SELECT"><code>select -&gt; Enumerator</code><span class="permalink">[<a href="../method/-hash/i/select.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-select">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>select {|key, value| ... } -&gt; Hash</code></dt>
+<dd class="method-description">
+<p>
+key, value のペアについてブロックを評価し，真となるペアだけを含む
+ハッシュを生成して返します。
+</p>
+<pre>
+h = { &quot;a&quot; =&gt; 100, &quot;b&quot; =&gt; 200, &quot;c&quot; =&gt; 300 }
+h.select {|k,v| k &gt; &quot;a&quot;}  #=&gt; {&quot;b&quot; =&gt; 200, &quot;c&quot; =&gt; 300}
+h.select {|k,v| v &lt; 200}  #=&gt; {&quot;a&quot; =&gt; 100}
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SHIFT"><code>shift -&gt; [object, object]</code><span class="permalink">[<a href="../method/-hash/i/shift.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-shift">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ハッシュからキーが追加された順で先頭の要素をひとつ取り除き、
+[key, value]という配列として返します。
+</p>
+<p>
+shiftは破壊的メソッドです。selfは要素を取り除かれた残りのハッシュに変更されます。
+</p>
+<p>
+ハッシュが空の場合、デフォルト値（<a href="../method/-hash/i/default.html">Hash#default</a>または<a href="../method/-hash/i/default_proc.html">Hash#default_proc</a>のブロックの値か、どちらもnilならばnil）
+を返します(このとき、[key,value] という形式の値を返すわけではないことに注意)。
+</p>
+<pre>
+h = {:ab =&gt; &quot;some&quot; , :cd =&gt; &quot;all&quot;}
+p h.shift               #=&gt; [:ab, &quot;some&quot;]
+p h.shift               #=&gt; [:cd, &quot;all&quot;]
+p h                     #=&gt; {}
+p h.shift               #=&gt; nil
+
+h1 = Hash.new(&quot;default value&quot;)
+p h1                    #=&gt; {}
+p h1.shift              #=&gt; &quot;default value&quot;
+
+h2 = Hash.new {|*arg| arg}
+p h2                    #=&gt; {}
+p h2.shift              #=&gt; [{}, nil]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-array/i/shift.html">Array#shift</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SORT"><code>sort -&gt; Array</code><span class="permalink">[<a href="../method/-hash/i/sort.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-sort">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>sort {|a, b| ... } -&gt; Array</code></dt>
+<dd class="method-description">
+<p>
+ハッシュを [key, value] を要素とする配列の配列に変換して，それをソー
+トした配列を返します。
+</p>
+<pre>
+h = { &quot;a&quot; =&gt; 20, &quot;b&quot; =&gt; 30, &quot;c&quot; =&gt; 10  }
+h.sort                       #=&gt; [[&quot;a&quot;, 20], [&quot;b&quot;, 30], [&quot;c&quot;, 10]]
+h.sort {|a,b| a[1]&lt;=&gt;b[1]}   #=&gt; [[&quot;c&quot;, 10], [&quot;a&quot;, 20], [&quot;b&quot;, 30]]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-array/i/sort.html">Array#sort</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_A"><code>to_a -&gt; [Array]</code><span class="permalink">[<a href="../method/-hash/i/to_a.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-to_a">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+キーと値からなる 2 要素の配列を並べた配列を生成して返します。
+</p>
+<pre>
+h1 = { &quot;a&quot; =&gt; 100, 2 =&gt; [&quot;some&quot;], :c =&gt; &quot;c&quot; }
+p h1.to_a           #=&gt; [[&quot;a&quot;, 100], [2, [&quot;some&quot;]], [:c, &quot;c&quot;]]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/keys.html">Hash#keys</a>,<a href="../method/-hash/i/values.html">Hash#values</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_H"><code>to_h -&gt; self | Hash</code><span class="permalink">[<a href="../method/-hash/i/to_h.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-to_h">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self を返します。<a href="../class/-hash.html">Hash</a> クラスのサブクラスから呼び出した場合は
+self を <a href="../class/-hash.html">Hash</a> オブジェクトに変換します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_HASH"><code>to_hash -&gt; self</code><span class="permalink">[<a href="../method/-hash/i/to_hash.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-to_hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-object/i/to_hash.html">Object#to_hash</a>, <a href="../method/-hash/i/to_h.html">Hash#to_h</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_PROC"><code>to_proc -&gt; Proc</code><span class="permalink">[<a href="../method/-hash/i/to_proc.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-to_proc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self に対応する <a href="../class/-proc.html">Proc</a> オブジェクトを返します。
+</p>
+<pre>
+h = {1 =&gt; 10, 2 =&gt; 20, 3 =&gt; 30}
+[1, 2, 3].map(&amp;h) # =&gt; [10, 20, 30]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_UPDATE"><code>update(other) -&gt; self</code><span class="permalink">[<a href="../method/-hash/i/update.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-update">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>update(other) {|key, self_val, other_val| ... } -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+selfとotherのハッシュの内容をマージ(統合)します。<a href="../method/-hash/i/merge=21.html">Hash#merge!</a>と同じです。
+</p>
+<p>
+デフォルト値はselfの設定のままです。
+otherがハッシュではない場合、otherのメソッドto_hashを使って暗黙の変換を試みます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+マージ用のハッシュまたはメソッド to_hash でハッシュに変換できるオブジェクトです。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+マージ後のselfを返します。
+</dd>
+</dl>
+<pre>
+foo = {1 =&gt; 'a', 2 =&gt; 'b', 3 =&gt; 'c'}
+bar = {2 =&gt; 'B', 3 =&gt; 'C', 4 =&gt; 'D'}
+
+p foo.update(bar) #=&gt; {1=&gt;&quot;a&quot;, 2=&gt;&quot;B&quot;, 3=&gt;&quot;C&quot;, 4=&gt;&quot;D&quot;}
+p foo  #=&gt; {1=&gt;&quot;a&quot;, 2=&gt;&quot;B&quot;, 3=&gt;&quot;C&quot;, 4=&gt;&quot;D&quot;}
+
+p foo.update(bar) {|key, foo_val, bar_val| foo_val + bar_val } #=&gt; {1=&gt;&quot;a&quot;, 2=&gt;&quot;BB&quot;, 3=&gt;&quot;CC&quot;, 4=&gt;&quot;DD&quot;}
+p foo  #=&gt; {1=&gt;&quot;a&quot;, 2=&gt;&quot;BB&quot;, 3=&gt;&quot;CC&quot;, 4=&gt;&quot;DD&quot;}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/merge=21.html">Hash#merge!</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_VALUES"><code>values -&gt; [object]</code><span class="permalink">[<a href="../method/-hash/i/values.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-values">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ハッシュの全値の配列を返します。
+</p>
+<pre>
+h1 = { &quot;a&quot; =&gt; 100, 2 =&gt; [&quot;some&quot;], :c =&gt; &quot;c&quot; }
+p h1.values         #=&gt; [100, [&quot;some&quot;], &quot;c&quot;]
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/keys.html">Hash#keys</a>,<a href="../method/-hash/i/to_a.html">Hash#to_a</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_VALUES_AT"><code>values_at(*keys) -&gt; [object]</code><span class="permalink">[<a href="../method/-hash/i/values_at.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Hash.html#method-i-values_at">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数で指定されたキーに対応する値の配列を返します。
+</p>
+<p>
+キーに対応する要素がなければデフォルト値が使用されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] keys:</dt>
+<dd>
+キーを 0 個以上指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+引数で指定されたキーに対応する値の配列を返します。
+引数が指定されなかった場合は、空の配列を返します。
+</dd>
+</dl>
+<pre>
+h = {1=&gt;&quot;a&quot;, 2=&gt;&quot;b&quot;, 3=&gt;&quot;c&quot;}
+
+p h.values_at(1,3,4)               #=&gt; [&quot;a&quot;, &quot;c&quot;, nil]
+# [h[1], h[3] ,h[4]] と同じ
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/=5b=5d.html">Hash#[]</a>, <a href="../method/-hash/s/new.html">Hash.new</a>, <a href="../method/-hash/i/default.html">Hash#default</a>, <a href="../method/-hash/i/default_proc.html">Hash#default_proc</a>, <a href="../method/-array/i/values_at.html">Array#values_at</a>
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

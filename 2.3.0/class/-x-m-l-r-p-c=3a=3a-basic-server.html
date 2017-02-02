@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class XMLRPC::BasicServer (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/xmlrpc=2fserver.html">xmlrpc/serverライブラリ</a>
+&gt; XMLRPC::BasicServerクラス
+</p>
+
+
+<h1>class XMLRPC::BasicServer</h1>
+<p>
+
+
+クラスの継承リスト: XMLRPC::BasicServer
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+Is the base class for all XML-RPC server-types (CGI, standalone).
+You can add handler and set a default handler.
+Do not use this server, as this is/should be an abstract class.
+</p>
+<h2 >How the method to call is found</h2>
+<p>
+The arity (number of accepted arguments) of a handler (method or Proc object) is
+compared to the given arguments submitted by the client for a RPC ((-Remote Procedure Call-)).
+A handler is only called if it accepts the number of arguments, otherwise the search
+for another handler will go on. When at the end no handler was found,
+the <a href="../method/-x-m-l-r-p-c=3a=3a-basic-server/i/set_default_handler.html">XMLRPC::BasicServer#set_default_handler</a> will be called.
+With this technique it is possible to do overloading by number of parameters, but
+only for Proc handler, because you cannot define two methods of the same name in
+the same class.
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_NEW">new</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_ADD_HANDLER">add_handler</a>
+
+<a href="#I_ADD_INTROSPECTION">add_introspection</a>
+
+<a href="#I_ADD_MULTICALL">add_multicall</a>
+
+<a href="#I_GET_DEFAULT_HANDLER">get_default_handler</a>
+
+<a href="#I_GET_SERVICE_HOOK">get_service_hook</a>
+
+<a href="#I_SET_DEFAULT_HANDLER">set_default_handler</a>
+
+<a href="#I_SET_PARSER">set_parser</a>
+
+<a href="#I_SET_SERVICE_HOOK">set_service_hook</a>
+
+<a href="#I_SET_WRITER">set_writer</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(class_delim=&quot;.&quot;)</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-basic-server/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/XMLRPC/BasicServer.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Creates a new XMLRPC::BasicServer instance, which should not be
+done, because XMLRPC::BasicServer is an abstract class. This
+method should be called from a subclass indirectly by a super call
+in the method initialize. The paramter class_delim is used
+in <a href="../method/-x-m-l-r-p-c=3a=3a-basic-server/i/add_handler.html">XMLRPC::BasicServer#add_handler</a> when an object is
+added as handler, to delimit the object-prefix and the method-name.
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_ADD_HANDLER"><code>add_handler(name, signature=nil, help=nil) { aBlock }</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-basic-server/i/add_handler.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/XMLRPC/BasicServer.html#method-i-add_handler">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Adds aBlock to the list of handlers, with name as the name of the method.
+Parameters signature and help are used by the Introspection method if specified,
+where signature is either an Array containing strings each representing a type of it's
+signature (the first is the return value) or an Array of Arrays if the method has multiple
+signatures. Value type-names are &quot;int, boolean, double, string, dateTime.iso8601, base64, array, struct&quot;.
+</p>
+<p>
+Parameter help is a String with informations about how to call this method etc.
+</p>
+<p>
+A handler method or code-block can return the types listed at
+<a href="../method/-x-m-l-r-p-c=3a=3a-client/i/call.html">XMLRPC::Client#call</a>.
+When a method fails, it can tell it the client by throwing an
+XMLRPC::FaultException like in this example:
+</p>
+<pre>
+s.add_handler(&quot;michael.div&quot;) do |a,b|
+  if b == 0
+    raise XMLRPC::FaultException.new(1, &quot;division by zero&quot;)
+  else
+    a / b
+  end
+end
+</pre>
+<p>
+The client gets in the case of b==0 an object back of type
+XMLRPC::FaultException that has a faultCode and faultString
+field.
+</p>
+</dd>
+<dt class="method-heading" id="I_ADD_HANDLER"><code>add_handler(prefix, obj)</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-basic-server/i/add_handler.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/XMLRPC/BasicServer.html#method-i-add_handler">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+This is the second form of <a href="../method/-x-m-l-r-p-c=3a=3a-basic-server/i/add_handler.html">XMLRPC::BasicServer#add_handler</a>.
+To add an object write:
+</p>
+<pre>
+server.add_handler(&quot;michael&quot;, MyHandlerClass.new)
+</pre>
+<p>
+All public methods of MyHandlerClass are accessible to
+the XML-RPC clients by (('michael.&quot;name of method&quot;')). This is
+where the class_delim in <a href="../method/-x-m-l-r-p-c=3a=3a-basic-server/s/new.html">XMLRPC::BasicServer.new</a>
+has it's role, a XML-RPC method-name is defined by
+prefix + class_delim + (('&quot;name of method&quot;')).
+</p>
+</dd>
+<dt class="method-heading" id="I_ADD_HANDLER"><code>add_handler(interface, obj)</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-basic-server/i/add_handler.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/XMLRPC/BasicServer.html#method-i-add_handler">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+This is the third form of <a href="../method/-x-m-l-r-p-c=3a=3a-basic-server/i/add_handler.html">XMLRPC::BasicServer#add_handler</a>.
+</p>
+<p>
+Use XMLRPC::interface to generate an ServiceInterface object, which
+represents an interface (with signature and help text) for a handler class.
+</p>
+<p>
+Parameter interface must be of type XMLRPC::ServiceInterface.
+Adds all methods of obj which are defined in interface to the
+server.
+</p>
+<p>
+This is the recommended way of adding services to a server!
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ADD_INTROSPECTION"><code>add_introspection</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-basic-server/i/add_introspection.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/XMLRPC/BasicServer.html#method-i-add_introspection">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Adds the introspection handlers &quot;system.listMethods&quot;, &quot;system.methodSignature&quot; and &quot;system.methodHelp&quot;,
+where only the first one works.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ADD_MULTICALL"><code>add_multicall</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-basic-server/i/add_multicall.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/XMLRPC/BasicServer.html#method-i-add_multicall">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Adds the multi-call handler &quot;system.multicall&quot;.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_GET_DEFAULT_HANDLER"><code>get_default_handler</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-basic-server/i/get_default_handler.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/XMLRPC/BasicServer.html#method-i-get_default_handler">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Returns the default-handler, which is called when no handler for
+a method-name is found.
+It is a Proc object or nil.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_GET_SERVICE_HOOK"><code>get_service_hook</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-basic-server/i/get_service_hook.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/XMLRPC/BasicServer.html#method-i-get_service_hook">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Returns the service-hook, which is called on each service request (RPC) unless it's nil.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SET_DEFAULT_HANDLER"><code>set_default_handler(&amp;handler)</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-basic-server/i/set_default_handler.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/XMLRPC/BasicServer.html#method-i-set_default_handler">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Sets handler as the default-handler, which is called when
+no handler for a method-name is found. handler is a code-block.
+The default-handler is called with the (XML-RPC) method-name as first argument, and
+the other arguments are the parameters given by the client-call.
+</p>
+<p>
+If no block is specified the default of XMLRPC::BasicServer is used, which raises a
+XMLRPC::FaultException saying &quot;method missing&quot;.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SET_PARSER"><code>set_parser(parser)</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-basic-server/i/set_parser.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/XMLRPC/BasicServer.html#method-i-set_parser">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Sets the XML parser to use for parsing XML documents.
+Should be an instance of a class from module XMLRPC::XMLParser.
+If this method is not called, then XMLRPC::Config::DEFAULT_PARSER is used.
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SET_SERVICE_HOOK"><code>set_service_hook(&amp;handler)</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-basic-server/i/set_service_hook.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/XMLRPC/BasicServer.html#method-i-set_service_hook">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+A service-hook is called for each service request (RPC).
+You can use a service-hook for example to wrap existing methods and catch exceptions of them or
+convert values to values recognized by XMLRPC. You can disable it by passing nil as parameter
+handler .
+</p>
+<p>
+The service-hook is called with a Proc object and with the parameters for this Proc.
+An example:
+</p>
+<pre>
+server.set_service_hook {|obj, *args|
+  begin
+    ret = obj.call(*args)  # call the original service-method
+    # could convert the return value
+  resuce
+    # rescue exceptions
+  end
+}
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SET_WRITER"><code>set_writer(writer)</code><span class="permalink">[<a href="../method/-x-m-l-r-p-c=3a=3a-basic-server/i/set_writer.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/XMLRPC/BasicServer.html#method-i-set_writer">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Sets the XML writer to use for generating XML output.
+Should be an instance of a class from module XMLRPC::XMLWriter.
+If this method is not called, then XMLRPC::Config::DEFAULT_WRITER is used.
+</p>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>class BasicSocket (Ruby 1.9.2)</title>
 </head>
 <body>
@@ -215,6 +216,8 @@ BasicSocket#local_address が接続先として不適なアドレスを返す場
 例外 <a href="../class/-socket-error.html">SocketError</a> が発生します。
 </p>
 <pre>
+require 'socket'
+
 Addrinfo.tcp(&quot;0.0.0.0&quot;, 0).listen {|serv|
   p serv.connect_address #=&gt; #&lt;Addrinfo: 127.0.0.1:53660 TCP&gt;
   serv.connect_address.connect {|c|
@@ -247,6 +250,18 @@ Addrinfo.tcp(&quot;0.0.0.0&quot;, 0).listen {|serv|
 初期値はソケットを生成したときの
 <a href="../method/-basic-socket/s/do_not_reverse_lookup.html">BasicSocket.do_not_reverse_lookup</a> の値になります。
 </p>
+<pre>
+require 'socket'
+
+BasicSocket.do_not_reverse_lookup = false
+TCPSocket.open(&quot;www.ruby-lang.org&quot;, 80) {|sock|
+  p sock.do_not_reverse_lookup      # =&gt; false
+}
+BasicSocket.do_not_reverse_lookup = true
+TCPSocket.open(&quot;www.ruby-lang.org&quot;, 80) {|sock|
+  p sock.do_not_reverse_lookup      # =&gt; true
+}
+</pre>
 <p>
 [SEE_ALSO] <a href="../method/-basic-socket/i/do_not_reverse_lookup=3d.html">BasicSocket#do_not_reverse_lookup=</a>
 </p>
@@ -284,6 +299,8 @@ Unix ドメインソケットにおいて接続相手の euid と egid を
 不定です。
 </p>
 <pre>
+require 'socket'
+
 Socket.unix_server_loop(&quot;/tmp/sock&quot;) {|s|
   begin
     euid, egid = s.getpeereid
@@ -331,6 +348,8 @@ p addr == s.getsockname     #=&gt; true
 例:
 </p>
 <pre>
+require 'socket'
+
 serv = TCPServer.open(&quot;&quot;, 0)
 p serv.getsockname        #=&gt; &quot;\002\000\236C\000\000\000\000\000\000\000\000\000\000\000\000&quot;
 p Socket.unpack_sockaddr_in(serv.getsockname)     #=&gt; [40515, &quot;0.0.0.0&quot;]
@@ -369,6 +388,8 @@ level, optname には Socket::SOL_SOCKET や Socket::SO_REUSEADDR
 例:
 </p>
 <pre>
+require 'socket'
+
 serv = Socket.tcp_server_sockets(&quot;&quot;, 0)[0]
 c = serv.local_address.connect
 s = serv.accept
@@ -394,6 +415,8 @@ p c.getsockopt(:IP, :TTL).int #=&gt; 64
 返すことに注意してください。
 </p>
 <pre>
+require 'socket'
+
 TCPSocket.open(&quot;www.ruby-lang.org&quot;, 80) {|s|
   p s.local_address #=&gt; #&lt;Addrinfo: 192.168.0.129:36873 TCP&gt;
 }
@@ -444,6 +467,8 @@ UDP では空のパケットを読み込んだことを意味します。
 例:
 </p>
 <pre>
+require 'socket'
+
 s1, s2 = UNIXSocket.pair
 s1.write &quot;a&quot;
 s1.close
@@ -603,6 +628,8 @@ controls.each {|ancdata|
 返すことに注意してください。
 </p>
 <pre>
+require 'socket'
+
 TCPSocket.open(&quot;www.ruby-lang.org&quot;, 80) {|s|
   p s.remote_address #=&gt; #&lt;Addrinfo: 221.186.184.68:80 TCP&gt;
 }
@@ -656,6 +683,8 @@ dest_sockaddr には「ソケットアドレス構造体を pack した文字列
 例:
 </p>
 <pre>
+require 'socket'
+
 s = UDPSocket.new
 sockaddr = Socket.sockaddr_in(&quot;discard&quot;, &quot;localhost&quot;)
 s.send(&quot;The king has donkey ears!&quot;, 0, sockaddr)
@@ -688,6 +717,8 @@ controls には 補助データ(ancillary data)を渡します。
 <pre>
 # UnixSocket#send_io の実装例
 # use Socket::AncillaryData.
+require 'socket'
+
 ancdata = Socket::AncillaryData.int(:UNIX, :SOCKET, :RIGHTS, io.fileno)
 sock.sendmsg(&quot;a&quot;, 0, nil, ancdata)
 
@@ -866,8 +897,8 @@ how に範囲外の整数を入力した場合に発生します。
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

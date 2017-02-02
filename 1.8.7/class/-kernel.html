@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>module Kernel (Ruby 1.8.7)</title>
 </head>
 <body>
@@ -51,11 +52,21 @@
 
 <a href="#M_-ARRAY">Array</a>
 
+<a href="#M_-COMPLEX">Complex</a>
+
 <a href="#M_-FLOAT">Float</a>
+
+<a href="#M_-HASH">Hash</a>
 
 <a href="#M_-INTEGER">Integer</a>
 
+<a href="#M_-RATIONAL">Rational</a>
+
 <a href="#M_-STRING">String</a>
+
+<a href="#M___CALLEE__">__callee__</a>
+
+<a href="#M___DIR__">__dir__</a>
 
 <a href="#M___METHOD__">__method__</a>
 
@@ -75,19 +86,15 @@
 
 <a href="#M_BLOCK_GIVEN--3F">iterator?</a>
 
-<a href="#M_CALLCC">callcc</a>
-
 <a href="#M_CALLER">caller</a>
+
+<a href="#M_CALLER_LOCATIONS">caller_locations</a>
 
 <a href="#M_CATCH">catch</a>
 
 <a href="#M_CHOMP">chomp</a>
 
-<a href="#M_CHOMP">chomp!</a>
-
 <a href="#M_CHOP">chop</a>
-
-<a href="#M_CHOP">chop!</a>
 
 <a href="#M_EVAL">eval</a>
 
@@ -107,15 +114,11 @@
 
 <a href="#M_FORMAT">sprintf</a>
 
-<a href="#M_GETC">getc</a>
-
 <a href="#M_GETS">gets</a>
 
 <a href="#M_GLOBAL_VARIABLES">global_variables</a>
 
 <a href="#M_GSUB">gsub</a>
-
-<a href="#M_GSUB">gsub!</a>
 
 <a href="#M_LAMBDA">lambda</a>
 
@@ -149,21 +152,17 @@
 
 <a href="#M_REQUIRE">require</a>
 
-<a href="#M_SCAN">scan</a>
-
 <a href="#M_SELECT">select</a>
 
 <a href="#M_SET_TRACE_FUNC">set_trace_func</a>
 
 <a href="#M_SLEEP">sleep</a>
 
-<a href="#M_SPLIT">split</a>
+<a href="#M_SPAWN">spawn</a>
 
 <a href="#M_SRAND">srand</a>
 
 <a href="#M_SUB">sub</a>
-
-<a href="#M_SUB">sub!</a>
 
 <a href="#M_SYSCALL">syscall</a>
 
@@ -317,8 +316,8 @@
 arg.to_ary と arg.to_a をこの順に呼び出して、返ってきた配列を変換結果とします。
 </p>
 <p>
-arg に to_ary, to_a のいずれのメソッドもない場合は
-<a href="../method/-object/i/to_a.html">Object#to_a</a>によって一要素の配列 [arg] を返します。
+arg に to_ary, to_a のいずれのメソッドも定義されていない場合は
+一要素の配列 [arg] を返します。
 </p>
 <dl>
 <dt class='method-param'>[PARAM] arg:</dt>
@@ -337,6 +336,60 @@ p Array(&quot;fefe&quot;) #=&gt; [&quot;fefe&quot;]
 </pre>
 <p>
 [SEE_ALSO] <a href="../method/-object/i/to_a.html">Object#to_a</a>,<a href="../method/-object/i/to_ary.html">Object#to_ary</a>,<a href="../class/-array.html">Array</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_-COMPLEX"><code>Complex(r, i = 0) -&gt; Complex</code><span class="permalink">[<a href="../method/-kernel/m/-complex.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-Complex">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>Complex(s) -&gt; Complex</code></dt>
+<dd class="method-description">
+<p>
+実部が r、虚部が i である <a href="../class/-complex.html">Complex</a> クラスのオブジェクトを生成します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] r:</dt>
+<dd>
+生成する複素数の実部。
+</dd>
+<dt class='method-param'>[PARAM] i:</dt>
+<dd>
+生成する複素数の虚部。省略した場合は 0 です。
+</dd>
+<dt class='method-param'>[PARAM] s:</dt>
+<dd>
+生成する複素数を表す文字列。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+変換できないオブジェクトを指定した場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+Complex(1)       # =&gt; (1+0i)
+Complex(1, 2)    # =&gt; (1+2i)
+Complex('1+1i')  # =&gt; (1+1i)
+Complex('1+1j')  # =&gt; (1+1i)
+# Complex.polar(10, 10) と同一。
+Complex('10@10') # =&gt; (-8.390715290764524-5.440211108893697i)
+Complex('_')     # =&gt; ArgumentError
+</pre>
+<p>
+r にも i にも複素数と解釈されるオブジェクトを指定した場合には、
+Complex(a, b) を a+bi として計算した <a href="../class/-complex.html">Complex</a> オブジェクトを返しま
+す。
+</p>
+<pre>
+Complex('1+1i', '2+3i')                          # =&gt; (-2+3i)
+Complex('1+1i') + Complex('2+3i') * Complex('i') # =&gt; (-2+3i)
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-complex/s/rect.html">Complex.rect</a>、<a href="../method/-complex/s/rectangular.html">Complex.rectangular</a>
+</p>
+<p>
+[注意] Complex.new、Complex.new! は 1.9 系では廃止されました。
 </p>
 </dd>
 
@@ -374,26 +427,55 @@ p Float(4_000)        #=&gt; 4000.0
 p Float(9.88)         #=&gt; 9.88
 
 p Float(Time.gm(1986)) #=&gt; 504921600.0
-p Float(Object.new)   # cannot convert Object into Float (TypeError)
-p Float(nil)          # cannot convert nil into Float (TypeError)
+p Float(Object.new)   # can't convert Object into Float (TypeError)
+p Float(nil)          # can't convert nil into Float (TypeError)
 
 p Float(&quot;10&quot;)         #=&gt; 10.0
 p Float(&quot;10e2&quot;)       #=&gt; 1000.0
 p Float(&quot;1e-2&quot;)       #=&gt; 0.01
 p Float(&quot;.1&quot;)         #=&gt; 0.1
+p Float(&quot;0xa&quot;)        #=&gt; 10.0
 
-p Float(&quot;nan&quot;)        # invalid value (ArgumentError)
-p Float(&quot;INF&quot;)        # invalid value (ArgumentError)
-p Float(&quot;-Inf&quot;)       # invalid value (ArgumentError)
+p Float(&quot;nan&quot;)        # invalid value for Float(): &quot;nan&quot; (ArgumentError)
+p Float(&quot;INF&quot;)        # invalid value for Float(): &quot;INF&quot; (ArgumentError)
+p Float(&quot;-Inf&quot;)       # invalid value for Float(): &quot;-Inf&quot; (ArgumentError)
 p Float((&quot;10&quot; * 1000)) #=&gt; Infinity
-p Float(&quot;0xa.a&quot;)      # invalid value (ArgumentError)
+p Float(&quot;0xa.a&quot;)      # invalid value for Float(): &quot;0xa.a&quot; (ArgumentError)
 p Float(&quot; \n10\s \t&quot;) #=&gt; 10.0 # 先頭と末尾の空白類は無視される
-p Float(&quot;1\n0&quot;)       # invalid value (ArgumentError)
-p Float(&quot;&quot;)           # invalid value (ArgumentError)
+p Float(&quot;1\n0&quot;)       # invalid value for Float(): &quot;1\n0&quot; (ArgumentError)
+p Float(&quot;&quot;)           # invalid value for Float(): &quot;&quot; (ArgumentError)
 </pre>
 <p>
 [SEE_ALSO] <a href="../method/-string/i/to_f.html">String#to_f</a>,<a href="../class/-float.html">Float</a>
 </p>
+</dd>
+
+
+<dt class="method-heading" id="M_-HASH"><code>Hash(arg) -&gt; Hash</code><span class="permalink">[<a href="../method/-kernel/m/-hash.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-Hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数 arg で指定したオブジェクトを to_hash メソッドを呼び出す事で
+<a href="../class/-hash.html">Hash</a> オブジェクトに変換します。nil か [] を指定した場合は空の
+<a href="../class/-hash.html">Hash</a> オブジェクトを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] arg:</dt>
+<dd>
+変換対象のオブジェクトを指定します。
+</dd>
+</dl>
+<pre>
+Hash([])          # =&gt; {}
+Hash(nil)         # =&gt; {}
+Hash(key: :value) # =&gt; {:key =&gt; :value}
+Hash([1, 2, 3])   # =&gt; TypeError
+</pre>
+<dl>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+変換できないオブジェクトを指定した場合に発生します。
+</dd>
+</dl>
 </dd>
 
 
@@ -425,13 +507,17 @@ p Float(&quot;&quot;)           # invalid value (ArgumentError)
 メソッド to_int, to_i を持たないオブジェクトを引数に指定したか、to_int, to_i
 が整数(<a href="../class/-integer.html">Integer</a>のサブクラス)を返さなかった場合に発生します。
 </dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+引数に nil を指定した場合に発生します。
+</dd>
 </dl>
 <pre>
 p Integer(4)          #=&gt; 4
 p Integer(4_000)      #=&gt; 4000
 p Integer(9.88)       #=&gt; 9
 
-p Integer(nil)        #=&gt; 0
+p Integer(nil)        # can't convert nil into Integer (TypeError)
 p Integer(Object.new) # cannot convert Object into Integer (TypeError)
 
 p Integer(&quot;10&quot;)       #=&gt; 10
@@ -447,6 +533,97 @@ p Integer(&quot;&quot;)         # `Integer': invalid value for Integer: &quot;&q
 </pre>
 <p>
 [SEE_ALSO] <a href="../method/-string/i/hex.html">String#hex</a>,<a href="../method/-string/i/oct.html">String#oct</a>,<a href="../method/-string/i/to_i.html">String#to_i</a>,<a href="../class/-integer.html">Integer</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_-RATIONAL"><code>Rational(x, y = 1) -&gt; Rational</code><span class="permalink">[<a href="../method/-kernel/m/-rational.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-Rational">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数を有理数(<a href="../class/-rational.html">Rational</a>)に変換した結果を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] x:</dt>
+<dd>
+変換対象のオブジェクトです。
+</dd>
+<dt class='method-param'>[PARAM] y:</dt>
+<dd>
+変換対象のオブジェクトです。省略した場合は x だけを用いて
+<a href="../class/-rational.html">Rational</a> オブジェクトを作成します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+変換できないオブジェクトを指定した場合に発生します。
+</dd>
+</dl>
+<p>
+引数 x、y の両方を指定した場合、x/y した <a href="../class/-rational.html">Rational</a> オブジェクトを
+返します。
+</p>
+<pre>
+Rational(&quot;1/3&quot;)           # =&gt; (1/3)
+Rational(1, 3)            # =&gt; (1/3)
+Rational(&quot;0.1&quot;, &quot;0.3&quot;)    # =&gt; (1/3)
+Rational(Complex(1,2), 2) # =&gt; ((1/2)+(1/1)*i)
+</pre>
+<p>
+ただし、1.8系とは異なり、<a href="../class/-rational.html">Rational</a> オブジェクトは常に既約(それ以上
+約分できない状態)である事に注意してください。
+</p>
+<pre>
+Rational(2, 6)         # =&gt; (1/3)
+Rational(1, 3) * 3     # =&gt; (1/1)
+</pre>
+<p>
+引数に文字列を指定する場合、以下のいずれかの形式で指定します。
+</p>
+<ul>
+<li>&quot;1/3&quot; のような分数の形式</li>
+<li>&quot;0.3&quot; のような10進数の形式</li>
+<li>&quot;0.3E0&quot; のような x.xEn の形式</li>
+<li>数字をアンダースコアで繋いだ形式</li>
+</ul>
+<p>
+&quot;1.2/3&quot; のように、分子を実数にする事も可能ですが、分母には指定できませ
+ん。また、<a href="../method/-kernel/m/-integer.html">Kernel.#Integer</a> とは違い &quot;0x10&quot; のような進数を表す接頭
+辞を含めた指定は行えません。
+</p>
+<p>
+例:
+</p>
+<pre>
+Rational(&quot;1/3&quot;)        # =&gt; (1/3)
+Rational(&quot;0.3&quot;)        # =&gt; (3/10)
+Rational('0.3E0')      # =&gt; (3/10)
+Rational('0.1E1/3')    # =&gt; (1/3)
+Rational('1.2/3')      # =&gt; (2/5)
+Rational('1/3.1')      # =&gt; ArgumentError
+Rational('3.0', '3.0') # =&gt; (1/1)
+Rational('3/3', '3/3') # =&gt; (1/1)
+Rational('1_234_567')  # =&gt; (1234567/1)
+Rational(&quot; \n10\t &quot;)   # =&gt; (10/1) # 空白類は無視される
+Rational(&quot;0x10&quot;)       # =&gt; ArgumentError
+</pre>
+<p>
+引数に変換できないオブジェクトを指定した場合には <a href="../class/-argument-error.html">ArgumentError</a> が
+発生します。
+</p>
+<pre>
+Rational(Object.new)   # =&gt; ArgumentError
+Rational(&quot;&quot;)           # =&gt; ArgumentError
+Rational(nil)          # =&gt; ArgumentError
+</pre>
+<p>
+また、Rational('0.3') と Rational(0.3) は異なるオブジェクトを返す事に注
+意してください。前者は正確に 3/10 ですが、後者はそうではありません。
+</p>
+<pre>
+Rational('0.3')        # =&gt; (3/10)
+Rational(0.3)          # =&gt; (5404319552844595/18014398509481984)
+</pre>
+<p>
+[SEE_ALSO] <a href="../class/-rational.html">Rational</a>
 </p>
 </dd>
 
@@ -482,6 +659,41 @@ p String(arg) #=&gt; &quot;hogehoge&quot;
 </pre>
 <p>
 [SEE_ALSO] <a href="../method/-object/i/to_s.html">Object#to_s</a>,<a href="../class/-string.html">String</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M___CALLEE__"><code>__callee__ -&gt; Symbol | nil</code><span class="permalink">[<a href="../method/-kernel/m/__callee__.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-__callee__">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在のメソッド名を返します。
+メソッドの外で呼ばれると nil を返します。
+</p>
+<pre>
+def foo
+  p __callee__
+end
+alias :bar :foo
+foo # =&gt; :foo
+bar # =&gt; :bar
+p __callee__ # =&gt; nil
+</pre>
+<p>
+<a href="../method/-kernel/m/__method__.html">Kernel.#__method__</a> とは異なり、現在のメソッド名が alias されたメ
+ソッドの場合には alias 先のメソッド名を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/m/__method__.html">Kernel.#__method__</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M___DIR__"><code>__dir__ -&gt; String | nil</code><span class="permalink">[<a href="../method/-kernel/m/__dir__.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-__dir__">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在のソースファイル(__FILE__)のあるディレクトリ名を正規化された絶対パ
+スで返します。シンボリックリンクも解決されます。また、__FILE__ が nil
+の場合は nil を返します。
 </p>
 </dd>
 
@@ -537,13 +749,17 @@ command を外部コマンドとして実行し、その標準出力を文字列
 <dd>
 コマンドの出力を文字列で返します。
 </dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+コマンドを実行できないときや失敗した場合に発生します。
+</dd>
 </dl>
 <pre>
 puts `ruby -v` #=&gt; ruby 1.8.6 (2007-03-13 patchlevel 0) [i386-mswin32]
 puts $?.inspect #=&gt; #&lt;Process::Status: pid=3580,exited(0)&gt;
 </pre>
 <p>
-[SEE_ALSO] <a href="../method/-kernel/m/system.html">Kernel.#system</a>,<a href="../method/-kernel/m/exec.html">Kernel.#exec</a>
+[SEE_ALSO] <a href="../method/-kernel/m/system.html">Kernel.#system</a>,<a href="../method/-kernel/m/exec.html">Kernel.#exec</a>,<a href="../method/-kernel/m/spawn.html">Kernel.#spawn</a>
 </p>
 </dd>
 
@@ -556,9 +772,8 @@ Ruby プログラムをエラーメッセージ付きで終了します。終了
 <p>
 このメソッドと <a href="../method/-kernel/m/exit.html">Kernel.#exit</a> との違いは、プログラムの終了ステー
 タスが 1 (正確にはCレベルの定数 EXIT_FAILURE の値)固定であることと、
-引数を省略した呼び出し時に
-<a href="../method/-kernel/v/=21.html">$!</a> が nil でなければその例外の
-メッセージを標準エラー出力 <a href="../method/-kernel/v/stderr.html">$stderr</a> に出力することです。
+引数を省略した呼び出し時に <a href="../method/-kernel/v/=21.html">$!</a> が nil でなければその例外のメッセー
+ジを標準エラー出力 <a href="../method/-kernel/v/stderr.html">$stderr</a> に出力することです。
 </p>
 <p>
 引数 message を指定すると SystemExit クラスの
@@ -833,15 +1048,9 @@ check #=&gt; Block isn't given.
 </dd>
 
 
-<dt class="method-heading" id="M_CALLCC"><code>callcc {|cont| .... } -&gt; object</code><span class="permalink">[<a href="../method/-kernel/m/callcc.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-callcc">rdoc</a>]</span></dt>
-<dd class="method-description">
-<p>
-継続を作成します。 <a href="../class/-continuation.html">Continuation</a> を参照してください。
-</p>
-</dd>
-
-
 <dt class="method-heading" id="M_CALLER"><code>caller(start = 1) -&gt; [String] | nil</code><span class="permalink">[<a href="../method/-kernel/m/caller.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-caller">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>caller(start, length) -&gt; [String] | nil</code></dt>
+<dt class="method-heading"><code>caller(range) -&gt; [String] | nil</code></dt>
 <dd class="method-description">
 <p>
 start 段上の呼び出し元の情報を <a href="../method/-kernel/v/=40.html">$@</a>
@@ -859,9 +1068,18 @@ start 段上の呼び出し元の情報を <a href="../method/-kernel/v/=40.html
 <dd>
 long の範囲を超えない正の整数でスタックレベルを指定します。
 </dd>
+<dt class='method-param'>[PARAM] length:</dt>
+<dd>
+取得するスタックの個数を指定します。
+</dd>
+<dt class='method-param'>[PARAM] range:</dt>
+<dd>
+取得したいスタックの範囲を示す <a href="../class/-range.html">Range</a> オブジェクトを指定します。
+</dd>
 </dl>
 <p>
-[SEE_ALSO] <a href="../method/-kernel/m/set_trace_func.html">Kernel.#set_trace_func</a>,<a href="../method/-kernel/m/raise.html">Kernel.#raise</a>
+[SEE_ALSO] <a href="../method/-kernel/m/set_trace_func.html">Kernel.#set_trace_func</a>,<a href="../method/-kernel/m/raise.html">Kernel.#raise</a>,
+     <a href="../method/-kernel/m/caller_locations.html">Kernel.#caller_locations</a>
 </p>
 <pre>
 def foo
@@ -878,9 +1096,9 @@ end
 
 bar
 
-#=&gt; [&quot;-:2:in `foo'&quot;, &quot;-:10:in `bar'&quot;, &quot;-:13&quot;]
-#   [&quot;-:10:in `bar'&quot;, &quot;-:13&quot;]
-#   [&quot;-:13&quot;]
+#=&gt; [&quot;-:2:in `foo'&quot;, &quot;-:10:in `bar'&quot;, &quot;-:13:in `&lt;main&gt;'&quot;]
+#   [&quot;-:10:in `bar'&quot;, &quot;-:13:in `&lt;main&gt;'&quot;]
+#   [&quot;-:13:in `&lt;main&gt;'&quot;]
 #   []
 #   nil
 </pre>
@@ -932,22 +1150,54 @@ debug &quot;debug information&quot;
 </dd>
 
 
-<dt class="method-heading" id="M_CATCH"><code>catch(tag) {|tag| .... } -&gt; object</code><span class="permalink">[<a href="../method/-kernel/m/catch.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-catch">rdoc</a>]</span></dt>
+<dt class="method-heading" id="M_CALLER_LOCATIONS"><code>caller_locations(start = 1, length = nil) -&gt; [Thread::Backtrace::Location] | nil</code><span class="permalink">[<a href="../method/-kernel/m/caller_locations.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-caller_locations">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>caller_locations(range) -&gt; [Thread::Backtrace::Location] | nil</code></dt>
+<dd class="method-description">
+<p>
+現在のフレームを <a href="../class/-thread=3a=3a-backtrace=3a=3a-location.html">Thread::Backtrace::Location</a> の配列で返します。引
+数で指定した値が範囲外の場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] start:</dt>
+<dd>
+開始フレームの位置を数値で指定します。
+</dd>
+<dt class='method-param'>[PARAM] length:</dt>
+<dd>
+取得するフレームの個数を指定します。
+</dd>
+<dt class='method-param'>[PARAM] range:</dt>
+<dd>
+取得したいフレームの範囲を示す <a href="../class/-range.html">Range</a> オブジェクトを指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../class/-thread=3a=3a-backtrace=3a=3a-location.html">Thread::Backtrace::Location</a>, <a href="../method/-kernel/m/caller.html">Kernel.#caller</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_CATCH"><code>catch {|tag| .... } -&gt; object</code><span class="permalink">[<a href="../method/-kernel/m/catch.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-catch">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>catch(tag) {|tag| .... } -&gt; object</code></dt>
 <dd class="method-description">
 <p>
 <a href="../method/-kernel/m/throw.html">Kernel.#throw</a>との組み合わせで大域脱出を行います。 catch はブロックを実行します。
 </p>
 <p>
-ブロックの実行中に tag と同じ名前の <a href="../method/-kernel/m/throw.html">Kernel.#throw</a> が行われた
+ブロックの実行中に tag と同一のオブジェクトを引数とする <a href="../method/-kernel/m/throw.html">Kernel.#throw</a> が行われた
 場合は、その throw の第二引数を戻り値として、ブロックの実行を終了します。
 </p>
 <p>
 主にネストしたループから一気に脱出するのに使用します。
 </p>
+<p>
+引数を省略した場合、タグとなるオブジェクトが内部で生成され、ブロックパラメータ tag に
+渡されます。
+</p>
 <dl>
 <dt class='method-param'>[PARAM] tag:</dt>
 <dd>
-シンボルや文字列などシンボル化できるものです。
+タグとなる任意のオブジェクトです。
 </dd>
 <dt>[RETURN]</dt>
 <dd>
@@ -955,11 +1205,11 @@ debug &quot;debug information&quot;
 </dd>
 </dl>
 <pre>
-result = catch(:tag) do
+result = catch do |tag|
   for i in 1..2
     for j in 1..2
       for k in 1..2
-        throw :tag, k
+        throw tag, k
       end
     end
   end
@@ -974,23 +1224,14 @@ p result #=&gt; 1
 
 
 <dt class="method-heading" id="M_CHOMP"><code>chomp(rs = $/) -&gt; String</code><span class="permalink">[<a href="../method/-kernel/m/chomp.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-chomp">rdoc</a>]</span></dt>
-<dt class="method-heading"><code>chomp!(rs = $/) -&gt; String | nil</code></dt>
 <dd class="method-description">
 <p>
-組み込み変数 $_ を rs で指定される末尾
-の文字列を取り除いたものにします。
-</p>
-<p>
-chomp! は文字列そのものを変更しその結果を返しますが、
-取り除く文字列がなければ nil を返します。
-rs のデフォルト値は $/ です。
-</p>
-<p>
-$_.chomp, $_.chomp! とほぼ同じです。
+$_.chomp とほぼ同じですが、置換が発生したときは、$_の内容を置き換える点が異なります。
+コマンドラインオプションで -p または -n を指定した時のみ定義されます。
 </p>
 <p>
 暗号的になりすぎるきらいがあるため、このメソッドの使用は推奨されていません。
-今後はより明示的な $_.chomp, $_.chomp!を使ってください。
+今後はより明示的な $_.chomp を使ってください。
 </p>
 <p>
 $_.chomp とこのメソッド chomp は以下の点で違いがあります。
@@ -1002,7 +1243,7 @@ $_ に再代入します。</li>
 <dl>
 <dt class='method-param'>[PARAM] rs:</dt>
 <dd>
-<a href="../method/-string/i/chomp.html">String#chomp</a> 参照
+末尾から削除する改行コードを指定します。
 </dd>
 </dl>
 <p>
@@ -1012,22 +1253,14 @@ $_ に再代入します。</li>
 
 
 <dt class="method-heading" id="M_CHOP"><code>chop -&gt; String</code><span class="permalink">[<a href="../method/-kernel/m/chop.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-chop">rdoc</a>]</span></dt>
-<dt class="method-heading"><code>chop! -&gt; String | nil</code></dt>
 <dd class="method-description">
 <p>
-組み込み変数 $_ を最後の文字を取り除いたものにし
-ます(終端が&quot;\r\n&quot;であれば2文字取り除きます)。
-</p>
-<p>
-chop! は文字列そのものを変更しその結果を返しますが、
-取り除く文字列がなければ nil を返します。
-</p>
-<p>
-$_.chop, $_.chop! とほぼ同じです。
+$_.chop とほぼ同じですが、置換が発生したときは、$_の内容を置き換える点が異なります。
+コマンドラインオプションで -p または -n を指定した時のみ定義されます。
 </p>
 <p>
 暗号的になりすぎるきらいがあるため、このメソッドの使用は推奨されていません。
-今後はより明示的な $_.chop, $_.chop! を使ってください。
+今後はより明示的な $_.chop を使ってください。
 </p>
 <p>
 $_.chopとこのメソッド chop は以下の点で違いがあります。
@@ -1048,7 +1281,7 @@ $_ に再代入します。</li>
 <p>
 文字列 expr を Ruby プログラムとして評価してその結果を返しま
 す。第2引数に
-<a href="../class/-proc.html">Proc</a> オブジェクトまたは <a href="../class/-binding.html">Binding</a> オブジェクトを与えた場合、
+<a href="../class/-binding.html">Binding</a> オブジェクトを与えた場合、
 そのオブジェクトを生成したコンテキストで文字列を評価します。
 </p>
 <p>
@@ -1063,7 +1296,7 @@ fname の行番号 lineno から文字列 expr が書かれているかのよう
 </p>
 <p>
 bind によらずに特定のオブジェクトのコンテキストで expr を評価したい場合、
-<a href="../method/-module/i/module_eval.html">Module#module_eval</a>, <a href="../method/-object/i/instance_eval.html">Object#instance_eval</a> が使えます。
+<a href="../method/-module/i/module_eval.html">Module#module_eval</a>, <a href="../method/-basic-object/i/instance_eval.html">BasicObject#instance_eval</a> が使えます。
 </p>
 <dl>
 <dt class='method-param'>[PARAM] expr:</dt>
@@ -1096,12 +1329,13 @@ eval('raise RuntimeError', binding, 'XXX.rb', 4)
 #       from ..:9
 </pre>
 <p>
-[SEE_ALSO] <a href="../method/-kernel/m/binding.html">Kernel.#binding</a>,<a href="../method/-module/i/module_eval.html">Module#module_eval</a>,<a href="../method/-object/i/instance_eval.html">Object#instance_eval</a>,<a href="../method/-object/i/method.html">Object#method</a>,<a href="../method/-object/i/send.html">Object#send</a>
+[SEE_ALSO] <a href="../method/-kernel/m/binding.html">Kernel.#binding</a>,<a href="../method/-module/i/module_eval.html">Module#module_eval</a>,<a href="../method/-basic-object/i/instance_eval.html">BasicObject#instance_eval</a>,<a href="../method/-object/i/method.html">Object#method</a>,<a href="../method/-object/i/send.html">Object#send</a>
 </p>
 </dd>
 
 
-<dt class="method-heading" id="M_EXEC"><code>exec(command) -&gt; ()</code><span class="permalink">[<a href="../method/-kernel/m/exec.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-exec">rdoc</a>]</span></dt>
+<dt class="method-heading" id="M_EXEC"><code>exec(command, options={}) -&gt; ()</code><span class="permalink">[<a href="../method/-kernel/m/exec.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-exec">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>exec(env, command, options={}) -&gt; ()</code></dt>
 <dd class="method-description">
 <p>
 引数で指定されたコマンドを実行します。
@@ -1126,6 +1360,14 @@ eval('raise RuntimeError', binding, 'XXX.rb', 4)
 <dd>
 コマンドを文字列で指定します。
 </dd>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+更新する環境変数を表す Hash
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+オプションパラメータ Hash
+</dd>
 <dt>[EXCEPTION] Errno::EXXX:</dt>
 <dd>
 起動に失敗し、ruby インタプリタに制御が戻った場合に発生します。
@@ -1147,7 +1389,8 @@ $ ruby a.rb
 # '実行後' は表示されない
 </pre>
 </dd>
-<dt class="method-heading" id="M_EXEC"><code>exec(program, *args) -&gt; ()</code><span class="permalink">[<a href="../method/-kernel/m/exec.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-exec">rdoc</a>]</span></dt>
+<dt class="method-heading" id="M_EXEC"><code>exec(program, *args, options={}) -&gt; ()</code><span class="permalink">[<a href="../method/-kernel/m/exec.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-exec">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>exec(env, program, *args, options={}) -&gt; ()</code></dt>
 <dd class="method-description">
 <p>
 引数で指定されたコマンドを実行します。
@@ -1158,6 +1401,12 @@ $ ruby a.rb
 </p>
 <p>
 この形式では、常に shell を経由せずに実行されます。
+</p>
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/exec.html">exec(3)</a> でコマンドを実行すると、
+元々のプログラムの環境をある程度(ファイルデスクリプタなど)引き継ぎます。
+Hash を options として渡すことで、この挙動を変更できます。
+詳しくは <a href="../method/-kernel/m/spawn.html">Kernel.#spawn</a> を参照してください。
 </p>
 <h4 >引数の解釈</h4>
 <p>
@@ -1176,6 +1425,14 @@ $ ruby a.rb
 <dt class='method-param'>[PARAM] args:</dt>
 <dd>
 渡される引数です。0 個以上の文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+更新する環境変数を表す Hash
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+オプションパラメータ Hash
 </dd>
 <dt>[EXCEPTION] ArgumentError:</dt>
 <dd>
@@ -1204,7 +1461,7 @@ xxxx    32754  0.0  0.0   2580   468 pts/3    S+   22:01   0:00 mysleep 600
 xxxx    32761  0.0  0.0   2824   792 pts/6    S+   22:01   0:00 grep sleep
 </pre>
 <p>
-[SEE_ALSO] <a href="../method/-kernel/m/system.html">Kernel.#system</a>,<a href="../method/-kernel/m/=60.html">Kernel.#`</a>,<a href="../method/-kernel/m/fork.html">Kernel.#fork</a>,<a href="../method/-i-o/s/popen.html">IO.popen</a>,<a href="../method/-i-o/s/pipe.html">IO.pipe</a>,<a href="../method/-kernel/m/open.html">Kernel.#open</a>,<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/exec.html">exec(3)</a>
+[SEE_ALSO] <a href="../method/-kernel/m/system.html">Kernel.#system</a>,<a href="../method/-kernel/m/=60.html">Kernel.#`</a>,<a href="../method/-kernel/m/spawn.html">Kernel.#spawn</a>,<a href="../method/-kernel/m/fork.html">Kernel.#fork</a>,<a href="../method/-i-o/s/popen.html">IO.popen</a>,<a href="../method/-i-o/s/pipe.html">IO.pipe</a>,<a href="../method/-kernel/m/open.html">Kernel.#open</a>,<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/exec.html">exec(3)</a>
 </p>
 </dd>
 
@@ -1876,17 +2133,6 @@ nth 番目の引数のフォーマットを行うことを示します。
 </dd>
 
 
-<dt class="method-heading" id="M_GETC"><code>getc -&gt; Fixnum | nil</code><span class="permalink">[<a href="../method/-kernel/m/getc.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-getc">rdoc</a>]</span></dt>
-<dd class="method-description">
-<p>
-このメソッドは廃止予定です。代わりに STDIN.getc を使ってください。
-</p>
-<p>
-[SEE_ALSO] <a href="../method/-i-o/i/getc.html">IO#getc</a>
-</p>
-</dd>
-
-
 <dt class="method-heading" id="M_GETS"><code>gets(rs = $/) -&gt; String | nil</code><span class="permalink">[<a href="../method/-kernel/m/gets.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-gets">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
@@ -1942,14 +2188,14 @@ ARGF
 </dd>
 
 
-<dt class="method-heading" id="M_GLOBAL_VARIABLES"><code>global_variables -&gt; [String]</code><span class="permalink">[<a href="../method/-kernel/m/global_variables.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-global_variables">rdoc</a>]</span></dt>
+<dt class="method-heading" id="M_GLOBAL_VARIABLES"><code>global_variables -&gt; [Symbol]</code><span class="permalink">[<a href="../method/-kernel/m/global_variables.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-global_variables">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 プログラム中で定義されているグローバル変数(`$'で始まる変数)名の
 配列を返します。
 </p>
 <pre>
-p global_variables #=&gt; [&quot;$-p&quot;, &quot;$-I&quot;, &quot;$-v&quot; ... ]
+p global_variables #=&gt; [:$;, :$-F, :$@, ... ]
 </pre>
 <p>
 [SEE_ALSO] <a href="../method/-kernel/m/local_variables.html">Kernel.#local_variables</a>,<a href="../method/-object/i/instance_variables.html">Object#instance_variables</a>,<a href="../method/-module/s/constants.html">Module.constants</a>,<a href="../method/-module/i/constants.html">Module#constants</a>,<a href="../method/-module/i/class_variables.html">Module#class_variables</a>
@@ -1958,20 +2204,16 @@ p global_variables #=&gt; [&quot;$-p&quot;, &quot;$-I&quot;, &quot;$-v&quot; ...
 
 
 <dt class="method-heading" id="M_GSUB"><code>gsub(pattern, replace) -&gt; String</code><span class="permalink">[<a href="../method/-kernel/m/gsub.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-gsub">rdoc</a>]</span></dt>
-<dt class="method-heading"><code>gsub!(pattern, replace) -&gt; String</code></dt>
 <dt class="method-heading"><code>gsub(pattern) {|matched| ... } -&gt; String</code></dt>
-<dt class="method-heading"><code>gsub!(pattern) {|matched| ... } -&gt; String</code></dt>
+<dt class="method-heading"><code>gsub(pattern) -&gt; Enumerator</code></dt>
 <dd class="method-description">
 <p>
-組み込み変数 <a href="../method/-kernel/v/_.html">$_</a> の指す文字列内で pattern に
-マッチする部分を全て replace に置き換えます。$_ を返します。
-</p>
-<p>
-$_.gsub, $_.gsub! とほぼ同じです。
+$_.gsub とほぼ同じですが、置換が発生したときは、$_の内容を置き換える点が異なります。
+コマンドラインオプションで -p または -n を指定した時のみ定義されます。
 </p>
 <p>
 暗号的になりすぎるきらいがあるため、このメソッドの使用は推奨されていません。
-今後はより明示的な $_.gsub, $_.gsub! を使ってください。
+今後はより明示的な $_.gsub を使ってください。
 </p>
 <p>
 $_.gsub とこのメソッド gsub は以下の点で違いがあります。
@@ -2248,14 +2490,14 @@ load 'filename' とするのは不適切です。必ず絶対パスを
 </dd>
 
 
-<dt class="method-heading" id="M_LOCAL_VARIABLES"><code>local_variables -&gt; [String]</code><span class="permalink">[<a href="../method/-kernel/m/local_variables.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-local_variables">rdoc</a>]</span></dt>
+<dt class="method-heading" id="M_LOCAL_VARIABLES"><code>local_variables -&gt; [Symbol]</code><span class="permalink">[<a href="../method/-kernel/m/local_variables.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-local_variables">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 現在のスコープで定義されているローカル変数名の配列を返します。
 </p>
 <pre>
 yuyu = 0
-p local_variables #=&gt; [&quot;yuyu&quot;]
+p local_variables #=&gt; [:yuyu]
 </pre>
 <p>
 [SEE_ALSO] <a href="../method/-kernel/m/global_variables.html">Kernel.#global_variables</a>,<a href="../method/-object/i/instance_variables.html">Object#instance_variables</a>,<a href="../method/-module/s/constants.html">Module.constants</a>,<a href="../method/-module/i/constants.html">Module#constants</a>,<a href="../method/-module/i/class_variables.html">Module#class_variables</a>
@@ -2263,11 +2505,21 @@ p local_variables #=&gt; [&quot;yuyu&quot;]
 </dd>
 
 
-<dt class="method-heading" id="M_LOOP"><code>loop { ... } -&gt; object</code><span class="permalink">[<a href="../method/-kernel/m/loop.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-loop">rdoc</a>]</span></dt>
+<dt class="method-heading" id="M_LOOP"><code>loop -&gt; Enumerator</code><span class="permalink">[<a href="../method/-kernel/m/loop.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-loop">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>loop { ... } -&gt; object | nil</code></dt>
 <dd class="method-description">
 <p>
 (中断されない限り)永遠にブロックの評価を繰り返します。
+ブロックが指定されなければ、代わりに <a href="../class/-enumerator.html">Enumerator</a> を返します。
 </p>
+<pre>
+loop do
+  print &quot;Input: &quot;
+  line = gets
+  break if !line or line =~ /^qQ/
+  # ...
+end
+</pre>
 <p>
 与えられたブロック内で <a href="../class/-stop-iteration.html">StopIteration</a> を <a href="../method/-kernel/m/raise.html">Kernel.#raise</a> すると
 ループを終了して nil を返します。
@@ -2279,92 +2531,11 @@ p local_variables #=&gt; [&quot;yuyu&quot;]
 break の引数など、ループ脱出時の値を返します。
 </dd>
 </dl>
-<pre>
-def try int
-  n = 0
-  loop do
-    n += 1
-    break(n) if rand(n) &gt; int
-  end
-end
-
-puts &quot;end on #{try(400)}&quot; #=&gt; end on ???
-</pre>
 </dd>
 
 
-<dt class="method-heading" id="M_OPEN"><code>open(name, mode = 'r', perm = nil, options = {}) -&gt; StringIO | File</code><span class="permalink">[<a href="../method/-kernel/m/open.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-open">rdoc</a>]</span> <span class="kindinfo">[redefined by <a href="../library/open=2duri.html">open-uri</a>]</span>
-</dt>
-<dt class="method-heading"><code>open(name, mode = 'r', perm = nil, options = {}) {|ouri| ...} -&gt; nil</code> <span class="kindinfo">[redefined by <a href="../library/open=2duri.html">open-uri</a>]</span>
-</dt>
-<dd class="method-description">
-<p>
-name が http:// や ftp:// で始まっている文字列なら URI のリソースを
-取得した上で <a href="../class/-string-i-o.html">StringIO</a> オブジェクトとして返します。
-StringIO オブジェクトは <a href="../class/-open-u-r-i=3a=3a-meta.html">OpenURI::Meta</a> モジュールで extend されています。
-</p>
-<p>
-name に open メソッドが定義されている場合は、*rest を引数として渡し
-name.open(*rest, &amp;block) のように name の open メソッドが呼ばれます。
-</p>
-<p>
-これ以外の場合は、name はファイル名として扱われ、従来の
-<a href="../method/-kernel/m/open.html">Kernel.#open</a>(name, *rest) が呼ばれます。
-</p>
-<p>
-ブロックを与えた場合は上の場合と同様、name が http:// や ftp:// で
-始まっている文字列なら URI のリソースを取得した上で <a href="../class/-string-i-o.html">StringIO</a> オブジェクトを
-引数としてブロックを評価します。後は同様です。
-StringIO オブジェクトは <a href="../class/-open-u-r-i=3a=3a-meta.html">OpenURI::Meta</a> モジュールで extend されています。
-</p>
-<dl>
-<dt class='method-param'>[PARAM] name:</dt>
-<dd>
-オープンしたいリソースを文字列で与えます。
-</dd>
-<dt class='method-param'>[PARAM] mode:</dt>
-<dd>
-モードを文字列で与えます。<a href="../method/-kernel/m/open.html">Kernel.#open</a> と同じです。
-</dd>
-<dt class='method-param'>[PARAM] perm:</dt>
-<dd>
-<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/open.html">open(2)</a> の第 3 引数のように、ファイルを生成する場合のファイルのパーミッションを
-整数で指定します。<a href="../method/-kernel/m/open.html">Kernel.#open</a> と同じです
-</dd>
-<dt class='method-param'>[PARAM] options:</dt>
-<dd>
-ハッシュを与えます。詳しくは <a href="../method/-open-u-r-i/s/open_uri.html">OpenURI.open_uri</a> を参照してください。
-</dd>
-<dt>[EXCEPTION] OpenURI::HTTPError:</dt>
-<dd>
-対象となる URI のスキームが http であり、
-かつリソースの取得に失敗した時に発生します。
-</dd>
-<dt>[EXCEPTION] Net::FTPError:</dt>
-<dd>
-対象となる URI のスキームが ftp であり、かつリソースの取得に失敗した時に
-<a href="../class/-net=3a=3a-f-t-p-error.html">Net::FTPError</a> のサブクラスが発生します。詳しくは <a href="../library/net=2fftp.html">net/ftp</a>
-を参照して下さい。
-</dd>
-</dl>
-<p>
-例:
-</p>
-<pre>
-require 'open-uri'
-sio = open('http://www.example.com')
-p sio.is_a?(OpenURI::Meta) # =&gt; true
-p sio.content_type
-puts sio.read
-</pre>
-<p>
-[SEE_ALSO] <a href="../method/-open-u-r-i/s/open_uri.html">OpenURI.open_uri</a>
-</p>
-</dd>
-
-
-<dt class="method-heading" id="M_OPEN"><code>open(file, mode = &quot;r&quot;, perm = 0666) -&gt; IO</code><span class="permalink">[<a href="../method/-kernel/m/open.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-open">rdoc</a>]</span></dt>
-<dt class="method-heading"><code>open(file, mode = &quot;r&quot;, perm = 0666) {|io| ... } -&gt; object</code></dt>
+<dt class="method-heading" id="M_OPEN"><code>open(file, mode_enc = &quot;r&quot;, perm = 0666) -&gt; IO</code><span class="permalink">[<a href="../method/-kernel/m/open.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-open">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>open(file, mode_enc = &quot;r&quot;, perm = 0666) {|io| ... } -&gt; object</code></dt>
 <dd class="method-description">
 <p>
 file をオープンして、<a href="../class/-i-o.html">IO</a>（<a href="../class/-file.html">File</a>を含む）クラスのインスタンスを返します。
@@ -2393,9 +2564,9 @@ Perlと異なりコマンドは常に `|' で始まります。
 <dd>
 ファイルを文字列で指定します。整数を指定した場合はファイルディスクリプタとして扱います。
 </dd>
-<dt class='method-param'>[PARAM] mode:</dt>
+<dt class='method-param'>[PARAM] mode_enc:</dt>
 <dd>
-モードを文字列か定数の論理和で指定します。後述。
+モード・エンコーディングを文字列か定数の論理和で指定します。後述。
 </dd>
 <dt class='method-param'>[PARAM] perm:</dt>
 <dd>
@@ -2476,10 +2647,138 @@ mode は以下の三つのうちのいずれかです。
 します (ただし、DOS/Windowsのようにシステムがテキスト／バイナリでファイルを区別する場
 合に限ります)
 </p>
+<h4 >Universal Newline</h4>
+<p>
+改行をLFに揃えます。一言で言えばPEP:278 <a class="external" href="https://www.python.org/dev/peps/pep-0278/">https://www.python.org/dev/peps/pep-0278/</a>のことです。
+</p>
+<dl>
+<dt>&quot;rt&quot;</dt>
+<dd>
+<p>
+CR、LF、CRLFのいずれをもLFとして読み込む。
+</p>
+</dd>
+<dt>&quot;rb&quot;</dt>
+<dd>
+<p>
+CR、LF、CRLFはいずれもそのまま読み込まれる。
+</p>
+</dd>
+<dt>&quot;r&quot;</dt>
+<dd>
+<p>
+&quot;rt&quot;と&quot;rb&quot;のどちらの扱いになるかはプラットフォーム依存。
+(Unix系ならばなら&quot;rb&quot;、mswinやmingwなら&quot;rt&quot;扱いとなる)
+</p>
+</dd>
+<dt>&quot;wb&quot;</dt>
+<dd>
+<p>
+LFはそのままLFとして書き込まれる。
+</p>
+</dd>
+<dt>&quot;wt&quot; または &quot;w&quot;</dt>
+<dd>
+<p>
+LFはLFのままか、CR+LFか、どちらかになる。どちらになるかはプラットフォーム依存。
+(Unix系ならばLFのまま、mswinやmingwならばCRLFとなる)
+</p>
+</dd>
+</dl>
+<p>
+なお、以上のCR、LF、CRLFは入力のエンコーディングを解釈した後に処理されます。例えば、UTF-16LEでは、LFはバイト列&quot;\x0a\x00&quot;のことになります。
+</p>
+<h4 >エンコーディングの指定</h4>
+<p>
+ext_enc(外部エンコーディング)が指定されている場合、
+読み込まれた文字列にはこのエンコーディングが指定され、
+出力する文字列はそのエンコーディングに変換されます。
+</p>
+<p>
+ext_encが'BOM|'で始まる場合、その入力に含まれるBOMはあらかじめ削られます。
+また、BOMがあった場合、入力された文字列にはそのBOMに対応するエンコーディングが設定されます。
+</p>
+<pre>
+# BOMでUTF-16BEかLEかを判別する例
+File.open(&quot;utf16.txt&quot;, &quot;rb:BOM|utf-16&quot;){|file| .... }
+</pre>
+<p>
+int_encも指定されていた場合、入力された文字列をext_encでエンコーディングされた文字列とみなしてint_encへと変換し、その結果にint_encを設定して返します。
+</p>
 </dd>
 
 
-<dt class="method-heading" id="M_P"><code>p(*arg) -&gt; nil</code><span class="permalink">[<a href="../method/-kernel/m/p.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-p">rdoc</a>]</span></dt>
+<dt class="method-heading" id="M_OPEN"><code>open(name, mode = 'r', perm = nil, options = {}) -&gt; StringIO | File</code><span class="permalink">[<a href="../method/-kernel/m/open.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-open">rdoc</a>]</span> <span class="kindinfo">[redefined by <a href="../library/open=2duri.html">open-uri</a>]</span>
+</dt>
+<dt class="method-heading"><code>open(name, mode = 'r', perm = nil, options = {}) {|ouri| ...} -&gt; nil</code> <span class="kindinfo">[redefined by <a href="../library/open=2duri.html">open-uri</a>]</span>
+</dt>
+<dd class="method-description">
+<p>
+name が http:// や ftp:// で始まっている文字列なら URI のリソースを
+取得した上で <a href="../class/-string-i-o.html">StringIO</a> オブジェクトとして返します。
+StringIO オブジェクトは <a href="../class/-open-u-r-i=3a=3a-meta.html">OpenURI::Meta</a> モジュールで extend されています。
+</p>
+<p>
+name に open メソッドが定義されている場合は、*rest を引数として渡し
+name.open(*rest, &amp;block) のように name の open メソッドが呼ばれます。
+</p>
+<p>
+これ以外の場合は、name はファイル名として扱われ、従来の
+<a href="../method/-kernel/m/open.html">Kernel.#open</a>(name, *rest) が呼ばれます。
+</p>
+<p>
+ブロックを与えた場合は上の場合と同様、name が http:// や ftp:// で
+始まっている文字列なら URI のリソースを取得した上で <a href="../class/-string-i-o.html">StringIO</a> オブジェクトを
+引数としてブロックを評価します。後は同様です。
+StringIO オブジェクトは <a href="../class/-open-u-r-i=3a=3a-meta.html">OpenURI::Meta</a> モジュールで extend されています。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+オープンしたいリソースを文字列で与えます。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+モードを文字列で与えます。<a href="../method/-kernel/m/open.html">Kernel.#open</a> と同じです。
+</dd>
+<dt class='method-param'>[PARAM] perm:</dt>
+<dd>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/open.html">open(2)</a> の第 3 引数のように、ファイルを生成する場合のファイルのパーミッションを
+整数で指定します。<a href="../method/-kernel/m/open.html">Kernel.#open</a> と同じです
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+ハッシュを与えます。詳しくは <a href="../method/-open-u-r-i/s/open_uri.html">OpenURI.open_uri</a> を参照してください。
+</dd>
+<dt>[EXCEPTION] OpenURI::HTTPError:</dt>
+<dd>
+対象となる URI のスキームが http であり、
+かつリソースの取得に失敗した時に発生します。
+</dd>
+<dt>[EXCEPTION] Net::FTPError:</dt>
+<dd>
+対象となる URI のスキームが ftp であり、かつリソースの取得に失敗した時に
+<a href="../class/-net=3a=3a-f-t-p-error.html">Net::FTPError</a> のサブクラスが発生します。詳しくは <a href="../library/net=2fftp.html">net/ftp</a>
+を参照して下さい。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'open-uri'
+sio = open('http://www.example.com')
+p sio.is_a?(OpenURI::Meta) # =&gt; true
+p sio.content_type
+puts sio.read
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-open-u-r-i/s/open_uri.html">OpenURI.open_uri</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_P"><code>p(*arg) -&gt; object | Array</code><span class="permalink">[<a href="../method/-kernel/m/p.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-p">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 引数を人間に読みやすい形に整形して改行と順番に標準出力 <a href="../method/-kernel/v/stdout.html">$stdout</a> に出力します。主にデバッグに使用します。
@@ -2512,7 +2811,7 @@ p に引数を与えずに呼び出した場合は特に何もしません。
 </dd>
 <dt>[RETURN]</dt>
 <dd>
-nil を返します。
+指定された引数 arg を返します。複数の引数が指定された場合はそれらを要素とする配列を返します。
 </dd>
 </dl>
 <pre>
@@ -2541,7 +2840,6 @@ p 50,&quot;50&quot;
 <p>
 文字列以外のオブジェクトが引数として与えられた場合には、
 to_s メソッドにより文字列に変換してから出力します。
-ただし、nil に対しては文字列 &quot;nil&quot; を出力します
 </p>
 <p>
 変数 <a href="../method/-kernel/v/=2c.html">$,</a> (出力フィールドセパレータ)に nil で
@@ -2568,7 +2866,7 @@ print &quot;Hello, world!&quot;
 print &quot;Regexp is&quot;,/ant/
 print nil
 print &quot;\n&quot;
-#=&gt; Hello, world!Regexp is(?-mix:ant)nil
+#=&gt; Hello, world!Regexp is(?-mix:ant)
 
 $_ = &quot;input&quot;
 $, = &quot;&lt;and&gt;&quot;
@@ -2708,7 +3006,6 @@ putc(33333333333333333333333333333333333) # bignum too big to convert into `long
 配列や文字列以外のオブジェクトが引数として与えられた場合には、
 当該オブジェクトを最初に to_ary により配列へ、
 次に to_s メソッドにより文字列へ変換を試みます。
-ただし、nil に対しては文字列 &quot;nil&quot; を出力します
 末尾が改行で終っている引数や配列の要素に対しては puts 自身
 は改行を出力しません。
 </p>
@@ -2730,14 +3027,14 @@ putc(33333333333333333333333333333333333) # bignum too big to convert into `long
 puts &quot;foo&quot;, &quot;bar\n&quot;, &quot;baz&quot;
 puts &quot;&quot;    # 改行のみ出力
 puts       # 改行のみ出力
-puts nil
+puts nil   # 改行のみ出力
 puts [&quot;oui&quot;, &quot;non&quot;]
 #=&gt; foo
 #   bar
 #   baz
 #
 #
-#   nil
+#
 #   oui
 #   non
 </pre>
@@ -2748,16 +3045,27 @@ puts [&quot;oui&quot;, &quot;non&quot;]
 
 
 <dt class="method-heading" id="M_RAND"><code>rand(max = 0) -&gt; Integer | Float</code><span class="permalink">[<a href="../method/-kernel/m/rand.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-rand">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>rand(range) -&gt; Integer | Float | nil</code></dt>
 <dd class="method-description">
 <p>
 擬似乱数を発生させます。
 </p>
 <p>
+最初の形式では
 max が 0 の場合は 0.0 以上 1.0 未満の実数を、正の整数の場合は 0 以上 max 未満の整数を返します。
 それ以外の値を指定した場合は max.to_int の絶対値が指定されたものとして扱います。
 </p>
 <p>
+二番目の形式では range で指定された範囲の値を返します。
+range の始端と終端が共に整数の場合は整数を、少なくとも片方が実数の場合は実数を返します。
+range に含まれる数が無い場合は nil を返します。
+</p>
+<p>
 まだ <a href="../method/-kernel/m/srand.html">Kernel.#srand</a> が呼ばれていなければ自動的に呼び出します。
+</p>
+<p>
+擬似乱数生成器として <a href="../method/-random/c/-d-e-f-a-u-l-t.html">Random::DEFAULT</a> を使用します。
+これは <a href="../method/-random/s/rand.html">Random.rand</a> と共通です。
 </p>
 <dl>
 <dt class='method-param'>[PARAM] max:</dt>
@@ -2765,6 +3073,11 @@ max が 0 の場合は 0.0 以上 1.0 未満の実数を、正の整数の場合
 乱数値の上限を正の整数で指定します。
 max 自体は乱数値の範囲に含まれません。
 0 を指定すると実数値の乱数を返します。
+</dd>
+<dt class='method-param'>[PARAM] range:</dt>
+<dd>
+発生させる乱数値の範囲を <a href="../class/-range.html">Range</a> オブジェクトで指定します。
+range の境界は数値でなければなりません。
 </dd>
 </dl>
 <pre>
@@ -2774,9 +3087,15 @@ rand            #=&gt; 0.6221087710398319
 rand(10)        #=&gt; 4
 rand(5.5)       #=&gt; 0
                 # rand(5) と同じ。 5 が乱数値の範囲に含まれないことに注意。
+
+rand(1..6)      #=&gt; 2                   (1 から 6 までの整数)
+rand(0...10)    #=&gt; 1                   (0 から 9 までの整数。終端を含まない)
+rand(1.0..1.5)  #=&gt; 1.1362963047752432  (1.0 以上 1.5 以下の実数)
+rand(1.0...1.5) #=&gt; 1.1382321275715483  (1.0 以上 1.5 未満の実数)
+rand(1..0)      #=&gt; nil
 </pre>
 <p>
-[SEE_ALSO] <a href="../method/-kernel/m/srand.html">Kernel.#srand</a>
+[SEE_ALSO] <a href="../method/-kernel/m/srand.html">Kernel.#srand</a>, <a href="../method/-random/i/rand.html">Random#rand</a>, <a href="../class/-random.html">Random</a>
 </p>
 </dd>
 
@@ -2946,28 +3265,6 @@ p a # undefined local variable or method `a' for #&lt;Object:0x294f9ec @a=1&gt; 
 </dd>
 
 
-<dt class="method-heading" id="M_SCAN"><code>scan(pattern) -&gt; [String] | [[String]]</code><span class="permalink">[<a href="../method/-kernel/m/scan.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-scan">rdoc</a>]</span></dt>
-<dt class="method-heading"><code>scan(pattern) {|matched| ... } -&gt; [String] | [[String]]</code></dt>
-<dd class="method-description">
-<p>
-$_.scan と同じです。
-</p>
-<p>
-暗号的になりすぎるきらいがあるため、このメソッドの使用は推奨されていません。
-今後はより明示的な $_.scan を使ってください。
-</p>
-<dl>
-<dt class='method-param'>[PARAM] pattern:</dt>
-<dd>
-探索する部分文字列または正規表現
-</dd>
-</dl>
-<p>
-[SEE_ALSO] <a href="../method/-string/i/scan.html">String#scan</a>,<a href="../method/-kernel/v/_.html">$_</a>
-</p>
-</dd>
-
-
 <dt class="method-heading" id="M_SELECT"><code>select(reads, writes = [], excepts = [], timeout = nil) -&gt; [[IO]] | nil</code><span class="permalink">[<a href="../method/-kernel/m/select.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-select">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
@@ -3119,7 +3416,7 @@ end
 43.to_s
 
 # ----結果----
-# [&quot;c-return&quot;, &quot;..&quot;, 3, :set_trace_func, #&lt;Binding:0xf6ceb8&gt;, Kernel]
+# [&quot;c-return&quot;, &quot;..&quot;, 1, :set_trace_func, #&lt;Binding:0xf6ceb8&gt;, Kernel]
 # [&quot;line&quot;, &quot;..&quot;, 4, nil, #&lt;Binding:0x10cbcd8&gt;, nil]
 # [&quot;c-call&quot;, &quot;..&quot;, 4, :inherited, #&lt;Binding:0x10cba98&gt;, Class]
 # [&quot;c-return&quot;, &quot;..&quot;, 4, :inherited, #&lt;Binding:0x10cb858&gt;, Class]
@@ -3175,27 +3472,406 @@ puts re2
 </dd>
 
 
-<dt class="method-heading" id="M_SPLIT"><code>split(sep = $/, limit = 0) -&gt; [String]</code><span class="permalink">[<a href="../method/-kernel/m/split.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-split">rdoc</a>]</span></dt>
+<dt class="method-heading" id="M_SPAWN"><code>spawn(command, options={}) -&gt; Integer</code><span class="permalink">[<a href="../method/-kernel/m/spawn.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-spawn">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>spawn(env, command, options={}) -&gt; Integer</code></dt>
 <dd class="method-description">
 <p>
-$_.split と同じです。
+引数を外部コマンドとして実行しますが、生成した
+子プロセスの終了を待ち合わせません。生成した子プロセスのプロセスIDを返します。
 </p>
+<h4 >引数の解釈</h4>
 <p>
-暗号的になりすぎるきらいがあるため、このメソッドの使用は推奨されていません。
-今後はより明示的な $_.split を使ってください。
+この形式では command が shell のメタ文字
+</p>
+<pre>
+  * ? {} [] &lt;&gt; () ~ &amp; | \ $ ; ' ` &quot; \n
+</pre>
+<p>
+を含む場合、shell 経由で実行されます。
+そうでなければインタプリタから直接実行されます。
 </p>
 <dl>
-<dt class='method-param'>[PARAM] sep:</dt>
+<dt class='method-param'>[PARAM] command:</dt>
 <dd>
-文字列を分割するときのセパレータのパターン
+コマンドを文字列で指定します。
 </dd>
-<dt class='method-param'>[PARAM] limit:</dt>
+<dt class='method-param'>[PARAM] env:</dt>
 <dd>
-分割する最大個数
+更新する環境変数を表す Hash
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+オプションパラメータ Hash
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+起動に失敗し、ruby インタプリタに制御が戻った場合に発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+コマンドが実行できなかった場合に発生します。
 </dd>
 </dl>
 <p>
-[SEE_ALSO] <a href="../method/-string/i/split.html">String#split</a>,<a href="../method/-kernel/v/_.html">$_</a>
+[SEE_ALSO] <a href="../method/-kernel/m/system.html">Kernel.#system</a>,<a href="../method/-kernel/m/exec.html">Kernel.#exec</a>
+</p>
+</dd>
+<dt class="method-heading" id="M_SPAWN"><code>spawn(program, *args) -&gt; Integer</code><span class="permalink">[<a href="../method/-kernel/m/spawn.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-spawn">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>spawn(env, program, *args, options={}) -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+引数を外部コマンドとして実行しますが、生成した
+子プロセスの終了を待ち合わせません。生成した子プロセスのプロセスIDを返します。
+</p>
+<p>
+env に Hash を渡すことで、<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/exec.html">exec(2)</a> で子プロセス内で
+ファイルを実行する前に環境変数を変更することができます。
+Hash のキーは環境変数名文字列、Hash の値に設定する値とします。
+nil とすることで環境変数が削除(<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/unsetenv.html">unsetenv(3)</a>)されます。
+</p>
+<pre>
+# FOO を BAR にして BAZ を削除する
+pid = spawn({&quot;FOO&quot;=&gt;&quot;BAR&quot;, &quot;BAZ&quot;=&gt;nil}, command)
+</pre>
+<p>
+親プロセスは <a href="../method/-process/m/waitpid.html">Process.#waitpid</a> で子プロセスの終了を待ち合わせるか
+もしくは <a href="../method/-process/m/detach.html">Process.#detach</a> で子プロセスを切り離すかしてください。
+そうでないとゾンビプロセスが残る場合があります。
+</p>
+<h4 >引数の解釈</h4>
+<p>
+この形式で呼び出した場合、空白や shell のメタキャラクタも
+そのまま program の引数に渡されます。
+先頭の引数が2要素の配列であった場合、第1要素の文字列が実際に
+起動するプログラムのパスであり、第2要素が「みせかけ」のプロ
+グラム名になります。
+また、第1要素はフルパスで指定しなくても環境変数 PATH から探します。
+</p>
+<h4 >option引数の概要</h4>
+<p>
+Hash を options として渡すことで、起動される子プロセスの
+</p>
+<ul>
+<li>プロセスグループ</li>
+<li>resource limit</li>
+<li>カレントディレクトリ</li>
+<li>umask</li>
+<li>子プロセスでのリダイレクト</li>
+</ul>
+<p>
+などを変更できます。環境変数のクリアなども指定できます。
+</p>
+<p>
+以下のオプションが指定できます。
+</p>
+<dl>
+<dt>:unsetenv_others</dt>
+<dd>
+<p>
+これを true にすると、envで指定した環境変数以外をすべてクリアします。
+false だとクリアしません。false がデフォルトです。
+</p>
+</dd>
+<dt>:pgroup</dt>
+<dd>
+<p>
+引数に true or 0 を渡すと新しいプロセスグループを作成し、そこで動きます。
+整数を渡すと、指定したプロセスグループに属します
+nil を渡すとプロセスグループを変更しません。デフォルトは nil です。
+</p>
+</dd>
+<dt>:rlimit_core, :rlimit_cpu, etc</dt>
+<dd>
+<p>
+resource limit を設定します。詳しくは <a href="../method/-process/m/setrlimit.html">Process.#setrlimit</a> を見て
+ください。引数には整数、もしくは整数2つの配列を渡します。
+</p>
+</dd>
+<dt>:chdir</dt>
+<dd>
+<p>
+指定した文字列をカレントディレクトリにします。
+</p>
+</dd>
+<dt>:umask</dt>
+<dd>
+<p>
+指定した整数を umask に設定します。
+</p>
+</dd>
+<dt>リダイレクト関連</dt>
+<dd>
+<p>
+Hash のキーに子プロセス側のファイルデスクリプタを、
+対応する値に親プロセス側のファイルデスクリプタや
+ファイル名を指定することでリダイレクトを実現できます。
+</p>
+</dd>
+<dt>:close_others</dt>
+<dd>
+<p>
+これを true に設定すると
+リダイレクトされていない、0(stdin), 1(stdout), 2(stderr) 以外の
+ファイルデスクリプタをすべて閉じます。
+true がデフォルトです。
+
+</p>
+</dd>
+</dl>
+<h4 >option引数によるリダイレクトの概要</h4>
+<p>
+Hash のキー(子プロセス側)には以下のいずれかが指定できます。
+</p>
+<ul>
+<li>単一のファイルデスクリプタ</li>
+<li>ファイルデスクリプタの配列</li>
+</ul>
+<p>
+配列を渡すことで複数のファイルデスクリプタを同時にリダイレクトできます。
+</p>
+<p>
+Hash の値(親プロセス側)には以下のいずれかが指定できます。
+</p>
+<ul>
+<li>単一のファイルデスクリプタ</li>
+<li>リダイレクト先のファイル名文字列</li>
+<li>[リダイレクト先のファイル名文字列]、配列の要素にすることで
+<a href="../method/-file/c/-r-d-o-n-l-y.html">File::RDONLY</a> でファイルを開いてリダイレクトします。</li>
+<li>[リダイレクト先のファイル名文字列, モード文字列]
+open(ファイル名, モード, 0644) でファイルを開いてリダイレクト
+します。</li>
+<li>[リダイレクト先のファイル名文字列, モード文字列, パーミション(整数)]
+open(ファイル名, モード, パーミッション) でファイルを
+開いてリダイレクトします。</li>
+<li>[:child, ファイルデスクリプタ]
+子プロセス側のファイルデスクリプタを指定できます。</li>
+<li>:close キーで指定したファイルデスクリプタを子プロセス側で閉じます</li>
+</ul>
+<p>
+ファイルデスクリプタを表すためには、以下が利用できます。
+</p>
+<ul>
+<li>:in  標準入力, ファイルデスクリプタ0</li>
+<li>:out 標準出力, ファイルデスクリプタ1</li>
+<li>:err 標準エラー出力, ファイルデスクリプタ2</li>
+<li>整数 指定した整数が表すファイルデスクリプタ</li>
+<li><a href="../class/-i-o.html">IO</a> <a href="../method/-i-o/i/fileno.html">IO#fileno</a> で表されるファイルデスクリプタ</li>
+</ul>
+<h4 >option引数の詳細および例</h4>
+<p>
+「:unsetenv_others」を使うと、envで指定したもの以外の環境変数を
+クリアします。
+</p>
+<pre>
+# すべての環境変数をクリア
+pid = spawn(command, :unsetenv_others=&gt;true)
+# FOO だけ
+pid = spawn({&quot;FOO&quot;=&gt;&quot;BAR&quot;}, command, :unsetenv_others=&gt;true)
+</pre>
+<p>
+「:pgroup」でプロセスグループを指定できます。
+</p>
+<pre>
+# true, 0 で新しいプロセスグループを作りそのリーダーになります。
+pid = spawn(command, :pgroup =&gt; true)
+# 整数を渡すとそのグループに所属します。
+pid = spawn(command, :pgroup =&gt; 10)
+</pre>
+<p>
+「:rlimit_core」「:rlimit_cpu」などで、resource limit を指定します。
+詳しくは <a href="../method/-process/m/setrlimit.html">Process.#setrlimit</a> を見てください。
+このオプションには 整数 or 整数2つの配列、を渡すことができます。
+それぞれ <a href="../method/-process/m/setrlimit.html">Process.#setrlimit</a> の引数が2個、3個の場合に対応します。
+</p>
+<pre>
+# 現プロセスの core の resource limit を取得
+cur, max = Process.getrlimit(:CORE)
+# 一時的に子プロセスの core dump を止める
+pid = spawn(command, :rlimit_core=&gt;[0,max]) # disable core temporary.
+# 子プロセスで core dump を出せるようにする
+pid = spawn(command, :rlimit_core=&gt;max) # enable core dump
+# 子プロセスで core dump を出せなくする
+pid = spawn(command, :rlimit_core=&gt;0) # never dump core.
+</pre>
+<p>
+「:chdir」で子プロセスのカレントディレクトリを変更できます。
+</p>
+<pre>
+pid = spawn(command, :chdir=&gt;&quot;/var/tmp&quot;)
+</pre>
+<p>
+「:umask」で子プロセスの umask を指定できます。
+</p>
+<pre>
+pid = spawn(command, :umask=&gt;077)
+</pre>
+<p>
+リダイレクトは様々なやりかたが使えます。
+Hash のキーが子プロセス側、値が親プロセス側です。
+</p>
+<pre>
+# 以下の例はすべて stderr を stdout にリダイレクトします
+pid = spawn(command, :err=&gt;:out)
+pid = spawn(command, 2=&gt;1)
+pid = spawn(command, STDERR=&gt;:out)
+pid = spawn(command, STDERR=&gt;STDOUT)
+</pre>
+<p>
+この例では子プロセス側の stdout には触れていないので、
+親プロセスから引き継がれます。
+</p>
+<p>
+Hash の値にはファイル名も指定できます。
+</p>
+<pre>
+pid = spawn(command, :in=&gt;&quot;/dev/null&quot;) # read mode
+pid = spawn(command, :out=&gt;&quot;/dev/null&quot;) # write mode
+pid = spawn(command, :err=&gt;&quot;log&quot;) # write mode
+pid = spawn(command, 3=&gt;&quot;/dev/null&quot;) # read mode
+</pre>
+<p>
+stdout と stderr をリダイレクトした場合は、
+ファイルは write mode で open されます。それ以外の場合は
+read mode で open されます。
+</p>
+<p>
+ファイルのフラグ(write/read mode)やパーミッションを明示したい
+場合は、配列を用います。
+</p>
+<pre>
+# なにも指定がなければデフォルトで read mode が使われる。
+pid = spawn(command, :in=&gt;[&quot;file&quot;])
+# read mode で file を open し、リダイレクトする。
+pid = spawn(command, :in=&gt;[&quot;file&quot;, &quot;r&quot;])
+# write mode で file を open し、リダイレクトする。
+# パーミッションはデフォルトで 644。
+pid = spawn(command, :out=&gt;[&quot;log&quot;, &quot;w&quot;]) # 0644 assumed
+# write mode、パーミッション 0600 でファイルをオープンし、リダイレクトする。
+pid = spawn(command, :out=&gt;[&quot;log&quot;, &quot;w&quot;, 0600])
+# flagを文字列でなくビットで指定する
+pid = spawn(command, :out=&gt;[&quot;log&quot;, File::WRONLY|File::EXCL|File::CREAT, 0600])
+</pre>
+<p>
+配列で複数のファイルデスクリプタを同時にリダイレクトできます。
+</p>
+<pre>
+# stdout と stderr を &quot;log&quot; ファイルにリダイレクト
+pid = spawn(command, [:out, :err]=&gt;[&quot;log&quot;, &quot;w&quot;])
+</pre>
+<p>
+複数のファイルデスクリプタを合わせてリダイレクトするには、
+[ :child, FileDescriptor ] を使うこともできます。
+これは子プロセス側で FileDescriptor にリダイレクトすることを意味します。
+これはファイルデスクリプタを直接指定するのと異なるということに
+注意してください。
+例えば、
+</p>
+<pre>
+:err =&gt; :out
+</pre>
+<p>
+とすると、子プロセスの stderr を親プロセスの stdout にリダイレクトします。
+</p>
+<pre>
+:err =&gt; [:child, :out]
+</pre>
+<p>
+とすると、子プロセスの stderr を子プロセスの stdout にリダイレクトします。
+これを用いて、<a href="../method/-i-o/s/popen.html">IO.popen</a> で、子プロセスの
+stderr と stdout を混ぜる例を以下に示します。
+</p>
+<pre>
+io = IO.popen([&quot;sh&quot;, &quot;-c&quot;, &quot;echo out; echo err &gt;&amp;2&quot;, :err=&gt;[:child, :out]])
+p io.read #=&gt; &quot;out\nerr\n
+</pre>
+<p>
+spawn と IO.popen では
+デフォルトでは非標準的なファイルデスクリプタ(3以降)をすべて閉じます。
+「:close_others」オプションでこの挙動を制御できます。
+標準的ファイルデスクリプタ(0,1,2)は :close で明示的に閉じない
+限り、このオプションの影響を受けません。
+</p>
+<pre>
+pid = spawn(command, :close_others=&gt;true)  # close 3,4,5,... (default)
+pid = spawn(command, :close_others=&gt;false) # don't close 3,4,5,...
+</pre>
+<p>
+これを利用して spawn を <a href="../method/-i-o/s/popen.html">IO.popen</a> のように使うことができます。
+</p>
+<pre>
+# similar to r = IO.popen(command)
+r, w = IO.pipe
+pid = spawn(command, :out=&gt;w)   # r は子プロセスで閉じられる
+w.close
+</pre>
+<p>
+「:close」を使ってファイルデスクリプタを明示的に閉じることもできます。
+</p>
+<pre>
+f = open(foo)
+# f は継承されない
+# system は :close_others=&gt;false がデフォルトなのでそれ以外は継承される
+system(command, f=&gt;:close)        # don't inherit f.
+</pre>
+<p>
+spawn で特定のファイルデスクリプタだけを継承したい場合は、
+io =&gt; io という形のオプションを指定します。
+</p>
+<pre>
+# valgrind は --log-fd というオプションでログの出力先を指定できます。
+# これで指定したファイルデスクリプタは親プロセスから
+# 子プロセスに継承されなければならないため、 log_w=&gt;log_w とします。
+log_r, log_w = IO.pipe
+pid = spawn(&quot;valgrind&quot;, &quot;--log-fd=#{log_w.fileno}&quot;, &quot;echo&quot;, &quot;a&quot;, log_w=&gt;log_w)
+log_w.close
+p log_r.read
+</pre>
+<p>
+ファイルデスクリプタを入れ替えることもできます。
+</p>
+<pre>
+# stdout と stderr を入れ替えリダイレクト
+pid = spawn(command, :out=&gt;:err, :err=&gt;:out)
+</pre>
+<p>
+このような相互参照を解決するため、spawnの内部で新しい
+ファイルデスクリプタを作り、利用します。
+</p>
+<p>
+:close_others と :close オプションが意味を持つのは、
+子プロセスに閉じていないファイルデスクリプタが全て渡される環境
+(Unix 系統の環境)のみです。
+例えば Windows では元々子プロセスにはファイルデスクリプタ 0 1 2 のみ
+渡されるので :close_others や :close オプションは意味を持ちません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+更新する環境変数を表す Hash
+</dd>
+<dt class='method-param'>[PARAM] program:</dt>
+<dd>
+文字列か2要素の配列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+渡される引数です。0 個以上の文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+オプションパラメータ Hash
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+第一引数が配列かつ要素数が 2 でない場合に発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+コマンドが実行できなかった場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/m/system.html">Kernel.#system</a>,<a href="../method/-kernel/m/exec.html">Kernel.#exec</a>
 </p>
 </dd>
 
@@ -3204,10 +3880,10 @@ $_.split と同じです。
 <dt class="method-heading"><code>srand(seed) -&gt; Integer</code></dt>
 <dd class="method-description">
 <p>
-<a href="../method/-kernel/m/rand.html">Kernel.#rand</a> の乱数の種を設定し、古い種を返します。
+<a href="../method/-kernel/m/rand.html">Kernel.#rand</a> や <a href="../method/-random/s/rand.html">Random.rand</a> で使用される擬似乱数生成器の種を設定し、古い種を返します。
 </p>
 <p>
-seed に整数を指定するとそれを乱数の種に設定します。
+seed に整数を指定するとその絶対値を乱数の種に設定します。
 それ以外の値を指定した場合は seed.to_int が指定されたものとして扱います。
 seed に既知の値を与えると、以前の Kernel.#rand の値を再現できます。
 </p>
@@ -3253,27 +3929,28 @@ seeds &lt;&lt; srand
 p seeds #=&gt; [455675, 2995620310703489221660585195204777696, 455675]
 </pre>
 <p>
-[SEE_ALSO] <a href="../method/-kernel/m/rand.html">Kernel.#rand</a>
+[SEE_ALSO] <a href="../method/-kernel/m/rand.html">Kernel.#rand</a>, <a href="../method/-random/c/-d-e-f-a-u-l-t.html">Random::DEFAULT</a>
 </p>
 </dd>
 
 
 <dt class="method-heading" id="M_SUB"><code>sub(pattern, replace) -&gt; String</code><span class="permalink">[<a href="../method/-kernel/m/sub.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-sub">rdoc</a>]</span></dt>
-<dt class="method-heading"><code>sub!(pattern, replace) -&gt; String</code></dt>
 <dt class="method-heading"><code>sub(pattern) {|matched| ... } -&gt; String</code></dt>
-<dt class="method-heading"><code>sub!(pattern) {|matched| ... } -&gt; String</code></dt>
 <dd class="method-description">
 <p>
-組み込み変数 <a href="../method/-kernel/v/_.html">$_</a> の指す文字列内で pattern に
-マッチする最初の部分を replace に置き換えます。$_ を返します。
-</p>
-<p>
-$_.sub, $_.sub! とほぼ同じです。
+$_.sub とほぼ同じですが、置換が発生したときは、$_の内容を置き換える点が異なります。
+コマンドラインオプションで -p または -n を指定した時のみ定義されます。
 </p>
 <p>
 暗号的になりすぎるきらいがあるため、このメソッドの使用は推奨されていません。
-今後はより明示的な $_.sub, $_.sub! を使ってください。
+今後はより明示的な $_.sub を使ってください。
 </p>
+<dl>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+replace を指定しなかった場合に発生します。
+</dd>
+</dl>
 <p>
 $_.sub とこのメソッド sub は以下の点で違いがあります。
 </p>
@@ -3315,7 +3992,7 @@ syscall(2) や
 それ以外では、返した値をそのまま数値で返します。
 </p>
 <p>
-ライブラリ <a href="../library/dl.html">dl</a> を使えばより高レベルな操作ができます。
+ライブラリ <a href="../library/fiddle.html">fiddle</a> を使えばより高レベルな操作ができます。
 </p>
 <dl>
 <dt class='method-param'>[PARAM] num:</dt>
@@ -3336,23 +4013,31 @@ syscall(2) が -1 を返した場合に発生します。
 </dd>
 </dl>
 <p>
-[SEE_ALSO] <a href="../library/dl.html">dl</a>, <a class="external" href="http://www.freebsd.org/cgi/man.cgi?query=syscall&amp;sektion=2&amp;manpath=FreeBSD+9.0-RELEASE">syscall(2freebsd)</a>, <a class="external" href="http://man7.org/linux/man-pages/man2/syscall.2.html">syscall(2linux)</a>
+[SEE_ALSO] <a href="../library/fiddle.html">fiddle</a>, <a class="external" href="http://www.freebsd.org/cgi/man.cgi?query=syscall&amp;sektion=2&amp;manpath=FreeBSD+9.0-RELEASE">syscall(2freebsd)</a>, <a class="external" href="http://man7.org/linux/man-pages/man2/syscall.2.html">syscall(2linux)</a>
 </p>
 </dd>
 
 
-<dt class="method-heading" id="M_SYSTEM"><code>system(command) -&gt; bool</code><span class="permalink">[<a href="../method/-kernel/m/system.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-system">rdoc</a>]</span></dt>
+<dt class="method-heading" id="M_SYSTEM"><code>system(command, options={}) -&gt; bool | nil</code><span class="permalink">[<a href="../method/-kernel/m/system.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-system">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>system(env, command, options={}) -&gt; bool | nil</code></dt>
 <dd class="method-description">
 <p>
 引数を外部コマンドとして実行して、成功した時に真を返します。
 </p>
 <p>
 子プロセスが終了ステータス 0 で終了すると成功とみなし true を返します。
-それ以外の終了ステータスの場合
-(コマンドを実行できなかった場合も含む)は false を返します。
+それ以外の終了ステータスの場合は false を返します。
+コマンドを実行できなかった場合は nil を返します。
 </p>
 <p>
 終了ステータスは変数 <a href="../method/-kernel/v/=3f.html">$?</a> で参照できます。
+</p>
+<p>
+コマンドを実行することができなかった場合、多くのシェルはステータス
+127 を返します。(したがって <a href="../method/-kernel/v/=3f.html">$?</a> の数値は、0x7f00)、シェルを介
+さない場合は Ruby の子プロセスがステータス 127 で終了します。
+コマンドが実行できなかったのか、コマンドが失敗したのかは、普通
+<a href="../method/-kernel/v/=3f.html">$?</a> を参照することで判別可能です。
 </p>
 <h4 >引数の解釈</h4>
 <p>
@@ -3370,23 +4055,53 @@ syscall(2) が -1 を返した場合に発生します。
 <dd>
 command コマンドを文字列で指定します。
 </dd>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+更新する環境変数を表す Hash
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+オプションパラメータ Hash
+</dd>
 </dl>
 <p>
-[SEE_ALSO] <a href="../method/-kernel/m/=60.html">Kernel.#`</a>,<a href="../method/-kernel/m/exec.html">Kernel.#exec</a>,<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/system.html">system(3)</a>
+[SEE_ALSO] <a href="../method/-kernel/m/=60.html">Kernel.#`</a>,<a href="../method/-kernel/m/spawn.html">Kernel.#spawn</a>,<a href="../method/-kernel/m/exec.html">Kernel.#exec</a>,<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/system.html">system(3)</a>
 </p>
 </dd>
-<dt class="method-heading" id="M_SYSTEM"><code>system(program, *args) -&gt; bool</code><span class="permalink">[<a href="../method/-kernel/m/system.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-system">rdoc</a>]</span></dt>
+<dt class="method-heading" id="M_SYSTEM"><code>system(program, *args, options={}) -&gt; bool | nil</code><span class="permalink">[<a href="../method/-kernel/m/system.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-system">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>system(env, program, *args, options={}) -&gt; bool | nil</code></dt>
 <dd class="method-description">
 <p>
 引数を外部コマンドとして実行して、成功した時に真を返します。
 </p>
 <p>
 子プロセスが終了ステータス 0 で終了すると成功とみなし true を返します。
-それ以外の終了ステータスの場合は false を返します。
-コマンドを実行できなかった場合は nil を返します。
+それ以外の終了ステータスの場合
+(コマンドを実行できなかった場合も含む)は false を返します。
 </p>
 <p>
 終了ステータスは変数 <a href="../method/-kernel/v/=3f.html">$?</a> で参照できます。
+</p>
+<p>
+コマンドを実行することができなかった場合、多くのシェルはステータス
+127 を返します。(したがって $? の数値は、0x7f00)、シェルを介
+さない場合は Ruby の子プロセスがステータス 127 で終了します。
+コマンドが実行できなかったのか、コマンドが失敗したのかは、普通
+$? を参照することで判別可能です。
+</p>
+<p>
+Hash を options として渡すことで、起動される子プロセスの
+</p>
+<ul>
+<li>プロセスグループ</li>
+<li>resource limit</li>
+<li>カレントディレクトリ</li>
+<li>umask</li>
+<li>子プロセスでのリダイレクト</li>
+</ul>
+<p>
+などを変更できます。環境変数のクリアなども指定できます。
+詳しくは <a href="../method/-kernel/m/spawn.html">Kernel.#spawn</a> を参照してください。
 </p>
 <h4 >引数の解釈</h4>
 <p>
@@ -3406,13 +4121,21 @@ command コマンドを文字列で指定します。
 <dd>
 program に渡す引数を 0 個以上指定する
 </dd>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+更新する環境変数を表す Hash
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+オプションパラメータ Hash
+</dd>
 <dt>[EXCEPTION] ArgumentError:</dt>
 <dd>
 第一引数が配列かつ要素数が 2 でない場合に発生します。
 </dd>
 </dl>
 <p>
-[SEE_ALSO] <a href="../method/-kernel/m/=60.html">Kernel.#`</a>,<a href="../method/-kernel/m/exec.html">Kernel.#exec</a>,<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/system.html">system(3)</a>
+[SEE_ALSO] <a href="../method/-kernel/m/=60.html">Kernel.#`</a>,<a href="../method/-kernel/m/spawn.html">Kernel.#spawn</a>,<a href="../method/-kernel/m/exec.html">Kernel.#exec</a>,<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/system.html">system(3)</a>
 </p>
 </dd>
 
@@ -3662,16 +4385,19 @@ throw は探索時に呼び出しスタックをさかのぼるので、
 同じ tag で待っている catch が存在しない場合は、例外で
 スレッドが終了します。
 </p>
+<p>
+同じ tag であるとは <a href="../method/-object/i/object_id.html">Object#object_id</a> が同じであるという意味です。
+</p>
 <dl>
 <dt class='method-param'>[PARAM] tag:</dt>
 <dd>
-シンボルまたは文字列です。
+catch の引数に対応する任意のオブジェクトです。
 </dd>
 <dt class='method-param'>[PARAM] value:</dt>
 <dd>
 catch の戻り値になります。
 </dd>
-<dt>[EXCEPTION] NameError:</dt>
+<dt>[EXCEPTION] ArgumentError:</dt>
 <dd>
 同じ tag で待っている catch が存在しない場合に発生します。
 </dd>
@@ -3828,7 +4554,7 @@ $v = 'str'        # なにも出力されない
 </dd>
 
 
-<dt class="method-heading" id="M_WARN"><code>warn(message) -&gt; nil</code><span class="permalink">[<a href="../method/-kernel/m/warn.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-warn">rdoc</a>]</span></dt>
+<dt class="method-heading" id="M_WARN"><code>warn(*message) -&gt; nil</code><span class="permalink">[<a href="../method/-kernel/m/warn.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/1.8.7/Kernel.html#method-c-warn">rdoc</a>]</span></dt>
 <dd class="method-description">
 <p>
 message を 標準エラー出力 <a href="../method/-kernel/v/stderr.html">$stderr</a> に出力します。 <a href="../method/-kernel/v/-v-e-r-b-o-s-e.html">$VERBOSE</a>
@@ -3842,13 +4568,13 @@ to_s メソッドにより文字列に変換してから出力します。
 このメソッドは以下と同じです。
 </p>
 <pre>
-$stderr.print message, &quot;\n&quot; unless $VERBOSE.nil?
+$stderr.puts(*message) if !$VERBOSE.nil? &amp;&amp; !message.empty?
 nil
 </pre>
 <dl>
 <dt class='method-param'>[PARAM] message:</dt>
 <dd>
-出力するオブジェクトを指定します。
+出力するオブジェクトを任意個指定します。
 </dd>
 <dt>[EXCEPTION] IOError:</dt>
 <dd>
@@ -4315,6 +5041,9 @@ in-place 置換モードで用いられます。
 </p>
 <p>
 この変数はグローバルスコープです。
+</p>
+<p>
+[SEE_ALSO] <a href="../doc/spec=2frubycmd.html">Rubyの起動</a>
 </p>
 </dd>
 
@@ -4846,8 +5575,8 @@ end
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>

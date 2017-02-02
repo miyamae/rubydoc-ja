@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>library mkmf (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; mkmfライブラリ
+</p>
+
+<h1>library mkmf</h1>
+
+
+
+
+<h2>要約</h2>
+<p>
+Ruby の拡張ライブラリのための Makefile を作成するライブラリです。
+</p>
+<p>
+このライブラリは通常、extconf.rb という名前の ruby スクリプトから require されます。
+この extconf.rb を実行して Makefile を作成するのが慣習です。
+</p>
+<p>
+extconf.rb の書きかたについては、
+Ruby のアーカイブに含まれる README.EXT (日本語版は README.EXT.ja)
+も参照してください。
+</p>
+<p>
+このライブラリでは extconf.rb を記述するのに有用なメソッドを定義しています。
+ヘッダファイルの存在チェック、ライブラリの存在チェックなど、
+システム間の差異を調べシステムに適した Makefile を生成するために
+これらのメソッドが必要となります。
+</p>
+<h2 >使い方</h2>
+<p>
+架空の拡張ライブラリ foo.so を作成することを考えます。
+この拡張ライブラリを作成するためには、
+ヘッダファイル bar.h とライブラリ libbar.a の関数 baz() が必要だとします。
+このための extconf.rb は以下のように書きます。
+</p>
+<pre>
+require 'mkmf'
+
+dir_config('bar')
+if have_header('bar.h') and have_library('bar', 'baz')
+  create_makefile('foo')
+end
+</pre>
+<p>
+拡張ライブラリ foo.so を作成、インストールするには以下のようにします。
+</p>
+<pre>
+$ ruby extconf.rb
+$ make
+$ make site-install
+</pre>
+<p>
+foo.so の extconf.rb では dir_config('bar') を実行しているので、
+ユーザは以下のようにコマンドラインオプション --with-bar-dir
+などを使って、ヘッダファイルのパスやライブラリのパスを指定できます。
+</p>
+<pre>
+$ ruby extconf.rb --with-bar-include=/usr/local/include \
+                  --with-bar-lib=/usr/local/lib
+
+または
+
+$ ruby extconf.rb --with-bar-dir=/usr/local
+</pre>
+<p>
+dir_config 関数の詳細については
+<a href="../method/-kernel/i/dir_config.html">Kernel#dir_config</a> を参照してください。
+</p>
+<h2 >configure オプション</h2>
+<p>
+configure オプションとは Ruby インタプリタのコンパイル時に指定された
+configure スクリプトのオプション、
+または extconf.rb 実行時のオプションのことです。
+</p>
+<p>
+extconf.rb の作成者は任意のオプションを定義できます。
+<a href="../method/-kernel/i/arg_config.html">Kernel#arg_config</a> も参照してください。
+</p>
+<p>
+また、以下のオプションがデフォルトで利用可能です。
+</p>
+<dl>
+<dt>--with-opt-include=DIR</dt>
+<dd>
+<p>
+ヘッダファイルを探索するディレクトリ DIR を追加します。
+</p>
+</dd>
+<dt>--with-opt-lib=DIR</dt>
+<dd>
+<p>
+ライブラリファイルを探索するディレクトリ DIR を追加します。
+</p>
+</dd>
+<dt>--with-opt-dir=DIR</dt>
+<dd>
+<p>
+ヘッダファイル、ライブラリファイルを探索するディレクトリ
+DIR/include、DIR/lib をそれぞれ追加します。
+</p>
+</dd>
+<dt>--with-TARGET-include=DIR</dt>
+<dd>
+<p>
+ヘッダファイルを探索するディレクトリ DIR を追加します。
+</p>
+<p>
+extconf.rb の中で dir_config(TARGET)
+を実行していればこのオプションを指定できます。
+</p>
+</dd>
+<dt>--with-TARGET-lib=DIR</dt>
+<dd>
+<p>
+ライブラリを探索するディレクトリ DIR を追加します。
+</p>
+<p>
+extconf.rb の中で dir_config(TARGET)
+を実行していればこのオプションを指定できます。
+</p>
+</dd>
+<dt>--with-TARGET-dir=DIR</dt>
+<dd>
+<p>
+ヘッダファイル、ライブラリファイルを探索するディレクトリ
+DIR/include、DIR/lib をそれぞれ追加します。
+</p>
+<p>
+extconf.rb の中で dir_config(TARGET)
+を実行していればこのオプションを指定できます。
+</p>
+</dd>
+</dl>
+<h2 >depend ファイル</h2>
+<p>
+カレントディレクトリに depend という名前のファイルがある場合、
+生成される Makefile の最後に depend ファイルの内容が追加されます。
+</p>
+<p>
+depend ファイルはソースファイルの依存関係を記述するために使います。
+例えば拡張ライブラリのソースコード foo.c が foo.h をインクルードしている場合、
+foo.h が更新されたときにも foo.c を再コンパイルしたいでしょう。
+このような依存関係を記述するには depend ファイルに以下の 1 行を書きます。
+</p>
+<pre>
+foo.o: foo.c foo.h
+</pre>
+<p>
+このように書くと、foo.o が foo.c と foo.h に依存していることを示します。
+つまり、foo.c か foo.h のどちらかが更新された場合に
+foo.o がリコンパイルされるようになります。
+</p>
+<p>
+C コンパイラによっては、このような記述を自動生成できます。
+一般に、このためのオプションは「-M」です。
+「-M」オプションを持つ C コンパイラを使っている場合は、
+以下のコマンドを実行するだけで適切な depend が生成できます。
+</p>
+<pre>
+$ cc -M *.c &gt; depend
+</pre>
+<p>
+gcc には、-M オプションを改善した -MM というオプションもあります。
+このオプションは、通常更新することのない stdio.h など、
+システムのヘッダファイルを依存関係に含めません。
+この -MM オプションでは、「#include &lt;...&gt;」の形式で参照される
+ヘッダファイルをシステムのヘッダファイルとみなしているようです。
+</p>
+<p>
+gcc の -MM オプションを使う場合は、
+以下のコマンドを実行すれば適切な depend が生成できます。
+</p>
+<pre>
+$ gcc -MM *.c &gt; depend
+</pre>
+<p>
+なお、depend ファイルを依存関係の記述以外に使うべきではありません。
+mkmf.rb が depend ファイルを Makefile に連結するときに、
+その内容を加工する場合があるからです。
+</p>
+<h2 >extconf.rb が生成する make ターゲット</h2>
+<p>
+extconf.rb が生成する Makefile には以下のターゲットが定義されています。
+</p>
+<dl>
+<dt>all</dt>
+<dd>
+<p>
+拡張ライブラリを作成します。
+</p>
+</dd>
+<dt>clean</dt>
+<dd>
+<p>
+作成した拡張ライブラリ、オブジェクトファイルなどを削除します。
+</p>
+</dd>
+<dt>distclean</dt>
+<dt>realclean</dt>
+<dd>
+<p>
+clean ターゲットが削除するファイルに加えて、
+Makefile, extconf.h, core, ruby なども削除します。
+</p>
+</dd>
+<dt>install</dt>
+<dt>site-install</dt>
+<dd>
+<p>
+作成した拡張ライブラリを $sitearchdir にインストールします。
+カレントディレクトリにディレクトリ lib があれば
+その配下の ruby スクリプト (*.rb ファイル) を、
+ディレクトリ階層を保ったまま $sitelibdir にインストールします。
+</p>
+</dd>
+</dl>
+
+
+
+
+<h2>追加・再定義されるメソッド</h2>
+<p><code>
+
+<a href="../method/-kernel/v/-c-f-l-a-g-s.html">$CFLAGS</a>
+
+<a href="../method/-kernel/v/-l-d-f-l-a-g-s.html">$LDFLAGS</a>
+
+<a href="../method/-kernel/v/archdir.html">$archdir</a>
+
+<a href="../method/-kernel/v/defs.html">$defs</a>
+
+<a href="../method/-kernel/v/hdrdir.html">$hdrdir</a>
+
+<a href="../method/-kernel/v/libdir.html">$libdir</a>
+
+<a href="../method/-kernel/v/libs.html">$libs</a>
+
+<a href="../method/-kernel/v/sitearchdir.html">$sitearchdir</a>
+
+<a href="../method/-kernel/v/sitelibdir.html">$sitelibdir</a>
+
+<a href="../method/-kernel/v/srcdir.html">$srcdir</a>
+
+<a href="../method/-kernel/v/topdir.html">$topdir</a>
+
+<a href="../method/-kernel/i/arg_config.html">Kernel#arg_config</a>
+
+<a href="../method/-kernel/i/cc_command.html">Kernel#cc_command</a>
+
+<a href="../method/-kernel/i/check_signedness.html">Kernel#check_signedness</a>
+
+<a href="../method/-kernel/i/check_sizeof.html">Kernel#check_sizeof</a>
+
+<a href="../method/-kernel/i/convertible_int.html">Kernel#convertible_int</a>
+
+<a href="../method/-kernel/i/cpp_command.html">Kernel#cpp_command</a>
+
+<a href="../method/-kernel/i/create_header.html">Kernel#create_header</a>
+
+<a href="../method/-kernel/i/create_makefile.html">Kernel#create_makefile</a>
+
+<a href="../method/-kernel/i/create_tmpsrc.html">Kernel#create_tmpsrc</a>
+
+<a href="../method/-kernel/i/depend_rules.html">Kernel#depend_rules</a>
+
+<a href="../method/-kernel/i/dir_config.html">Kernel#dir_config</a>
+
+<a href="../method/-kernel/i/dummy_makefile.html">Kernel#dummy_makefile</a>
+
+<a href="../method/-kernel/i/egrep_cpp.html">Kernel#egrep_cpp</a>
+
+<a href="../method/-kernel/i/enable_config.html">Kernel#enable_config</a>
+
+<a href="../method/-kernel/i/find_executable.html">Kernel#find_executable</a>
+
+<a href="../method/-kernel/i/find_header.html">Kernel#find_header</a>
+
+<a href="../method/-kernel/i/find_library.html">Kernel#find_library</a>
+
+<a href="../method/-kernel/i/find_type.html">Kernel#find_type</a>
+
+<a href="../method/-kernel/i/have_devel=3f.html">Kernel#have_devel?</a>
+
+<a href="../method/-kernel/i/have_framework.html">Kernel#have_framework</a>
+
+<a href="../method/-kernel/i/have_func.html">Kernel#have_func</a>
+
+<a href="../method/-kernel/i/have_header.html">Kernel#have_header</a>
+
+<a href="../method/-kernel/i/have_library.html">Kernel#have_library</a>
+
+<a href="../method/-kernel/i/have_macro.html">Kernel#have_macro</a>
+
+<a href="../method/-kernel/i/have_struct_member.html">Kernel#have_struct_member</a>
+
+<a href="../method/-kernel/i/have_type.html">Kernel#have_type</a>
+
+<a href="../method/-kernel/i/have_var.html">Kernel#have_var</a>
+
+<a href="../method/-kernel/i/install_files.html">Kernel#install_files</a>
+
+<a href="../method/-kernel/i/install_rb.html">Kernel#install_rb</a>
+
+<a href="../method/-kernel/i/libpathflag.html">Kernel#libpathflag</a>
+
+<a href="../method/-kernel/i/link_command.html">Kernel#link_command</a>
+
+<a href="../method/-kernel/i/log_src.html">Kernel#log_src</a>
+
+<a href="../method/-kernel/i/merge_libs.html">Kernel#merge_libs</a>
+
+<a href="../method/-kernel/i/message.html">Kernel#message</a>
+
+<a href="../method/-kernel/i/modified=3f.html">Kernel#modified?</a>
+
+<a href="../method/-kernel/i/rm_f.html">Kernel#rm_f</a>
+
+<a href="../method/-kernel/i/rm_rf.html">Kernel#rm_rf</a>
+
+<a href="../method/-kernel/i/try_compile.html">Kernel#try_compile</a>
+
+<a href="../method/-kernel/i/try_constant.html">Kernel#try_constant</a>
+
+<a href="../method/-kernel/i/try_cpp.html">Kernel#try_cpp</a>
+
+<a href="../method/-kernel/i/try_do.html">Kernel#try_do</a>
+
+<a href="../method/-kernel/i/try_func.html">Kernel#try_func</a>
+
+<a href="../method/-kernel/i/try_link.html">Kernel#try_link</a>
+
+<a href="../method/-kernel/i/try_run.html">Kernel#try_run</a>
+
+<a href="../method/-kernel/i/try_static_assert.html">Kernel#try_static_assert</a>
+
+<a href="../method/-kernel/i/try_type.html">Kernel#try_type</a>
+
+<a href="../method/-kernel/i/try_var.html">Kernel#try_var</a>
+
+<a href="../method/-kernel/i/with_config.html">Kernel#with_config</a>
+
+<a href="../method/-kernel/i/with_werror.html">Kernel#with_werror</a>
+
+<a href="../method/-kernel/i/xpopen.html">Kernel#xpopen</a>
+
+<a href="../method/-kernel/i/xsystem.html">Kernel#xsystem</a>
+
+<a href="../method/-kernel/c/-c-o-n-f-i-g.html">Kernel::CONFIG</a>
+
+</code></p>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

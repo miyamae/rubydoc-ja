@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../../../style.css">
+  <link rel="icon" type="image/png" href="../../../rurema.png">
+  
+  <title>instance method Encoding::Converter#primitive_convert (Ruby 2.3.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../../../doc/index.html">Ruby 2.3.0 リファレンスマニュアル</a>
+&gt; <a href="../../../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+&gt; <a href="../../../class/-encoding=3a=3a-converter.html">Encoding::Converterクラス</a>
+&gt; primitive_convert
+
+</p>
+
+
+<h1>instance method Encoding::Converter#primitive_convert</h1>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_PRIMITIVE_CONVERT"><code>primitive_convert(source_buffer, destination_buffer) -&gt; Symbol</code><span class="permalink">[<a href="../../../method/-encoding=3a=3a-converter/i/primitive_convert.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.3.0/Encoding/Converter.html#method-i-primitive_convert">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>primitive_convert(source_buffer, destination_buffer, destination_byteoffset) -&gt; Symbol</code></dt>
+<dt class="method-heading"><code>primitive_convert(source_buffer, destination_buffer, destination_byteoffset, destination_bytesize) -&gt; Symbol</code></dt>
+<dt class="method-heading"><code>primitive_convert(source_buffer, destination_buffer, destination_byteoffset, destination_bytesize, options) -&gt; Symbol</code></dt>
+<dd class="method-description">
+<p>
+エンコーディング変換のためのメソッドの中で、もっとも細かな扱いが可能なメソッドです。
+</p>
+<p>
+可搬性を確保しつつ、不正なバイトや変換先で未定義な文字の扱いを細かに指定したいときは、Encoding::Converter#primitive_convert が唯一の方法になります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] source_buffer:</dt>
+<dd>
+変換元文字列のバッファ
+</dd>
+<dt class='method-param'>[PARAM] destination_buffer:</dt>
+<dd>
+変換先文字列を格納するバッファ
+</dd>
+<dt class='method-param'>[PARAM] destination_byteoffset:</dt>
+<dd>
+変換先バッファでのオフセット
+</dd>
+<dt class='method-param'>[PARAM] destination_bytesize:</dt>
+<dd>
+変換先バッファの容量
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+変換の詳細を指定する定数やハッシュ
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+変換結果を表す Symbol
+</dd>
+</dl>
+<p>
+options には以下が指定できます。
+</p>
+<dl>
+<dt>hash form</dt>
+<dd>
+<p>
+:partial_input =&gt; true           # source buffer may be part of larger source
+:after_output =&gt; true            # stop conversion after output before input
+</p>
+</dd>
+<dt>integer form</dt>
+<dd>
+<p>
+Encoding::Converter::PARTIAL_INPUT
+Encoding::Converter::AFTER_OUTPUT
+</p>
+</dd>
+</dl>
+<p>
+戻り値は以下のうちのどれかです。
+</p>
+<ul>
+<li>:invalid_byte_sequence</li>
+<li>:incomplete_input</li>
+<li>:undefined_conversion</li>
+<li>:after_output</li>
+<li>:destination_buffer_full</li>
+<li>:source_buffer_empty</li>
+<li>:finished</li>
+</ul>
+<pre>
+ec = Encoding::Converter.new(&quot;UTF-8&quot;, &quot;EUC-JP&quot;)
+src = &quot;abc\x81あいう\u{20bb7}\xe3&quot;
+dst = ''
+
+begin
+  ret = ec.primitive_convert(src, dst)
+  p [ret, src, dst, ec.primitive_errinfo]
+  case ret
+  when :invalid_byte_sequence
+    ec.insert_output(ec.primitive_errinfo[3].dump[1..-2])
+    redo
+  when :undefined_conversion
+    c = ec.primitive_errinfo[3].dup.force_encoding(ec.primitive_errinfo[1])
+    ec.insert_output('\x{%X:%s}' % [c.ord, c.encoding])
+    redo
+  when :incomplete_input
+    ec.insert_output(ec.primitive_errinfo[3].dump[1..-2])
+  when :finished
+  end
+  break
+end while nil
+</pre>
+<p>
+不正なバイトや変換先で未定義なバイトをエスケープしつつ変換する例です。以上のように、戻り値で分岐させつつ、<a href="../../../method/-encoding=3a=3a-converter/i/primitive_errinfo.html">Encoding::Converter#primitive_errinfo</a> の情報を参照して処理していくことになります。
+</p>
+</dd>
+
+
+</dl>
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Language" content="ja-JP">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+  <link rel="icon" type="image/png" href="../rurema.png">
+  
+  <title>class Tempfile (Ruby 2.4.0)</title>
+</head>
+<body>
+
+<p>
+<a href="../doc/index.html">Ruby 2.4.0 リファレンスマニュアル</a>
+&gt; <a href="../library/index.html">ライブラリ一覧</a>
+&gt; <a href="../library/tempfile.html">tempfileライブラリ</a>
+&gt; Tempfileクラス
+</p>
+
+
+<h1>class Tempfile</h1>
+<p>
+
+
+クラスの継承リスト: Tempfile
+
+      &lt; <a href="../class/-file.html">File</a>
+      
+
+      &lt; <a href="../class/-i-o.html">IO</a>
+      
+
+      &lt; <a href="../class/-enumerable.html">Enumerable</a>
+      
+
+      &lt; <a href="../class/-file=3a=3a-constants.html">File::Constants</a>
+      
+
+      &lt; <a href="../class/-object.html">Object</a>
+      
+
+      &lt; <a href="../class/-kernel.html">Kernel</a>
+      
+
+      &lt; <a href="../class/-basic-object.html">BasicObject</a>
+      
+
+
+
+
+
+
+
+</p>
+
+<h2>要約</h2>
+<p>
+テンポラリファイルを操作するためのクラスです。
+</p>
+<ul>
+<li>テンポラリファイルを作成します。
+ファイルは &quot;w+&quot; モードで &quot;basename.pid.n&quot; という名前になります。</li>
+<li>Tempfile オブジェクトは<a href="../class/-file.html">File</a>オブジェクトと同じように使うことができます。</li>
+<li>Tempfile#close(true) により、作成したテンポラリファイルは削除されます。</li>
+<li>スクリプトが終了するときにも削除されます。</li>
+<li><a href="../method/-tempfile/i/open.html">Tempfile#open</a>により、テンポラリファイルを再オープンすることができます。</li>
+<li>テンポラリファイルのモードは 0600 です。</li>
+</ul>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+
+<a href="#S_CREATE">create</a>
+
+<a href="#S_NEW">new</a>
+
+<a href="#S_NEW">open</a>
+
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+
+<a href="#I_CLOSE">close</a>
+
+<a href="#I_CLOSE--21">close!</a>
+
+<a href="#I_DELETE">delete</a>
+
+<a href="#I_DELETE">unlink</a>
+
+<a href="#I_LENGTH">length</a>
+
+<a href="#I_LENGTH">size</a>
+
+<a href="#I_OPEN">open</a>
+
+<a href="#I_PATH">path</a>
+
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_CREATE"><code>create(basename=&quot;&quot;, tmpdir=nil, mode: 0, **options) -&gt; File</code><span class="permalink">[<a href="../method/-tempfile/s/create.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Tempfile.html#method-c-create">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>create(basename=&quot;&quot;, tmpdir=nil, mode: 0, **options) {|fp| ...} -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+テンポラリファイルを作成し、それを表す File オブジェクトを生成して返します(Tempfileではありません)。
+createはopenに似ていますが、finalizerによるファイルの自動unlinkを行いません。
+</p>
+<p>
+ブロックを指定しなかった場合、tmpdirにファイルを作り、Fileオブジェクトを返します。
+このファイルは自動的に削除されません。ファイルを削除する場合は明示的にunlinkすべきです。
+</p>
+<p>
+ブロックを指定して呼び出した場合、tmpdirにファイルを作り、
+Fileオブジェクトを引数としてブロックを呼び出します。
+ブロック終了時にファイルをクローズするのはopenと同じですが、
+createではファイルのunlinkも自動で行います。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] basename:</dt>
+<dd>
+ファイル名のプレフィクスを文字列で指定します。
+文字列の配列を指定した場合、先頭の要素がファイル名のプレフィックス、次の要素が
+サフィックスとして使われます。
+</dd>
+<dt class='method-param'>[PARAM] tmpdir:</dt>
+<dd>
+ファイルが作られるディレクトリです。
+このデフォルト値は、<a href="../method/-dir/s/tmpdir.html">Dir.tmpdir</a> の値となります。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+ファイルのモードを定数の論理和で指定します。<a href="../method/-i-o/s/open.html">IO.open</a>
+と同じ(<a href="../method/-kernel/m/open.html">Kernel.#open</a>と同じ)ものが指定できます。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+ファイルのオプション引数を指定します。<a href="../method/-i-o/s/open.html">IO.open</a> と同
+じものが指定できます。ただし、:permオプションは無視され
+ます。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-tempfile/s/open.html">Tempfile.open</a>
+</p>
+<p>
+例:
+</p>
+<pre>
+require &quot;tempfile&quot;
+GC.disable
+path = &quot;&quot;
+Tempfile.create(&quot;foo&quot;) do |f|
+  path = f.path
+  p File.exist?(path) #=&gt; true
+end
+p File.exist?(path) #=&gt; false
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_NEW"><code>new(basename = '', tempdir = nil, mode: 0, **options) -&gt; Tempfile</code><span class="permalink">[<a href="../method/-tempfile/s/new.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Tempfile.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>open(basename = '', tempdir = nil, mode: 0, **options) -&gt; Tempfile</code></dt>
+<dt class="method-heading"><code>open(basename = '', tempdir = nil, mode: 0, **options) {|fp| ...} -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+テンポラリファイルを作成し、それを表す Tempfile オブジェクトを生成して返します。
+ファイル名のプレフィクスには指定された basename が使われます。
+ファイルは指定された tempdir に作られます。
+open にブロックを指定して呼び出した場合は、Tempfile オブジェクトを引数として ブロックを実行します。ブロックの実行が終了すると、ファイルは自動的に クローズされ、
+ブロックの値をかえします。
+new にブロックを指定した場合は無視されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] basename:</dt>
+<dd>
+ファイル名のプレフィクスを文字列で指定します。
+文字列の配列を指定した場合、先頭の要素がファイル名のプレフィックス、次の要素が
+サフィックスとして使われます。
+</dd>
+<dt class='method-param'>[PARAM] tempdir:</dt>
+<dd>
+テンポラリファイルが作られるディレクトリです。
+このデフォルト値は、<a href="../method/-dir/s/tmpdir.html">Dir.tmpdir</a> の値となります。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+ファイルのモードを定数の論理和で指定します。<a href="../method/-i-o/s/open.html">IO.open</a>
+と同じ(<a href="../method/-kernel/m/open.html">Kernel.#open</a>と同じ)ものが指定できます。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+ファイルのオプション引数を指定します。<a href="../method/-i-o/s/open.html">IO.open</a> と同
+じものが指定できます。ただし、:permオプションは無視され
+ます。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require &quot;tempfile&quot;
+t = Tempfile.open(['hoge', 'bar'])
+p t.path                            #=&gt; &quot;/tmp/hoge20080518-6961-5fnk19-0bar&quot;
+t2 = Tempfile.open(['t', '.xml'])
+p t2.path                           #=&gt; &quot;/tmp/t20080518-6961-xy2wvx-0.xml&quot;
+</pre>
+<p>
+例：ブロックを与えた場合
+</p>
+<pre>
+require 'tempfile'
+
+tf = Tempfile.open(&quot;temp&quot;){|fp|
+  fp.puts &quot;hoge&quot;
+  fp
+}
+# テンポラリファイルへのパスを表示
+p tf.path
+p File.read(tf.path) #=&gt; &quot;hoge\n&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-tempfile/s/create.html">Tempfile.create</a>
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_CLOSE"><code>close(real = false) -&gt; nil</code><span class="permalink">[<a href="../method/-tempfile/i/close.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Tempfile.html#method-i-close">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+テンポラリファイルをクローズします。
+real が偽ならば、テンポラリファイルはGCによって削除されます。
+そうでなければ、すぐに削除されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] real:</dt>
+<dd>
+false もしくはそれ以外を指定します。
+</dd>
+</dl>
+<pre>
+tf = Tempfile.open(&quot;bar&quot;)
+tf.close
+p FileTest.exist?(tf.path) # =&gt; true
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CLOSE--21"><code>close! -&gt; nil</code><span class="permalink">[<a href="../method/-tempfile/i/close=21.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Tempfile.html#method-i-close-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+テンポラリファイルをクローズし、すぐに削除します。
+</p>
+<pre>
+require &quot;tempfile&quot;
+tf = Tempfile.open(&quot;bar&quot;)
+path = tf.path
+tf.close!
+p FileTest.exist?(path) # =&gt; false
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_DELETE"><code>delete -&gt; self</code><span class="permalink">[<a href="../method/-tempfile/i/delete.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Tempfile.html#method-i-delete">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>unlink -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+テンポラリファイルをクローズせずに、削除します。
+UNIXライクなシステムでは、
+作成したテンポラリファイルが他のプログラムに使用される機会をなくすために、
+テンポラリファイルを作成しオープンした後、
+すぐに削除するということがしばしばおこなわれます。
+</p>
+<pre>
+tf = Tempfile.new(&quot;foo&quot;)
+tf.unlink
+p tf.path # =&gt; nil
+tf.print(&quot;foobar,hoge\n&quot;)
+tf.rewind
+p tf.gets(&quot;\n&quot;) # =&gt; &quot;foobar,hoge\n&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_LENGTH"><code>length -&gt; Integer</code><span class="permalink">[<a href="../method/-tempfile/i/length.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Tempfile.html#method-i-length">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>size -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+テンポラリファイルのサイズを返します。
+</p>
+<pre>
+tf = Tempfile.new(&quot;foo&quot;)
+tf.print(&quot;bar,ugo&quot;)
+p tf.size # =&gt; 7
+tf.close
+p tf.size # =&gt; 0
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_OPEN"><code>open -&gt; self</code><span class="permalink">[<a href="../method/-tempfile/i/open.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Tempfile.html#method-i-open">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+クローズしたテンポラリファイルを再オープンします。
+&quot;r+&quot; でオープンされるので、クローズ前の内容を再度読む
+ことができます。
+</p>
+<pre>
+tf = Tempfile.new(&quot;foo&quot;)
+tf.print(&quot;foobar,hoge\n&quot;)
+tf.print(&quot;bar,ugo\n&quot;)
+tf.close
+tf.open
+p tf.gets # =&gt; &quot;foobar,hoge\n&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_PATH"><code>path -&gt; String | nil</code><span class="permalink">[<a href="../method/-tempfile/i/path.html">permalink</a>][<a href="http://docs.ruby-lang.org/en/2.4.0/Tempfile.html#method-i-path">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+テンポラリファイルのパス名を返します。
+</p>
+<p>
+Tempfile#close!を実行後だった場合にはnilを返します。
+</p>
+<pre>
+tf = Tempfile.new(&quot;hoo&quot;)
+p tf.path # =&gt; &quot;/tmp/hoo.10596.0&quot;
+tf.close!
+p tf.path # =&gt; nil
+</pre>
+</dd>
+
+
+</dl>
+
+
+
+<div id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+</div>
+</body>
+</html>

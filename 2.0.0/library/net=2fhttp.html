@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Language" content="ja-JP">
   <link rel="stylesheet" type="text/css" href="../style.css">
   <link rel="icon" type="image/png" href="../rurema.png">
+  
   <title>library net/http (Ruby 2.0.0)</title>
 </head>
 <body>
@@ -98,47 +99,26 @@ end
 </pre>
 <h3 >プロクシ経由のアクセス</h3>
 <p>
-<a href="../method/-net=3a=3a-h-t-t-p/s/-proxy.html">Net::HTTP.Proxy</a> はプロクシ経由での接続を行なうクラスを
-生成して返します。このクラスは <a href="../class/-net=3a=3a-h-t-t-p.html">Net::HTTP</a> と同じ
-メソッドを持ち、同じように動作をします。ただし
-接続する際には常にプロクシ経由となります。
+Net::HTTP は http_proxy 環境変数が存在するならば自動的に
+その URI を利用してプロクシを利用します。http_proxyを利用したくないならば
+<a href="../method/-net=3a=3a-h-t-t-p/s/new.html">Net::HTTP.new</a> や <a href="../method/-net=3a=3a-h-t-t-p/s/start.html">Net::HTTP.start</a> の proxy_addr 引数に
+nil を渡してください。
+</p>
+<p>
+<a href="../method/-net=3a=3a-h-t-t-p/s/new.html">Net::HTTP.new</a> や <a href="../method/-net=3a=3a-h-t-t-p/s/start.html">Net::HTTP.start</a> の proxy_addr や proxy_port
+を指定することでプログラムからプロクシを指定することもできます。
 </p>
 <pre>
-require 'net/http'
-
 proxy_addr = 'your.proxy.host'
 proxy_port = 8080
-        :
-Net::HTTP::Proxy(proxy_addr, proxy_port).start('www.example.com') {|http|
-  # always connect to your.proxy.addr:8080
-        :
+
+Net::HTTP.new('example.com', nil, proxy_addr, proxy_port).start { |http|
+  # always proxy via your.proxy.addr:8080
 }
 </pre>
 <p>
-また <a href="../method/-net=3a=3a-h-t-t-p/s/-proxy.html">Net::HTTP.Proxy</a> は第一引数が nil だと
-Net::HTTP 自身を返すので
-上のコードのように書いておけばプロクシなしの場合にも対応できます。
-</p>
-<p>
-<a href="../method/-net=3a=3a-h-t-t-p/s/-proxy.html">Net::HTTP.Proxy</a> にはユーザ名とパスワードを取る
-オプション引数があり、以下のようにして
-プロクシの認証をすることができます。
-</p>
-<pre>
-proxy_host = 'your.proxy.host'
-proxy_port = 8080
-uri = URI.parse(ENV['http_proxy'])
-proxy_user, proxy_pass = uri.userinfo.split(/:/) if uri.userinfo
-Net::HTTP::Proxy(proxy_host, proxy_port,
-                 proxy_user, proxy_pass).start('www.example.com') {|http|
-  # always connect to your.proxy.addr:8080 using specified username and password
-        :
-}
-</pre>
-<p>
-このライブラリは環境変数 HTTP_PROXY を一切考慮しないこと
-に注意してください。プロクシを使いたい場合は上の例のように
-明示的に取り扱わなければなりません。
+プロクシの認証をユーザ名とパスワードですることもできます。
+詳しくは <a href="../method/-net=3a=3a-h-t-t-p/s/new.html">Net::HTTP.new</a> を参照してください。
 </p>
 <h3 >リダイレクトに対応する</h3>
 <p>
@@ -340,6 +320,17 @@ HTTP の MOVE リクエストを表すクラスです。
 </td>
 <td class="description"><p>
 HTTP の OPTIONS リクエストを表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-net=3a=3a-h-t-t-p=3a=3a-patch.html">Net::HTTP::Patch</a>
+</td>
+<td class="description"><p>
+HTTP の PATCH リクエストを表すクラスです。
 </p>
 </td>
 </tr>
@@ -1024,7 +1015,7 @@ HTTP ステータスコード 1xx を受け取ったという例外です。
 <a href="../class/-net=3a=3a-h-t-t-p-fatal-error.html">Net::HTTPFatalError</a>
 </td>
 <td class="description"><p>
-HTTP ステータスコード 4xx を受け取ったという例外です。
+HTTP ステータスコード 5xx を受け取ったという例外です。
 </p>
 </td>
 </tr>
@@ -1046,7 +1037,7 @@ HTTP ステータスコード 3xx を受け取ったという例外です。
 <a href="../class/-net=3a=3a-h-t-t-p-server-exception.html">Net::HTTPServerException</a>
 </td>
 <td class="description"><p>
-HTTP ステータスコード 5xx を受け取ったという例外です。
+HTTP ステータスコード 4xx を受け取ったという例外です。
 </p>
 </td>
 </tr>
@@ -1058,8 +1049,8 @@ HTTP ステータスコード 5xx を受け取ったという例外です。
 
 
 <div id="footer">
-  <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
-    <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
   </a>
 </div>
 </body>
