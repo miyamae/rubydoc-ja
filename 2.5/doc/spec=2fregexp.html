@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>正規表現 (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="* [[ref:metachar]]
+  * [[ref:expansion]]
+  * [[ref:char]]
+  * [[ref:anychar]]
+  * [[ref:string]]
+  * [[ref:str]]
+  * [[ref:quantifier]]
+  * [[ref:capture]]
+  * [[ref:grouping]]
+  * [[ref:subexp]]
+  * [[ref:selector]]
+  * [[ref:anchor]]
+  * [[ref:cond]]
+  * [[ref:option]]
+  * [[ref:encoding]]
+  * [[ref:comment]]
+  * [[ref:free_format_mode]]
+  * [[ref:absenceop]]
+  * [[ref:list]]
+  * [[ref:specialvar]]
+  * [[ref:references]]">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      
+        <li>
+          <a href="../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+        </li>
+        <li>
+          正規表現
+        </li>
+      
+    </ol>
+  </nav>
+
+<h1>正規表現</h1>
+</header>
+
+<main>
+
+<ul>
+<li><a href="#metachar">メタ文字列とリテラル、メタ文字とエスケープ</a></li>
+<li><a href="#expansion">式展開</a></li>
+<li><a href="#char">文字</a></li>
+<li><a href="#anychar">任意の1文字</a></li>
+<li><a href="#string">文字クラス</a></li>
+<li><a href="#str">特別な文字列に対するマッチ</a></li>
+<li><a href="#quantifier">繰り返し</a></li>
+<li><a href="#capture">キャプチャ</a></li>
+<li><a href="#grouping">グループ</a></li>
+<li><a href="#subexp">部分式呼び出し(subexpression call)</a></li>
+<li><a href="#selector">選択</a></li>
+<li><a href="#anchor">アンカー</a></li>
+<li><a href="#cond">条件分岐</a></li>
+<li><a href="#option">オプション</a></li>
+<li><a href="#encoding">エンコーディング</a></li>
+<li><a href="#comment">コメント</a></li>
+<li><a href="#free_format_mode">フリーフォーマットモード</a></li>
+<li><a href="#absenceop">非包含オペレータ (absence operator) (実験的)</a></li>
+<li><a href="#list">一覧</a></li>
+<li><a href="#specialvar">特殊変数</a></li>
+<li><a href="#references">参考文献</a></li>
+</ul>
+<p>
+正規表現(regular expression)は文字列のパターンを記述するための言語です。また、この言語で記述されたパターンも正規表現と呼びます。
+</p>
+<p>
+正規表現を用いると、文字列が指定したパターンを含んでいるかどうかを判定し、また含んでいるならばそれが文字列中のどの場所であるかを知ることができます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/pat/</span>
+<span class="sr">%r{pat}</span>
+</code></pre>
+<p>
+などの正規表現リテラルや <a href="../method/-regexp/s/new.html">Regexp.new</a> などで正規表現オブジェクトを得ることができます。
+</p>
+<h2 id='metachar'>メタ文字列とリテラル、メタ文字とエスケープ</h2>
+<p>
+正規表現の文法には、正規表現内で特別な働きをする文字列と、それ以外のその文字列そのものにマッチするような文字列があります。前者をメタ文字列(meta string)、後者をリテラル(文字列)(literal string)と呼びます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/京都|大阪|神戸/</span>
+</code></pre>
+<p>
+という正規表現においては、「京都」「大阪」「神戸」がリテラルで、
+2つの「|」がメタ文字列です。
+</p>
+<p>
+以下の文字は「メタ文字」(meta character)
+と呼ばれる、正規表現内で特殊な働きをする文字です。
+</p>
+<pre>
+( ) [ ] { } . ? + * | \
+</pre>
+<p>
+これらの文字をリテラルのようにその文字としてマッチさせるためには、バックスラッシュ「\」を前に付けます。「\\」はバックスラッシュ1文字にマッチします。
+</p>
+<p>
+メタ文字以外の文字も、メタ文字に続けて置くことで特別な働きをするようになる場合があります。つまりメタ文字列を構成します。例えば
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/[a-z]/</span>
+<span class="sr">/\Axyz\Z/</span>
+</code></pre>
+<p>
+という正規表現において &quot;[a-z]&quot;, &quot;\A&quot;, &quot;\Z&quot;はメタ文字列です。
+</p>
+<h2 id='expansion'>式展開</h2>
+<p>
+正規表現内では、#{式} という形式で式を評価した文字列を埋め込むことができます。
+</p>
+<pre class="highlight ruby">
+<code>
+place <span class="o">=</span> <span class="s2">"</span><span class="s2">東京都</span><span class="s2">"</span>
+<span class="sr">/<span class="si">#{</span><span class="n">place</span><span class="si">}</span>/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">Go to 東京都</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;東京都&quot;&gt;
+</span></code></pre>
+<p>
+埋め込んだ文字列にメタ文字が含まれているならば、それはメタ文字として認識されます。
+</p>
+<pre class="highlight ruby">
+<code>
+number <span class="o">=</span> <span class="s2">"</span><span class="s2">(\\d+)</span><span class="s2">"</span>
+operator <span class="o">=</span> <span class="s2">"</span><span class="s2">(\\+|-|\\*|/)</span><span class="s2">"</span>
+<span class="sr">/<span class="si">#{</span><span class="n">number</span><span class="si">}</span><span class="si">#{</span><span class="n">operator</span><span class="si">}</span><span class="si">#{</span><span class="n">number</span><span class="si">}</span>/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">43+291</span><span class="s2">"</span><span class="p">)</span> 
+<span class="c1"># =&gt; #&lt;MatchData &quot;43+291&quot; 1:&quot;43&quot; 2:&quot;+&quot; 3:&quot;291&quot;&gt;
+</span></code></pre>
+<p>
+埋め込む文字列をリテラルとして認識させたい場合は <a href="../method/-regexp/s/quote.html">Regexp.quote</a> を使います。
+</p>
+<h2 id='char'>文字</h2>
+<p>
+正規表現内では、「\」の後に文字列を置くことで、ある特定の文字を表現することができます。これは、改行のように Ruby の文法で特別な意味を持つ文字を埋め込むためなどに用いられます。文字列リテラルの記法とほぼ同様(<a href="../doc/spec=2fliteral.html#backslash">リテラル/バックスラッシュ記法</a>)で、以下の記法が利用可能です。
+</p>
+<pre>
+\t           水平タブ            horizontal tab (0x09)
+\v           垂直タブ            vertical tab   (0x0B)
+\n           改行                newline        (0x0A)
+\r           復帰                return         (0x0D)
+\b           バックスペース      back space     (0x08)
+\f           改ページ            form feed      (0x0C)
+\a           ベル                bell           (0x07)
+\e           エスケープ文字      escape         (0x1B)
+\nnn         符号化バイト値の8進数表現 (nnn の8進数3文字で表現)
+\xHH         符号化バイト値の16進数表現 (HH の16進数2文字で表現)
+\cx, \C-x    制御文字 (x は a から z までのいずれかの文字)
+\M-x         メタ (x|0x80)
+\M-\C-x      メタ制御文字
+\uHHHH       ユニコード文字 (HHHH の16進数4桁)
+\u{HHHHHH HHHHHH ....} ユニコード文字列 (HHHHHH は16進数1桁から6桁まで指定可能)
+</pre>
+<p>
+\b は文字クラス内でのみ有効な表現です。文字クラスの外では単語の区切りを表すメタ文字列と解釈されます。
+</p>
+<p>
+「\s」は文字列では空白(0x20)を意味しますが、正規表現ではタブなどを含む空白文字全般にマッチするメタ文字列です。
+</p>
+<h2 id='anychar'>任意の1文字</h2>
+<p>
+メタ文字 . は改行を除く任意の1文字にマッチします。
+</p>
+<p>
+ただし、オプション m によって改行にもマッチするようになります。
+</p>
+<h2 id='string'>文字クラス</h2>
+<p>
+文字クラス(character class)
+とは角括弧 [ と ] で囲まれ、1個以上の文字を列挙したもので、いずれかの1文字にマッチします。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/W[aeiou]rd/</span>
+</code></pre>
+<p>
+は Ward, Werd, Wird, Word, Wurd のいずれかにマッチします。
+</p>
+<p>
+文字クラス内のハイフン(-)は文字の範囲を表すメタ文字です。例えば [abcd] という文字クラスは [a-d] と表すことができます。複数の範囲指定をすることもできます。例えば [abcdpqrs] は [a-dp-s]と表すこともできます。
+</p>
+<p>
+文字クラスの [ の直後の文字がキャレット(^)である場合、列挙「されていない」文字にマッチするようになります(これは否定文字クラスと呼ばれます)。
+</p>
+<pre>
+[^a-d]
+</pre>
+<p>
+はabcd以外の1文字にマッチします。
+</p>
+<p>
+文字クラス内に別の文字クラスを含めることができます。
+[a-z[0-9]] は [a-z0-9]と同じ意味を持ちます。これだけではあまり意味がありませんが、文字クラスは &amp;&amp; という、共通部分を取る演算をサポートしているため、これと組合せることで意味を持ちます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/[a-z[0-9]]/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">y</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;y&quot;&gt;
+</span><span class="sr">/[a-z[0-9]]/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">[</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span>r <span class="o">=</span> <span class="sr">/[a-w&amp;&amp;[^c-g]e]/</span> <span class="c1"># ([a-w] かつ ([^c-g] もしくは e)) つまり [abeh-w] と同じ
+</span>r<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">b</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;b&quot;&gt;
+</span>r<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">c</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span>r<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">e</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;e&quot;&gt;
+</span>r<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">g</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span>r<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">h</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;h&quot;&gt;
+</span>r<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;w&quot;&gt;
+</span>r<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">z</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span></code></pre>
+<p>
+文字クラスでは、否定(^)範囲(-)共通部分(&amp;&amp;)列挙(並べる)という演算が可能ですが、これらは - &gt; (列挙) &gt; &amp;&amp; &gt; ^ という順の結合強度を持ちます。
+</p>
+<p>
+文字クラス内の3つのメタ文字を通常の文字の意味で使用したい場合には、
+\ によってエスケープ する必要があります。
+</p>
+<h3 id='charclass_short'>文字クラスの略記法</h3>
+<p>
+良く使われる文字クラスには省略記法が存在します。
+</p>
+<ul>
+<li>\w 単語構成文字 [a-zA-Z0-9_]</li>
+<li>\W 非単語構成文字 [^a-zA-Z0-9_]</li>
+<li>\s 空白文字 [ \t\r\n\f\v]</li>
+<li>\S 非空白文字 [^ \t\r\n\f\v]</li>
+<li>\d 10進数字 [0-9]</li>
+<li>\D 非10進数字 [^0-9]</li>
+<li>\h 16進数字 [0-9a-fA-F]</li>
+<li>\H 非16進数字 [^0-9a-fA-F]</li>
+</ul>
+<p>
+これらの「空白」「数字」などは ASCII の範囲の文字のみを対象としています。いわゆる「全角アルファベット」「全角空白」「全角数字」などはここの空白、数字、には含まれません。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/\w+/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">ＡＢＣｄｅｆ</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span><span class="sr">/\W+/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">ＡＢＣｄｅｆ</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;ＡＢＣｄｅｆ&quot;&gt;
+</span><span class="sr">/\s+/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">　</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span><span class="sr">/\S+/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">　</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;　&quot;&gt;
+</span></code></pre>
+<p>
+これらは文字クラス内で演算することもできます。
+</p>
+<pre class="highlight ruby">
+<code>
+r <span class="o">=</span> <span class="sr">/[\d&amp;&amp;[^47]]/</span> <span class="c1"># 4, 7 以外の数字
+</span>r<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">3</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;3&quot;&gt;
+</span>r<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">7</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span></code></pre>
+<h3 id='charclass_prop'>Unicode プロパティによる文字クラス指定</h3>
+<p>
+また、Unicodeのプロパティ(属性情報)による文字クラス指定も可能です。以下の記法が使えます。
+</p>
+<ul>
+<li>\p{property-name}</li>
+<li>\p{^property-name} (否定)</li>
+<li>\P{property-name} (否定)</li>
+</ul>
+<p>
+サポートされているプロパティのリストは
+<a class="external" href="https://github.com/k-takata/Onigmo/blob/master/doc/UnicodeProps.txt">https://github.com/k-takata/Onigmo/blob/master/doc/UnicodeProps.txt</a> を参考にしてください。また、プロパティの意味は Unicode の仕様を参照してください。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/\p{Letter}+/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">.|あaＡＢｃ123</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;あaＡＢｃ&quot;&gt;
+</span></code></pre>
+<h3 id='charclass_posix'>POSIX 文字クラス</h3>
+<p>
+Unicodeプロパティと似た機能を持つ記法として、POSIX 文字クラスと呼ばれるものがあります。これらは上の省略記法とは異なり、文字クラスの中でしか用いることができません。これらは [:クラス名:] という記法を持ちます。また、[:^クラス名:]という記法でその否定を意味します。以下の括弧では実際にどの文字にマッチするかが Unicode プロパティや
+Unicode コードポイントで示されています。
+</p>
+<ul>
+<li>[:alnum:] 英数字 (Letter | Mark | Decimal_Number)</li>
+<li>[:alpha:] 英字 (Letter | Mark)</li>
+<li>[:ascii:] ASCIIに含まれる文字 (0000 - 007F)</li>
+<li>[:blank:] スペースとタブ (Space_Separator | 0009)</li>
+<li>[:cntrl:] 制御文字 (Control | Format | Unassigned | Private_Use | Surrogate)</li>
+<li>[:digit:] 数字 (Decimal_Number)</li>
+<li>[:graph:] 空白以外の表示可能な文字(つまり空白文字、制御文字、以外) ([[:^space:]] &amp;&amp; ^Control &amp;&amp; ^Unassigned &amp;&amp; ^Surrogate)</li>
+<li>[:lower:] 小文字 (Lowercase_Letter)</li>
+<li>[:print:] 表示可能な文字(空白を含む) ([[:graph:]] | Space_Separator)</li>
+<li>[:punct:] 句読点 (Connector_Punctuation | Dash_Punctuation | Close_Punctuation | Final_Punctuation | Initial_Punctuation | Other_Punctuation | Open_Punctuation)</li>
+<li>[:space:] 空白、改行、復帰 (Space_Separator | Line_Separator | Paragraph_Separator | 0009 | 000A | 000B | 000C | 000D | 0085)</li>
+<li>[:upper:] 大文字 (Uppercase_Letter)</li>
+<li>[:xdigit:] 16進表記で使える文字 (0030 - 0039 | 0041 - 0046 | 0061 - 0066)</li>
+<li>[:word:] 単語構成文字 (Letter | Mark | Decimal_Number | Connector_Punctuation)</li>
+</ul>
+<p>
+これらの POSIX 文字クラスは \s といった省略記法と異なり、
+ASCIIコード範囲外の空白などを考慮に入れます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/[[:alnum:]]+/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">abＡＢ１２1</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;abＡＢ１２1&quot;&gt;
+</span><span class="c1"># \u3000 は全角空白
+</span><span class="sr">/[[:graph:]]/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">\u3000</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span><span class="sr">/[[:blank:]]/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">\u3000</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;　&quot;&gt;
+</span><span class="sr">/[[:alnum:]&amp;&amp;[:^lower:]]/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">ａＡ</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;Ａ&quot;&gt;
+</span><span class="sr">/[[:print:]&amp;&amp;[:^lower:]]/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2"> </span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot; &quot;&gt;
+</span></code></pre>
+<p>
+注: POSIX ではここで言う文字クラスのことを「ブラケット表現」と呼び、[:xxx:] というのを文字クラス、と呼んでいます。よって、
+POSIX文字クラス、というのは厳密には「POSIXブラケット表現における文字クラス」と呼ぶべきものですが、ここでは「POSIX文字クラス」と呼ぶことにします。
+</p>
+<p>
+注: [:word:] と [:ascii:] は POSIX では定義されていません。
+Ruby/Oniguruma/Onigmo独自のものです。
+</p>
+<p>
+注: エンコーディングによってこれらの POSIX 文字クラスの挙動が異なります。上に書いている「マッチする文字」は Unicode 系統のエンコーディングで使われるものです。
+Unicode 系統以外のものは Onigmo のドキュメントを参照してください。
+</p>
+<h3 id='charclass_opt'>オプション</h3>
+<p>
+文字クラスの挙動は <a href="#option">オプション</a> で変更することができます。
+d, a, u の3つのオプションがあります。
+</p>
+<h2 id='str'>特別な文字列に対するマッチ</h2>
+<p>
+文字列の中には、CR LF のように、複数の文字一続きで1つの意味を表すようなものが存在します。そのような文字列にマッチするようなメタ文字列として以下が存在します。
+</p>
+<ul>
+<li>\R 改行 (?&gt;\x0D\x0A|[\x0A-\x0D\u{85}\u{2028}\u{2029}]) (Unicode 以外では (?&gt;\x0D\x0A|[\x0A-\x0D]) になります)</li>
+<li>\X Unicode 結合文字シーケンス (eXtended grapheme cluster) (?&gt;\P{M}\p{M}*)</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># \u{0308} はウムラウト
+</span><span class="sr">/\X/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">e\u{0308}</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;ë&quot;&gt;
+</span><span class="vg">$&amp;</span><span class="p">.</span><span class="nf">codepoints</span> <span class="c1"># =&gt; [101, 776]
+</span><span class="sr">/\w/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">e\u{0308}</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;e&quot;&gt;
+</span><span class="vg">$&amp;</span><span class="p">.</span><span class="nf">codepoints</span> <span class="c1"># =&gt; [101]
+</span></code></pre>
+<p>
+ただし、\R は文字クラスの中では使用できません。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/\R/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">\r\n</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;\r\n&quot;&gt;
+</span><span class="sr">/[\R]/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">\r\n</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span></code></pre>
+<h2 id='quantifier'>繰り返し</h2>
+<p>
+以下のメタ文字列は繰り返しを表現します。直前の部分式を何回繰り返すかを指定します。このような繰り返しを表すメタ文字列を量指定子(quantifier)と呼びます。
+</p>
+<ul>
+<li>* 0回以上</li>
+<li>+ 1回以上</li>
+<li>? 0回もしくは1回</li>
+<li>{n} ちょうどn回(nは数字)</li>
+<li>{n,} n回以上(nは数字)</li>
+<li>{,m} m回以下(mは数字)</li>
+<li>{n,m} n回以上m回以下(n,mは数字)</li>
+</ul>
+<p>
+以下の例で、量指定子の基本的な使いかたを示しています。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># 以下の正規表現は 最初に大文字が1文字以上(H)で、小文字が1文字以上(l)、
+</span><span class="c1"># lが2文字(ll)の後ろにoが続く文字列にマッチします。
+</span><span class="s2">"</span><span class="s2">Hello</span><span class="s2">"</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="sr">/[[:upper:]]+[[:lower:]]+l{2}o/</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;Hello&quot;&gt;
+</span></code></pre>
+<p>
+これらは「欲張り(greedy)」にマッチします。マッチが成功する、最長の文字列にマッチしようとします。そのため、これらの量指定子は特に最大量指定子(greedy quantifier)
+と呼ばれます。
+</p>
+<h3 id='quantifier_reluctant'>最小量指定子(reluctant quantifier)</h3>
+<p>
+一方、以下のメタ文字列(普通の繰り返しメタ文字列に ? を付加したもの)
+はマッチが成功する、最短の文字列にマッチします。そのため、これらの量指定子は特に最小量指定子(reluctant quantifier)と呼ばれます。
+</p>
+<ul>
+<li>*? 0回以上</li>
+<li>+? 1回以上</li>
+<li>?? 0回もしくは1回</li>
+<li>{n,}? n回以上(nは数字)</li>
+<li>{,m}? m回以下(mは数字)</li>
+<li>{n,m}? n回以上m回以下(n,mは数字)</li>
+</ul>
+<p>
+以下の例では、最小量指定子を使うことで、(\d+)がマッチする場所を変えています。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/^.*(\d+)\./</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">Copyright 2013.</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; #&lt;MatchData &quot;Copyright 2013.&quot; 1:&quot;3&quot;&gt;
+</span><span class="sr">/^.*?(\d+)\./</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">Copyright 2013.</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; #&lt;MatchData &quot;Copyright 2013.&quot; 1:&quot;2013&quot;&gt;
+</span></code></pre>
+<p>
+また、ネストしていない括弧の対応を取るためにも使えます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># ここでは &lt;b&gt; と &lt;/b&gt; の対応を取る
+</span><span class="sr">%r{&lt;b&gt;.*&lt;/b&gt;}</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">&lt;b&gt;x&lt;/b&gt;y&lt;b&gt;z&lt;/b&gt;</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;&lt;b&gt;x&lt;/b&gt;y&lt;b&gt;z&lt;/b&gt;&quot;&gt;
+</span><span class="sr">%r{&lt;b&gt;.*?&lt;/b&gt;}</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">&lt;b&gt;x&lt;/b&gt;y&lt;b&gt;z&lt;/b&gt;</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;&lt;b&gt;x&lt;/b&gt;&quot;&gt;
+</span></code></pre>
+<h3 id='quantifier_possesive'>絶対最大量指定子(possessive quantifier)</h3>
+<p>
+以下のメタ文字列は、最大量指定子のように最長のマッチをしますが、一度マッチすると、その後マッチに失敗してもバックトラックしません。つまりマッチ済みの文字列を手放さずにマッチに失敗します。これらの量指定子は絶対最大量指定子と呼ばれます。
+</p>
+<ul>
+<li>*+ 0回以上</li>
+<li>++ 1回以上</li>
+<li>?+ 0回もしくは1回</li>
+</ul>
+<p>
+アトミックグループを用いることで同じことができます。
+</p>
+<h2 id='capture'>キャプチャ</h2>
+<p>
+丸括弧 ( ) によってキャプチャをすることができます。括弧に囲まれた部分正規表現にマッチした前からn番目の開き括弧によって囲まれた部分式にマッチした文字列を後で参照することができます。
+</p>
+<p>
+正規表現内では \1, \2, ... という記法で後方参照できます。また、\k&lt;1&gt;, \k&lt;2&gt;, ... や \k'1', \k'2', ... という記法を使うこともできます(10を越える数字を渡すことができます)。また、<a href="../method/-regexp/i/match.html">Regexp#match</a> で得られた
+MatchData からは <a href="../method/-match-data/i/=5b=5d.html">MatchData#[]</a>で取り出せます。
+</p>
+<p>
+また、<a href="../method/-kernel/v/1.html">$1</a>, $2, ... という特殊変数によって n 番目の括弧にマッチした部分文字列を参照できます。これらの特殊変数はマッチ処理が終わったあとでしか使えないことに注意してください。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># (..) に at がマッチしたのを \1 で参照し、マッチが成功している。
+</span>m <span class="o">=</span> <span class="sr">/[csh](..) [csh]\1 in/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">The cat sat in the hat</span><span class="s2">"</span><span class="p">)</span> 
+<span class="c1"># =&gt; #&lt;MatchData &quot;cat sat in&quot; 1:&quot;at&quot;&gt;
+</span><span class="c1"># Regexp#match でマッチしたテキストは MatchData#[] で参照できる
+</span>m<span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># =&gt; &quot;at&quot;
+</span></code></pre>
+<p>
+1,2,... ではなく、名前を付けることができます。
+(?&lt;name&gt;pat)もしくは(?'name'pat)と記述します。キャプチャした文字列は
+<a href="../method/-match-data/i/=5b=5d.html">MatchData#[]</a> に <a href="../class/-symbol.html">Symbol</a> を渡すことで参照できます。これは名前付きキャプチャと呼ばれます。
+</p>
+<pre class="highlight ruby">
+<code>
+m <span class="o">=</span> <span class="sr">/\$(?&lt;dollars&gt;\d+)\.(?&lt;cents&gt;\d+)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">$3.67</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; #&lt;MatchData &quot;$3.67&quot; dollars:&quot;3&quot; cents:&quot;67&quot;&gt;
+</span>m<span class="p">[</span><span class="ss">:dollars</span><span class="p">]</span> <span class="c1"># =&gt; &quot;3&quot;
+</span>m<span class="p">[</span><span class="ss">:cents</span><span class="p">]</span> <span class="c1"># =&gt; &quot;67&quot;
+</span></code></pre>
+<p>
+名前付きキャプチャは正規表現内で \k&lt;name&gt;、\k'name' という記法で参照できます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/(?&lt;vowel&gt;[aeiou]).\k&lt;vowel&gt;.\k&lt;vowel&gt;/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s1">'ototomy'</span><span class="p">)</span>
+<span class="c1"># =&gt; #&lt;MatchData &quot;ototo&quot; vowel:&quot;o&quot;&gt;
+</span></code></pre>
+<p>
+注: 名前付きキャプチャと数字によるキャプチャは併用できません。
+</p>
+<p>
+リテラル正規表現内に名前付きキャプチャがあり、 =~ の左辺で用いた場合には、その名前のローカル変数にキャプチャした文字列を代入します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/\$(?&lt;dollars&gt;\d+)\.(?&lt;cents&gt;\d+)/</span> <span class="o">=~</span> <span class="s2">"</span><span class="s2">$3.67</span><span class="s2">"</span> <span class="c1"># =&gt; 0
+</span>dollars <span class="c1"># =&gt; &quot;3&quot;
+</span>cents <span class="c1"># =&gt; &quot;67&quot;
+</span></code></pre>
+<p>
+注: ローカル変数への代入が行われるのは、左辺の正規表現リテラルが#{}による式展開を含んでいない場合に限られます。
+</p>
+<p>
+数字による後方参照では、負の数による、
+\k&lt;-1&gt;, \k&lt;-2&gt;, ... や
+\k'-1', \k'-2', ... という記法での相対的な指定が可能です。-1 は後方参照が書かれた位置の1つ手前の位置にあるキャプチャを表し、-2, -3, で2つ手前、3つ手前を表します。これは非常に多くのキャプチャを持つような正規表現を記述するためや、正規表現に別の正規表現を式展開で埋め込む場合などに便利です。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/(.)(.)\k&lt;-2&gt;\k&lt;-1&gt;/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">xyzyz</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;yzyz&quot; 1:&quot;y&quot; 2:&quot;z&quot;&gt;
+</span></code></pre>
+<h2 id='grouping'>グループ</h2>
+<p>
+丸括弧は部分式をグループ化するためにも使えます。( ) で囲まれた部分式は一つのものとして取り扱われ、量指定子などを続けて書くことができます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># The pattern below matches a vowel followed by 2 word characters:
+</span><span class="c1"># 'aen'
+</span><span class="sr">/[aeiou]\w{2}/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">Caenorhabditis elegans</span><span class="s2">"</span><span class="p">)</span> <span class="c1">#=&gt; #&lt;MatchData &quot;aen&quot;&gt;
+</span><span class="c1"># Whereas the following pattern matches a vowel followed by a word
+</span><span class="c1"># character, twice, i.e. &lt;tt&gt;[aeiou]\w[aeiou]\w&lt;/tt&gt;: 'enor'.
+</span><span class="sr">/([aeiou]\w){2}/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">Caenorhabditis elegans</span><span class="s2">"</span><span class="p">)</span>
+    <span class="c1">#=&gt; #&lt;MatchData &quot;enor&quot; 1:&quot;or&quot;&gt;
+</span></code></pre>
+<p>
+(?:pat) という記法を使うとキャプチャせずにグループ化することができます。性能が多少改善する場合がありますが、多少見にくくなります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># 最初のキャプチャは n で二番目のキャプチャが ti であり、
+</span><span class="c1"># \2 で二番目のキャプチャを後方参照しています
+</span><span class="sr">/I(n)ves(ti)ga\2ons/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">Investigations</span><span class="s2">"</span><span class="p">)</span>
+    <span class="c1"># =&gt; #&lt;MatchData &quot;Investigations&quot; 1:&quot;n&quot; 2:&quot;ti&quot;&gt;
+</span><span class="c1"># 最初のグループは (?: ) を使っているのでキャプチャが作られず、
+</span><span class="c1"># 1番目は ti がキャプチャされます。
+</span><span class="c1"># そして ti を \1 で参照しています。
+</span><span class="sr">/I(?:n)ves(ti)ga\1ons/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">Investigations</span><span class="s2">"</span><span class="p">)</span>
+    <span class="c1"># =&gt; #&lt;MatchData &quot;Investigations&quot; 1:&quot;ti&quot;&gt;
+</span></code></pre>
+<h3 id='grouping_atomic'>アトミックグループ(atomic grouping)</h3>
+<p>
+(?&gt;pat) という記法で「アトミック」なグループを作れます。
+</p>
+<p>
+通常の正規表現では、ある部分式がマッチに成功した後、続く式がマッチに失敗した場合、バックトラックによって成功した部分の一部を手放してマッチにリトライします。しかし、アトミックなグループがマッチした後、後続の式がマッチに失敗した場合、一部だけをバックトラックで巻き戻すのではなく、このグループのマッチ全体を巻き戻します。つまり、正規表現のマッチのバックトラックを抑制します。
+</p>
+<p>
+典型的にアトミックグループはバックトラックの回数を減らし正規表現を高速化するために用います。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># 以下のマッチはまず .* が Quote&quot; にマッチした後、
+</span><span class="c1"># 正規表現末尾の &quot; のマッチに失敗します。その後
+</span><span class="c1"># 一文字だけバックトラックして、&quot; のマッチに成功します。
+</span><span class="sr">/&quot;.*&quot;/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s1">'&quot;Quote&quot;'</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;\&quot;Quote\&quot;&quot;&gt;
+</span><span class="c1"># 一方、以下のマッチはまず .* が Quote&quot; 全体にマッチした後、
+</span><span class="c1"># 正規表現末尾の &quot; のマッチに失敗します。その後
+</span><span class="c1"># バックトラックで&quot;がマッチした状態まで戻り、
+</span><span class="c1"># (?&gt;.*)以外の選択子がないのでマッチ全体が失敗します。
+</span><span class="sr">/&quot;(?&gt;.*)&quot;/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s1">'&quot;Quote&quot;'</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span><span class="c1"># 一方、以下のマッチはまず .* が Quote&quot; 全体にマッチした後、
+</span><span class="c1"># 正規表現末尾の &quot; のマッチに失敗します。その後
+</span><span class="c1"># バックトラックで&quot;がマッチした状態まで戻り、
+</span><span class="c1"># 次の可能性(つまり | の右側)のマッチを試します。
+</span><span class="c1"># 結果としてマッチが成功します。
+</span><span class="sr">/&quot;(?:(?&gt;.*)|(.*))&quot;/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s1">'&quot;Quote&quot;'</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;\&quot;Quote\&quot;&quot; 1:&quot;Quote&quot;&gt;
+</span></code></pre>
+<h2 id='subexp'>部分式呼び出し(subexpression call)</h2>
+<p>
+\g&lt;name&gt; もしくは \g'name'
+という記法で、nameと名付けられた部分正規表現にマッチしようとします。この記法は、部分式呼び出しと呼ばれます。
+name には名前、数字、のいずれを用いることもできます。これは後方参照とは異なります。後方参照は前でマッチした文字列と同じ文字列にマッチしようとしますが、部分式呼び出しは
+nameと名付けられた「部分正規表現」にマッチしようとします。
+</p>
+<p>
+部分式呼び出しの記法は正規表現内に再帰的記述を可能とし、通常の正規表現では記述不可能な処理(例えば対応した括弧の検出)
+を可能とします。以下の例では実際に何回かっこがネストしていてもマッチに成功します。ただし、再帰的な正規表現を書く場合は、無限ループに陥る可能性があるため、停止条件に注意してこの機能を使ってください。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/\A(?&lt;paren&gt;\(\g&lt;paren&gt;*\))*\z/</span> <span class="o">=~</span> <span class="s1">'(())'</span> <span class="c1"># =&gt; 0 
+</span><span class="c1"># ^1
+</span><span class="c1">#      ^2
+</span><span class="c1">#           ^3
+</span><span class="c1">#                 ^4
+</span><span class="c1">#      ^5
+</span><span class="c1">#           ^6
+</span><span class="c1">#                      ^7
+</span><span class="c1">#                       ^8
+</span><span class="c1">#                       ^9
+</span><span class="c1">#                           ^10
+</span><span class="c1"># 1. \A が文字列の先頭にマッチする
+</span><span class="c1"># 2. 名前付きキャプチャの内側に入る
+</span><span class="c1"># 3. 名前付きキャプチャ内の最初の括弧 \( に文字列の最初の ( マッチする
+</span><span class="c1"># 4. \g&lt;paren&gt; で名前付きキャプチャ &lt;paren&gt; にマッチしようとする
+</span><span class="c1"># 5. 上の処理の結果(?&lt;paren&gt;pat)に再びマッチしようとする
+</span><span class="c1"># 6. \( に前から二番目の ( にマッチする
+</span><span class="c1"># 7. \g&lt;paren&gt; でさらに (?&lt;paren&gt;pat) にマッチしようとするが、
+</span><span class="c1">#     開き括弧 ( がもう文字列内にないので失敗する。
+</span><span class="c1">#    しかし、その後ろに量指定子*があるので、0回マッチとして成功する
+</span><span class="c1"># 8. 1つ目閉じ括弧 ) がマッチし、\g&lt;paren&gt;による再帰呼び出し全体が
+</span><span class="c1">#    成功する
+</span><span class="c1"># 9. 2つ目の閉じ括弧 ) が \) にマッチし、(?&lt;paren&gt;pat)というマッチに成功する
+</span><span class="c1"># 10. 文字列の末尾へのマッチに成功する
+</span></code></pre>
+<p>
+また、パターン全体は特別に \g&lt;0&gt; もしくは \g'0' という記法で再帰呼び出しできます。番号指定による呼出も可能で、\g&lt;n&gt; もしくは \g'n' という記法が使えます。相対番号で部分式を指定することもでき、これは
+\g&lt;-n&gt; \g'-n' (前側での相対位置) や
+\g&lt;+n&gt; \g'+n' (後側での相対位置) という記法を用います。
+</p>
+<p>
+以下の記法を用いて、部分式呼び出しでの上のレベル、下のレベルでのマッチにアクセスすることができます。levelで呼出しのネストレベルを、nで位置を指定できます。
+</p>
+<ul>
+<li>\k&lt;n+level&gt;     (n &gt;= 1)</li>
+<li>\k&lt;n-level&gt;     (n &gt;= 1)</li>
+<li>\k'n+level'     (n &gt;= 1)</li>
+<li>\k'n-level'     (n &gt;= 1)</li>
+<li>\k&lt;-n+level&gt;    (n &gt;= 1)</li>
+<li>\k&lt;-n-level&gt;    (n &gt;= 1)</li>
+<li>\k'-n+level'    (n &gt;= 1)</li>
+<li>\k'-n-level'    (n &gt;= 1)</li>
+</ul>
+<p>
+また、以下の記法で名前付きキャプチャも同様のことができます。
+</p>
+<ul>
+<li>\k&lt;name+level&gt;</li>
+<li>\k&lt;name-level&gt;</li>
+<li>\k'name+level'</li>
+<li>\k'name-level'</li>
+</ul>
+<p>
+以下の例は回文にマッチする正規表現です。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/\A(?&lt;a&gt;|.|(?:(?&lt;b&gt;.)\g&lt;a&gt;\k&lt;b+0&gt;))\z/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">rekxker</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; #&lt;MatchData &quot;rekxker&quot; a:&quot;rekxker&quot; b:&quot;k&quot;&gt;
+</span></code></pre>
+<p>
+以下の例では、開始タグと終了タグを対応付ける正規表現です。
+</p>
+<pre class="highlight ruby">
+<code>
+r <span class="o">=</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">compile</span><span class="p">(</span><span class="no">&lt;&lt;'__REGEXP__'</span><span class="p">.</span><span class="nf">strip</span>, <span class="no">Regexp</span><span class="o">::</span><span class="no">EXTENDED</span><span class="p">)</span>
+<span class="sh">(?&lt;element&gt; \g&lt;stag&gt; \g&lt;content&gt;* \g&lt;etag&gt; ){0}
+(?&lt;stag&gt; &lt; \g&lt;name&gt; \s* &gt; ){0}
+(?&lt;name&gt; [a-zA-Z_:]+ ){0}
+(?&lt;content&gt; [^&lt;&amp;]+ (\g&lt;element&gt; | [^&lt;&amp;]+)* ){0}
+(?&lt;etag&gt; &lt;/ \k&lt;name+1&gt; &gt;){0}
+\g&lt;element&gt;
+</span><span class="no">__REGEXP__
+</span>r<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s1">'&lt;foo&gt;f&lt;bar&gt;bbb&lt;/bar&gt;f&lt;/foo&gt;'</span><span class="p">)</span><span class="p">.</span><span class="nf">captures</span>
+<span class="c1"># =&gt; [&quot;&lt;foo&gt;f&lt;bar&gt;bbb&lt;/bar&gt;f&lt;/foo&gt;&quot;, &quot;&lt;bar&gt;&quot;, &quot;bar&quot;, &quot;f&lt;bar&gt;bbb&lt;/bar&gt;f&quot;, &quot;&lt;/foo&gt;&quot;]
+</span></code></pre>
+<p>
+最左位置での再帰呼び出しは禁止されています。
+</p>
+<pre>
+(?&lt;name&gt;a|\g&lt;name&gt;b)   =&gt; error
+(?&lt;name&gt;a|b\g&lt;name&gt;c)  =&gt; OK
+</pre>
+<h2 id='selector'>選択</h2>
+<p>
+縦棒 | によって2つの部分正規表現のどちらか一方にマッチすれば良い部分正規表現を記述できます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/\w(and|or)\w/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">Feliformia</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;form&quot; 1:&quot;or&quot;&gt;
+</span><span class="sr">/\w(and|or)\w/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">furandi</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># =&gt; #&lt;MatchData &quot;randi&quot; 1:&quot;and&quot;&gt;
+</span><span class="sr">/\w(and|or)\w/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">dissemblance</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span></code></pre>
+<p>
+このメタ文字は選択子(alternation operator)と呼ばれます。
+</p>
+<h2 id='anchor'>アンカー</h2>
+<p>
+アンカーは幅0の文字列にマッチするメタ文字列です。幅0とは文字と文字の間、文字列の先頭、文字列の末尾、などを意味します。ある特定の条件を満たす「位置」にマッチします。
+</p>
+<ul>
+<li>^ 行頭にマッチします。行頭とは、文字列の先頭もしくは改行の次を
+意味します。</li>
+<li>$ 行末にマッチします。
+行末とは文字列の末尾もしくは改行の手前を意味します。</li>
+<li>\A 文字列の先頭にマッチします。</li>
+<li>\Z 文字列の末尾にマッチします。
+ただし文字列の最後の文字が改行ならばそれの手前にマッチします。</li>
+<li>\z 文字列の末尾にマッチします。</li>
+<li>\b 単語境界にマッチします。
+単語を成す文字と単語を成さない文字の間にマッチします。
+文字列の先頭の文字が単語成す文字であれば、文字列の先頭
+の位置にマッチします。</li>
+<li>\B 非単語境界にマッチします。
+\bでマッチしない位置にマッチします。</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># 文字列中の real にマッチする
+</span><span class="sr">/real/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">surrealist</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;real&quot;&gt;
+</span><span class="c1"># 先頭に real とないとマッチしない
+</span><span class="sr">/\Areal/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">surrealist</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span><span class="c1"># 単語境界がrealの前にないのでマッチしない
+</span><span class="sr">/\breal/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">surrealist</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span></code></pre>
+<p>
+単語を成す文字、成さない文字の定義はエンコードによって異なります。以下の例で「全角」括弧は EUC-JP では単語を成す文字と見なされますが、UTF-8 では見なされません。その結果、以下のような挙動をします。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># -*- coding:utf-8 -*-
+</span><span class="c1"># デフォルトは UTF-8
+</span><span class="sr">/foo\b/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">あいうfoo%</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;foo&quot;&gt;
+</span><span class="sr">/\bfoo\b/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">あいうfoo%</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span><span class="sr">/\bfoo\b/e</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">（foo）</span><span class="s2">"</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="s2">"</span><span class="s2">EUC-JP</span><span class="s2">"</span><span class="p">)</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span><span class="sr">/\bfoo\b/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">（foo）</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;foo&quot;&gt;
+</span></code></pre>
+<p>
+Unicode の規格では、単語を成す文字を Word というプロパティで定義しています。
+</p>
+<h3 id='lookahead_lookbehind'>先読み、後読み(lookahead, lookbehind)</h3>
+<p>
+ある位置から続く文字列がある部分式にマッチするならばその位置にマッチするという正規表現を書くことができます。
+</p>
+<p>
+「ある位置から続く文字列(先読み、lookahead)/ある位置の手前までの文字列(後読み、lookbehind)」と「マッチする(肯定、positive)/マッチしない(否定、negative)」の組み合わせで4つのパターンがあります。
+</p>
+<ul>
+<li>(?=pat) 肯定先読み(positive lookahead)</li>
+<li>(?!pat) 否定先読み(negative lookahead)</li>
+<li>(?&lt;=pat) 肯定後読み(positive lookbehind)</li>
+<li>(?&lt;!pat) 否定後読み(negative lookbehind)</li>
+<li>\K 後読みの別表記、このメタ文字列の手前までを後読みします。
+つまり /pat1\Kpat2/ は /(?&lt;=pat1)pat2/ と同様の意味となります。</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># 以下の例では、後読みと先読みを使って &lt;b&gt; と
+</span><span class="c1"># &lt;/b&gt; に挟まれているという条件を正規表現中に記述しつつ
+</span><span class="c1"># &lt;b&gt; &lt;/b&gt; 自体にはマッチさせていない。
+</span><span class="sr">/(?&lt;=&lt;b&gt;)\w+(?=&lt;\/b&gt;)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">Fortune favours the &lt;b&gt;bold&lt;/b&gt;</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; #&lt;MatchData &quot;bold&quot;&gt;
+</span><span class="c1"># 以下は上の正規表現と同じものを表す
+</span><span class="sr">/&lt;b&gt;\K\w+(?=&lt;\/b&gt;)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">Fortune favours the &lt;b&gt;bold&lt;/b&gt;</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; #&lt;MatchData &quot;bold&quot;&gt;
+</span></code></pre>
+<h2 id='cond'>条件分岐</h2>
+<p>
+(?(cond)pat) もしくは (?(cond)truepat|falsepat) という記法で条件分岐を記述できます。
+</p>
+<p>
+(?(cond)pat) は cond が真の場合は部分式 pat が使われます。
+(?(cond)truepat|falsepat) は cond が真の場合は部分式 truepat が使われ、偽の場合には falsepat が使われます。
+</p>
+<p>
+条件可能な条件として以下があります。
+</p>
+<ul>
+<li>(n) (nは整数)指定した番号の後方参照に何かがマッチしていれば真</li>
+<li>(&lt;name&gt;), ('name') 名前指定の後方参照が何かにマッチしていれば真</li>
+</ul>
+<p>
+以下の例は
+</p>
+<pre>
+set var=val
+print var
+</pre>
+<p>
+という2つの命令を持つコマンドにマッチするような正規表現です。
+</p>
+<pre class="highlight ruby">
+<code>
+re <span class="o">=</span> <span class="sr">/\A(?:(set)|(print))\s+(\w+)(?(1)=(\d+))\z/</span>
+re<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">set x=32</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;set x=32&quot; 1:&quot;set&quot; 2:nil 3:&quot;x&quot; 4:&quot;32&quot;&gt;
+</span>re<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">print x</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;print x&quot; 1:nil 2:&quot;print&quot; 3:&quot;x&quot; 4:nil&gt;
+</span>re<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">set y</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span></code></pre>
+<h2 id='option'>オプション</h2>
+<p>
+/pat/という正規表現の直後に以下のアルファベットを置くことで、正規表現にオプションを指定することができます。
+</p>
+<ul>
+<li>/pat/i 大文字小文字を無視する</li>
+<li>/pat/m メタ文字「.」が改行にマッチするようになる</li>
+<li>/pat/x <a href="#free_format_mode">フリーフォーマットモード</a>になり、空白を無視する。コメントの仕様が変化する</li>
+<li>/pat/o パターン内の #{} の展開を1回限りしかしない。</li>
+</ul>
+<p>
+i, m, x のオプションは (?on:pat) もしくは (?on-off:pat) という記法で部分正規表現にのみ適用することができます。on、offにはi,m,xのいずれかを置きます。onにはpatの中でのみ局所的に有効にしたいオプションを、offには局所的に無効化したいオプションを指定します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/a(?i:b)c/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">aBc</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;aBc&quot;&gt;
+</span><span class="sr">/a(?i:b)c/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;abc&quot;&gt;
+</span></code></pre>
+<p>
+(?on) もしくは (?on-off) という形式を使うと、そこから後の部分正規表現のみオプションを有効化することができます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/a(?i)bc/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">aBc</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;aBc&quot;&gt;
+</span><span class="sr">/a(?i)bc/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">aBC</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;aBC&quot;&gt;
+</span><span class="c1"># かっこの中で(?i)を指定すると、そのかっこの終わりまで有効
+</span><span class="sr">/a(?:(?i)bc)d/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">aBCd</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;aBCd&quot;&gt;
+</span><span class="sr">/a(?:(?i)bc)d/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">aBCD</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span></code></pre>
+<p>
+オプションは <a href="../method/-regexp/s/new.html">Regexp.new</a> の引数に指定することもできます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span>, <span class="no">Regexp</span><span class="o">::</span><span class="no">IGNORECASE</span><span class="p">)</span>                     <span class="c1"># =&gt; /abc/i
+</span><span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span>, <span class="no">Regexp</span><span class="o">::</span><span class="no">MULTILINE</span><span class="p">)</span>                      <span class="c1"># =&gt; /abc/m
+</span><span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">abc # Comment</span><span class="s2">"</span>, <span class="no">Regexp</span><span class="o">::</span><span class="no">EXTENDED</span><span class="p">)</span>             <span class="c1"># =&gt; /abc # Comment/x
+</span><span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span>, <span class="no">Regexp</span><span class="o">::</span><span class="no">IGNORECASE</span> <span class="o">|</span> <span class="no">Regexp</span><span class="o">::</span><span class="no">MULTILINE</span><span class="p">)</span> <span class="c1"># =&gt; /abc/mi
+</span></code></pre>
+<p>
+2.0.0以降では、文字クラスの挙動を変更するための d,a,u というオプションを
+(?on:pat)もしくは(?on)の形で指定することができます。(?on-off:pat), (?on-off)
+という形式を用いる場合はonの部分にのみ用いることができます(offはできません)。
+</p>
+<ul>
+<li>d デフォルト(1.9.3互換)
+(\w, \d, \s は、非ASCII文字にマッチせず、
+\b, \B, POSIXブラケットは、各エンコーディングのルールに従う)</li>
+<li>a ASCII
+(\w, \d, \s, POSIXブラケットは、非ASCII文字に
+マッチしない)</li>
+<li>u Unicode
+(\w (\W), \d (\D), \s (\S), \b (\B), POSIXブラケット
+は、各エンコーディングのルールに従う)</li>
+</ul>
+<p>
+d,a,u のオプションは正規表現直後に置く方式では指定ができません。
+</p>
+<h2 id='encoding'>エンコーディング</h2>
+<p>
+通常、正規表現のエンコーディングはソースコードエンコーディングと同じであると見なされます。ただし正規表現が ascii 互換の文字しか含まない場合はエンコーディングは US-ASCII になります。
+</p>
+<p>
+以下のオプションで変更することができます。
+</p>
+<ul>
+<li>/pat/u UTF-8</li>
+<li>/pat/e EUC-JP</li>
+<li>/pat/s Windows-31J</li>
+<li>/pat/n ASCII-8bit</li>
+</ul>
+<p>
+正規表現オブジェクトのエンコーディングは <a href="../method/-regexp/i/encoding.html">Regexp#encoding</a> で取得できます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># -*- coding:utf-8 -*-
+</span><span class="sr">/あいう/</span><span class="p">.</span><span class="nf">encoding</span> <span class="c1"># =&gt; #&lt;Encoding:UTF-8&gt;
+</span><span class="sr">/abc/</span><span class="p">.</span><span class="nf">encoding</span> <span class="c1"># =&gt; #&lt;Encoding:US-ASCII&gt;
+</span><span class="sr">/abc/u</span><span class="p">.</span><span class="nf">encoding</span> <span class="c1"># =&gt; #&lt;Encoding:UTF-8&gt;
+</span></code></pre>
+<p>
+正規表現のエンコーディングと文字列のエンコーディングが非互換である場合、<a href="../class/-encoding=3a=3a-compatibility-error.html">Encoding::CompatibilityError</a> が発生します。
+</p>
+<p>
+エンコーディングについては <a href="../doc/spec=2fm17n.html">多言語化</a> も参考にしてください。
+</p>
+<p>
+<a href="../method/-regexp/i/fixed_encoding=3f.html">Regexp#fixed_encoding?</a> で正規表現のエンコーディングが「固定」さているかどうかを調べることができます。これが真である場合には文字列とのエンコーディングが一致していないとマッチ時に例外が発生します。これが偽である場合にはASCII互換な文字列であればマッチの判定をさせることができます。<a href="../method/-regexp/s/new.html">Regexp.new</a> に <a href="../method/-regexp/c/-f-i-x-e-d-e-n-c-o-d-i-n-g.html">Regexp::FIXEDENCODING</a> を指定することで明示的に指定することが可能です。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># -*- coding:utf-8 -*-
+</span><span class="sr">/あいう/</span><span class="p">.</span><span class="nf">fixed_encoding?</span> <span class="c1"># =&gt; true
+</span><span class="sr">/abc/</span><span class="p">.</span><span class="nf">fixed_encoding?</span> <span class="c1"># =&gt; false
+</span><span class="sr">/abc/e</span><span class="p">.</span><span class="nf">fixed_encoding?</span> <span class="c1"># =&gt; true
+</span><span class="sr">/abc/</span> <span class="o">=~</span> <span class="s2">"</span><span class="s2">あいう</span><span class="s2">"</span> <span class="c1"># =&gt; nil
+</span><span class="sr">/abc/e</span> <span class="o">=~</span> <span class="s2">"</span><span class="s2">あいう</span><span class="s2">"</span> 
+<span class="c1"># ~&gt; -:6:in `&lt;main&gt;': incompatible encoding regexp match (EUC-JP regexp with UTF-8 string) (Encoding::CompatibilityError)
+</span></code></pre>
+<h2 id='comment'>コメント</h2>
+<p>
+(?#comment here) という記法で正規表現内にコメントを書くことができます。この記法はフリーフォーマットモードでは使えません。かわりに # で行末までがコメントになります。
+</p>
+<h2 id='free_format_mode'>フリーフォーマットモード</h2>
+<p>
+上に説明している x オプションを使うと空白を無視するようになります。これをフリーフォマットモード(free format mode, free spacing modeとも)
+と呼びます。
+</p>
+<p>
+フリーフォーマットモードでは # から行末まではコメント扱いされます。
+</p>
+<pre class="highlight ruby">
+<code>
+float_pat <span class="o">=</span> <span class="sr">/\A
+  \d+ # 整数部
+  (\. # 小数点
+    \d+ # 小数部
+  )?  # 小数点 + 小数部 はなくともよい
+\z/x</span>
+float_pat<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">3.14</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;3.14&quot; 1:&quot;.14&quot;&gt;
+</span></code></pre>
+<p>
+空白を表現したい場合はエスケープをしてください。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/x y/x</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">x y</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span><span class="sr">/x\ y/x</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">x y</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData &quot;x y&quot;&gt;
+</span></code></pre>
+<p>
+\s や \p{Space} のような文字クラスを使うのが良い場合も多いでしょう。
+</p>
+<h2 id='absenceop'>非包含オペレータ (absence operator) (実験的)</h2>
+<p>
+(?~式) という記法で、式にマッチする文字列を含まない任意の文字列にマッチします。
+</p>
+<p>
+例えば (?~abc) は &quot;&quot;, &quot;ab&quot;, &quot;aab&quot;, &quot;abb&quot;, &quot;ccdd&quot; などにはマッチしますが、
+&quot;abc&quot;, &quot;aabc&quot;, &quot;ccabcdd&quot; などにはマッチしません。
+</p>
+<p>
+/\/\*(?~\*\/)\*\// は C スタイルのコメントにマッチします。例えば &quot;/**/&quot;, &quot;/* foo bar */&quot; など。
+</p>
+<h2 id='list'>一覧</h2>
+<p>
+Rubyで利用可能なメタ文字、メタ文字列の一覧です。
+</p>
+<ul>
+<li>. 任意の1文字(改行を含まない)</li>
+</ul>
+<p>
+文字クラス
+</p>
+<ul>
+<li>[..] いずれかの1文字</li>
+<li>[^..] どの文字でもない</li>
+<li>&amp;&amp; 共通部分(文字クラス内のみ)</li>
+<li>x-y xからyまでの文字(文字クラス内のみ)</li>
+<li>\w 単語構成文字 [a-zA-Z0-9_]</li>
+<li>\W 非単語構成文字 [^a-zA-Z0-9_]</li>
+<li>\s 空白文字 [ \t\r\n\f]</li>
+<li>\S 非空白文字 [^ \t\r\n\f]</li>
+<li>\d 10進数字 [0-9]</li>
+<li>\D 非10進数字 [^0-9]</li>
+<li>\h 16進数字 [0-9a-fA-F]</li>
+<li>\H 非16進数字 [^0-9a-fA-F]</li>
+<li>\p{property-name} Unicode プロパティ</li>
+<li>\p{^property-name} \P{property-name} 否定 Unicode プロパティ</li>
+<li>[:alnum:] など POSIX文字クラス (文字クラス内のみ)</li>
+</ul>
+<p>
+特別な意味を持つ文字列
+</p>
+<ul>
+<li>\R 改行文字 (Linebreak)</li>
+<li>\X Unicode の結合文字シーケンス</li>
+</ul>
+<p>
+繰り返し
+</p>
+<ul>
+<li>* 0回以上 (greedy)</li>
+<li>+ 1回以上 (greedy)</li>
+<li>? 0回もしくは1回 (greedy)</li>
+<li>{n} ちょうどn回(nは数字) (greedy)</li>
+<li>{n,} n回以上(nは数字) (greedy)</li>
+<li>{,m} m回以下(mは数字) (greedy)</li>
+<li>{n,m} n回以上m回以下(n,mは数字) (greedy)</li>
+<li>*? 0回以上 (reluctant)</li>
+<li>+? 1回以上 (reluctant)</li>
+<li>?? 0回もしくは1回 (reluctant)</li>
+<li>{n,}? n回以上(nは数字) (reluctant)</li>
+<li>{,m}? m回以下(mは数字) (reluctant)</li>
+<li>{n,m}? n回以上m回以下(n,mは数字) (reluctant)</li>
+<li>*+ 0回以上 (possessive)</li>
+<li>++ 1回以上 (possessive)</li>
+<li>?+ 0回もしくは1回 (possessive)</li>
+</ul>
+<p>
+キャプチャ &amp; グループ化
+</p>
+<ul>
+<li>(pat) 通常のキャプチャ&amp;グループ化</li>
+<li>\1, \2, ... キャプチャを参照</li>
+<li>\k&lt;1&gt;, \k&lt;2&gt;, ... キャプチャを参照</li>
+<li>\k'1', \k'2', ... キャプチャを参照</li>
+<li>\k&lt;-1&gt;, \k&lt;-2&gt;, ... キャプチャを参照(相対後方参照)</li>
+<li>\k'-1', \k'-2', ... キャプチャを参照(相対後方参照)</li>
+<li>(?&lt;name&gt;pat) (?'name'pat) 名前付きキャプチャ</li>
+<li>\k&lt;name&gt; 名前付きキャプチャを参照</li>
+<li>\k'name' 名前付きキャプチャを参照</li>
+<li>(?:pat) キャプチャしないグループ化</li>
+<li>(?&gt;pat) アトミックグループ化</li>
+</ul>
+<p>
+部分式呼び出し
+</p>
+<ul>
+<li>\g&lt;name&gt;    名前指定呼出し</li>
+<li>\g'name'    名前指定呼出し</li>
+<li>\g&lt;n&gt;       番号指定呼出し (n &gt;= 1)</li>
+<li>\g'n'       番号指定呼出し (n &gt;= 1)</li>
+<li>\g&lt;0&gt;       パターン全体の再帰呼び出し</li>
+<li>\g'0'       パターン全体の再帰呼び出し</li>
+<li>\g&lt;-n&gt;      相対番号指定呼出し (n &gt;= 1)</li>
+<li>\g'-n'      相対番号指定呼出し (n &gt;= 1)</li>
+<li>\g&lt;+n&gt;      相対番号指定呼出し (n &gt;= 1)</li>
+<li>\g'+n'      相対番号指定呼出し (n &gt;= 1)</li>
+<li>\k&lt;n+level&gt;     (n &gt;= 1) ネストレベル付き後方参照</li>
+<li>\k&lt;n-level&gt;     (n &gt;= 1) ネストレベル付き後方参照</li>
+<li>\k'n+level'     (n &gt;= 1) ネストレベル付き後方参照</li>
+<li>\k'n-level'     (n &gt;= 1) ネストレベル付き後方参照</li>
+<li>\k&lt;-n+level&gt;    (n &gt;= 1) ネストレベル付き後方参照</li>
+<li>\k&lt;-n-level&gt;    (n &gt;= 1) ネストレベル付き後方参照</li>
+<li>\k'-n+level'    (n &gt;= 1) ネストレベル付き後方参照</li>
+<li>\k'-n-level'    (n &gt;= 1) ネストレベル付き後方参照</li>
+<li>\k&lt;name+level&gt; ネストレベル付き後方参照</li>
+<li>\k&lt;name-level&gt; ネストレベル付き後方参照</li>
+<li>\k'name+level' ネストレベル付き後方参照</li>
+<li>\k'name-level' ネストレベル付き後方参照</li>
+</ul>
+<p>
+選択子
+</p>
+<ul>
+<li>pat1|pat2 どちらか一方がマッチすれば良い</li>
+</ul>
+<p>
+アンカー
+</p>
+<ul>
+<li>^ 行頭にマッチします。</li>
+<li>$ 行末にマッチします。</li>
+<li>\A 文字列の先頭にマッチします。</li>
+<li>\Z 文字列の末尾にマッチします。ただし文字列の最後の文字が改行ならば
+それの手前にマッチします。</li>
+<li>\z 文字列の末尾にマッチします。</li>
+<li>\b 単語境界にマッチします。</li>
+<li>\B 非単語境界にマッチします。</li>
+<li>(?=pat) 肯定先読み</li>
+<li>(?!pat) 否定先読み</li>
+<li>(?&lt;=pat) 肯定後読み</li>
+<li>(?&lt;!pat) 否定後読み</li>
+<li>\K 左側を肯定後読み</li>
+</ul>
+<p>
+条件
+</p>
+<ul>
+<li>(?(cond)pat) cond が成立している場合のみ pat</li>
+<li>(?(cond)truepat|falsepat) condが成立している場合は truepat 、成立していない
+場合は falsepat</li>
+</ul>
+<p>
+オプション
+</p>
+<ul>
+<li>(?on:pat) patの間だけ on オプション(i,m,x)を有効にする
+2.0.0以降はd,a,uオプションも使える。</li>
+<li>(?on-off:pat)  patの間だけ on オプションを有効にし、offオプションを無効にする</li>
+</ul>
+<p>
+コメント
+</p>
+<ul>
+<li>(?#comment here) コメント</li>
+</ul>
+<p>
+非包含オペレータ
+</p>
+<ul>
+<li>(?~pat) 非包含オペレータ</li>
+</ul>
+<h2 id='specialvar'>特殊変数</h2>
+<p>
+パターンマッチしたときに、以下の特殊変数にマッチの情報をセットします。
+</p>
+<ul>
+<li><a href="../method/-kernel/v/=7e.html">$~</a> 最後にマッチしたときの情報(<a href="../class/-match-data.html">MatchData</a> オブジェクト)</li>
+<li><a href="../method/-kernel/v/=26.html">$&amp;</a> マッチしたテキスト全体</li>
+<li><a href="../method/-kernel/v/=60.html">$`</a> マッチしたテキストの手前の文字列</li>
+<li><a href="../method/-kernel/v/=27.html">$'</a> マッチしたテキストの後ろの文字列</li>
+<li><a href="../method/-kernel/v/1.html">$1</a>, $2, ... キャプチャ文字列</li>
+<li><a href="../method/-kernel/v/=2b.html">$+</a> 最後(末尾)のキャプチャ文字列</li>
+</ul>
+<p>
+これらの変数はスレッドローカルかつメソッドでローカルな変数です。
+</p>
+<h2 id='references'>参考文献</h2>
+<ul>
+<li>『正規表現技術入門――最新エンジン実装と理論的背景』新屋良磨、鈴木勇介、高田謙 著、技術評論社（2015） <a class="external" href="https://gihyo.jp/book/2015/978-4-7741-7270-5">https://gihyo.jp/book/2015/978-4-7741-7270-5</a></li>
+<li>『詳説正規表現　第3版』Jeffrey E. F. Friedl 著、オライリー・ジャパン（2008） <a class="external" href="https://www.oreilly.co.jp/books/9784873113593/">https://www.oreilly.co.jp/books/9784873113593/</a></li>
+<li>Onigmoのドキュメント：<a class="external" href="https://github.com/k-takata/Onigmo/blob/master/doc/RE.ja">https://github.com/k-takata/Onigmo/blob/master/doc/RE.ja</a></li>
+<li>Ruby の tarball に含まれている doc/regexp.rdoc：<a class="external" href="https://github.com/ruby/ruby/blob/master/doc/regexp.rdoc">https://github.com/ruby/ruby/blob/master/doc/regexp.rdoc</a></li>
+</ul>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Regexp#match (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="指定された文字列 str に対して位置 pos から自身が表す正規表現によるマッ
+チングを行います。マッチした場合には結果を MatchData オブジェクトで返し
+ます。
+マッチしなかった場合 nil を返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-regexp.html">Regexpクラス</a>
+      </li>
+      <li>
+        match 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Regexp#match</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_MATCH"><code>match(str, pos = 0) -&gt; MatchData | nil</code><span class="permalink">[<a href="../../../method/-regexp/i/match.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Regexp.html#method-i-match">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>match(str, pos = 0) {|m| ... } -&gt; object | nil</code></dt>
+<dd class="method-description">
+<p>
+指定された文字列 str に対して位置 pos から自身が表す正規表現によるマッチングを行います。マッチした場合には結果を MatchData オブジェクトで返します。マッチしなかった場合 nil を返します。
+</p>
+<p>
+省略可能な第二引数 pos を指定すると、マッチの開始位置を pos から行うよう制御できます(pos のデフォルト値は 0)。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span><span class="p">(</span><span class="sr">/(.).(.)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobar</span><span class="s2">"</span>, <span class="mi">3</span><span class="p">)</span><span class="p">.</span><span class="nf">captures</span><span class="p">)</span>   <span class="c1"># =&gt; [&quot;b&quot;, &quot;r&quot;]
+</span><span class="nb">p</span><span class="p">(</span><span class="sr">/(.).(.)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobar</span><span class="s2">"</span>, <span class="o">-</span><span class="mi">3</span><span class="p">)</span><span class="p">.</span><span class="nf">captures</span><span class="p">)</span>  <span class="c1"># =&gt; [&quot;b&quot;, &quot;r&quot;]
+</span></code></pre>
+<p>
+pos を指定しても <a href="../../../method/-match-data/i/offset.html">MatchData#offset</a> 等の結果には影響しません。つまり、
+</p>
+<pre class="highlight ruby">
+<code>
+re<span class="p">.</span><span class="nf">match</span><span class="p">(</span>str<span class="p">[</span>pos<span class="o">..</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="p">)</span>
+</code></pre>
+<p>
+と
+</p>
+<pre class="highlight ruby">
+<code>
+re<span class="p">.</span><span class="nf">match</span><span class="p">(</span>str, pos<span class="p">)</span>
+</code></pre>
+<p>
+は異なります。
+</p>
+<p>
+ブロックを渡すと、マッチした場合に限り MatchData オブジェクトがブロック引数に渡されて実行されます。マッチした場合はブロックの値を返し、マッチしなかった場合は nil を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+results <span class="o">=</span> <span class="p">[</span><span class="p">]</span>
+<span class="sr">/((.)\2)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>m<span class="o">|</span> results <span class="o">&lt;&lt;</span> m<span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">}</span> <span class="c1"># =&gt; [&quot;oo&quot;] 
+</span><span class="sr">/((.)\2)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>m<span class="o">|</span> results <span class="o">&lt;&lt;</span> m<span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">}</span> <span class="c1"># =&gt; nil
+</span>results <span class="c1"># =&gt; [&quot;oo&quot;]
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+文字列を指定します。str との正規表現マッチを行います。
+</dd>
+<dt class='method-param'>[PARAM] pos:</dt>
+<dd>
+整数を指定します。マッチの開始位置を pos から行うよう制御できます(pos のデフォルト値は 0)。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+reg <span class="o">=</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="k">if</span> reg<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobar</span><span class="s2">"</span><span class="p">)</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">match</span><span class="s2">"</span>
+<span class="k">end</span>
+<span class="c1"># =&gt; match
+</span>
+<span class="nb">p</span> reg<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobar</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData:0x29403fc&gt;
+</span><span class="nb">p</span> reg<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># =&gt; nil
+</span>
+<span class="nb">p</span> <span class="sr">/(foo)(bar)(baz)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobarbaz</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">to_a</span><span class="p">.</span><span class="nf">values_at</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;]
+</span></code></pre>
+<h2 >便利な使いかた</h2>
+<p>
+正規表現にマッチした部分文字列だけが必要な場合に、
+</p>
+<pre class="highlight ruby">
+<code>
+bar <span class="o">=</span> <span class="sr">/foo(.*)baz/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobarbaz</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">to_a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+foo, bar, baz <span class="o">=</span> <span class="sr">/(foo)(bar)(baz)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobarbaz</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">to_a</span><span class="p">.</span><span class="nf">values_at</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span><span class="p">)</span>
+</code></pre>
+<p>
+のように使用できます。(to_a は、マッチに失敗した場合を考慮しています。)
+</p>
+<p>
+多重代入の規則では右辺が配列でない一つのオブジェクトで to_a
+メソッドを持つ場合、右辺に * を付けることで to_a の結果を利用できます。つまり、上記は以下のように書くことができます。(ここでの
+`_' は、<a href="../../../method/-kernel/v/=26.html">$&amp;</a> を捨てるために適当に選んだ変数名)
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+_, foo, bar, baz <span class="o">=</span> <span class="o">*</span><span class="sr">/(foo)(bar)(baz)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobarbaz</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">p</span> <span class="p">[</span>foo, bar, baz<span class="p">]</span>
+
+<span class="c1"># =&gt; [&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;]
+</span></code></pre>
+<p>
+このような用途に <a href="../../../method/-match-data/i/captures.html">MatchData#captures</a> が使えると考えるかも知れませんが、captures では、マッチに失敗した場合、
+nil.captures を呼び出そうとして例外 <a href="../../../class/-no-method-error.html">NoMethodError</a> が発生してしまいます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+foo, bar, baz <span class="o">=</span> <span class="sr">/(foo)(bar)(baz)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobar</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">captures</span>
+
+<span class="c1"># =&gt; -:1: undefined method `captures' for nil:NilClass (NoMethodError)
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-regexp/i/match=3f.html">Regexp#match?</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Module#include (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="モジュール mod をインクルードします。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-module.html">Moduleクラス</a>
+      </li>
+      <li>
+        include 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Module#include</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_INCLUDE"><code>include(*mod) -&gt; self</code><span class="permalink">[<a href="../../../method/-module/i/include.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Module.html#method-i-include">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+モジュール mod をインクルードします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] mod:</dt>
+<dd>
+<a href="../../../class/-module.html">Module</a> のインスタンス( <a href="../../../class/-enumerable.html">Enumerable</a> など)を指定します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+継承関係が循環してしまうような include を行った場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">module</span> <span class="nn">M</span>
+<span class="k">end</span>
+<span class="k">module</span> <span class="nn">M2</span>
+  include <span class="no">M</span>
+<span class="k">end</span>
+<span class="k">module</span> <span class="nn">M</span>
+  include <span class="no">M2</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+実行結果:
+</p>
+<pre>
+-:3:in `append_features': cyclic include detected (ArgumentError)
+        from -:3:in `include'
+        from -:3
+</pre>
+<p>
+インクルードとは、指定されたモジュールの定義
+(メソッド、定数) を引き継ぐことです。インクルードは多重継承の代わりに用いられており、 mix-in とも呼びます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">C</span>
+  include <span class="no">FileTest</span>
+  include <span class="no">Math</span>
+<span class="k">end</span>
+
+<span class="nb">p</span> <span class="no">C</span><span class="p">.</span><span class="nf">ancestors</span>
+
+<span class="c1"># =&gt; [C, Math, FileTest, Object, Kernel]
+</span></code></pre>
+<p>
+モジュールの機能追加は、クラスの継承関係の間にそのモジュールが挿入されることで実現されています。従って、メソッドの探索などはスーパークラスよりもインクルードされたモジュールのほうが先に行われます
+(上の例の <a href="../../../method/-module/i/ancestors.html">Module#ancestors</a> の結果がメソッド探索の順序です)。
+</p>
+<p>
+同じモジュールを二回以上 include すると二回目以降は無視されます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">module</span> <span class="nn">M</span>
+<span class="k">end</span>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">C1</span>
+  include <span class="no">M</span>
+<span class="k">end</span>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">C2</span> <span class="o">&lt;</span> <span class="no">C1</span>
+  include <span class="no">M</span>   <span class="c1"># この include は無視される
+</span><span class="k">end</span>
+
+<span class="nb">p</span> <span class="no">C2</span><span class="p">.</span><span class="nf">ancestors</span>  <span class="c1"># =&gt; [C2, C1, M, Object, Kernel]
+</span></code></pre>
+<p>
+引数に複数のモジュールを指定した場合、最後の引数から順にインクルードします。
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

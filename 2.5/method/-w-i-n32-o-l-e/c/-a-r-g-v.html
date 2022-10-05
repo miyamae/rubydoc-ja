@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>WIN32OLE::ARGV (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="直前のメソッド呼び出しの引数を格納した配列です。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/win32ole.html">win32oleライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-w-i-n32-o-l-e.html">WIN32OLEクラス</a>
+      </li>
+      <li>
+        ARGV 
+      </li>
+    </ol>
+  </nav>
+
+<h1>constant WIN32OLE::ARGV</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="C_-A-R-G-V"><code>ARGV -&gt; [object]</code><span class="permalink">[<a href="../../../method/-w-i-n32-o-l-e/c/-a-r-g-v.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/WIN32OLE.html#method-c-ARGV">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+直前のメソッド呼び出しの引数を格納した配列です。
+</p>
+<p>
+OLEオートメーションでは呼び出し先が引数に対して値を設定できます。しかし、
+Rubyのメソッド引数は値のみを取るため、そのままでは呼び出し先が設定した値を参照できません。このような場合、ARGVを参照することで呼び出し先の設定値を参照できます。
+</p>
+<p>
+以下のリストは、VBで開発したオブジェクトのメソッド呼び出しを例としています。このメソッド（Accm）は、第1引数で指定した演算を第2引数と第3引数に適用し、結果を第2引数に設定します。
+</p>
+<pre>
+' VB (OLE Automation server)
+Public Sub Accm(ByVal Operator, ByRef Accumulator, ByVal Operand)
+    If Operator = &quot;*&quot; Then
+        Accmulator = Accmulator * Operand
+    Else If Operator = &quot;+&quot; Then
+        Accmulator = Accmulator + Operand
+    End If
+End Sub
+
+# Ruby
+x = 10
+obj.Accm '*', x, 11
+p x               # =&gt; 10 …… 呼び出しによって影響を受けない
+p WIN32OLE::ARGV  # =&gt; ['*', 110, 11] …… 結果はARGVの対応する引数に反映される
+obj.Accm '+', 10, 11
+p WIN32OLE::ARGV  # =&gt; ['+', 21, 11]
+</pre>
+<p>
+直前のメソッド呼び出しが例外となった場合、ARGVの設定内容は呼び出し前の状態が保たれます。つまり、WIN32OLE自身がARGVの内容を消去するのは、メソッド呼び出しに成功した場合のみです。このため最後のメソッド呼び出しが引数にオブジェクトを返すタイプのメソッドだった場合、GCにオブジェクトを回収させるために、呼び出し側でARGVを消去してください。
+</p>
+<pre>
+' VB (OLE Automation server)
+Public Sub GetInterface(ByRef obj)
+    Set Obj = New OleObject
+End Sub
+
+# Ruby
+obj.GetInterface nil   # 引数の数を合わせるためダミー引数を指定
+WIN32OLE::ARGV.clear   # 通常は、後続のメソッド呼び出しによって消去される
+</pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

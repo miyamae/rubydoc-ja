@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>File.fnmatch (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="ファイル名のパターンマッチ [[man:fnmatch(3)]] を行います。
+path が pattern にマッチすれば真を返します。そうでない場合には false を返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-file.html">Fileクラス</a>
+      </li>
+      <li>
+        fnmatch 
+      </li>
+    </ol>
+  </nav>
+
+<h1>singleton method File.fnmatch</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_FNMATCH"><code>fnmatch(pattern, path, flags = 0) -&gt; bool</code><span class="permalink">[<a href="../../../method/-file/s/fnmatch.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/File.html#method-c-fnmatch">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>fnmatch?(pattern, path, flags = 0) -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+ファイル名のパターンマッチ <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fnmatch.html">fnmatch(3)</a> を行います。
+path が pattern にマッチすれば真を返します。そうでない場合には false を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+パターンを文字列で指定します。ワイルドカードとして `*',
+`?', `[]', `{}' が使用できます。
+<a href="../../../method/-dir/s/glob.html">Dir.glob</a> とは違って `**/' は使用できません。
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="sx">%w(foo foobar bar)</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span><span class="o">|</span>f<span class="o">|</span>
+  <span class="nb">p</span> <span class="no">File</span><span class="p">.</span><span class="nf">fnmatch</span><span class="p">(</span><span class="s2">"</span><span class="s2">foo*</span><span class="s2">"</span>, f<span class="p">)</span>
+<span class="p">}</span>
+<span class="c1"># =&gt; true
+</span><span class="c1">#    true
+</span><span class="c1">#    false
+</span></code></pre>
+</dd>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+パスを表す文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] flags:</dt>
+<dd>
+パターンマッチの動作を以下で述べる定数の論理和で指定します。
+flags のデフォルト値は0(フラグ指定なし)です。
+</dd>
+</dl>
+<p>
+引数 flags に指定できる定数は以下のとおりです。これらの定数は <a href="../../../class/-file=3a=3a-constants.html">File::Constants</a> で定義されていますが、
+<a href="../../../class/-file.html">File</a> クラスの親クラスの IO が <a href="../../../class/-file=3a=3a-constants.html">File::Constants</a> をインクルードしているので、これらの定数は File::FNM_NOESCAPE などとして参照可能です。
+</p>
+<dl>
+<dt>FNM_NOESCAPE</dt>
+<dd>
+<p>
+エスケープ文字 `\' を普通の文字とみなします。
+</p>
+<p>
+デフォルトでは \ を伴う任意の文字はその文字にマッチしますが、このフラグをつけると、\ が普通の文字として扱われます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">File</span><span class="p">.</span><span class="nf">fnmatch</span><span class="p">(</span><span class="s1">'\a'</span>, <span class="s1">'a'</span><span class="p">)</span>                       <span class="c1"># =&gt; true
+</span><span class="nb">p</span> <span class="no">File</span><span class="p">.</span><span class="nf">fnmatch</span><span class="p">(</span><span class="s1">'\a'</span>, <span class="s1">'\a'</span>, <span class="no">File</span><span class="o">::</span><span class="no">FNM_NOESCAPE</span><span class="p">)</span>  <span class="c1"># =&gt; true
+</span></code></pre>
+<p>
+前者で * は、エスケープされているので &quot;*&quot; そのものにマッチします。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">File</span><span class="p">.</span><span class="nf">fnmatch</span><span class="p">(</span><span class="s1">'\*'</span>, <span class="s1">'a'</span><span class="p">)</span>                       <span class="c1"># =&gt; false
+</span><span class="nb">p</span> <span class="no">File</span><span class="p">.</span><span class="nf">fnmatch</span><span class="p">(</span><span class="s1">'\*'</span>, <span class="s1">'\a'</span>, <span class="no">File</span><span class="o">::</span><span class="no">FNM_NOESCAPE</span><span class="p">)</span>  <span class="c1"># =&gt; true
+</span></code></pre>
+<p>
+単体の \ は、このフラグの有無に関わらず \ にマッチします。
+(シングルクォート文字列中では \\ は、\ であることに注意)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">File</span><span class="p">.</span><span class="nf">fnmatch</span><span class="p">(</span><span class="s1">'\\'</span>, <span class="s1">'\\'</span><span class="p">)</span>                      <span class="c1"># =&gt; true
+</span><span class="nb">p</span> <span class="no">File</span><span class="p">.</span><span class="nf">fnmatch</span><span class="p">(</span><span class="s1">'\\'</span>, <span class="s1">'\\'</span>, <span class="no">File</span><span class="o">::</span><span class="no">FNM_NOESCAPE</span><span class="p">)</span>  <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+<dt>FNM_PATHNAME</dt>
+<dd>
+<p>
+ワイルドカード `*', `?', `[]' が `/' にマッチしなくなります。シェルのパターンマッチにはこのフラグが使用されています。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">File</span><span class="p">.</span><span class="nf">fnmatch</span><span class="p">(</span><span class="s1">'*'</span>, <span class="s1">'/'</span>, <span class="no">File</span><span class="o">::</span><span class="no">FNM_PATHNAME</span><span class="p">)</span>   <span class="c1"># =&gt; false
+</span><span class="nb">p</span> <span class="no">File</span><span class="p">.</span><span class="nf">fnmatch</span><span class="p">(</span><span class="s1">'?'</span>, <span class="s1">'/'</span>, <span class="no">File</span><span class="o">::</span><span class="no">FNM_PATHNAME</span><span class="p">)</span>   <span class="c1"># =&gt; false
+</span><span class="nb">p</span> <span class="no">File</span><span class="p">.</span><span class="nf">fnmatch</span><span class="p">(</span><span class="s1">'[/]'</span>, <span class="s1">'/'</span>, <span class="no">File</span><span class="o">::</span><span class="no">FNM_PATHNAME</span><span class="p">)</span> <span class="c1"># =&gt; false
+</span></code></pre>
+</dd>
+<dt>FNM_CASEFOLD</dt>
+<dd>
+<p>
+アルファベットの大小文字を区別せずにパターンマッチを行います。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">File</span><span class="p">.</span><span class="nf">fnmatch</span><span class="p">(</span><span class="s1">'A'</span>, <span class="s1">'a'</span>, <span class="no">File</span><span class="o">::</span><span class="no">FNM_CASEFOLD</span><span class="p">)</span>   <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+<dt>FNM_DOTMATCH</dt>
+<dd>
+<p>
+ワイルドカード `*', `?', `[]' が先頭の `.' にマッチするようになります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">File</span><span class="p">.</span><span class="nf">fnmatch</span><span class="p">(</span><span class="s1">'*'</span>, <span class="s1">'.'</span>, <span class="no">File</span><span class="o">::</span><span class="no">FNM_DOTMATCH</span><span class="p">)</span>           <span class="c1"># =&gt; true
+</span><span class="nb">p</span> <span class="no">File</span><span class="p">.</span><span class="nf">fnmatch</span><span class="p">(</span><span class="s1">'?'</span>, <span class="s1">'.'</span>, <span class="no">File</span><span class="o">::</span><span class="no">FNM_DOTMATCH</span><span class="p">)</span>           <span class="c1"># =&gt; true
+</span><span class="nb">p</span> <span class="no">File</span><span class="p">.</span><span class="nf">fnmatch</span><span class="p">(</span><span class="s1">'[.]'</span>, <span class="s1">'.'</span>, <span class="no">File</span><span class="o">::</span><span class="no">FNM_DOTMATCH</span><span class="p">)</span>         <span class="c1"># =&gt; true
+</span><span class="nb">p</span> <span class="no">File</span><span class="p">.</span><span class="nf">fnmatch</span><span class="p">(</span><span class="s1">'foo/*'</span>, <span class="s1">'foo/.'</span>, <span class="no">File</span><span class="o">::</span><span class="no">FNM_DOTMATCH</span><span class="p">)</span>   <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+<dt>FNM_EXTGLOB</dt>
+<dd>
+<p>
+{} 内のコンマで区切られた文字列の組合せにマッチするようになります。例えば、foo{a,b,c} は fooa, foob, fooc に展開されそれぞれに対してマッチ判定を行います。
+</p>
+<p>
+括弧は入れ子にすることができます。例えば、 {foo,bar{foo,bar}} は foo,
+barfoo, barbar のそれぞれにマッチします。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">File</span><span class="p">.</span><span class="nf">fnmatch</span><span class="p">(</span><span class="s1">'foo{a,b,c}'</span>, <span class="s1">'fooa'</span>, <span class="no">File</span><span class="o">::</span><span class="no">FNM_EXTGLOB</span><span class="p">)</span>           <span class="c1"># =&gt; true
+</span><span class="nb">p</span> <span class="no">File</span><span class="p">.</span><span class="nf">fnmatch</span><span class="p">(</span><span class="s1">'{foo,bar{foo,bar}}'</span>, <span class="s1">'barfoo'</span>, <span class="no">File</span><span class="o">::</span><span class="no">FNM_EXTGLOB</span><span class="p">)</span> <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

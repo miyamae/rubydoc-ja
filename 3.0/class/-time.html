@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class Time (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="時刻を表すクラスです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        Timeクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class Time</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-comparable.html">Comparable</a>
+        </li>
+        
+      
+      <li>
+        Time
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+時刻を表すクラスです。
+</p>
+<p>
+<a href="../method/-time/s/now.html">Time.now</a> は現在の時刻を返します。
+<a href="../method/-file/s/mtime.html">File.mtime</a> などが返すファイルのタイムスタンプは Time
+オブジェクトです。
+</p>
+<p>
+Time オブジェクトは時刻を起算時からの経過秒数で保持しています。起算時は協定世界時(UTC、もしくはその旧称から GMT とも表記されます) の
+1970年1月1日午前0時です。なお、うるう秒を勘定するかどうかはシステムによります。
+</p>
+<p>
+Time オブジェクトが格納可能な時刻の範囲は環境によって異なっていましたが、
+Ruby 1.9.2 からは OS の制限の影響を受けません。
+</p>
+<p>
+また、Time オブジェクトは協定世界時と地方時のどちらのタイムゾーンを使用するかのフラグを内部に保持しています。タイムゾーンのフラグは Marshal データに保持されます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">gmtime</span><span class="p">)</span><span class="p">)</span><span class="p">.</span><span class="nf">zone</span>
+<span class="c1"># =&gt; &quot;UTC&quot;
+</span></code></pre>
+<p>
+<a href="../library/time.html">time</a> ライブラリによって、<a href="../method/-time/s/parse.html">Time.parse</a>, <a href="../method/-time/s/rfc2822.html">Time.rfc2822</a>, <a href="../method/-time/s/httpdate.html">Time.httpdate</a>, <a href="../method/-time/s/iso8601.html">Time.iso8601</a> 等が拡張されます。
+</p>
+<p>
+Ruby 1.9.2 以降の Time クラスのデザインの詳細は
+<a class="external" href="https://staff.aist.go.jp/tanaka-akira/pub/sapporo-rubykaigi-02-akr-2009.pdf">https://staff.aist.go.jp/tanaka-akira/pub/sapporo-rubykaigi-02-akr-2009.pdf</a> や「APIデザインケーススタディ」(<a class="external" href="https://gihyo.jp/book/2016/978-4-7741-7802-8">https://gihyo.jp/book/2016/978-4-7741-7802-8</a>)
+の第4章を参照してください。
+</p>
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/localtime.html">localtime(3)</a> も参照してください。
+</p>
+<h2 >C 言語との違いに注意</h2>
+<p>
+C 言語の tm 構造体とは異なり、month は 1 月に対して 1 を返し、year は 1998 年に対して 1998 を返します。また、
+yday は 1 から数えます。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_AT">at</a></li>
+
+<li><a href="#S_GM">gm</a></li>
+
+<li><a href="#S_LOCAL">local</a></li>
+
+<li><a href="#S_LOCAL">mktime</a></li>
+
+<li><a href="#S_NEW">new</a></li>
+
+<li><a href="#S_NEW">now</a></li>
+
+<li><a href="#S_GM">utc</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_--2B">+</a></li>
+
+<li><a href="#I_--2D">-</a></li>
+
+<li><a href="#I_--3C--3D--3E">&lt;=&gt;</a></li>
+
+<li><a href="#I_ASCTIME">asctime</a></li>
+
+<li><a href="#I_CEIL">ceil</a></li>
+
+<li><a href="#I_ASCTIME">ctime</a></li>
+
+<li><a href="#I_DAY">day</a></li>
+
+<li><a href="#I_DST--3F">dst?</a></li>
+
+<li><a href="#I_EQL--3F">eql?</a></li>
+
+<li><a href="#I_FLOOR">floor</a></li>
+
+<li><a href="#I_FRIDAY--3F">friday?</a></li>
+
+<li><a href="#I_GETGM">getgm</a></li>
+
+<li><a href="#I_GETLOCAL">getlocal</a></li>
+
+<li><a href="#I_GETGM">getutc</a></li>
+
+<li><a href="#I_GMT--3F">gmt?</a></li>
+
+<li><a href="#I_GMT_OFFSET">gmt_offset</a></li>
+
+<li><a href="#I_GMTIME">gmtime</a></li>
+
+<li><a href="#I_GMT_OFFSET">gmtoff</a></li>
+
+<li><a href="#I_HASH">hash</a></li>
+
+<li><a href="#I_HOUR">hour</a></li>
+
+<li><a href="#I_INSPECT">inspect</a></li>
+
+<li><a href="#I_DST--3F">isdst</a></li>
+
+<li><a href="#I_LOCALTIME">localtime</a></li>
+
+<li><a href="#I_DAY">mday</a></li>
+
+<li><a href="#I_MIN">min</a></li>
+
+<li><a href="#I_MON">mon</a></li>
+
+<li><a href="#I_MONDAY--3F">monday?</a></li>
+
+<li><a href="#I_MON">month</a></li>
+
+<li><a href="#I_NSEC">nsec</a></li>
+
+<li><a href="#I_ROUND">round</a></li>
+
+<li><a href="#I_SATURDAY--3F">saturday?</a></li>
+
+<li><a href="#I_SEC">sec</a></li>
+
+<li><a href="#I_STRFTIME">strftime</a></li>
+
+<li><a href="#I_SUBSEC">subsec</a></li>
+
+<li><a href="#I_SUNDAY--3F">sunday?</a></li>
+
+<li><a href="#I_THURSDAY--3F">thursday?</a></li>
+
+<li><a href="#I_TO_A">to_a</a></li>
+
+<li><a href="#I_TO_F">to_f</a></li>
+
+<li><a href="#I_TO_I">to_i</a></li>
+
+<li><a href="#I_TO_R">to_r</a></li>
+
+<li><a href="#I_TO_S">to_s</a></li>
+
+<li><a href="#I_TUESDAY--3F">tuesday?</a></li>
+
+<li><a href="#I_NSEC">tv_nsec</a></li>
+
+<li><a href="#I_TO_I">tv_sec</a></li>
+
+<li><a href="#I_TV_USEC">tv_usec</a></li>
+
+<li><a href="#I_TV_USEC">usec</a></li>
+
+<li><a href="#I_GMTIME">utc</a></li>
+
+<li><a href="#I_GMT--3F">utc?</a></li>
+
+<li><a href="#I_GMT_OFFSET">utc_offset</a></li>
+
+<li><a href="#I_WDAY">wday</a></li>
+
+<li><a href="#I_WEDNESDAY--3F">wednesday?</a></li>
+
+<li><a href="#I_YDAY">yday</a></li>
+
+<li><a href="#I_YEAR">year</a></li>
+
+<li><a href="#I_ZONE">zone</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+  <h2>継承しているメソッド</h2>
+<dl>
+  
+<dt>Comparableから継承しているメソッド</dt>
+<dd>
+  <ul class="class-toc">
+    
+      <li><a href="../method/-comparable/i/=3c.html">&lt;</a></li>
+      
+    
+      <li><a href="../method/-comparable/i/=3c=3d.html">&lt;=</a></li>
+      
+    
+      <li><a href="../method/-comparable/i/=3d=3d.html">==</a></li>
+      
+    
+      <li><a href="../method/-comparable/i/=3e.html">&gt;</a></li>
+      
+    
+      <li><a href="../method/-comparable/i/=3e=3d.html">&gt;=</a></li>
+      
+    
+      <li><a href="../method/-comparable/i/between=3f.html">between?</a></li>
+      
+    
+      <li><a href="../method/-comparable/i/clamp.html">clamp</a></li>
+      
+    
+  </ul>
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_AT"><code>at(time) -&gt; Time</code><span class="permalink">[<a href="../method/-time/s/at.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-c-at">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>at(time, in:) -&gt; Time</code></dt>
+<dd class="method-description">
+<p>
+time で指定した時刻の Time オブジェクトを返します。
+</p>
+<p>
+キーワード引数 in でタイムゾーンを指定できます。タイムゾーンの指定がなく引数が数値の場合、生成された Time オブジェクトのタイムゾーンは地方時となります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] time:</dt>
+<dd>
+Time オブジェクト、もしくは起算時からの経過秒数を表わす数値で指定します。
+</dd>
+<dt class='method-param'>[PARAM] in:</dt>
+<dd>
+&quot;+HH:MM&quot; や &quot;-HH:MM&quot; のような形式の文字列か
+&quot;UTC&quot; かミリタリータイムゾーンの文字列または数値でタイムゾーンを指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="no">Time</span><span class="p">.</span><span class="nf">at</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>                                <span class="c1"># =&gt; 1970-01-01 09:00:00 +0900
+</span><span class="no">Time</span><span class="p">.</span><span class="nf">at</span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">at</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="p">)</span>                       <span class="c1"># =&gt; 1970-01-01 09:00:00 +0900
+</span><span class="no">Time</span><span class="p">.</span><span class="nf">at</span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">at</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="p">.</span><span class="nf">getutc</span><span class="p">)</span>                <span class="c1"># =&gt; 1970-01-01 00:00:00 UTC
+</span><span class="no">Time</span><span class="p">.</span><span class="nf">at</span><span class="p">(</span><span class="mi">946702800</span><span class="p">)</span>                        <span class="c1"># =&gt; 2000-01-01 14:00:00 +0900
+</span><span class="no">Time</span><span class="p">.</span><span class="nf">at</span><span class="p">(</span><span class="o">-</span><span class="mi">284061600</span><span class="p">)</span>                       <span class="c1"># =&gt; 1960-12-31 15:00:00 +0900
+</span><span class="no">Time</span><span class="p">.</span><span class="nf">at</span><span class="p">(</span><span class="mf">946684800.2</span><span class="p">)</span><span class="p">.</span><span class="nf">usec</span>                 <span class="c1"># =&gt; 200000
+</span><span class="no">Time</span><span class="p">.</span><span class="nf">at</span><span class="p">(</span><span class="mi">1582721899</span>, <span class="ss">in:</span> <span class="s2">"</span><span class="s2">+09:00</span><span class="s2">"</span><span class="p">)</span>         <span class="c1"># =&gt; 2020-02-26 21:58:19 +0900
+</span><span class="no">Time</span><span class="p">.</span><span class="nf">at</span><span class="p">(</span><span class="mi">1582721899</span>, <span class="ss">in:</span> <span class="mi">9</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span>          <span class="c1"># =&gt; 2020-02-26 21:58:19 +0900
+</span><span class="no">Time</span><span class="p">.</span><span class="nf">at</span><span class="p">(</span><span class="mi">1582721899</span>, <span class="ss">in:</span> <span class="s2">"</span><span class="s2">UTC</span><span class="s2">"</span><span class="p">)</span>            <span class="c1"># =&gt; 2020-02-26 12:58:19 UTC
+</span><span class="no">Time</span><span class="p">.</span><span class="nf">at</span><span class="p">(</span><span class="mi">1582721899</span>, <span class="ss">in:</span> <span class="s2">"</span><span class="s2">C</span><span class="s2">"</span><span class="p">)</span>              <span class="c1"># =&gt; 2020-02-26 13:58:19 +0300
+</span></code></pre>
+</dd>
+<dt class="method-heading" id="S_AT"><code>at(time, usec) -&gt; Time</code><span class="permalink">[<a href="../method/-time/s/at.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-c-at">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>at(time, usec, in:) -&gt; Time</code></dt>
+<dd class="method-description">
+<p>
+time + (usec/1000000) の時刻を表す Time オブジェクトを返します。浮動小数点の精度では不十分な場合に使用します。
+</p>
+<p>
+キーワード引数 in でタイムゾーンを指定できます。タイムゾーンの指定がない場合、生成された Time オブジェクトのタイムゾーンは地方時となります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] time:</dt>
+<dd>
+起算時からの経過秒数を表わす値を<a href="../class/-integer.html">Integer</a>、 <a href="../class/-float.html">Float</a>、 <a href="../class/-rational.html">Rational</a>、または他の<a href="../class/-numeric.html">Numeric</a>で指定します。
+</dd>
+<dt class='method-param'>[PARAM] usec:</dt>
+<dd>
+マイクロ秒を<a href="../class/-integer.html">Integer</a>、 <a href="../class/-float.html">Float</a>、 <a href="../class/-rational.html">Rational</a>、または他の<a href="../class/-numeric.html">Numeric</a>で指定します。
+</dd>
+<dt class='method-param'>[PARAM] in:</dt>
+<dd>
+&quot;+HH:MM&quot; や &quot;-HH:MM&quot; のような形式の文字列か
+&quot;UTC&quot; かミリタリータイムゾーンの文字列または数値でタイムゾーンを指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="no">Time</span><span class="p">.</span><span class="nf">at</span><span class="p">(</span><span class="mi">946684800</span>, <span class="mf">123456.789</span><span class="p">)</span><span class="p">.</span><span class="nf">nsec</span>  <span class="c1"># =&gt; 123456789
+</span></code></pre>
+</dd>
+<dt class="method-heading" id="S_AT"><code>at(seconds, xseconds, unit) -&gt; Time</code><span class="permalink">[<a href="../method/-time/s/at.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-c-at">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>at(seconds, xseconds, unit, in:) -&gt; Time</code></dt>
+<dd class="method-description">
+<p>
+unit に応じて seconds + xseconds ミリ秒などの時刻を表す Time オブジェクトを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] seconds:</dt>
+<dd>
+起算時からの経過秒数を表わす値を<a href="../class/-integer.html">Integer</a>、 <a href="../class/-float.html">Float</a>、 <a href="../class/-rational.html">Rational</a>、または他の<a href="../class/-numeric.html">Numeric</a>で指定します。
+</dd>
+<dt class='method-param'>[PARAM] xseconds:</dt>
+<dd>
+unit に対応するミリ秒かマイクロ秒かナノ秒を指定します。
+</dd>
+<dt class='method-param'>[PARAM] unit:</dt>
+<dd>
+:millisecond, :usec, :microsecond, :nsec, :nanosecond のいずれかを指定します。
+</dd>
+<dt class='method-param'>[PARAM] in:</dt>
+<dd>
+&quot;+HH:MM&quot; や &quot;-HH:MM&quot; のような形式の文字列か
+&quot;UTC&quot; かミリタリータイムゾーンの文字列または数値でタイムゾーンを指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="no">Time</span><span class="p">.</span><span class="nf">at</span><span class="p">(</span><span class="mi">946684800</span>, <span class="mf">123.456789</span>, <span class="ss">:millisecond</span><span class="p">)</span><span class="p">.</span><span class="nf">nsec</span>  <span class="c1"># =&gt; 123456789
+</span><span class="no">Time</span><span class="p">.</span><span class="nf">at</span><span class="p">(</span><span class="mi">946684800</span>, <span class="mf">123456.789</span>, <span class="ss">:usec</span><span class="p">)</span><span class="p">.</span><span class="nf">nsec</span>         <span class="c1"># =&gt; 123456789
+</span><span class="no">Time</span><span class="p">.</span><span class="nf">at</span><span class="p">(</span><span class="mi">946684800</span>, <span class="mf">123456.789</span>, <span class="ss">:microsecond</span><span class="p">)</span><span class="p">.</span><span class="nf">nsec</span>  <span class="c1"># =&gt; 123456789
+</span><span class="no">Time</span><span class="p">.</span><span class="nf">at</span><span class="p">(</span><span class="mi">946684800</span>, <span class="mi">123456789</span>, <span class="ss">:nsec</span><span class="p">)</span><span class="p">.</span><span class="nf">nsec</span>          <span class="c1"># =&gt; 123456789
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_GM"><code>gm(year, mon = 1, day = 1, hour = 0, min = 0, sec = 0, usec = 0) -&gt; Time</code><span class="permalink">[<a href="../method/-time/s/gm.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-c-gm">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>utc(year, mon = 1, day = 1, hour = 0, min = 0, sec = 0, usec = 0) -&gt; Time</code></dt>
+<dd class="method-description">
+<p>
+引数で指定した協定世界時の Time オブジェクトを返します。
+</p>
+<p>
+第2引数以降に nil を指定した場合の値はその引数がとり得る最小の値です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] year:</dt>
+<dd>
+年を整数か文字列で指定します。例えば 1998 年に対して 1998 を指定します。
+</dd>
+<dt class='method-param'>[PARAM] mon:</dt>
+<dd>
+1(1月)から 12(12月)の範囲の整数または文字列で指定します。英語の月名(&quot;Jan&quot;, &quot;Feb&quot;, ... などの省略名。文字の大小は無視)も指定できます。
+</dd>
+<dt class='method-param'>[PARAM] day:</dt>
+<dd>
+日を 1 から 31 までの整数か文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] hour:</dt>
+<dd>
+時を 0 から 23 までの整数か文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] min:</dt>
+<dd>
+分を 0 から 59 までの整数か文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] sec:</dt>
+<dd>
+秒を 0 から 60 までの整数か文字列で指定します。(60はうるう秒)
+</dd>
+<dt class='method-param'>[PARAM] usec:</dt>
+<dd>
+マイクロ秒を整数か文字列で指定します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+与えられた引数の範囲が valid でない場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">gm</span><span class="p">(</span><span class="mi">2000</span>, <span class="mi">1</span>, <span class="mi">1</span><span class="p">)</span>  <span class="c1"># =&gt; 2000-01-01 00:00:00 UTC
+</span></code></pre>
+</dd>
+<dt class="method-heading" id="S_GM"><code>gm(sec, min, hour, mday, mon, year, wday, yday, isdst, zone) -&gt; Time</code><span class="permalink">[<a href="../method/-time/s/gm.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-c-gm">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>utc(sec, min, hour, mday, mon, year, wday, yday, isdst, zone) -&gt; Time</code></dt>
+<dd class="method-description">
+<p>
+引数で指定した協定世界時の Time オブジェクトを返します。
+</p>
+<p>
+引数の順序は <a href="../method/-time/i/to_a.html">Time#to_a</a> と全く同じです。引数 wday, yday, zone に指定した値は無視されます。引数に nil を指定した場合の値はその引数がとり得る最小の値です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] sec:</dt>
+<dd>
+秒を 0 から 60 までの整数か文字列で指定します。(60はうるう秒)
+</dd>
+<dt class='method-param'>[PARAM] min:</dt>
+<dd>
+分を 0 から 59 までの整数か文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] hour:</dt>
+<dd>
+時を 0 から 23 までの整数か文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] mday:</dt>
+<dd>
+日を 1 から 31 までの整数か文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] mon:</dt>
+<dd>
+1(1月)から 12(12月)の範囲の整数か文字列で指定します。英語の月名(&quot;Jan&quot;, &quot;Feb&quot;, ... などの省略名。文字の大小は無視)も指定できます。
+</dd>
+<dt class='method-param'>[PARAM] year:</dt>
+<dd>
+年を整数か文字列で指定します。例えば 1998 年に対して 1998 を指定します。
+</dd>
+<dt class='method-param'>[PARAM] wday:</dt>
+<dd>
+無視されます。
+</dd>
+<dt class='method-param'>[PARAM] yday:</dt>
+<dd>
+無視されます。
+</dd>
+<dt class='method-param'>[PARAM] isdst:</dt>
+<dd>
+指定した日時が夏時間(Daylight Saving Time)なら true を指定します。そうでないなら、false を指定します。
+</dd>
+<dt class='method-param'>[PARAM] zone:</dt>
+<dd>
+無視されます。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+与えられた引数の範囲が valid でない場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_LOCAL"><code>local(year, mon = 1, day = 1, hour = 0, min = 0, sec = 0, usec = 0) -&gt; Time</code><span class="permalink">[<a href="../method/-time/s/local.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-c-local">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>mktime(year, mon = 1, day = 1, hour = 0, min = 0, sec = 0, usec = 0) -&gt; Time</code></dt>
+<dd class="method-description">
+<p>
+引数で指定した地方時の Time オブジェクトを返します。
+</p>
+<p>
+第2引数以降に nil を指定した場合の値はその引数がとり得る最小の値です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] year:</dt>
+<dd>
+年を整数か文字列で指定します。例えば 1998 年に対して 1998 を指定します。
+</dd>
+<dt class='method-param'>[PARAM] mon:</dt>
+<dd>
+1(1月)から 12(12月)の範囲の整数または文字列で指定します。英語の月名(&quot;Jan&quot;, &quot;Feb&quot;, ... などの省略名。文字の大小は無視)も指定できます。
+</dd>
+<dt class='method-param'>[PARAM] day:</dt>
+<dd>
+日を 1 から 31 までの整数か文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] hour:</dt>
+<dd>
+時を 0 から 23 までの整数か文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] min:</dt>
+<dd>
+分を 0 から 59 までの整数か文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] sec:</dt>
+<dd>
+秒を 0 から 60 までの整数か文字列で指定します。(60はうるう秒)
+</dd>
+<dt class='method-param'>[PARAM] usec:</dt>
+<dd>
+マイクロ秒を整数か文字列で指定します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+与えられた引数の範囲が valid でない場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>, <span class="mi">1</span>, <span class="mi">1</span><span class="p">)</span> <span class="c1"># =&gt; 2000-01-01 00:00:00 +0900
+</span></code></pre>
+</dd>
+<dt class="method-heading" id="S_LOCAL"><code>local(sec, min, hour, mday, mon, year, wday, yday, isdst, zone) -&gt; Time</code><span class="permalink">[<a href="../method/-time/s/local.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-c-local">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>mktime(sec, min, hour, mday, mon, year, wday, yday, isdst, zone) -&gt; Time</code></dt>
+<dd class="method-description">
+<p>
+引数で指定した地方時の Time オブジェクトを返します。
+</p>
+<p>
+引数の順序は <a href="../method/-time/i/to_a.html">Time#to_a</a> と全く同じです。引数 wday, yday, zone に指定した値は無視されます。引数に nil を指定した場合の値はその引数がとり得る最小の値です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] sec:</dt>
+<dd>
+秒を 0 から 60 までの整数か文字列で指定します。(60はうるう秒)
+</dd>
+<dt class='method-param'>[PARAM] min:</dt>
+<dd>
+分を 0 から 59 までの整数か文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] hour:</dt>
+<dd>
+時を 0 から 23 までの整数か文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] mday:</dt>
+<dd>
+日を 1 から 31 までの整数か文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] mon:</dt>
+<dd>
+1(1月)から 12(12月)の範囲の整数か文字列で指定します。英語の月名(&quot;Jan&quot;, &quot;Feb&quot;, ... などの省略名。文字の大小は無視)も指定できます。
+</dd>
+<dt class='method-param'>[PARAM] year:</dt>
+<dd>
+年を整数か文字列で指定します。例えば 1998 年に対して 1998 を指定します。
+</dd>
+<dt class='method-param'>[PARAM] wday:</dt>
+<dd>
+無視されます。
+</dd>
+<dt class='method-param'>[PARAM] yday:</dt>
+<dd>
+無視されます。
+</dd>
+<dt class='method-param'>[PARAM] isdst:</dt>
+<dd>
+指定した日時が夏時間(Daylight Saving Time)なら true を指定します。そうでないなら、false を指定します。
+</dd>
+<dt class='method-param'>[PARAM] zone:</dt>
+<dd>
+無視されます。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+与えられた引数の範囲が valid でない場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_NEW"><code>new -&gt; Time</code><span class="permalink">[<a href="../method/-time/s/new.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>now -&gt; Time</code></dt>
+<dd class="method-description">
+<p>
+現在時刻の Time オブジェクトを生成して返します。タイムゾーンは地方時となります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span> <span class="c1"># =&gt; 2009-06-24 12:39:54 +0900
+</span></code></pre>
+</dd>
+<dt class="method-heading" id="S_NEW"><code>new(year, mon = nil, day = nil, hour = nil, min = nil, sec = nil, zone = nil) -&gt; Time</code><span class="permalink">[<a href="../method/-time/s/new.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数で指定した地方時の Time オブジェクトを返します。
+</p>
+<p>
+mon day hour min sec に nil を指定した場合の値は、その引数がとり得る最小の値です。
+zone に nil を指定した場合の値は、現在のタイムゾーンに従います。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] year:</dt>
+<dd>
+年を整数か文字列で指定します。例えば 1998 年に対して 1998 を指定します。
+</dd>
+<dt class='method-param'>[PARAM] mon:</dt>
+<dd>
+1(1月)から 12(12月)の範囲の整数または文字列で指定します。英語の月名(&quot;Jan&quot;, &quot;Feb&quot;, ... などの省略名。大文字小文字の違いは無視します)も指定できます。
+</dd>
+<dt class='method-param'>[PARAM] day:</dt>
+<dd>
+日を 1 から 31 までの整数か文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] hour:</dt>
+<dd>
+時を 0 から 23 までの整数か文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] min:</dt>
+<dd>
+分を 0 から 59 までの整数か文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] sec:</dt>
+<dd>
+秒を 0 から 60 までの整数か文字列で指定します。(60はうるう秒)
+</dd>
+<dt class='method-param'>[PARAM] zone:</dt>
+<dd>
+協定世界時との時差を、秒を単位とする整数か、
+&quot;UTC&quot; かミリタリータイムゾーンの文字列または
+&quot;+HH:MM&quot; &quot;-HH:MM&quot; 形式の文字列で指定します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+与えられた引数が無効である場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2008</span>, <span class="mi">6</span>, <span class="mi">21</span>, <span class="mi">13</span>, <span class="mi">30</span>, <span class="mi">0</span>, <span class="s2">"</span><span class="s2">+09:00</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; 2008-06-21 13:30:00 +0900
+</span></code></pre>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--2B"><code>self + other -&gt; Time</code><span class="permalink">[<a href="../method/-time/i/=2b.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-2B">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self より other 秒だけ後の時刻を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身からの秒数を数値で指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span>  <span class="c1"># =&gt; 2000-01-01 00:00:00 +0900
+</span><span class="nb">p</span> t <span class="o">+</span> <span class="p">(</span><span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">24</span><span class="p">)</span>    <span class="c1"># =&gt; 2000-01-02 00:00:00 +0900
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--2D"><code>self - time -&gt; Float</code><span class="permalink">[<a href="../method/-time/i/=2d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-2D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身と time との時刻の差を <a href="../class/-float.html">Float</a> で返します。単位は秒です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] time:</dt>
+<dd>
+自身との差を算出したい Time オブジェクトを指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span>  <span class="c1"># =&gt; 2000-01-01 00:00:00 +0900
+</span><span class="nb">p</span> t2 <span class="o">=</span> t <span class="o">+</span> <span class="mi">2592000</span>      <span class="c1"># =&gt; 2000-01-31 00:00:00 +0900
+</span><span class="nb">p</span> t2 <span class="o">-</span> t                <span class="c1"># =&gt; 2592000.0
+</span></code></pre>
+</dd>
+<dt class="method-heading" id="I_--2D"><code>self - sec -&gt; Time</code><span class="permalink">[<a href="../method/-time/i/=2d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-2D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身より sec 秒だけ前の時刻を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] sec:</dt>
+<dd>
+実数を秒を単位として指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span>  <span class="c1"># =&gt; 2000-01-01 00:00:00 +0900
+</span><span class="nb">p</span> t2 <span class="o">=</span> t <span class="o">+</span> <span class="mi">2592000</span>      <span class="c1"># =&gt; 2000-01-31 00:00:00 +0900
+</span><span class="nb">p</span> t2 <span class="o">-</span> <span class="mi">2592000</span>          <span class="c1"># =&gt; 2000-01-01 00:00:00 +0900
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--3C--3D--3E"><code>self &lt;=&gt; other -&gt; -1 | 0 | 1 | nil</code><span class="permalink">[<a href="../method/-time/i/=3c=3d=3e.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-3C-3D-3E">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self と other の時刻を比較します。self の方が大きい場合は 1 を、等しい場合は 0 を、小さい場合は -1 を返します。比較できない場合は、nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身と比較したい時刻を Time オブジェクトで指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span>  <span class="c1"># =&gt; 2000-01-01 00:00:00 +0900
+</span><span class="nb">p</span> t2 <span class="o">=</span> t <span class="o">+</span> <span class="mi">2592000</span>      <span class="c1"># =&gt; 2000-01-31 00:00:00 +0900
+</span><span class="nb">p</span> t <span class="o">&lt;=&gt;</span> t2              <span class="c1"># =&gt; -1
+</span><span class="nb">p</span> t2 <span class="o">&lt;=&gt;</span> t              <span class="c1"># =&gt; 1
+</span></code></pre>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span>  <span class="c1"># =&gt; 2000-01-01 00:00:00 +0900
+</span><span class="nb">p</span> t2 <span class="o">=</span> t <span class="o">+</span> <span class="mf">0.1</span>          <span class="c1"># =&gt; 2000-01-01 00:00:00 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">nsec</span>                <span class="c1"># =&gt; 0
+</span><span class="nb">p</span> t2<span class="p">.</span><span class="nf">nsec</span>               <span class="c1"># =&gt; 100000000
+</span><span class="nb">p</span> t <span class="o">&lt;=&gt;</span> t2              <span class="c1"># =&gt; -1
+</span><span class="nb">p</span> t2 <span class="o">&lt;=&gt;</span> t              <span class="c1"># =&gt; 1
+</span><span class="nb">p</span> t <span class="o">&lt;=&gt;</span> t               <span class="c1"># =&gt; 0
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ASCTIME"><code>asctime -&gt; String</code><span class="permalink">[<a href="../method/-time/i/asctime.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-asctime">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>ctime -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+時刻を <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/asctime.html">asctime(3)</a> の形式の文字列に変換します。ただし、末尾の改行文字 &quot;\n&quot; は含まれません。
+</p>
+<p>
+戻り値の文字エンコーディングは <a href="../method/-encoding/c/-u-s_-a-s-c-i-i.html">Encoding::US_ASCII</a> です。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span><span class="p">.</span><span class="nf">asctime</span>            <span class="c1"># =&gt; &quot;Sat Jan  1 00:00:00 2000&quot;
+</span><span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span><span class="p">.</span><span class="nf">asctime</span><span class="p">.</span><span class="nf">encoding</span>   <span class="c1"># =&gt; #&lt;Encoding:US-ASCII&gt;
+</span><span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span><span class="p">.</span><span class="nf">ctime</span>              <span class="c1"># =&gt; &quot;Sat Jan  1 00:00:00 2000&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CEIL"><code>ceil(ndigits=0) -&gt; Time</code><span class="permalink">[<a href="../method/-time/i/ceil.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-ceil">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+十進小数点数で指定した桁数の精度で切り上げをし、その <a href="../class/-time.html">Time</a> オブジェクトを返します。
+(デフォルトは0、つまり小数点の所で切り上げます)。
+</p>
+<p>
+ndigits には 0 以上の整数を渡します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] ndigits:</dt>
+<dd>
+十進での精度(桁数)
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'time'</span>
+
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">utc</span><span class="p">(</span><span class="mi">2010</span>,<span class="mi">3</span>,<span class="mi">30</span>, <span class="mi">5</span>,<span class="mi">43</span>,25.0123456789r<span class="p">)</span>
+t<span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>          <span class="c1"># =&gt; &quot;2010-03-30T05:43:25.0123456789Z&quot;
+</span>t<span class="p">.</span><span class="nf">ceil</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>     <span class="c1"># =&gt; &quot;2010-03-30T05:43:26.0000000000Z&quot;
+</span>t<span class="p">.</span><span class="nf">ceil</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;2010-03-30T05:43:26.0000000000Z&quot;
+</span>t<span class="p">.</span><span class="nf">ceil</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;2010-03-30T05:43:25.1000000000Z&quot;
+</span>t<span class="p">.</span><span class="nf">ceil</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;2010-03-30T05:43:25.0200000000Z&quot;
+</span>t<span class="p">.</span><span class="nf">ceil</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;2010-03-30T05:43:25.0130000000Z&quot;
+</span>t<span class="p">.</span><span class="nf">ceil</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;2010-03-30T05:43:25.0124000000Z&quot;
+</span>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">utc</span><span class="p">(</span><span class="mi">1999</span>,<span class="mi">12</span>,<span class="mi">31</span>, <span class="mi">23</span>,<span class="mi">59</span>,<span class="mi">59</span><span class="p">)</span>
+<span class="p">(</span>t <span class="o">+</span> <span class="mf">0.4</span><span class="p">)</span><span class="p">.</span><span class="nf">ceil</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;2000-01-01T00:00:00.000Z&quot;
+</span><span class="p">(</span>t <span class="o">+</span> <span class="mf">0.9</span><span class="p">)</span><span class="p">.</span><span class="nf">ceil</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;2000-01-01T00:00:00.000Z&quot;
+</span><span class="p">(</span>t <span class="o">+</span> <span class="mf">1.4</span><span class="p">)</span><span class="p">.</span><span class="nf">ceil</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;2000-01-01T00:00:01.000Z&quot;
+</span><span class="p">(</span>t <span class="o">+</span> <span class="mf">1.9</span><span class="p">)</span><span class="p">.</span><span class="nf">ceil</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;2000-01-01T00:00:01.000Z&quot;
+</span>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">utc</span><span class="p">(</span><span class="mi">1999</span>,<span class="mi">12</span>,<span class="mi">31</span>, <span class="mi">23</span>,<span class="mi">59</span>,<span class="mi">59</span><span class="p">)</span>
+<span class="p">(</span>t <span class="o">+</span> <span class="mf">0.123456789</span><span class="p">)</span><span class="p">.</span><span class="nf">ceil</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;1999-12-31T23:59:59.123500Z&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-time/i/floor.html">Time#floor</a>, <a href="../method/-time/i/round.html">Time#round</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DAY"><code>mday -&gt; Integer</code><span class="permalink">[<a href="../method/-time/i/day.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-day">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>day -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+日を整数で返します。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>,<span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">5</span><span class="p">)</span>  <span class="c1"># =&gt; 2000-01-02 03:04:05 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">day</span>                         <span class="c1"># =&gt; 2
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">mday</span>                        <span class="c1"># =&gt; 2
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_DST--3F"><code>isdst -&gt; bool</code><span class="permalink">[<a href="../method/-time/i/dst=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-dst-3F">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>dst? -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+自身が表す日時が夏時間なら true を返します。そうでないなら false を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="no">ENV</span><span class="p">[</span><span class="s1">'TZ'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'US/Pacific'</span>
+<span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>, <span class="mi">7</span>, <span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">isdst</span>   <span class="c1"># =&gt; true
+</span><span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>, <span class="mi">1</span>, <span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">isdst</span>   <span class="c1"># =&gt; false
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_EQL--3F"><code>eql?(other) -&gt; bool</code><span class="permalink">[<a href="../method/-time/i/eql=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-eql-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+other が Time かそのサブクラスのインスタンスであり自身と時刻が等しい場合に
+true を返します。そうでない場合に false を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身と比較したい時刻を Time オブジェクトを指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>, <span class="mi">1</span>, <span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">eql?</span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>, <span class="mi">1</span>, <span class="mi">1</span><span class="p">)</span><span class="p">)</span>   <span class="c1"># =&gt; true
+</span><span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>, <span class="mi">1</span>, <span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">eql?</span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>, <span class="mi">1</span>, <span class="mi">2</span><span class="p">)</span><span class="p">)</span>   <span class="c1"># =&gt; false
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_FLOOR"><code>floor(ndigits=0) -&gt; Time</code><span class="permalink">[<a href="../method/-time/i/floor.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-floor">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+十進小数点数で指定した桁数の精度で切り捨てをし、その <a href="../class/-time.html">Time</a> オブジェクトを返します。
+(デフォルトは0、つまり小数点の所で切り捨てます)。
+</p>
+<p>
+ndigits には 0 以上の整数を渡します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] ndigits:</dt>
+<dd>
+十進での精度(桁数)
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'time'</span>
+
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">utc</span><span class="p">(</span><span class="mi">2010</span>,<span class="mi">3</span>,<span class="mi">30</span>, <span class="mi">5</span>,<span class="mi">43</span>,25.123456789r<span class="p">)</span>
+t<span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>           <span class="c1"># =&gt; &quot;2010-03-30T05:43:25.1234567890Z&quot;
+</span>t<span class="p">.</span><span class="nf">floor</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>     <span class="c1"># =&gt; &quot;2010-03-30T05:43:25.0000000000Z&quot;
+</span>t<span class="p">.</span><span class="nf">floor</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;2010-03-30T05:43:25.0000000000Z&quot;
+</span>t<span class="p">.</span><span class="nf">floor</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;2010-03-30T05:43:25.1000000000Z&quot;
+</span>t<span class="p">.</span><span class="nf">floor</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;2010-03-30T05:43:25.1200000000Z&quot;
+</span>t<span class="p">.</span><span class="nf">floor</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;2010-03-30T05:43:25.1230000000Z&quot;
+</span>t<span class="p">.</span><span class="nf">floor</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;2010-03-30T05:43:25.1234000000Z&quot;
+</span>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">utc</span><span class="p">(</span><span class="mi">1999</span>,<span class="mi">12</span>,<span class="mi">31</span>, <span class="mi">23</span>,<span class="mi">59</span>,<span class="mi">59</span><span class="p">)</span>
+<span class="p">(</span>t <span class="o">+</span> <span class="mf">0.4</span><span class="p">)</span><span class="p">.</span><span class="nf">floor</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;1999-12-31T23:59:59.000Z&quot;
+</span><span class="p">(</span>t <span class="o">+</span> <span class="mf">0.9</span><span class="p">)</span><span class="p">.</span><span class="nf">floor</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;1999-12-31T23:59:59.000Z&quot;
+</span><span class="p">(</span>t <span class="o">+</span> <span class="mf">1.4</span><span class="p">)</span><span class="p">.</span><span class="nf">floor</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;2000-01-01T00:00:00.000Z&quot;
+</span><span class="p">(</span>t <span class="o">+</span> <span class="mf">1.9</span><span class="p">)</span><span class="p">.</span><span class="nf">floor</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;2000-01-01T00:00:00.000Z&quot;
+</span>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">utc</span><span class="p">(</span><span class="mi">1999</span>,<span class="mi">12</span>,<span class="mi">31</span>, <span class="mi">23</span>,<span class="mi">59</span>,<span class="mi">59</span><span class="p">)</span>
+<span class="p">(</span>t <span class="o">+</span> <span class="mf">0.123456789</span><span class="p">)</span><span class="p">.</span><span class="nf">floor</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;1999-12-31T23:59:59.123400Z&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-time/i/ceil.html">Time#ceil</a>, <a href="../method/-time/i/round.html">Time#round</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FRIDAY--3F"><code>friday? -&gt; bool</code><span class="permalink">[<a href="../method/-time/i/friday=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-friday-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の表す時刻が金曜日である場合に true を返します。そうでない場合に false を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">1987</span>, <span class="mi">12</span>, <span class="mi">18</span><span class="p">)</span>     <span class="c1"># =&gt; 1987-12-18 00:00:00 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">friday?</span>                      <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_GETGM"><code>getgm -&gt; Time</code><span class="permalink">[<a href="../method/-time/i/getgm.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-getgm">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>getutc -&gt; Time</code></dt>
+<dd class="method-description">
+<p>
+タイムゾーンを協定世界時に設定した Time オブジェクトを新しく生成して返します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>,<span class="mi">1</span>,<span class="mi">1</span>,<span class="mi">20</span>,<span class="mi">15</span>,<span class="mi">1</span><span class="p">)</span>   <span class="c1">#=&gt; 2000-01-01 20:15:01 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">gmt?</span>                             <span class="c1">#=&gt; false
+</span><span class="nb">p</span> y <span class="o">=</span> t<span class="p">.</span><span class="nf">getgm</span>                        <span class="c1">#=&gt; 2000-01-01 11:15:01 UTC
+</span><span class="nb">p</span> y<span class="p">.</span><span class="nf">gmt?</span>                             <span class="c1">#=&gt; true
+</span><span class="nb">p</span> t <span class="o">==</span> y                             <span class="c1">#=&gt; true
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_GETLOCAL"><code>getlocal -&gt; Time</code><span class="permalink">[<a href="../method/-time/i/getlocal.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-getlocal">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>getlocal(utc_offset) -&gt; Time</code></dt>
+<dd class="method-description">
+<p>
+タイムゾーンを地方時に設定した Time オブジェクトを新しく生成して返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] utc_offset:</dt>
+<dd>
+タイムゾーンを地方時に設定する代わりに協定世界時との時差を、秒を単位とする整数か、&quot;+HH:MM&quot; &quot;-HH:MM&quot; 形式の文字列で指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">utc</span><span class="p">(</span><span class="mi">2000</span>,<span class="mi">1</span>,<span class="mi">1</span>,<span class="mi">20</span>,<span class="mi">15</span>,<span class="mi">1</span><span class="p">)</span>  <span class="c1"># =&gt; 2000-01-01 20:15:01 UTC
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">utc?</span>                          <span class="c1"># =&gt; true
+</span><span class="nb">p</span> l <span class="o">=</span> t<span class="p">.</span><span class="nf">getlocal</span>                  <span class="c1"># =&gt; 2000-01-02 05:15:01 +0900
+</span><span class="nb">p</span> l<span class="p">.</span><span class="nf">utc?</span>                          <span class="c1"># =&gt; false
+</span><span class="nb">p</span> t <span class="o">==</span> l                          <span class="c1"># =&gt; true
+</span><span class="nb">p</span> j <span class="o">=</span> t<span class="p">.</span><span class="nf">getlocal</span><span class="p">(</span><span class="s2">"</span><span class="s2">+09:00</span><span class="s2">"</span><span class="p">)</span>        <span class="c1"># =&gt; 2000-01-02 05:15:01 +0900
+</span><span class="nb">p</span> j<span class="p">.</span><span class="nf">utc?</span>                          <span class="c1"># =&gt; false
+</span><span class="nb">p</span> t <span class="o">==</span> j                          <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_GMT--3F"><code>gmt? -&gt; bool</code><span class="permalink">[<a href="../method/-time/i/gmt=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-gmt-3F">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>utc? -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+self のタイムゾーンが協定世界時に設定されていれば真を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2017</span>,<span class="mi">9</span>,<span class="mi">19</span>,<span class="mi">15</span>,<span class="mi">0</span>,<span class="mi">0</span><span class="p">)</span>   <span class="c1"># =&gt; 2017-09-19 15:00:00 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">utc?</span>                             <span class="c1"># =&gt; false
+</span><span class="nb">p</span> utc_t <span class="o">=</span> t<span class="p">.</span><span class="nf">getutc</span>                   <span class="c1"># =&gt; 2017-09-19 06:00:00 UTC
+</span><span class="nb">p</span> utc_t<span class="p">.</span><span class="nf">utc?</span>                         <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_GMT_OFFSET"><code>utc_offset -&gt; Integer</code><span class="permalink">[<a href="../method/-time/i/gmt_offset.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-gmt_offset">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>gmt_offset -&gt; Integer</code></dt>
+<dt class="method-heading"><code>gmtoff -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+協定世界時との時差を秒を単位とする数値として返します。
+</p>
+<p>
+地方時が協定世界時よりも進んでいる場合(アジア、オーストラリアなど)
+には正の値、遅れている場合(アメリカなど)には負の値になります。
+</p>
+<pre class="highlight ruby">
+<span class="caption">地方時の場合</span>
+<code>
+<span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">zone</span>        <span class="c1"># =&gt; &quot;JST&quot;
+</span><span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">utc_offset</span>  <span class="c1"># =&gt; 32400
+</span></code></pre>
+<p>
+タイムゾーンが協定世界時に設定されている場合は 0 を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">協定世界時の場合</span>
+<code>
+<span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">getgm</span><span class="p">.</span><span class="nf">zone</span>        <span class="c1"># =&gt; &quot;UTC&quot;
+</span><span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">getgm</span><span class="p">.</span><span class="nf">utc_offset</span>  <span class="c1"># =&gt; 0
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_GMTIME"><code>gmtime -&gt; self</code><span class="permalink">[<a href="../method/-time/i/gmtime.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-gmtime">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>utc -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+タイムゾーンを協定世界時に設定します。
+</p>
+<p>
+このメソッドを呼び出した後は時刻変換を協定世界時として行ないます。
+</p>
+<p>
+<a href="../method/-time/i/localtime.html">Time#localtime</a>, <a href="../method/-time/i/gmtime.html">Time#gmtime</a> の挙動はシステムの
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/localtime.html">localtime(3)</a> の挙動に依存します。Time クラスでは時刻を起算時からの経過秒数として保持していますが、ある特定の時刻までの経過秒は、システムがうるう秒を勘定するかどうかによって異なる場合があります。システムを越えて Time オブジェクトを受け渡す場合には注意する必要があります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>,<span class="mi">1</span>,<span class="mi">1</span>,<span class="mi">20</span>,<span class="mi">15</span>,<span class="mi">1</span><span class="p">)</span>   <span class="c1"># =&gt; 2000-01-01 20:15:01 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">gmt?</span>                             <span class="c1"># =&gt; false
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">gmtime</span>                           <span class="c1"># =&gt; 2000-01-01 11:15:01 UTC
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">gmt?</span>                             <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_HASH"><code>hash -&gt; Integer</code><span class="permalink">[<a href="../method/-time/i/hash.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self のハッシュ値を返します。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+ハッシュ値を返します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-object/i/hash.html">Object#hash</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_HOUR"><code>hour -&gt; Integer</code><span class="permalink">[<a href="../method/-time/i/hour.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-hour">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+時を整数で返します。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>,<span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">5</span><span class="p">)</span>  <span class="c1"># =&gt; 2000-01-02 03:04:05 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">hour</span>                        <span class="c1"># =&gt; 3
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-time/i/inspect.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-inspect">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+時刻を文字列に変換した結果を返します。
+</p>
+<p>
+<a href="../method/-time/i/to_s.html">Time#to_s</a> とは異なりナノ秒まで含めて返します。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span>
+t<span class="p">.</span><span class="nf">inspect</span>                             <span class="c1">#=&gt; &quot;2012-11-10 18:16:12.261257655 +0100&quot;
+</span>t<span class="p">.</span><span class="nf">strftime</span> <span class="s2">"</span><span class="s2">%Y-%m-%d %H:%M:%S.%N %z</span><span class="s2">"</span>  <span class="c1">#=&gt; &quot;2012-11-10 18:16:12.261257655 +0100&quot;
+</span>
+t<span class="p">.</span><span class="nf">utc</span><span class="p">.</span><span class="nf">inspect</span>                          <span class="c1">#=&gt; &quot;2012-11-10 17:16:12.261257655 UTC&quot;
+</span>t<span class="p">.</span><span class="nf">strftime</span> <span class="s2">"</span><span class="s2">%Y-%m-%d %H:%M:%S.%N UTC</span><span class="s2">"</span>  <span class="c1">#=&gt; &quot;2012-11-10 17:16:12.261257655 UTC&quot;
+</span></code></pre>
+<p>
+戻り値の文字エンコーディングは <a href="../method/-encoding/c/-u-s_-a-s-c-i-i.html">Encoding::US_ASCII</a> です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LOCALTIME"><code>localtime -&gt; self</code><span class="permalink">[<a href="../method/-time/i/localtime.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-localtime">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>localtime(utc_offset) -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+タイムゾーンを地方時に設定します。
+</p>
+<p>
+このメソッドを呼び出した後は時刻変換を協定地方時として行ないます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] utc_offset:</dt>
+<dd>
+タイムゾーンを地方時に設定する代わりに協定世界時との時差を、秒を単位とする整数か、&quot;+HH:MM&quot; &quot;-HH:MM&quot; 形式の文字列で指定します。
+</dd>
+</dl>
+<p>
+<a href="../method/-time/i/localtime.html">Time#localtime</a>, <a href="../method/-time/i/gmtime.html">Time#gmtime</a> の挙動はシステムの
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/localtime.html">localtime(3)</a> の挙動に依存します。Time クラスでは時刻を起算時からの経過秒数として保持していますが、ある特定の時刻までの経過秒は、システムがうるう秒を勘定するかどうかによって異なる場合があります。システムを越えて Time オブジェクトを受け渡す場合には注意する必要があります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">utc</span><span class="p">(</span><span class="mi">2000</span>, <span class="s2">"</span><span class="s2">jan</span><span class="s2">"</span>, <span class="mi">1</span>, <span class="mi">20</span>, <span class="mi">15</span>, <span class="mi">1</span><span class="p">)</span>  <span class="c1"># =&gt; 2000-01-01 20:15:01 UTC
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">utc?</span>                                   <span class="c1"># =&gt; true
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">localtime</span>                              <span class="c1"># =&gt; 2000-01-02 05:15:01 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">utc?</span>                                   <span class="c1"># =&gt; false
+</span>
+<span class="nb">p</span> t<span class="p">.</span><span class="nf">localtime</span><span class="p">(</span><span class="s2">"</span><span class="s2">+09:00</span><span class="s2">"</span><span class="p">)</span>                    <span class="c1"># =&gt; 2000-01-02 05:15:01 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">utc?</span>                                   <span class="c1"># =&gt; false
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_MIN"><code>min -&gt; Integer</code><span class="permalink">[<a href="../method/-time/i/min.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-min">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+分を整数で返します。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>,<span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">5</span><span class="p">)</span>  <span class="c1"># =&gt; 2000-01-02 03:04:05 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">min</span>                         <span class="c1"># =&gt; 4
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_MON"><code>mon -&gt; Integer</code><span class="permalink">[<a href="../method/-time/i/mon.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-mon">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>month -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+月を整数で返します。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>,<span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">5</span><span class="p">)</span>  <span class="c1"># =&gt; 2000-01-02 03:04:05 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">month</span>                       <span class="c1"># =&gt; 1
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">mon</span>                         <span class="c1"># =&gt; 1
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_MONDAY--3F"><code>monday? -&gt; bool</code><span class="permalink">[<a href="../method/-time/i/monday=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-monday-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の表す時刻が月曜日である場合に true を返します。そうでない場合に false を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2003</span>, <span class="mi">8</span>, <span class="mi">4</span><span class="p">)</span>       <span class="c1"># =&gt; 2003-08-04 00:00:00 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">monday?</span>                      <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_NSEC"><code>nsec -&gt; Integer</code><span class="permalink">[<a href="../method/-time/i/nsec.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-nsec">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>tv_nsec -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+時刻のナノ秒の部分を整数で返します。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>,<span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">5</span>,<span class="mi">6</span><span class="p">)</span>
+<span class="nb">p</span> <span class="s2">"</span><span class="s2">%10.9f</span><span class="s2">"</span> <span class="o">%</span> t<span class="p">.</span><span class="nf">to_f</span>   <span class="c1"># =&gt; &quot;946749845.000005960&quot;
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">nsec</span>              <span class="c1"># =&gt; 6000
+</span></code></pre>
+<p>
+IEEE 754 浮動小数点数で表現できる精度が違うため、<a href="../method/-time/i/to_f.html">Time#to_f</a>の最小の桁とnsecの最小の桁は異なります。nsecで表される値の方が正確です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ROUND"><code>round(ndigits=0) -&gt; Time</code><span class="permalink">[<a href="../method/-time/i/round.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-round">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+十進小数点数で指定した桁数の精度で丸めをし、その <a href="../class/-time.html">Time</a> オブジェクトを返します。
+(デフォルトは0、つまり小数点の所で丸めます)。
+</p>
+<p>
+ndigits には 0 以上の整数を渡します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] ndigits:</dt>
+<dd>
+十進での精度(桁数)
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'time'</span>
+
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">utc</span><span class="p">(</span><span class="mi">1999</span>,<span class="mi">12</span>,<span class="mi">31</span>, <span class="mi">23</span>,<span class="mi">59</span>,<span class="mi">59</span><span class="p">)</span>
+<span class="nb">p</span><span class="p">(</span><span class="p">(</span>t <span class="o">+</span> <span class="mf">0.4</span><span class="p">)</span><span class="p">.</span><span class="nf">round</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;1999-12-31T23:59:59.000Z&quot;
+</span><span class="nb">p</span><span class="p">(</span><span class="p">(</span>t <span class="o">+</span> <span class="mf">0.49</span><span class="p">)</span><span class="p">.</span><span class="nf">round</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;1999-12-31T23:59:59.000Z&quot;
+</span><span class="nb">p</span><span class="p">(</span><span class="p">(</span>t <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span><span class="p">.</span><span class="nf">round</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;2000-01-01T00:00:00.000Z&quot;
+</span><span class="nb">p</span><span class="p">(</span><span class="p">(</span>t <span class="o">+</span> <span class="mf">1.4</span><span class="p">)</span><span class="p">.</span><span class="nf">round</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;2000-01-01T00:00:00.000Z&quot;
+</span><span class="nb">p</span><span class="p">(</span><span class="p">(</span>t <span class="o">+</span> <span class="mf">1.49</span><span class="p">)</span><span class="p">.</span><span class="nf">round</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;2000-01-01T00:00:00.000Z&quot;
+</span><span class="nb">p</span><span class="p">(</span><span class="p">(</span>t <span class="o">+</span> <span class="mf">1.5</span><span class="p">)</span><span class="p">.</span><span class="nf">round</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;2000-01-01T00:00:01.000Z&quot;
+</span>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">utc</span><span class="p">(</span><span class="mi">1999</span>,<span class="mi">12</span>,<span class="mi">31</span>, <span class="mi">23</span>,<span class="mi">59</span>,<span class="mi">59</span><span class="p">)</span>
+<span class="nb">p</span> <span class="p">(</span>t <span class="o">+</span> <span class="mf">0.123456789</span><span class="p">)</span><span class="p">.</span><span class="nf">round</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="p">.</span><span class="nf">iso8601</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;1999-12-31T23:59:59.123500Z&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-time/i/ceil.html">Time#ceil</a>, <a href="../method/-time/i/floor.html">Time#floor</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SATURDAY--3F"><code>saturday? -&gt; bool</code><span class="permalink">[<a href="../method/-time/i/saturday=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-saturday-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の表す時刻が土曜日である場合に true を返します。そうでない場合に false を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2006</span>, <span class="mi">6</span>, <span class="mi">10</span><span class="p">)</span>      <span class="c1"># =&gt; 2006-06-10 00:00:00 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">saturday?</span>                    <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SEC"><code>sec -&gt; Integer</code><span class="permalink">[<a href="../method/-time/i/sec.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-sec">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+秒を整数で返します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">mktime</span><span class="p">(</span><span class="mi">2000</span>, <span class="mi">1</span>, <span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">sec</span> <span class="c1"># =&gt; 0
+</span></code></pre>
+<p>
+通常は0から59を返しますが、うるう秒の場合は60を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="no">ENV</span><span class="p">[</span><span class="s1">'TZ'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'right/UTC'</span>
+<span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">mktime</span><span class="p">(</span><span class="mi">2005</span>, <span class="mi">12</span>, <span class="mi">31</span>, <span class="mi">23</span>, <span class="mi">59</span>, <span class="mi">60</span><span class="p">)</span><span class="p">.</span><span class="nf">sec</span> <span class="c1"># =&gt; 60
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_STRFTIME"><code>strftime(format) -&gt; String</code><span class="permalink">[<a href="../method/-time/i/strftime.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-strftime">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+時刻を format 文字列に従って文字列に変換した結果を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] format:</dt>
+<dd>
+フォーマット文字列を指定します。使用できるものは 以下の通りです。
+</dd>
+</dl>
+<ul>
+<li>%A: 曜日の名称(Sunday, Monday ... )</li>
+<li>%a: 曜日の省略名(Sun, Mon ... )</li>
+<li>%B: 月の名称(January, February ... )</li>
+<li>%b: 月の省略名(Jan, Feb ... )</li>
+<li>%C: 世紀 (2009年であれば 20)</li>
+<li>%c: 日付と時刻 (%a %b %e %T %Y)</li>
+<li>%D: 日付 (%m/%d/%y)</li>
+<li>%d: 日(01-31)</li>
+<li>%e: 日。一桁の場合、半角空白で埋める ( 1..31)</li>
+<li>%F: %Y-%m-%d と同等 (ISO 8601の日付フォーマット)</li>
+<li>%G: ISO 8601の暦週の年</li>
+<li>%g: ISO 8601の暦週の年の下2桁(00-99)</li>
+<li>%H: 24時間制の時(00-23)</li>
+<li>%h: %b と同等</li>
+<li>%I: 12時間制の時(01-12)</li>
+<li>%j: 年中の通算日(001-366)</li>
+<li>%k: 24時間制の時。一桁の場合、半角空白で埋める ( 0..23)</li>
+<li>%L: ミリ秒 (000..999)</li>
+<li>%l: 12時間制の時。一桁の場合、半角空白で埋める ( 0..12)</li>
+<li>%M: 分(00-59)</li>
+<li>%m: 月を表す数字(01-12)</li>
+<li>%n: 改行 (\n)</li>
+<li>%N: 秒の小数点以下。桁の指定がない場合は9桁 (ナノ秒)、%6N: マイクロ秒 (6桁)、%3N: ミリ秒 (3桁)</li>
+<li>%P: 午前または午後(am,pm)</li>
+<li>%p: 午前または午後(AM,PM)</li>
+<li>%Q: 1970-01-01 00:00:00 UTC からの経過ミリ秒 (<a href="../method/-time/i/strftime.html">Time#strftime</a> は対応していませんが、<a href="../method/-date/i/strftime.html">Date#strftime</a> で使えます)</li>
+<li>%R: 24時間制の時刻。%H:%M と同等。</li>
+<li>%r: 12時間制の時刻。%I:%M:%S %p と同等。</li>
+<li>%S: 秒(00-60) (60はうるう秒)</li>
+<li>%s: 1970-01-01 00:00:00 UTC からの経過秒</li>
+<li>%T: 24時間制の時刻。%H:%M:%S と同等。</li>
+<li>%t: タブ文字 (\t)</li>
+<li>%U: 週を表す数。最初の日曜日が第1週の始まり(00-53)</li>
+<li>%u: 月曜日を1とした、曜日の数値表現 (1..7)</li>
+<li>%V: ISO 8601形式の暦週 (01..53)</li>
+<li>%v: VMS形式の日付 (%e-%^b-%4Y)</li>
+<li>%W: 週を表す数。最初の月曜日が第1週の始まり(00-53)</li>
+<li>%w: 曜日を表す数。日曜日が0(0-6)</li>
+<li>%X: 時刻 (%Tと同等)</li>
+<li>%x: 日付 (%Dと同等)</li>
+<li>%Y: 西暦を表す数</li>
+<li>%y: 西暦の下2桁(00-99)</li>
+<li>%Z: タイムゾーン (環境依存)</li>
+<li>%z: タイムゾーン。UTCからのオフセット (例 +0900)</li>
+<li>%:z: タイムゾーン。コロンが入ったUTCからのオフセット (例 +09:00)</li>
+<li>%::z: タイムゾーン。コロンが入った秒まで含むUTCからのオフセット (例 +09:00:00)</li>
+<li>%%: %自身</li>
+<li>%+: <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/utilities/date.html">date(1)</a>の形式 (%a %b %e %H:%M:%S %Z %Y) (<a href="../method/-time/i/strftime.html">Time#strftime</a> は対応していませんが、<a href="../method/-date/i/strftime.html">Date#strftime</a> で使えます)</li>
+</ul>
+<p>
+このメソッドは <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/strftime.html">strftime(3)</a> や glibcの仕様を参考に作成されており、以下のオプションが利用できます。
+</p>
+<ul>
+<li>^: 大文字で出力を行なう</li>
+<li>#: 小文字であれば大文字に、大文字であれば小文字に変更する</li>
+<li>-: 左寄せにする(0埋めや空白埋めを行わない)</li>
+<li>_: 空白埋めにする</li>
+<li>0: 0埋めにする</li>
+<li>数値: 表示桁数を指定する</li>
+</ul>
+<p>
+EとOは無視されます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2001</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">5</span>,<span class="mi">6</span>,<span class="s2">"</span><span class="s2">+09:00</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; 2001-02-03 04:05:06 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">Printed on %m/%d/%Y</span><span class="s2">"</span><span class="p">)</span>      <span class="c1"># =&gt; &quot;Printed on 02/03/2001&quot;
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">Printed on %m/%-d/%_6Y</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;Printed on 02/3/  2001&quot;
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">at %I:%M%p</span><span class="s2">"</span><span class="p">)</span>               <span class="c1"># =&gt; &quot;at 04:05AM&quot;
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">at %I:%M%#p</span><span class="s2">"</span><span class="p">)</span>              <span class="c1"># =&gt; &quot;at 04:05am&quot;
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">様々なISO 8601形式</span>
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2001</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">5</span>,<span class="mi">6</span>,<span class="s2">"</span><span class="s2">+09:00</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%Y%m%d</span><span class="s2">"</span><span class="p">)</span>           <span class="c1"># =&gt; 20010203                  Calendar date (basic)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%F</span><span class="s2">"</span><span class="p">)</span>               <span class="c1"># =&gt; 2001-02-03                Calendar date (extended)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%Y-%m</span><span class="s2">"</span><span class="p">)</span>            <span class="c1"># =&gt; 2001-02                   Calendar date, reduced accuracy, specific month
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%Y</span><span class="s2">"</span><span class="p">)</span>               <span class="c1"># =&gt; 2001                      Calendar date, reduced accuracy, specific year
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%C</span><span class="s2">"</span><span class="p">)</span>               <span class="c1"># =&gt; 20                        Calendar date, reduced accuracy, specific century
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%Y%j</span><span class="s2">"</span><span class="p">)</span>             <span class="c1"># =&gt; 2001034                   Ordinal date (basic)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%Y-%j</span><span class="s2">"</span><span class="p">)</span>            <span class="c1"># =&gt; 2001-034                  Ordinal date (extended)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%GW%V%u</span><span class="s2">"</span><span class="p">)</span>          <span class="c1"># =&gt; 2001W056                  Week date (basic)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%G-W%V-%u</span><span class="s2">"</span><span class="p">)</span>        <span class="c1"># =&gt; 2001-W05-6                Week date (extended)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%GW%V</span><span class="s2">"</span><span class="p">)</span>            <span class="c1"># =&gt; 2001W05                   Week date, reduced accuracy, specific week (basic)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%G-W%V</span><span class="s2">"</span><span class="p">)</span>           <span class="c1"># =&gt; 2001-W05                  Week date, reduced accuracy, specific week (extended)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%H%M%S</span><span class="s2">"</span><span class="p">)</span>           <span class="c1"># =&gt; 040506                    Local time (basic)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%T</span><span class="s2">"</span><span class="p">)</span>               <span class="c1"># =&gt; 04:05:06                  Local time (extended)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%H%M</span><span class="s2">"</span><span class="p">)</span>             <span class="c1"># =&gt; 0405                      Local time, reduced accuracy, specific minute (basic)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%H:%M</span><span class="s2">"</span><span class="p">)</span>            <span class="c1"># =&gt; 04:05                     Local time, reduced accuracy, specific minute (extended)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%H</span><span class="s2">"</span><span class="p">)</span>               <span class="c1"># =&gt; 04                        Local time, reduced accuracy, specific hour
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%H%M%S,%L</span><span class="s2">"</span><span class="p">)</span>        <span class="c1"># =&gt; 040506,000                Local time with decimal fraction, comma as decimal sign (basic)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%T,%L</span><span class="s2">"</span><span class="p">)</span>            <span class="c1"># =&gt; 04:05:06,000              Local time with decimal fraction, comma as decimal sign (extended)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%H%M%S.%L</span><span class="s2">"</span><span class="p">)</span>        <span class="c1"># =&gt; 040506.000                Local time with decimal fraction, full stop as decimal sign (basic)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%T.%L</span><span class="s2">"</span><span class="p">)</span>            <span class="c1"># =&gt; 04:05:06.000              Local time with decimal fraction, full stop as decimal sign (extended)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%H%M%S%z</span><span class="s2">"</span><span class="p">)</span>         <span class="c1"># =&gt; 040506+0900               Local time and the difference from UTC (basic)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%T%:z</span><span class="s2">"</span><span class="p">)</span>            <span class="c1"># =&gt; 04:05:06+09:00            Local time and the difference from UTC (extended)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%Y%m%dT%H%M%S%z</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; 20010203T040506+0900      Date and time of day for calendar date (basic)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%FT%T%:z</span><span class="s2">"</span><span class="p">)</span>         <span class="c1"># =&gt; 2001-02-03T04:05:06+09:00 Date and time of day for calendar date (extended)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%Y%jT%H%M%S%z</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># =&gt; 2001034T040506+0900       Date and time of day for ordinal date (basic)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%Y-%jT%T%:z</span><span class="s2">"</span><span class="p">)</span>      <span class="c1"># =&gt; 2001-034T04:05:06+09:00   Date and time of day for ordinal date (extended)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%GW%V%uT%H%M%S%z</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; 2001W056T040506+0900      Date and time of day for week date (basic)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%G-W%V-%uT%T%:z</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; 2001-W05-6T04:05:06+09:00 Date and time of day for week date (extended)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%Y%m%dT%H%M</span><span class="s2">"</span><span class="p">)</span>      <span class="c1"># =&gt; 20010203T0405             Calendar date and local time (basic)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%FT%R</span><span class="s2">"</span><span class="p">)</span>            <span class="c1"># =&gt; 2001-02-03T04:05          Calendar date and local time (extended)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%Y%jT%H%MZ</span><span class="s2">"</span><span class="p">)</span>       <span class="c1"># =&gt; 2001034T0405Z             Ordinal date and UTC of day (basic)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%Y-%jT%RZ</span><span class="s2">"</span><span class="p">)</span>        <span class="c1"># =&gt; 2001-034T04:05Z           Ordinal date and UTC of day (extended)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%GW%V%uT%H%M%z</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; 2001W056T0405+0900        Week date and local time and difference from UTC (basic)
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%G-W%V-%uT%R%:z</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; 2001-W05-6T04:05+09:00    Week date and local time and difference from UTC (extended)
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SUBSEC"><code>subsec -&gt; Integer | Rational</code><span class="permalink">[<a href="../method/-time/i/subsec.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-subsec">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+時刻を表す分数を返します。
+</p>
+<p>
+<a href="../class/-rational.html">Rational</a> を返す場合があります。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>,<span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">5</span>,<span class="mi">6</span><span class="p">)</span>
+<span class="nb">p</span> <span class="s2">"</span><span class="s2">%10.9f</span><span class="s2">"</span> <span class="o">%</span> t<span class="p">.</span><span class="nf">to_f</span>   <span class="c1"># =&gt; &quot;946749845.000005960&quot;
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">subsec</span>            <span class="c1">#=&gt; (3/500000)
+</span></code></pre>
+<p>
+to_f の値と subsec の値の下のほうの桁の値は異なる場合があります。というのは IEEE 754 double はそれを表すのに十分な精度を持たないからです。subsec で得られる値が正確です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SUNDAY--3F"><code>sunday? -&gt; bool</code><span class="permalink">[<a href="../method/-time/i/sunday=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-sunday-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の表す時刻が日曜日である場合に true を返します。そうでない場合に false を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">1990</span>, <span class="mi">4</span>, <span class="mi">1</span><span class="p">)</span>       <span class="c1"># =&gt; 1990-04-01 00:00:00 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">sunday?</span>                      <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_THURSDAY--3F"><code>thursday? -&gt; bool</code><span class="permalink">[<a href="../method/-time/i/thursday=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-thursday-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の表す時刻が木曜日である場合に true を返します。そうでない場合に false を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">1995</span>, <span class="mi">12</span>, <span class="mi">21</span><span class="p">)</span>     <span class="c1"># =&gt; 1995-12-21 00:00:00 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">thursday?</span>                    <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_A"><code>to_a -&gt; Array</code><span class="permalink">[<a href="../method/-time/i/to_a.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-to_a">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+時刻を10要素の配列で返します。
+</p>
+<p>
+その要素は順序も含めて以下の通りです。
+</p>
+<ul>
+<li>sec:   秒 (整数 0-60) (60はうるう秒)</li>
+<li>min:   分 (整数 0-59)</li>
+<li>hour:  時 (整数 0-23)</li>
+<li>mday:  日 (整数)</li>
+<li>mon:   月 (整数 1-12)</li>
+<li>year:  年 (整数 2000年=2000)</li>
+<li>wday:  曜日 (整数 0-6)</li>
+<li>yday:  年内通算日 (整数 1-366)</li>
+<li>isdst: 夏時間であるかどうか (true/false)</li>
+<li>zone:  タイムゾーン (文字列)</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>,<span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">5</span><span class="p">)</span>
+<span class="nb">p</span> t       <span class="c1"># =&gt; 2000-01-02 03:04:05 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">to_a</span>  <span class="c1"># =&gt; [5, 4, 3, 2, 1, 2000, 0, 2, false, &quot;JST&quot;]
+</span></code></pre>
+<p>
+要素の順序は C 言語の tm 構造体に合わせています。ただし、
+tm 構造体に zone はありません。
+</p>
+<p>
+注意: C 言語の tm 構造体とは異なり、month は 1 月に対して 1 を返し、year は 1998 年に対して 1998 を返します。また、
+yday は 1 から数えます。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_F"><code>to_f -&gt; Float</code><span class="permalink">[<a href="../method/-time/i/to_f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-to_f">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+起算時からの経過秒数を浮動小数点数で返します。1 秒に満たない経過も表現されます。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>,<span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">5</span>,<span class="mi">6</span><span class="p">)</span>
+<span class="nb">p</span> t                  <span class="c1"># =&gt; 2000-01-02 03:04:05 +0900
+</span><span class="nb">p</span> <span class="s2">"</span><span class="s2">%10.6f</span><span class="s2">"</span> <span class="o">%</span> t<span class="p">.</span><span class="nf">to_f</span>  <span class="c1"># =&gt; &quot;946749845.000006&quot;
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">to_i</span>             <span class="c1"># =&gt; 946749845
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_I"><code>to_i -&gt; Integer</code><span class="permalink">[<a href="../method/-time/i/to_i.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-to_i">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>tv_sec -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+起算時からの経過秒数を整数で返します。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>,<span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">5</span>,<span class="mi">6</span><span class="p">)</span>
+<span class="nb">p</span> t                  <span class="c1"># =&gt; 2000-01-02 03:04:05 +0900
+</span><span class="nb">p</span> <span class="s2">"</span><span class="s2">%10.6f</span><span class="s2">"</span> <span class="o">%</span> t<span class="p">.</span><span class="nf">to_f</span>  <span class="c1"># =&gt; &quot;946749845.000006&quot;
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">to_i</span>             <span class="c1"># =&gt; 946749845
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">tv_sec</span>           <span class="c1"># =&gt; 946749845
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_R"><code>to_r -&gt; Rational</code><span class="permalink">[<a href="../method/-time/i/to_r.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-to_r">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+起算時からの経過秒数を有理数で返します。1 秒に満たない経過も表現されます。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>,<span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">5</span>,<span class="mi">6</span><span class="p">)</span>
+<span class="nb">p</span> t          <span class="c1"># =&gt; 2000-01-02 03:04:05 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">to_r</span>     <span class="c1"># =&gt; (473374922500003/500000)
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_S"><code>to_s -&gt; String</code><span class="permalink">[<a href="../method/-time/i/to_s.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-to_s">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+時刻を文字列に変換した結果を返します。以下のようにフォーマット文字列を使って strftime を呼び出すのと同じです。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>,<span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">5</span>,<span class="mi">6</span><span class="p">)</span>
+<span class="nb">p</span> t<span class="p">.</span><span class="nf">to_s</span>                               <span class="c1"># =&gt; &quot;2000-01-02 03:04:05 +0900&quot;
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%Y-%m-%d %H:%M:%S %z</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;2000-01-02 03:04:05 +0900&quot;
+</span>
+<span class="nb">p</span> t<span class="p">.</span><span class="nf">utc</span><span class="p">.</span><span class="nf">to_s</span>                           <span class="c1"># =&gt; &quot;2000-01-01 18:04:05 UTC&quot;
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">strftime</span><span class="p">(</span><span class="s2">"</span><span class="s2">%Y-%m-%d %H:%M:%S UTC</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;2000-01-01 18:04:05 UTC&quot;
+</span></code></pre>
+<p>
+戻り値の文字エンコーディングは <a href="../method/-encoding/c/-u-s_-a-s-c-i-i.html">Encoding::US_ASCII</a> です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TUESDAY--3F"><code>tuesday? -&gt; bool</code><span class="permalink">[<a href="../method/-time/i/tuesday=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-tuesday-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の表す時刻が火曜日である場合に true を返します。そうでない場合に false を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">1991</span>, <span class="mi">2</span>, <span class="mi">19</span><span class="p">)</span>      <span class="c1"># =&gt; 1991-02-19 00:00:00 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">tuesday?</span>                     <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TV_USEC"><code>usec -&gt; Integer</code><span class="permalink">[<a href="../method/-time/i/tv_usec.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-tv_usec">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>tv_usec -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+時刻のマイクロ秒の部分を整数で返します。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>,<span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">5</span>,<span class="mi">6</span><span class="p">)</span>
+<span class="nb">p</span> <span class="s2">"</span><span class="s2">%10.6f</span><span class="s2">"</span> <span class="o">%</span> t<span class="p">.</span><span class="nf">to_f</span>   <span class="c1">#=&gt; &quot;946749845.000006&quot;
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">usec</span>              <span class="c1">#=&gt; 6
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_WDAY"><code>wday -&gt; Integer</code><span class="permalink">[<a href="../method/-time/i/wday.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-wday">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+曜日を0(日曜日)から6(土曜日)の整数で返します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> sun <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2017</span>, <span class="mi">9</span>, <span class="mi">17</span>, <span class="mi">10</span>, <span class="mi">34</span>, <span class="mi">15</span>, <span class="s1">'+09:00'</span><span class="p">)</span> <span class="c1"># =&gt; 2017-09-17 10:34:15 +0900
+</span><span class="nb">p</span> sun<span class="p">.</span><span class="nf">wday</span>                                          <span class="c1"># =&gt; 0
+</span><span class="nb">p</span> mon <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2017</span>, <span class="mi">9</span>, <span class="mi">18</span>, <span class="mi">10</span>, <span class="mi">34</span>, <span class="mi">15</span>, <span class="s1">'+09:00'</span><span class="p">)</span> <span class="c1"># =&gt; 2017-09-18 10:34:15 +0900
+</span><span class="nb">p</span> mon<span class="p">.</span><span class="nf">wday</span>                                          <span class="c1"># =&gt; 1
+</span><span class="nb">p</span> tue <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2017</span>, <span class="mi">9</span>, <span class="mi">19</span>, <span class="mi">10</span>, <span class="mi">34</span>, <span class="mi">15</span>, <span class="s1">'+09:00'</span><span class="p">)</span> <span class="c1"># =&gt; 2017-09-19 10:34:15 +0900
+</span><span class="nb">p</span> tue<span class="p">.</span><span class="nf">wday</span>                                          <span class="c1"># =&gt; 2
+</span><span class="nb">p</span> wed <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2017</span>, <span class="mi">9</span>, <span class="mi">20</span>, <span class="mi">10</span>, <span class="mi">34</span>, <span class="mi">15</span>, <span class="s1">'+09:00'</span><span class="p">)</span> <span class="c1"># =&gt; 2017-09-20 10:34:15 +0900
+</span><span class="nb">p</span> wed<span class="p">.</span><span class="nf">wday</span>                                          <span class="c1"># =&gt; 3
+</span><span class="nb">p</span> thu <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2017</span>, <span class="mi">9</span>, <span class="mi">21</span>, <span class="mi">10</span>, <span class="mi">34</span>, <span class="mi">15</span>, <span class="s1">'+09:00'</span><span class="p">)</span> <span class="c1"># =&gt; 2017-09-21 10:34:15 +0900
+</span><span class="nb">p</span> thu<span class="p">.</span><span class="nf">wday</span>                                          <span class="c1"># =&gt; 4
+</span><span class="nb">p</span> fri <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2017</span>, <span class="mi">9</span>, <span class="mi">22</span>, <span class="mi">10</span>, <span class="mi">34</span>, <span class="mi">15</span>, <span class="s1">'+09:00'</span><span class="p">)</span> <span class="c1"># =&gt; 2017-09-22 10:34:15 +0900
+</span><span class="nb">p</span> fri<span class="p">.</span><span class="nf">wday</span>                                          <span class="c1"># =&gt; 5
+</span><span class="nb">p</span> sat <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2017</span>, <span class="mi">9</span>, <span class="mi">23</span>, <span class="mi">10</span>, <span class="mi">34</span>, <span class="mi">15</span>, <span class="s1">'+09:00'</span><span class="p">)</span> <span class="c1"># =&gt; 2017-09-23 10:34:15 +0900
+</span><span class="nb">p</span> sat<span class="p">.</span><span class="nf">wday</span>                                          <span class="c1"># =&gt; 6
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_WEDNESDAY--3F"><code>wednesday? -&gt; bool</code><span class="permalink">[<a href="../method/-time/i/wednesday=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-wednesday-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の表す時刻が水曜日である場合に true を返します。そうでない場合に false を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">1993</span>, <span class="mi">2</span>, <span class="mi">24</span><span class="p">)</span>      <span class="c1"># =&gt; 1993-02-24 00:00:00 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">wednesday?</span>                   <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_YDAY"><code>yday -&gt; Integer</code><span class="permalink">[<a href="../method/-time/i/yday.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-yday">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+1月1日を1とした通算日(1から366まで)を整数で返します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">mktime</span><span class="p">(</span><span class="mi">2000</span>,  <span class="mi">1</span>,  <span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">yday</span> <span class="c1"># =&gt; 1
+</span></code></pre>
+<p>
+うるう年の場合は、2月29日も含めた通算日を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">うるう年でない場合</span>
+<code>
+<span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">mktime</span><span class="p">(</span><span class="mi">2003</span>,  <span class="mi">1</span>,  <span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">yday</span> <span class="c1"># =&gt; 1
+</span><span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">mktime</span><span class="p">(</span><span class="mi">2003</span>,  <span class="mi">3</span>,  <span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">yday</span> <span class="c1"># =&gt; 60
+</span><span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">mktime</span><span class="p">(</span><span class="mi">2003</span>, <span class="mi">12</span>, <span class="mi">31</span><span class="p">)</span><span class="p">.</span><span class="nf">yday</span> <span class="c1"># =&gt; 365
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">うるう年の場合</span>
+<code>
+<span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">mktime</span><span class="p">(</span><span class="mi">2004</span>,  <span class="mi">1</span>,  <span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">yday</span> <span class="c1"># =&gt; 1
+</span><span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">mktime</span><span class="p">(</span><span class="mi">2004</span>,  <span class="mi">2</span>, <span class="mi">29</span><span class="p">)</span><span class="p">.</span><span class="nf">yday</span> <span class="c1"># =&gt; 60
+</span><span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">mktime</span><span class="p">(</span><span class="mi">2004</span>, <span class="mi">12</span>, <span class="mi">31</span><span class="p">)</span><span class="p">.</span><span class="nf">yday</span> <span class="c1"># =&gt; 366
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_YEAR"><code>year -&gt; Integer</code><span class="permalink">[<a href="../method/-time/i/year.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-year">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+年を整数で返します。
+</p>
+<pre class="highlight ruby">
+<code>
+t <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span>,<span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">5</span><span class="p">)</span>  <span class="c1"># =&gt; 2000-01-02 03:04:05 +0900
+</span><span class="nb">p</span> t<span class="p">.</span><span class="nf">year</span>                        <span class="c1"># =&gt; 2000
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ZONE"><code>zone -&gt; String</code><span class="permalink">[<a href="../method/-time/i/zone.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Time.html#method-i-zone">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+タイムゾーンを表す文字列を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">zone</span> <span class="c1"># =&gt; &quot;JST&quot;
+</span></code></pre>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

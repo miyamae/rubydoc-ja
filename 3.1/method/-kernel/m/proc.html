@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Kernel.#lambda (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="与えられたブロックから手続きオブジェクト ([[c:Proc]] のインスタンス)
+を生成して返します。[[m:Proc.new]] に近い働きをします。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-kernel.html">Kernelモジュール</a>
+      </li>
+      <li>
+        lambda 
+      </li>
+    </ol>
+  </nav>
+
+<h1>module function Kernel.#lambda</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_LAMBDA"><code>proc { ... } -&gt; Proc</code><span class="permalink">[<a href="../../../method/-kernel/m/lambda.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Kernel.html#method-c-lambda">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>lambda { ... } -&gt; Proc</code></dt>
+<dd class="method-description">
+<p>
+与えられたブロックから手続きオブジェクト (<a href="../../../class/-proc.html">Proc</a> のインスタンス)
+を生成して返します。<a href="../../../method/-proc/s/new.html">Proc.new</a> に近い働きをします。
+</p>
+<p>
+また、lambda に &amp; 引数を渡すのは推奨されません。&amp; 引数ではなくてブロック記法で記述する必要があります。
+</p>
+<p>
+&amp; 引数を渡した lambda は Warning[:deprecated] = true のときに警告メッセージ「warning: lambda without a literal block is deprecated; use the proc without lambda instead」を出力します。
+</p>
+<dl>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+ブロックを省略した呼び出しを行ったときに発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">foo</span> <span class="o">&amp;</span>block
+  <span class="nb">proc</span><span class="p">(</span><span class="o">&amp;</span>block<span class="p">)</span>
+<span class="k">end</span>
+
+it <span class="o">=</span> foo<span class="p">{</span><span class="nb">p</span> <span class="mi">12</span><span class="p">}</span>
+it<span class="p">.</span><span class="nf">call</span> <span class="c1">#=&gt; 12
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../class/-proc.html">Proc</a>,<a href="../../../method/-proc/s/new.html">Proc.new</a>
+</p>
+<h2 id='should_use_next'>手続きを中断して値を返す</h2>
+<p>
+手続きオブジェクトを中断して、呼出し元(呼び出しブロックでは yield、それ以外では <a href="../../../method/-proc/i/call.html">Proc#call</a>)
+へジャンプし値を返すには next を使います。break や return ではありません。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">foo</span>
+  f <span class="o">=</span> <span class="no">Proc</span><span class="p">.</span><span class="nf">new</span><span class="p">{</span>
+    <span class="k">next</span> <span class="mi">1</span>
+    <span class="mi">2</span>              <span class="c1"># この行に到達することはない
+</span>  <span class="p">}</span>
+<span class="k">end</span>
+
+<span class="nb">p</span> foo<span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">call</span>       <span class="c1">#=&gt; 1
+</span></code></pre>
+<h2 id='block'>Proc オブジェクトをブロック付きメソッド呼び出しに使う</h2>
+<p>
+ブロック付きメソッドに対して Proc オブジェクトを `&amp;' を指定して渡すと呼び出しブロックのように動作します。しかし、厳密には以下の違いがあります。これらは、Proc オブジェクトが呼び出しブロックとして振舞う際の制限です。
+</p>
+<pre class="highlight ruby">
+<span class="caption">問題なし</span>
+<code>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span> <span class="k">break</span> <span class="p">}</span>
+</code></pre>
+<pre class="highlight ruby">
+<span class="caption">LocalJumpError が発生します。</span>
+<code>
+pr <span class="o">=</span> <span class="no">Proc</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="k">break</span> <span class="p">}</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">each</span><span class="p">(</span><span class="o">&amp;</span>pr<span class="p">)</span>
+</code></pre>
+<h2 id='lambda_proc'>lambda と proc と Proc.new とイテレータの違い</h2>
+<p>
+<a href="../../../method/-kernel/m/lambda.html">Kernel.#lambda</a> と <a href="../../../method/-proc/s/new.html">Proc.new</a> はどちらも <a href="../../../class/-proc.html">Proc</a> クラスのインスタンス(手続きオブジェクト)を生成しますが、生成された手続きオブジェクトはいくつかの場面で挙動が異なります。 lambda の生成する手続きオブジェクトのほうがよりメソッドに近い働きをするように設計されています。
+</p>
+<p>
+<a href="../../../method/-kernel/m/proc.html">Kernel.#proc</a> は Proc.new と同じになります。引数に &amp; を付けることで手続きオブジェクト化したブロックは、Proc.new で生成されたそれと同じように振る舞います。
+</p>
+<h3 >引数の扱い</h3>
+<p>
+lambda のほうがより厳密です。引数の数が違っていると（メソッドのように）エラーになります。
+Proc.new は引数を多重代入に近い扱い方をします。
+</p>
+<pre class="highlight ruby">
+<span class="caption">Proc.new は引数の数が違っていてもエラーにならない</span>
+<code>
+b <span class="o">=</span> <span class="no">Proc</span><span class="p">.</span><span class="nf">new</span><span class="p">{</span><span class="o">|</span>a,b,c<span class="o">|</span>
+  <span class="nb">p</span> a,b,c
+<span class="p">}</span>
+b<span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="mi">2</span>, <span class="mi">4</span><span class="p">)</span>
+<span class="c1">#=&gt; 2
+</span>    <span class="mi">4</span>
+    <span class="k">nil</span>
+</code></pre>
+<pre class="highlight ruby">
+<span class="caption">lambda は引数の数が違うとエラーになる</span>
+<code>
+b <span class="o">=</span> <span class="nb">lambda</span><span class="p">{</span><span class="o">|</span>a,b,c<span class="o">|</span>
+  <span class="nb">p</span> a,b,c
+<span class="p">}</span>
+b<span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="mi">2</span>, <span class="mi">4</span><span class="p">)</span>
+<span class="c1"># =&gt; wrong number of arguments (given 2, expected 3)
+</span></code></pre>
+<p>
+<a href="../../../doc/spec=2fcall.html#block_arg">メソッド呼び出し(super・ブロック付き・yield)/ブロックパラメータの挙動</a> も参照してください。
+</p>
+<h3 >ジャンプ構文の挙動の違い</h3>
+<p>
+return と break は、lambda と Proc.new では挙動が異なります。例えば return を行った場合、lambda では手続きオブジェクト自身を抜けますが、
+Proc.new では手続きオブジェクトを囲むメソッドを抜けます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">test_proc</span>
+  f <span class="o">=</span> <span class="no">Proc</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="k">return</span> <span class="ss">:from_proc</span> <span class="p">}</span>
+  f<span class="p">.</span><span class="nf">call</span>
+  <span class="k">return</span> <span class="ss">:from_method</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">test_lambda</span>
+  f <span class="o">=</span> <span class="nb">lambda</span> <span class="p">{</span> <span class="k">return</span> <span class="ss">:from_lambda</span> <span class="p">}</span>
+  f<span class="p">.</span><span class="nf">call</span>
+  <span class="k">return</span> <span class="ss">:from_method</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">test_block</span>
+  tap <span class="p">{</span> <span class="k">return</span> <span class="ss">:from_block</span> <span class="p">}</span>
+  <span class="k">return</span> <span class="ss">:from_method</span>
+<span class="k">end</span>
+
+<span class="nb">p</span> test_proc<span class="p">(</span><span class="p">)</span>   <span class="c1">#=&gt; :from_proc
+</span><span class="nb">p</span> test_lambda<span class="p">(</span><span class="p">)</span> <span class="c1">#=&gt; :from_method
+</span><span class="nb">p</span> test_block<span class="p">(</span><span class="p">)</span>  <span class="c1">#=&gt; :from_block
+</span></code></pre>
+<p>
+以下の表は、手続きオブジェクトの実行を上の例と同じように、手続きオブジェクトが定義されたのと同じメソッド内で行った場合の結果です。
+</p>
+<pre>
+               return                          next                        break
+Proc.new   メソッドを抜ける            手続きオブジェクトを抜ける   例外が発生する
+proc       メソッドを抜ける            手続きオブジェクトを抜ける   例外が発生する
+lambda     手続きオブジェクトを抜ける  手続きオブジェクトを抜ける   手続きオブジェクトを抜ける
+イテレータ メソッドを抜ける            手続きオブジェクトを抜ける   手続きオブジェクトを抜ける
+</pre>
+<h2 id='orphan'>orphan な手続きオブジェクトの挙動</h2>
+<p>
+Proc を生成したメソッドから脱出した後、手続きオブジェクトからの
+return, break は例外 <a href="../../../class/-local-jump-error.html">LocalJumpError</a> を発生させます。ただし、上でも説明した通り lambda で生成した手続きオブジェクトはメソッドと同じように振る舞うことを意図されているため、例外 <a href="../../../class/-local-jump-error.html">LocalJumpError</a> は発生しません。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">foo</span>
+  <span class="no">Proc</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="k">return</span> <span class="p">}</span>
+<span class="k">end</span>
+
+foo<span class="p">.</span><span class="nf">call</span>
+<span class="c1"># =&gt; in `call': return from proc-closure (LocalJumpError)
+</span></code></pre>
+<p>
+以下の表は、手続きオブジェクトの実行を上の例と同じように、手続きオブジェクトが定義されたメソッドを脱出してから行った場合の結果です。
+</p>
+<pre>
+               return                          next                        break
+Proc.new   例外が発生する              手続きオブジェクトを抜ける   例外が発生する
+proc       例外が発生する              手続きオブジェクトを抜ける   例外が発生する
+lambda     手続きオブジェクトを抜ける  手続きオブジェクトを抜ける   手続きオブジェクトを抜ける
+</pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

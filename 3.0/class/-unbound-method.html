@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class UnboundMethod (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="レシーバを持たないメソッドを表すクラスです。
+呼び出すためにはレシーバにバインドする必要があります。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        UnboundMethodクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class UnboundMethod</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+      <li>
+        UnboundMethod
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+レシーバを持たないメソッドを表すクラスです。呼び出すためにはレシーバにバインドする必要があります。
+</p>
+<p>
+<a href="../method/-module/i/instance_method.html">Module#instance_method</a> や
+<a href="../method/-method/i/unbind.html">Method#unbind</a> により生成し、後で
+<a href="../method/-unbound-method/i/bind.html">UnboundMethod#bind</a> によりレシーバを割り当てた <a href="../class/-method.html">Method</a> オブジェクトを作ることができます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例: Method クラスの冒頭にある例を UnboundMethod で書くと以下のようになります。</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="p">)</span> <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span> <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">bar</span><span class="p">(</span><span class="p">)</span> <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span> <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">baz</span><span class="p">(</span><span class="p">)</span> <span class="s2">"</span><span class="s2">baz</span><span class="s2">"</span> <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># 任意のキーとメソッドの関係をハッシュに保持しておく
+</span><span class="c1"># レシーバの情報がここにはないことに注意
+</span><span class="nb">methods</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span> <span class="o">=&gt;</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span>,
+           <span class="mi">2</span> <span class="o">=&gt;</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:bar</span><span class="p">)</span>,
+           <span class="mi">3</span> <span class="o">=&gt;</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:baz</span><span class="p">)</span><span class="p">}</span>
+
+<span class="c1"># キーを使って関連するメソッドを呼び出す
+</span><span class="c1"># レシーバは任意(Foo クラスのインスタンスでなければならない)
+</span><span class="nb">p</span> <span class="nb">methods</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="p">.</span><span class="nf">bind</span><span class="p">(</span><span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span><span class="p">.</span><span class="nf">call</span>      <span class="c1"># =&gt; &quot;foo&quot;
+</span><span class="nb">p</span> <span class="nb">methods</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="p">.</span><span class="nf">bind</span><span class="p">(</span><span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span><span class="p">.</span><span class="nf">call</span>      <span class="c1"># =&gt; &quot;bar&quot;
+</span><span class="nb">p</span> <span class="nb">methods</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="p">.</span><span class="nf">bind</span><span class="p">(</span><span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span><span class="p">.</span><span class="nf">call</span>      <span class="c1"># =&gt; &quot;baz&quot;
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例: 以下はメソッドの再定義を UnboundMethod を使って行う方法です。普通は alias や super を使います。</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+    <span class="nb">p</span> <span class="ss">:foo</span>
+  <span class="k">end</span>
+  <span class="vc">@@orig_foo</span> <span class="o">=</span> <span class="nb">instance_method</span> <span class="ss">:foo</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+    <span class="nb">p</span> <span class="ss">:bar</span>
+    <span class="vc">@@orig_foo</span><span class="p">.</span><span class="nf">bind</span><span class="p">(</span><span class="nc">self</span><span class="p">)</span><span class="p">.</span><span class="nf">call</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">foo</span>
+
+<span class="c1"># =&gt; :bar
+</span><span class="c1">#    :foo
+</span></code></pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_--3D--3D">==</a></li>
+
+<li><a href="#I_ARITY">arity</a></li>
+
+<li><a href="#I_BIND">bind</a></li>
+
+<li><a href="#I_BIND_CALL">bind_call</a></li>
+
+<li><a href="#I_CLONE">clone</a></li>
+
+<li><a href="#I_--3D--3D">eql?</a></li>
+
+<li><a href="#I_HASH">hash</a></li>
+
+<li><a href="#I_INSPECT">inspect</a></li>
+
+<li><a href="#I_NAME">name</a></li>
+
+<li><a href="#I_ORIGINAL_NAME">original_name</a></li>
+
+<li><a href="#I_OWNER">owner</a></li>
+
+<li><a href="#I_PARAMETERS">parameters</a></li>
+
+<li><a href="#I_SOURCE_LOCATION">source_location</a></li>
+
+<li><a href="#I_SUPER_METHOD">super_method</a></li>
+
+<li><a href="#I_INSPECT">to_s</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--3D--3D"><code>self == other -&gt; bool</code><span class="permalink">[<a href="../method/-unbound-method/i/=3d=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/UnboundMethod.html#method-i-3D-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>eql?(other) -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+自身と other が同じクラスあるいは同じモジュールの同じメソッドを表す場合に
+true を返します。そうでない場合に false を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身と比較したいオブジェクトを指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+a <span class="o">=</span> <span class="no">String</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:size</span><span class="p">)</span>
+b <span class="o">=</span> <span class="no">String</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:size</span><span class="p">)</span>
+<span class="nb">p</span> a <span class="o">==</span> b                            <span class="c1">#=&gt; true
+</span>
+c <span class="o">=</span> <span class="no">Array</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:size</span><span class="p">)</span>
+<span class="nb">p</span> a <span class="o">==</span> c                            <span class="c1">#=&gt; false
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ARITY"><code>arity -&gt; Integer</code><span class="permalink">[<a href="../method/-unbound-method/i/arity.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/UnboundMethod.html#method-i-arity">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+メソッドが受け付ける引数の数を返します。
+</p>
+<p>
+ただし、メソッドが可変長引数を受け付ける場合、負の整数
+</p>
+<pre>
+-(必要とされる引数の数 + 1)
+</pre>
+<p>
+を返します。C 言語レベルで実装されたメソッドが可変長引数を受け付ける場合、-1 を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">C</span>
+  <span class="k">def</span> <span class="nf">one</span>;    <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">two</span><span class="p">(</span>a<span class="p">)</span>; <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">three</span><span class="p">(</span><span class="o">*</span>a<span class="p">)</span>;  <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">four</span><span class="p">(</span>a, b<span class="p">)</span>; <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">five</span><span class="p">(</span>a, b, <span class="o">*</span>c<span class="p">)</span>;    <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">six</span><span class="p">(</span>a, b, <span class="o">*</span>c, <span class="o">&amp;</span>d<span class="p">)</span>; <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="nb">p</span> <span class="no">C</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:one</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>     <span class="c1">#=&gt; 0
+</span><span class="nb">p</span> <span class="no">C</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:two</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>     <span class="c1">#=&gt; 1
+</span><span class="nb">p</span> <span class="no">C</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:three</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>   <span class="c1">#=&gt; -1
+</span><span class="nb">p</span> <span class="no">C</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:four</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>    <span class="c1">#=&gt; 2
+</span><span class="nb">p</span> <span class="no">C</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:five</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>    <span class="c1">#=&gt; -3
+</span><span class="nb">p</span> <span class="no">C</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:six</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>     <span class="c1">#=&gt; -3
+</span>
+
+<span class="no">String</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:size</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>      <span class="c1">#=&gt; 0
+</span><span class="no">String</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:replace</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>   <span class="c1">#=&gt; 1
+</span><span class="no">String</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:squeeze</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>   <span class="c1">#=&gt; -1
+</span><span class="no">String</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:count</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>     <span class="c1">#=&gt; -1
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_BIND"><code>bind(obj) -&gt; Method</code><span class="permalink">[<a href="../method/-unbound-method/i/bind.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/UnboundMethod.html#method-i-bind">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self を obj にバインドした <a href="../class/-method.html">Method</a> オブジェクトを生成して返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+自身をバインドしたいオブジェクトを指定します。ただしバインドできるのは、生成元のクラスかそのサブクラスのインスタンスのみです。
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+objがbindできないオブジェクトである場合に発生します
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># クラスのインスタンスメソッドの UnboundMethod の場合
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+    <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># UnboundMethod `m' を生成
+</span><span class="nb">p</span> m <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;UnboundMethod: Foo#foo&gt;
+</span>
+<span class="c1"># Foo のインスタンスをレシーバとする Method オブジェクトを生成
+</span><span class="nb">p</span> m<span class="p">.</span><span class="nf">bind</span><span class="p">(</span><span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span>               <span class="c1"># =&gt; #&lt;Method: Foo#foo&gt;
+</span>
+<span class="c1"># Foo のサブクラス Bar のインスタンスをレシーバとする Method
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span> <span class="o">&lt;</span> <span class="no">Foo</span>
+<span class="k">end</span>
+<span class="nb">p</span> m<span class="p">.</span><span class="nf">bind</span><span class="p">(</span><span class="no">Bar</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span>               <span class="c1"># =&gt; #&lt;Method: Bar(Foo)#foo&gt;
+</span>
+
+<span class="c1"># モジュールのインスタンスメソッドの UnboundMethod の場合
+</span><span class="k">module</span> <span class="nn">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+    <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># UnboundMethod `m' を生成
+</span><span class="nb">p</span> m <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;UnboundMethod: Foo#foo&gt;
+</span>
+<span class="c1"># Foo をインクルードしたクラス Bar のインスタンスをレシーバと
+</span><span class="c1"># する Method オブジェクトを生成
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span>
+  include <span class="no">Foo</span>
+<span class="k">end</span>
+<span class="nb">p</span> m<span class="p">.</span><span class="nf">bind</span><span class="p">(</span><span class="no">Bar</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span>               <span class="c1"># =&gt; #&lt;Method: Bar(Foo)#foo&gt;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-unbound-method/i/bind_call.html">UnboundMethod#bind_call</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_BIND_CALL"><code>bind_call(recv, *args) -&gt; object</code><span class="permalink">[<a href="../method/-unbound-method/i/bind_call.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/UnboundMethod.html#method-i-bind_call">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>bind_call(recv, *args) { ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+self を recv に bind して args を引数として呼び出します。
+</p>
+<p>
+self.bind(recv).call(*args) と同じ意味です。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">puts</span> <span class="no">Kernel</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:inspect</span><span class="p">)</span><span class="p">.</span><span class="nf">bind_call</span><span class="p">(</span><span class="no">BasicObject</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;BasicObject:0x000055c65e8ea7b8&gt;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-unbound-method/i/bind.html">UnboundMethod#bind</a>, <a href="../method/-method/i/call.html">Method#call</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CLONE"><code>clone -&gt; UnboundMethod</code><span class="permalink">[<a href="../method/-unbound-method/i/clone.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/UnboundMethod.html#method-i-clone">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を複製した <a href="../class/-unbound-method.html">UnboundMethod</a> オブジェクトを作成して返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+a <span class="o">=</span> <span class="no">String</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:size</span><span class="p">)</span>
+b <span class="o">=</span> a<span class="p">.</span><span class="nf">clone</span>
+
+a <span class="o">==</span> b       <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_HASH"><code>hash -&gt; Integer</code><span class="permalink">[<a href="../method/-unbound-method/i/hash.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/UnboundMethod.html#method-i-hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身のハッシュ値を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+a <span class="o">=</span> <span class="nb">method</span><span class="p">(</span><span class="ss">:<span class="o">==</span><span class="p">)</span><span class="p">.</span><span class="nf">unbind</span>
+b</span> <span class="o">=</span> <span class="nb">method</span><span class="p">(</span><span class="ss">:eql?</span><span class="p">)</span><span class="p">.</span><span class="nf">unbind</span>
+<span class="nb">p</span> a<span class="p">.</span><span class="nf">eql?</span> b          <span class="c1"># =&gt; true
+</span><span class="nb">p</span> a<span class="p">.</span><span class="nf">hash</span> <span class="o">==</span> b<span class="p">.</span><span class="nf">hash</span>  <span class="c1"># =&gt; true
+</span><span class="nb">p</span> <span class="p">[</span>a, b<span class="p">]</span><span class="p">.</span><span class="nf">uniq</span><span class="p">.</span><span class="nf">size</span>  <span class="c1"># =&gt; 1
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-unbound-method/i/inspect.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/UnboundMethod.html#method-i-inspect">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_s -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+self を読みやすい文字列として返します。
+</p>
+<p>
+詳しくは <a href="../method/-method/i/inspect.html">Method#inspect</a> を参照してください。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">String</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:count</span><span class="p">)</span><span class="p">.</span><span class="nf">inspect</span>   <span class="c1"># =&gt; &quot;#&lt;UnboundMethod: String#count&gt;&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-method/i/inspect.html">Method#inspect</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_NAME"><code>name -&gt; Symbol</code><span class="permalink">[<a href="../method/-unbound-method/i/name.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/UnboundMethod.html#method-i-name">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このメソッドの名前を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+a <span class="o">=</span> <span class="no">String</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:size</span><span class="p">)</span>
+a<span class="p">.</span><span class="nf">name</span>   <span class="c1"># =&gt; :size
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ORIGINAL_NAME"><code>original_name -&gt; Symbol</code><span class="permalink">[<a href="../method/-unbound-method/i/original_name.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/UnboundMethod.html#method-i-original_name">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+オリジナルのメソッド名を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">C</span>
+  <span class="k">def</span> <span class="nf">foo</span>; <span class="k">end</span>
+  <span class="k">alias</span> bar foo
+<span class="k">end</span>
+<span class="no">C</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:bar</span><span class="p">)</span><span class="p">.</span><span class="nf">original_name</span> <span class="c1"># =&gt; :foo
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-method/i/original_name.html">Method#original_name</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OWNER"><code>owner -&gt; Class | Module</code><span class="permalink">[<a href="../method/-unbound-method/i/owner.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/UnboundMethod.html#method-i-owner">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このメソッドが定義されている class か module を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">Integer</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:to_s</span><span class="p">)</span><span class="p">.</span><span class="nf">owner</span>   <span class="c1"># =&gt; Integer
+</span><span class="no">Integer</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:to_c</span><span class="p">)</span><span class="p">.</span><span class="nf">owner</span>   <span class="c1"># =&gt; Numeric
+</span><span class="no">Integer</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:hash</span><span class="p">)</span><span class="p">.</span><span class="nf">owner</span>   <span class="c1"># =&gt; Kernel
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_PARAMETERS"><code>parameters -&gt; [object]</code><span class="permalink">[<a href="../method/-unbound-method/i/parameters.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/UnboundMethod.html#method-i-parameters">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+UnboundMethod オブジェクトの引数の情報を返します。
+</p>
+<p>
+詳しくは <a href="../method/-method/i/parameters.html">Method#parameters</a> を参照してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-proc/i/parameters.html">Proc#parameters</a>, <a href="../method/-method/i/parameters.html">Method#parameters</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SOURCE_LOCATION"><code>source_location -&gt; [String, Integer] | nil</code><span class="permalink">[<a href="../method/-unbound-method/i/source_location.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/UnboundMethod.html#method-i-source_location">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ソースコードのファイル名と行番号を配列で返します。
+</p>
+<p>
+その手続オブジェクトが ruby で定義されていない(つまりネイティブである)場合は nil を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'time'</span>
+
+<span class="no">Time</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:zone</span><span class="p">)</span><span class="p">.</span><span class="nf">source_location</span>       <span class="c1"># =&gt; nil
+</span><span class="no">Time</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:httpdate</span><span class="p">)</span><span class="p">.</span><span class="nf">source_location</span>   <span class="c1"># =&gt; [&quot;/Users/user/.rbenv/versions/2.4.3/lib/ruby/2.4.0/time.rb&quot;, 654]
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-proc/i/source_location.html">Proc#source_location</a>, <a href="../method/-method/i/source_location.html">Method#source_location</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SUPER_METHOD"><code>super_method -&gt; UnboundMethod | nil</code><span class="permalink">[<a href="../method/-unbound-method/i/super_method.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/UnboundMethod.html#method-i-super_method">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self 内で super を実行した際に実行されるメソッドを <a href="../class/-unbound-method.html">UnboundMethod</a> オブジェクトにして返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-method/i/super_method.html">Method#super_method</a>
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

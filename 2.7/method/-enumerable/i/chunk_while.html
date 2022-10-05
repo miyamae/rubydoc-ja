@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Enumerable#chunk_while (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="要素を前から順にブロックで評価し、その結果によって要素をチャンクに分け
+た(グループ化した)要素を持つ[[c:Enumerator]] を返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-enumerable.html">Enumerableモジュール</a>
+      </li>
+      <li>
+        chunk_while 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Enumerable#chunk_while</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_CHUNK_WHILE"><code>chunk_while {|elt_before, elt_after| ... } -&gt; Enumerator</code><span class="permalink">[<a href="../../../method/-enumerable/i/chunk_while.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Enumerable.html#method-i-chunk_while">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+要素を前から順にブロックで評価し、その結果によって要素をチャンクに分けた(グループ化した)要素を持つ<a href="../../../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<p>
+隣り合う値をブロックパラメータ elt_before、elt_after に渡し、ブロックの評価値が偽になる所でチャンクを区切ります。
+</p>
+<p>
+ブロックは self の長さ - 1 回呼び出されます。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+チャンクごとの配列をブロックパラメータに渡す <a href="../../../class/-enumerator.html">Enumerator</a>
+を返します。eachメソッドは以下のように呼び出します。
+<pre>
+  enum.chunk_while { |elt_before, elt_after| bool }.each { |ary| ... }
+</pre>
+to_a や map などのその他の <a href="../../../class/-enumerable.html">Enumerable</a> モジュールのメソッドも有用です。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># 1ずつ増加する部分配列ごとに分ける。
+</span>a <span class="o">=</span> <span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">4</span>,<span class="mi">9</span>,<span class="mi">10</span>,<span class="mi">11</span>,<span class="mi">12</span>,<span class="mi">15</span>,<span class="mi">16</span>,<span class="mi">19</span>,<span class="mi">20</span>,<span class="mi">21</span><span class="p">]</span>
+b <span class="o">=</span> a<span class="p">.</span><span class="nf">chunk_while</span> <span class="p">{</span><span class="o">|</span>i, j<span class="o">|</span> i<span class="o">+</span><span class="mi">1</span> <span class="o">==</span> j <span class="p">}</span>
+<span class="nb">p</span> b<span class="p">.</span><span class="nf">to_a</span> <span class="c1"># =&gt; [[1, 2], [4], [9, 10, 11, 12], [15, 16], [19, 20, 21]]
+</span>c <span class="o">=</span> b<span class="p">.</span><span class="nf">map</span> <span class="p">{</span><span class="o">|</span>a<span class="o">|</span> a<span class="p">.</span><span class="nf">length</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="o">?</span> a <span class="o">:</span> <span class="s2">"</span><span class="si">#{</span><span class="n">a</span><span class="p">.</span><span class="nf">first</span><span class="si">}</span><span class="s2">-</span><span class="si">#{</span><span class="n">a</span><span class="p">.</span><span class="nf">last</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
+<span class="nb">p</span> c <span class="c1"># =&gt; [[1, 2], [4], &quot;9-12&quot;, [15, 16], &quot;19-21&quot;]
+</span>d <span class="o">=</span> c<span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">"</span><span class="s2">,</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">p</span> d <span class="c1"># =&gt; &quot;1,2,4,9-12,15,16,19-21&quot;
+</span>
+<span class="c1"># 増加のみの部分配列ごとに分ける。
+</span>a <span class="o">=</span> <span class="p">[</span><span class="mi">0</span>, <span class="mi">9</span>, <span class="mi">2</span>, <span class="mi">2</span>, <span class="mi">3</span>, <span class="mi">2</span>, <span class="mi">7</span>, <span class="mi">5</span>, <span class="mi">9</span>, <span class="mi">5</span><span class="p">]</span>
+<span class="nb">p</span> a<span class="p">.</span><span class="nf">chunk_while</span> <span class="p">{</span><span class="o">|</span>i, j<span class="o">|</span> i <span class="o">&lt;=</span> j <span class="p">}</span><span class="p">.</span><span class="nf">to_a</span>
+<span class="c1"># =&gt; [[0, 9], [2, 2, 3], [2, 7], [5, 9], [5]]
+</span>
+<span class="c1"># 隣り合う偶数同士、奇数同士の部分配列ごとに分ける。
+</span><span class="c1"># (Enumerable#chunk を使って実現する事も可能)
+</span>a <span class="o">=</span> <span class="p">[</span><span class="mi">7</span>, <span class="mi">5</span>, <span class="mi">9</span>, <span class="mi">2</span>, <span class="mi">0</span>, <span class="mi">7</span>, <span class="mi">9</span>, <span class="mi">4</span>, <span class="mi">2</span>, <span class="mi">0</span><span class="p">]</span>
+<span class="nb">p</span> a<span class="p">.</span><span class="nf">chunk_while</span> <span class="p">{</span><span class="o">|</span>i, j<span class="o">|</span> i<span class="p">.</span><span class="nf">even?</span> <span class="o">==</span> j<span class="p">.</span><span class="nf">even?</span> <span class="p">}</span><span class="p">.</span><span class="nf">to_a</span>
+<span class="c1"># =&gt; [[7, 5, 9], [2, 0], [7, 9], [4, 2, 0]]
+</span></code></pre>
+<p>
+<a href="../../../method/-enumerable/i/slice_when.html">Enumerable#slice_when</a> はブロックの戻り値が真ではなく偽の時に要素を分ける事を除いて同じ処理を行います。
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-enumerable/i/slice_when.html">Enumerable#slice_when</a>, <a href="../../../method/-enumerable/i/chunk.html">Enumerable#chunk</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

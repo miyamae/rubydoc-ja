@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Object#send (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="オブジェクトのメソッド name を args を引数に
+して呼び出し、メソッドの実行結果を返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-object.html">Objectクラス</a>
+      </li>
+      <li>
+        send 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Object#send</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_SEND"><code>send(name, *args) -&gt; object</code><span class="permalink">[<a href="../../../method/-object/i/send.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Object.html#method-i-send">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>send(name, *args) { .... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+オブジェクトのメソッド name を args を引数にして呼び出し、メソッドの実行結果を返します。
+</p>
+<p>
+ブロック付きで呼ばれたときはブロックもそのまま引き渡します。
+</p>
+<p>
+send が再定義された場合に備えて別名 __send__ も用意されており、ライブラリではこちらを使うべきです。また
+__send__ は再定義すべきではありません。
+</p>
+<p>
+send, __send__ は、メソッドの呼び出し制限にかかわらず任意のメソッドを呼び出せます。
+<a href="../../../doc/spec=2fdef.html#limit">クラス／メソッドの定義/呼び出し制限</a> も参照してください。
+</p>
+<p>
+public メソッドだけ呼び出せれば良い場合は
+<a href="../../../method/-object/i/public_send.html">Object#public_send</a> を使う方が良いでしょう。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+文字列か<a href="../../../class/-symbol.html">Symbol</a> で指定するメソッド名です。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+呼び出すメソッドに渡す引数です。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="o">-</span><span class="mi">365</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="ss">:abs</span><span class="p">)</span> <span class="c1">#=&gt; 365
+</span><span class="nb">p</span> <span class="s2">"</span><span class="s2">ruby</span><span class="s2">"</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="ss">:sub</span>,<span class="sr">/./</span>,<span class="s2">"</span><span class="s2">R</span><span class="s2">"</span><span class="p">)</span> <span class="c1">#=&gt; &quot;Ruby&quot;
+</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="p">)</span> <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span> <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">bar</span><span class="p">(</span><span class="p">)</span> <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span> <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">baz</span><span class="p">(</span><span class="p">)</span> <span class="s2">"</span><span class="s2">baz</span><span class="s2">"</span> <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># 任意のキーとメソッド(の名前)の関係をハッシュに保持しておく
+</span><span class="c1"># レシーバの情報がここにはないことに注意
+</span><span class="nb">methods</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span> <span class="o">=&gt;</span> <span class="ss">:foo</span>,
+  <span class="mi">2</span> <span class="o">=&gt;</span> <span class="ss">:bar</span>,
+  <span class="mi">3</span> <span class="o">=&gt;</span> <span class="ss">:baz</span><span class="p">}</span>
+
+<span class="c1"># キーを使って関連するメソッドを呼び出す
+</span><span class="c1"># レシーバは任意(Foo クラスのインスタンスである必要もない)
+</span><span class="nb">p</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="nb">methods</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="p">)</span>      <span class="c1"># =&gt; &quot;foo&quot;
+</span><span class="nb">p</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="nb">methods</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="p">)</span>      <span class="c1"># =&gt; &quot;bar&quot;
+</span><span class="nb">p</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="nb">methods</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="p">)</span>      <span class="c1"># =&gt; &quot;baz&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-object/i/public_send.html">Object#public_send</a>, <a href="../../../method/-basic-object/i/__send__.html">BasicObject#__send__</a>, <a href="../../../method/-object/i/method.html">Object#method</a>, <a href="../../../method/-kernel/m/eval.html">Kernel.#eval</a>, <a href="../../../class/-proc.html">Proc</a>, <a href="../../../class/-method.html">Method</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

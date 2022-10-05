@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>library fiddle/import (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="fiddle ライブラリのための高レベルインターフェースを提供するライブラリです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        fiddle/importライブラリ
+      </li>
+    </ol>
+  </nav>
+
+<h1>library fiddle/import</h1>
+</header>
+
+<main>
+
+
+
+<h2>要約</h2>
+<p>
+fiddle ライブラリのための高レベルインターフェースを提供するライブラリです。
+</p>
+<p>
+通常は fiddle ライブラリを使わずこの fiddle/import ライブラリを使います。
+</p>
+<p>
+主な使い方は <a href="../library/fiddle.html">fiddle</a> も参照してください。
+</p>
+<h2 >高度な使用法</h2>
+<h3 >○○の配列を関数に渡したい</h3>
+<p>
+例えば与えられた長さ len の double の配列の和を計算する関数
+</p>
+<pre>
+double sum(double *arry, int len);
+</pre>
+<p>
+があったとします。これを呼び出したい場合は以下のように <a href="../method/-array/i/pack.html">Array#pack</a> を使用します。
+</p>
+<pre>
+require 'fiddle/import'
+module M
+  extend Fiddle::Importer
+  dlload './libsum.so'
+  extern 'double sum(double*, int)'
+end
+p M.sum([2.0, 3.0, 4.0].pack('d*'), 3)   #=&gt; 9.0
+</pre>
+<p>
+また与えられた文字列の配列 s (長さlen)の各要素の最初の文字を buf にコピーする関数
+</p>
+<pre>
+void first_char(char **s, char *buf, int len)
+</pre>
+<p>
+があったとします。これを呼び出すにも以下のように <a href="../method/-array/i/pack.html">Array#pack</a> を使用します。
+</p>
+<pre>
+require 'fiddle/import'
+module M
+  extend Fiddle::Importer
+  dlload './libstrfirst.so'
+  extern 'void first_char(char **, char *, int)'
+end
+buf = '111'
+M.first_char(['Abc', 'Def', 'Ghi'].pack('p*'), buf, 3)
+p buf  #=&gt; 'ADG'
+</pre>
+<h3 >Ruby のオブジェクトをコールバックに渡したい</h3>
+<p>
+任意のクラスの Ruby オブジェクトをコールバックへ渡したい場合は <a href="../method/-fiddle/m/dlwrap.html">Fiddle.#dlwrap</a> を使ってポインタ(整数)へ変換してから関数に渡し、コールバックの方で元に戻します。
+</p>
+<p>
+例えば libc の qsort を使って Ruby の Time の配列をソートするには以下のようにします。
+</p>
+<pre>
+require 'fiddle/import'
+module M
+  extend Fiddle::Importer
+  dlload &quot;libc.so.6&quot;
+  QsortCallback = bind(&quot;void *qsort_callback(void*, void*)&quot;){|a, b|
+    a0 = Fiddle.dlunwrap(a.ptr.to_i)
+    b0 = Fiddle.dlunwrap(b.ptr.to_i)
+    a0 &lt;=&gt; b0
+  }
+  extern 'void qsort(void *, int, int, void *)'
+end
+
+buff =  [Time.at(1), Time.now, Time.at(100), Time.at(10)]
+a = buff.map{|t| Fiddle.dlwrap(t)}.pack('l!*')
+M.qsort(a, buff.size, Fiddle::SIZEOF_VOIDP, M::QsortCallback)
+p a.unpack('l!*').map{|t| Fiddle.dlunwrap(t).to_i }             #=&gt; [1, 10, 100, 1241603848]
+</pre>
+<h3 >複雑な構造体を定義したい</h3>
+<p>
+構造体をメンバとして持つ構造体を <a href="../method/-fiddle=3a=3a-importer/i/struct.html">Fiddle::Importer#struct</a> を使って定義することは残念ながらできません。自力でメンバを展開してから <a href="../method/-fiddle=3a=3a-importer/i/struct.html">Fiddle::Importer#struct</a> を使ってください。
+</p>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-fiddle=3a=3a-c-struct.html">Fiddle::CStruct</a>
+</td>
+<td class="description"><p>
+C の構造体を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-fiddle=3a=3a-c-union.html">Fiddle::CUnion</a>
+</td>
+<td class="description"><p>
+C の共用体を表すクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>モジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-fiddle=3a=3a-importer.html">Fiddle::Importer</a>
+</td>
+<td class="description"><p>
+C の関数をモジュールにインポートするためのモジュールです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>同時にrequireされるライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/fiddle.html">fiddle</a></td>
+<td class="description"><p>
+*.dllや*.soなど、ダイナミックリンクライブラリを扱うためのライブラリです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

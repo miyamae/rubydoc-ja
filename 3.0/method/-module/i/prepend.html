@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Module#prepend (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="継承チェイン上で、self のモジュール/クラスよりも「手前」に
+追加されるため、結果として self で定義されたメソッドは
+override されます。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-module.html">Moduleクラス</a>
+      </li>
+      <li>
+        prepend 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Module#prepend</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_PREPEND"><code>prepend(*modules) -&gt; self</code><span class="permalink">[<a href="../../../method/-module/i/prepend.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Module.html#method-i-prepend">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+指定したモジュールを self の継承チェインの先頭に「追加する」ことで
+self の定数、メソッド、モジュール変数を「上書き」します。
+</p>
+<p>
+継承チェイン上で、self のモジュール/クラスよりも「手前」に追加されるため、結果として self で定義されたメソッドは
+override されます。
+</p>
+<p>
+modules で指定したモジュールは後ろから順に処理されるため、
+modules の先頭が最も優先されます。
+</p>
+<p>
+また、継承によってこの「上書き」を処理するため、prependの引数として渡したモジュールのインスタンスメソッドでsuperを呼ぶことで
+self のモジュール/クラスのメソッドを呼び出すことができます。
+</p>
+<p>
+実際の処理は modules の各要素の prepend_features を後ろから順に呼びだすだけです。
+<a href="../../../method/-module/i/prepend_features.html">Module#prepend_features</a> が継承チェインの改変を実行し、結果として上のような処理が実現されます。そのため、prepend_features を override することで
+prepend の処理を追加/変更できます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] modules:</dt>
+<dd>
+prepend する <a href="../../../class/-module.html">Module</a> を指定します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-module/i/prepend_features.html">Module#prepend_features</a>, <a href="../../../method/-module/i/prepended.html">Module#prepended</a>
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># super と prepend の組み合わせの例
+</span><span class="k">module</span> <span class="nn">X</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+    <span class="nb">puts</span> <span class="s2">"</span><span class="s2">X1</span><span class="s2">"</span> <span class="c1"># (1x)
+</span>    <span class="k">super</span> <span class="c1"># (2x)
+</span>    <span class="nb">puts</span> <span class="s2">"</span><span class="s2">X2</span><span class="s2">"</span> <span class="c1"># (3x)
+</span>  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">A</span>
+  prepend <span class="no">X</span>
+
+  <span class="k">def</span> <span class="nf">foo</span>
+    <span class="nb">puts</span> <span class="s2">"</span><span class="s2">A</span><span class="s2">"</span> <span class="c1">#(1a)
+</span>  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="no">A</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">foo</span>
+<span class="c1"># (1x) (2x)(ここの super で A#foo を呼びだす) (1a) (3x) の順に実行される
+</span><span class="c1"># &gt;&gt; X1
+</span><span class="c1"># &gt;&gt; A
+</span><span class="c1"># &gt;&gt; X2
+</span>
+<span class="c1"># 2つのモジュールを X, Y を prepend X, Y という順で指定したもの
+</span><span class="k">module</span> <span class="nn">Y</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+    <span class="nb">puts</span> <span class="s2">"</span><span class="s2">Y1</span><span class="s2">"</span> <span class="c1">#(1y)
+</span>    <span class="k">super</span> <span class="c1">#(2y)
+</span>    <span class="nb">puts</span> <span class="s2">"</span><span class="s2">Y2</span><span class="s2">"</span> <span class="c1">#(3y)
+</span>  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">B</span>
+  prepend <span class="no">X</span>, <span class="no">Y</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+    <span class="nb">puts</span> <span class="s2">"</span><span class="s2">B</span><span class="s2">"</span> <span class="c1"># (1b)
+</span>  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="no">B</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">foo</span>
+<span class="c1"># (1x) (2x) (1y) (2y) (1b) (3y) (3x) の順に実行される
+</span><span class="c1"># X#foo のほうが Y#foo より継承チェインの手前側にあり、そちらが優先される
+</span><span class="c1"># &gt;&gt; X1
+</span><span class="c1"># &gt;&gt; Y1
+</span><span class="c1"># &gt;&gt; B
+</span><span class="c1"># &gt;&gt; Y2
+</span><span class="c1"># &gt;&gt; X2
+</span><span class="c1"># prepend Y, X とすると Y1 X1 B X2 Y2 の順で表示される
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

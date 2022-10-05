@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class BasicObject (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="特殊な用途のために意図的にほとんど何も定義されていないクラスです。
+[[c:Object]]クラスの親にあたります。Ruby 1.9 以降で導入されました。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        BasicObjectクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class BasicObject</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+      <li>
+        BasicObject
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+特殊な用途のために意図的にほとんど何も定義されていないクラスです。
+<a href="../class/-object.html">Object</a>クラスの親にあたります。Ruby 1.9 以降で導入されました。
+</p>
+<h2 >性質</h2>
+<p>
+BasicObject クラスは Object クラスからほとんどのメソッドを取り除いたクラスです。
+</p>
+<p>
+Object クラスは様々な便利なメソッドや <a href="../class/-kernel.html">Kernel</a> から受け継いだ関数的メソッドを多数有しています。これに対して、 BasicObject クラスはオブジェクトの同一性を識別したりメソッドを呼んだりする最低限の機能の他は一切の機能を持っていません。
+</p>
+<h2 >用途</h2>
+<p>
+基本的にはほぼすべてのクラスの親は <a href="../class/-object.html">Object</a> と考えて差し支えありません。しかし、ある種のクラスを定義する際には Object クラスは持っているメソッドが多すぎる場合があります。
+</p>
+<p>
+例えば、 <a href="../method/-basic-object/i/method_missing.html">BasicObject#method_missing</a>を利用して Proxy パターンを実装する場合にはObject クラスに定義済みのメソッドはプロクシできないという問題が発生します。このような場合に Object ではなく BasicObject から派生して問題を解決できます。
+</p>
+<h2 >注意</h2>
+<p>
+通常のクラスは Object またはその他の適切なクラスから派生すべきです。真に必要な場合にだけ BasicObject から派生してください。
+</p>
+<h2 >例</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Proxy</span> <span class="o">&lt;</span> <span class="no">BasicObject</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span>target<span class="p">)</span>
+    <span class="vi">@target</span> <span class="o">=</span> target
+  <span class="k">end</span>
+ 
+  <span class="k">def</span> <span class="nf">method_missing</span><span class="p">(</span>message, <span class="o">*</span>args<span class="p">)</span>
+    <span class="vi">@target</span><span class="p">.</span><span class="nf">__send__</span><span class="p">(</span>message, <span class="o">*</span>args<span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+proxy <span class="o">=</span> <span class="no">Proxy</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">1</span><span class="s2">"</span><span class="p">)</span>
+proxy<span class="p">.</span><span class="nf">to_i</span> <span class="c1">#=&gt; 1
+</span></code></pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_--21">!</a></li>
+
+<li><a href="#I_--21--3D">!=</a></li>
+
+<li><a href="#I_--3D--3D">==</a></li>
+
+<li><a href="#I___ID__">__id__</a></li>
+
+<li><a href="#I___SEND__">__send__</a></li>
+
+<li><a href="#I_EQUAL--3F">equal?</a></li>
+
+<li><a href="#I_INSTANCE_EVAL">instance_eval</a></li>
+
+<li><a href="#I_INSTANCE_EXEC">instance_exec</a></li>
+
+</ul>
+</dd>
+
+<dt>privateメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_METHOD_MISSING">method_missing</a></li>
+
+<li><a href="#I_SINGLETON_METHOD_ADDED">singleton_method_added</a></li>
+
+<li><a href="#I_SINGLETON_METHOD_REMOVED">singleton_method_removed</a></li>
+
+<li><a href="#I_SINGLETON_METHOD_UNDEFINED">singleton_method_undefined</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--21"><code>! self -&gt; bool</code><span class="permalink">[<a href="../method/-basic-object/i/=21.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/BasicObject.html#method-i-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+オブジェクトを真偽値として評価し、その論理否定を返します。
+</p>
+<p>
+このメソッドは self が nil または false であれば真を、さもなくば偽を返します。主に論理式の評価に伴って副作用を引き起こすことを目的に再定義するものと想定されています。
+</p>
+<p>
+このメソッドを再定義しても Ruby の制御式において nil や false 以外が偽として扱われることはありません。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+オブジェクトが偽であれば真、さもなくば偽
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">NegationRecorder</span> <span class="o">&lt;</span> <span class="no">BasicObject</span>
+  <span class="k">def</span> <span class="nf">initialize</span>
+    <span class="vi">@count</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="k">end</span>
+  <span class="nb">attr_reader</span> <span class="ss">:count</span>
+ 
+  <span class="k">def</span> <span class="o">!</span>
+    <span class="vi">@count</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">super</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="nf">recorder</span> <span class="o">=</span> <span class="no">NegationRecorder</span><span class="p">.</span><span class="nf">new</span>
+<span class="o">!</span>recorder
+<span class="o">!</span><span class="o">!</span><span class="o">!</span><span class="o">!</span><span class="o">!</span><span class="o">!</span><span class="o">!</span>recorder
+<span class="nb">puts</span> <span class="s1">'hoge'</span> <span class="k">if</span> <span class="o">!</span>recorder
+
+<span class="nb">puts</span> recorder<span class="p">.</span><span class="nf">count</span> <span class="c1">#=&gt; 3
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">AnotherFalse</span> <span class="o">&lt;</span> <span class="no">BasicObject</span>
+  <span class="k">def</span> <span class="o">!</span>
+    <span class="k">true</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="nf">another_false</span> <span class="o">=</span> <span class="no">AnotherFalse</span><span class="p">.</span><span class="nf">new</span>
+
+<span class="c1"># another_falseは*真*
+</span><span class="nb">puts</span> <span class="s2">"</span><span class="s2">another false is a truth</span><span class="s2">"</span> <span class="k">if</span> another_false
+<span class="c1">#=&gt; &quot;another false is a truth&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--21--3D"><code>self != other -&gt; bool</code><span class="permalink">[<a href="../method/-basic-object/i/=21=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/BasicObject.html#method-i-21-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+オブジェクトが other と等しくないことを判定します。
+</p>
+<p>
+デフォルトでは self == other を評価した後に結果を論理否定して返します。このため、サブクラスで <a href="../method/-basic-object/i/=3d=3d.html">BasicObject#==</a> を再定義しても != とは自動的に整合性がとれるようになっています。
+</p>
+<p>
+ただし、 <a href="../method/-basic-object/i/=21=3d.html">BasicObject#!=</a> 自身や <a href="../method/-basic-object/i/=21.html">BasicObject#!</a> を再定義した際には、ユーザーの責任で整合性を保たなくてはなりません。
+</p>
+<p>
+このメソッドは主に論理式の評価に伴って副作用を引き起こすことを目的に再定義するものと想定されています。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+比較対象となるオブジェクト
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-basic-object/i/=3d=3d.html">BasicObject#==</a>, <a href="../method/-basic-object/i/=21.html">BasicObject#!</a>
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">NonequalityRecorder</span> <span class="o">&lt;</span> <span class="no">BasicObject</span>
+  <span class="k">def</span> <span class="nf">initialize</span>
+    <span class="vi">@count</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="k">end</span>
+  <span class="nb">attr_reader</span> <span class="ss">:count</span>
+
+  <span class="k">def</span> <span class="o">!=</span><span class="p">(</span><span class="nf">other</span><span class="p">)</span>
+    <span class="vi">@count</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">super</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+recorder <span class="o">=</span> <span class="no">NonequalityRecorder</span><span class="p">.</span><span class="nf">new</span>
+
+recorder <span class="o">!=</span> <span class="mi">1</span>
+<span class="nb">puts</span> <span class="s1">'hoge'</span> <span class="k">if</span> recorder <span class="o">!=</span> <span class="s2">"</span><span class="s2">str</span><span class="s2">"</span>
+
+<span class="nb">p</span> recorder<span class="p">.</span><span class="nf">count</span> <span class="c1">#=&gt; 2
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--3D--3D"><code>self == other -&gt; bool</code><span class="permalink">[<a href="../method/-basic-object/i/=3d=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/BasicObject.html#method-i-3D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+オブジェクトが other と等しければ真を、さもなくば偽を返します。
+</p>
+<p>
+このメソッドは各クラスの性質に合わせて、サブクラスで再定義するべきです。多くの場合、オブジェクトの内容が等しければ真を返すように (同値性を判定するように) 再定義することが期待されています。
+</p>
+<p>
+デフォルトでは <a href="../method/-object/i/equal=3f.html">Object#equal?</a> と同じオブジェクトの同一性になっています。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+比較対象となるオブジェクト
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+other が self と同値であれば真、さもなくば偽
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">BasicObject</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="nb">name</span>, age<span class="p">)</span>
+    <span class="vi">@name</span> <span class="o">=</span> <span class="nb">name</span>
+    <span class="vi">@age</span> <span class="o">=</span> age
+  <span class="k">end</span>
+<span class="k">end</span>
+
+tanaka1 <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">tanaka</span><span class="s2">"</span>, <span class="mi">24</span><span class="p">)</span>
+tanaka2 <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">tanaka</span><span class="s2">"</span>, <span class="mi">24</span><span class="p">)</span>
+
+tanaka1 <span class="o">==</span> tanaka1    <span class="c1">#=&gt; true
+</span>tanaka1 <span class="o">==</span> tanaka2    <span class="c1">#=&gt; false
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-basic-object/i/equal=3f.html">BasicObject#equal?</a>, <a href="../method/-object/i/=3d=3d.html">Object#==</a>, <a href="../method/-object/i/equal=3f.html">Object#equal?</a>,
+<a href="../method/-object/i/eql=3f.html">Object#eql?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I___ID__"><code>__id__ -&gt; Integer</code><span class="permalink">[<a href="../method/-basic-object/i/__id__.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/BasicObject.html#method-i-__id__">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+各オブジェクトに対して一意な整数を返します。あるオブジェクトに対してどのような整数が割り当てられるかは不定です。
+</p>
+<p>
+<a href="../method/-object/i/object_id.html">Object#object_id</a> と同じですが、#object_id は <a href="../class/-basic-object.html">BasicObject</a> にはない事に注意してください。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># frozen_string_literal: false
+</span>obj <span class="o">=</span> <span class="no">Object</span><span class="p">.</span><span class="nf">new</span>
+obj<span class="p">.</span><span class="nf">object_id</span> <span class="o">==</span> obj<span class="p">.</span><span class="nf">__id__</span>              <span class="c1"># =&gt; true
+</span><span class="no">Object</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">__id__</span>  <span class="o">==</span> <span class="no">Object</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">__id__</span>  <span class="c1"># =&gt; false
+</span><span class="p">(</span><span class="mi">21</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="p">.</span><span class="nf">__id__</span>    <span class="o">==</span> <span class="p">(</span><span class="mi">21</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="p">.</span><span class="nf">__id__</span>    <span class="c1"># =&gt; true
+</span><span class="s2">"</span><span class="s2">hello</span><span class="s2">"</span><span class="p">.</span><span class="nf">__id__</span>     <span class="o">==</span> <span class="s2">"</span><span class="s2">hello</span><span class="s2">"</span><span class="p">.</span><span class="nf">__id__</span>     <span class="c1"># =&gt; false
+</span><span class="s2">"</span><span class="s2">hi</span><span class="s2">"</span><span class="p">.</span><span class="nf">freeze</span><span class="p">.</span><span class="nf">__id__</span> <span class="o">==</span> <span class="s2">"</span><span class="s2">hi</span><span class="s2">"</span><span class="p">.</span><span class="nf">freeze</span><span class="p">.</span><span class="nf">__id__</span> <span class="c1"># =&gt; true
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-object/i/object_id.html">Object#object_id</a>, <a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-dev/42840">[ruby-dev:42840]</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I___SEND__"><code>__send__(name, *args) -&gt; object</code><span class="permalink">[<a href="../method/-basic-object/i/__send__.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/BasicObject.html#method-i-__send__">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>__send__(name, *args) { .... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+オブジェクトのメソッド name を args を引数にして呼び出し、メソッドの結果を返します。
+</p>
+<p>
+ブロック付きで呼ばれたときはブロックもそのまま引き渡します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+呼び出すメソッドの名前。 <a href="../class/-symbol.html">Symbol</a> または文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+メソッドに渡す任意個の引数
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Mail</span>
+  <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="o">*</span>args<span class="p">)</span>
+    <span class="s2">"</span><span class="s2">(Mail#delete) - delete </span><span class="s2">"</span> <span class="o">+</span> args<span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s1">','</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="nb">name</span>, <span class="o">*</span>args<span class="p">)</span>
+    <span class="s2">"</span><span class="s2">(Mail#send) - </span><span class="si">#{</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">args</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s1">','</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+mail <span class="o">=</span> <span class="no">Mail</span><span class="p">.</span><span class="nf">new</span>
+mail<span class="p">.</span><span class="nf">send</span> <span class="ss">:delete</span>, <span class="s2">"</span><span class="s2">gentle</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">readers</span><span class="s2">"</span>       <span class="c1"># =&gt; &quot;(Mail#send) - delete gentle,readers&quot;
+</span>mail<span class="p">.</span><span class="nf">__send__</span> <span class="ss">:delete</span>, <span class="s2">"</span><span class="s2">gentle</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">readers</span><span class="s2">"</span>   <span class="c1"># =&gt; &quot;(Mail#delete) - delete gentle,readers&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-object/i/send.html">Object#send</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EQUAL--3F"><code>equal?(other) -&gt; bool</code><span class="permalink">[<a href="../method/-basic-object/i/equal=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/BasicObject.html#method-i-equal-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+オブジェクトが other と同一であれば真を、さもなくば偽を返します。
+</p>
+<p>
+このメソッドは2つのオブジェクトが同一のものであるかどうかを判定します。一般にはこのメソッドを決して再定義すべきでありません。ただし、 <a href="../class/-basic-object.html">BasicObject</a> の位置づけ上、どうしても再定義が必要な用途もあるでしょう。再定義する際には自分が何をしているのかよく理解してから実行してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+比較対象となるオブジェクト
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+other が self 自身であれば真、さもなくば偽
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+original <span class="o">=</span> <span class="s2">"</span><span class="s2">a</span><span class="s2">"</span>
+copied <span class="o">=</span> original<span class="p">.</span><span class="nf">dup</span>
+substituted <span class="o">=</span> original
+
+original <span class="o">==</span> copied          <span class="c1">#=&gt; true
+</span>original <span class="o">==</span> substituted     <span class="c1">#=&gt; true
+</span>original<span class="p">.</span><span class="nf">equal?</span> copied      <span class="c1">#=&gt; false
+</span>original<span class="p">.</span><span class="nf">equal?</span> substituted <span class="c1">#=&gt; true
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-object/i/equal=3f.html">Object#equal?</a>, <a href="../method/-object/i/=3d=3d.html">Object#==</a>, <a href="../method/-object/i/eql=3f.html">Object#eql?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INSTANCE_EVAL"><code>instance_eval(expr, filename = &quot;(eval)&quot;, lineno = 1) -&gt; object</code><span class="permalink">[<a href="../method/-basic-object/i/instance_eval.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/BasicObject.html#method-i-instance_eval">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>instance_eval {|obj| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+オブジェクトのコンテキストで文字列 expr またはオブジェクト自身をブロックパラメータとするブロックを評価してその結果を返します。
+</p>
+<p>
+オブジェクトのコンテキストで評価するとは評価中の self をそのオブジェクトにして実行するということです。また、文字列 expr やブロック中でメソッドを定義すればそのオブジェクトの特異メソッドが定義されます。
+</p>
+<p>
+ただし、ローカル変数だけは、文字列 expr の評価では instance_eval の外側のスコープと、ブロックの評価ではそのブロックの外側のスコープと、共有します。
+</p>
+<p>
+メソッド定義の中で instance_eval でメソッドを定義した場合は、囲むメソッドが実行されたときに初めて instance_eval 内のメソッドが定義されます。これはメソッド定義のネストと同じです。
+<a href="../doc/spec=2fdef.html#nest_method">クラス／メソッドの定義/メソッド定義のネスト</a> を参照してください。
+</p>
+<p>
+BasicObject を継承して作ったクラス内で instance_eval する場合はトップレベルの定数や Kernel モジュールに定義されているメソッドは見えません。これは、トップレベルの定数が Object 以下に作成されるためです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] expr:</dt>
+<dd>
+評価する文字列です。
+</dd>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+文字列を指定します。ファイル filename に文字列 expr が書かれているかのように実行されます。スタックトレースの表示などを差し替えることができます。
+</dd>
+<dt class='method-param'>[PARAM] lineno:</dt>
+<dd>
+整数を指定します。行番号 lineno から文字列 expr が書かれているかのように実行されます。スタックトレースの表示などを差し替えることができます。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">initialize</span> data
+    <span class="vi">@key</span> <span class="o">=</span> data
+  <span class="k">end</span>
+  private
+  <span class="k">def</span> <span class="nf">do_fuga</span>
+    <span class="nb">p</span> <span class="s1">'secret'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+some <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span> <span class="s1">'XXX'</span>
+some<span class="p">.</span><span class="nf">instance_eval</span><span class="p">{</span><span class="nb">p</span> <span class="vi">@key</span><span class="p">}</span> <span class="c1">#=&gt; &quot;XXX&quot;
+</span>some<span class="p">.</span><span class="nf">instance_eval</span><span class="p">{</span>do_fuga <span class="p">}</span> <span class="c1">#=&gt; &quot;secret&quot; # private メソッドも呼び出せる
+</span>
+some<span class="p">.</span><span class="nf">instance_eval</span> <span class="s1">'raise'</span> <span class="c1"># ..:10: (eval):1:  (RuntimeError)
+</span>messg <span class="o">=</span> <span class="s1">'unknown'</span>
+some<span class="p">.</span><span class="nf">instance_eval</span> <span class="s1">'raise messg'</span>,<span class="s1">'file.rb'</span>,<span class="mi">999</span> <span class="c1"># file.rb:999: unknown (RuntimeError)
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span> <span class="o">&lt;</span> <span class="no">BasicObject</span>
+  <span class="k">def</span> <span class="nf">call1</span>
+    <span class="nb">instance_eval</span><span class="p">(</span><span class="s2">"</span><span class="s2">::ENV.class</span><span class="s2">"</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">call2</span>
+    <span class="nb">instance_eval</span><span class="p">(</span><span class="s2">"</span><span class="s2">ENV.class</span><span class="s2">"</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+bar <span class="o">=</span> <span class="no">Bar</span><span class="p">.</span><span class="nf">new</span>
+bar<span class="p">.</span><span class="nf">call1</span> <span class="c1"># =&gt; Object
+</span>bar<span class="p">.</span><span class="nf">call2</span> <span class="c1"># raise NameError
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-module/i/module_eval.html">Module#module_eval</a>, <a href="../method/-kernel/m/eval.html">Kernel.#eval</a>, <a href="../method/-basic-object/i/instance_exec.html">BasicObject#instance_exec</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INSTANCE_EXEC"><code>instance_exec(*args) {|*vars| ... } -&gt; object</code><span class="permalink">[<a href="../method/-basic-object/i/instance_exec.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/BasicObject.html#method-i-instance_exec">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+与えられたブロックをレシーバのコンテキストで実行します。
+</p>
+<p>
+ブロック実行中は、 self がレシーバのコンテキストになるのでレシーバの持つインスタンス変数にアクセスすることができます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+ブロックパラメータに渡す値です。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">KlassWithSecret</span>
+  <span class="k">def</span> <span class="nf">initialize</span>
+    <span class="vi">@secret</span> <span class="o">=</span> <span class="mi">99</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+k <span class="o">=</span> <span class="no">KlassWithSecret</span><span class="p">.</span><span class="nf">new</span>
+<span class="c1"># 以下で x には 5 が渡される
+</span>k<span class="p">.</span><span class="nf">instance_exec</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>x<span class="o">|</span> <span class="vi">@secret</span> <span class="o">+</span> x <span class="p">}</span>   <span class="c1">#=&gt; 104
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-module/i/class_exec.html">Module#class_exec</a>, <a href="../method/-module/i/module_exec.html">Module#module_exec</a>, <a href="../method/-basic-object/i/instance_eval.html">BasicObject#instance_eval</a>
+</p>
+</dd>
+
+
+</dl>
+
+<h2>privateメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_METHOD_MISSING"><code>method_missing(name, *args) -&gt; object</code><span class="permalink">[<a href="../method/-basic-object/i/method_missing.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/BasicObject.html#method-i-method_missing">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+呼びだされたメソッドが定義されていなかった時、Rubyインタプリタがこのメソッドを呼び出します。
+</p>
+<p>
+呼び出しに失敗したメソッドの名前 (<a href="../class/-symbol.html">Symbol</a>) が name にその時の引数が第二引数以降に渡されます。
+</p>
+<p>
+デフォルトではこのメソッドは例外 <a href="../class/-no-method-error.html">NoMethodError</a> を発生させます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+未定義メソッドの名前（シンボル）です。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+未定義メソッドに渡された引数です。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+ユーザー定義の method_missing メソッドの返り値が未定義メソッドの返り値であるかのように見えます。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span>data<span class="p">)</span>
+    <span class="vi">@data</span> <span class="o">=</span> data
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">method_missing</span><span class="p">(</span><span class="nb">name</span>, lang<span class="p">)</span>
+    <span class="k">if</span> <span class="nb">name</span><span class="p">.</span><span class="nf">to_s</span> <span class="o">=~</span> <span class="sr">/\Afind_(\d+)_in\z/</span>
+      <span class="k">if</span> <span class="vi">@data</span><span class="p">[</span>lang<span class="p">]</span>
+        <span class="nb">p</span> <span class="vi">@data</span><span class="p">[</span>lang<span class="p">]</span><span class="p">[</span><span class="vg">$1</span><span class="p">.</span><span class="nf">to_i</span><span class="p">]</span>
+      <span class="k">else</span>
+        <span class="nb">raise</span> <span class="s2">"</span><span class="si">#{</span><span class="n">lang</span><span class="si">}</span><span class="s2"> unknown</span><span class="s2">"</span>
+      <span class="k">end</span>
+    <span class="k">else</span>
+      <span class="k">super</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+dic <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="p">{</span><span class="ss">:English</span> <span class="o">=&gt;</span> <span class="sx">%w(zero one two)</span>, <span class="ss">:Esperanto</span> <span class="o">=&gt;</span> <span class="sx">%w(nulo unu du)</span><span class="p">}</span><span class="p">)</span>
+dic<span class="p">.</span><span class="nf">find_2_in</span> <span class="ss">:Esperanto</span> <span class="c1">#=&gt; &quot;du&quot;
+</span></code></pre>
+<p>
+[注意] このメソッドを override する場合は対象のメソッド名に対して
+<a href="../method/-object/i/respond_to=3f.html">Object#respond_to?</a> が真を返すようにしてください。そのためには、<a href="../method/-object/i/respond_to_missing=3f.html">Object#respond_to_missing?</a> も同様に override する必要があります。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-object/i/respond_to=3f.html">Object#respond_to?</a>, <a href="../method/-object/i/respond_to_missing=3f.html">Object#respond_to_missing?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SINGLETON_METHOD_ADDED"><code>singleton_method_added(name) -&gt; object</code><span class="permalink">[<a href="../method/-basic-object/i/singleton_method_added.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/BasicObject.html#method-i-singleton_method_added">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+特異メソッドが追加された時にインタプリタから呼び出されます。
+</p>
+<p>
+通常のメソッドの追加に対するフックには
+<a href="../method/-module/i/method_added.html">Module#method_added</a>を使います。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+追加されたメソッド名が <a href="../class/-symbol.html">Symbol</a> で渡されます。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">singleton_method_added</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+    <span class="nb">puts</span> <span class="s2">"</span><span class="s2">singleton method \&quot;</span><span class="si">#{</span><span class="n">name</span><span class="si">}</span><span class="s2">\&quot; was added</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+obj <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span>
+<span class="k">def</span> <span class="nf">obj</span><span class="p">.</span><span class="nf">foo</span>
+<span class="k">end</span>
+
+<span class="c1">#=&gt; singleton method &quot;foo&quot; was added
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-module/i/method_added.html">Module#method_added</a>,<a href="../method/-basic-object/i/singleton_method_removed.html">BasicObject#singleton_method_removed</a>,<a href="../method/-basic-object/i/singleton_method_undefined.html">BasicObject#singleton_method_undefined</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SINGLETON_METHOD_REMOVED"><code>singleton_method_removed(name) -&gt; object</code><span class="permalink">[<a href="../method/-basic-object/i/singleton_method_removed.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/BasicObject.html#method-i-singleton_method_removed">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+特異メソッドが <a href="../method/-module/i/remove_method.html">Module#remove_method</a> により削除された時にインタプリタから呼び出されます。
+</p>
+<p>
+通常のメソッドの削除に対するフックには
+<a href="../method/-module/i/method_removed.html">Module#method_removed</a>を使います。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+削除されたメソッド名が <a href="../class/-symbol.html">Symbol</a> で渡されます。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">singleton_method_removed</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+    <span class="nb">puts</span> <span class="s2">"</span><span class="s2">singleton method \&quot;</span><span class="si">#{</span><span class="n">name</span><span class="si">}</span><span class="s2">\&quot; was removed</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+obj <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span>
+<span class="k">def</span> <span class="nf">obj</span><span class="p">.</span><span class="nf">foo</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="o">&lt;&lt;</span> obj
+  remove_method <span class="ss">:foo</span>
+<span class="k">end</span>
+
+<span class="c1">#=&gt; singleton method &quot;foo&quot; was removed
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-module/i/method_removed.html">Module#method_removed</a>,<a href="../method/-basic-object/i/singleton_method_added.html">BasicObject#singleton_method_added</a>,<a href="../method/-basic-object/i/singleton_method_undefined.html">BasicObject#singleton_method_undefined</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SINGLETON_METHOD_UNDEFINED"><code>singleton_method_undefined(name) -&gt; object</code><span class="permalink">[<a href="../method/-basic-object/i/singleton_method_undefined.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/BasicObject.html#method-i-singleton_method_undefined">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+特異メソッドが <a href="../method/-module/i/undef_method.html">Module#undef_method</a> または
+undef により未定義にされた時にインタプリタから呼び出されます。
+</p>
+<p>
+通常のメソッドの未定義に対するフックには
+<a href="../method/-module/i/method_undefined.html">Module#method_undefined</a> を使います。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+未定義にされたメソッド名が <a href="../class/-symbol.html">Symbol</a> で渡されます。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">singleton_method_undefined</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+    <span class="nb">puts</span> <span class="s2">"</span><span class="s2">singleton method \&quot;</span><span class="si">#{</span><span class="n">name</span><span class="si">}</span><span class="s2">\&quot; was undefined</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+obj <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span>
+<span class="k">def</span> <span class="nf">obj</span><span class="p">.</span><span class="nf">foo</span>
+<span class="k">end</span>
+<span class="k">def</span> <span class="nf">obj</span><span class="p">.</span><span class="nf">bar</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="o">&lt;&lt;</span> obj
+  undef_method <span class="ss">:foo</span>
+<span class="k">end</span>
+obj<span class="p">.</span><span class="nf">instance_eval</span> <span class="p">{</span><span class="k">undef</span> bar<span class="p">}</span>
+
+<span class="c1">#=&gt; singleton method &quot;foo&quot; was undefined
+</span><span class="c1">#   singleton method &quot;bar&quot; was undefined
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-module/i/method_undefined.html">Module#method_undefined</a>,<a href="../method/-basic-object/i/singleton_method_added.html">BasicObject#singleton_method_added</a>,<a href="../method/-basic-object/i/singleton_method_removed.html">BasicObject#singleton_method_removed</a> , <a href="../doc/spec=2fdef.html#undef">クラス／メソッドの定義/undef</a>
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Socket::AncillaryData#timestamp (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="タイムスタンプ制御メッセージに含まれる時刻を [[c:Time]] オブジェクト
+で返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/socket.html">socketライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-socket=3a=3a-ancillary-data.html">Socket::AncillaryDataクラス</a>
+      </li>
+      <li>
+        timestamp 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Socket::AncillaryData#timestamp</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_TIMESTAMP"><code>timestamp -&gt; Time</code><span class="permalink">[<a href="../../../method/-socket=3a=3a-ancillary-data/i/timestamp.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Socket/AncillaryData.html#method-i-timestamp">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+タイムスタンプ制御メッセージに含まれる時刻を <a href="../../../class/-time.html">Time</a> オブジェクトで返します。
+</p>
+<p>
+&quot;タイムスタンプ制御メッセージ&quot; は以下のいずれかです。
+</p>
+<ul>
+<li>SOL_SOCKET/SCM_TIMESTAMP (micro second) GNU/Linux, FreeBSD, NetBSD, OpenBSD, Solaris, MacOS X</li>
+<li>SOL_SOCKET/SCM_TIMESTAMPNS (nano second) GNU/Linux</li>
+<li>SOL_SOCKET/SCM_BINTIME (2**(-64) second) FreeBSD</li>
+</ul>
+<pre>
+require 'socket'
+
+Addrinfo.udp(&quot;127.0.0.1&quot;, 0).bind {|s1|
+  Addrinfo.udp(&quot;127.0.0.1&quot;, 0).bind {|s2|
+    s1.setsockopt(:SOCKET, :TIMESTAMP, true)
+    s2.send &quot;a&quot;, 0, s1.local_address
+    ctl = s1.recvmsg.last
+    p ctl
+    #=&gt; #&lt;Socket::AncillaryData: INET SOCKET TIMESTAMP 2009-02-24 17:35:46.775581&gt;
+    t = ctl.timestamp
+    p t      #=&gt; 2009-02-24 17:35:46 +0900
+    p t.usec #=&gt; 775581
+    p t.nsec #=&gt; 775581000
+  }
+}
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-socket=3a=3a-constants/c/-s-c-m_-t-i-m-e-s-t-a-m-p.html">Socket::Constants::SCM_TIMESTAMP</a>,
+<a href="../../../method/-socket=3a=3a-constants/c/-s-c-m_-t-i-m-e-s-t-a-m-p-n-s.html">Socket::Constants::SCM_TIMESTAMPNS</a>,
+<a href="../../../method/-socket=3a=3a-constants/c/-s-c-m_-b-i-n-t-i-m-e.html">Socket::Constants::SCM_BINTIME</a>,
+<a href="../../../method/-socket=3a=3a-constants/c/-s-o_-t-i-m-e-s-t-a-m-p.html">Socket::Constants::SO_TIMESTAMP</a>,
+<a href="../../../method/-socket=3a=3a-constants/c/-s-o_-t-i-m-e-s-t-a-m-p-n-s.html">Socket::Constants::SO_TIMESTAMPNS</a>,
+<a href="../../../method/-socket=3a=3a-constants/c/-s-o_-b-i-n-t-i-m-e.html">Socket::Constants::SO_BINTIME</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

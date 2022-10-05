@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class Range (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="範囲オブジェクトのクラス。
+範囲オブジェクトは文字どおり何らかの意味での範囲を表します。数の範囲はもちろん、
+日付の範囲や、「&quot;a&quot; から &quot;z&quot; まで」といった文字列の範囲を表すこともできます。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        Rangeクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class Range</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-enumerable.html">Enumerable</a>
+        </li>
+        
+      
+      <li>
+        Range
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+範囲オブジェクトのクラス。範囲オブジェクトは文字どおり何らかの意味での範囲を表します。数の範囲はもちろん、日付の範囲や、「&quot;a&quot; から &quot;z&quot; まで」といった文字列の範囲を表すこともできます。
+</p>
+<h3 >作り方</h3>
+<p>
+範囲オブジェクトは、<a href="../method/-range/s/new.html">Range.new</a> を用いるほか、範囲演算子（`..' または `...'）を用いた <a href="../doc/spec=2foperator.html#range">演算子式/範囲式</a> で生成できます。いずれの方法でも始端と終端を与えます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">範囲オブジェクトの例</span>
+<code>
+<span class="no">Range</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">1</span>, <span class="mi">5</span><span class="p">)</span> <span class="c1"># 1 以上 5 以下
+</span><span class="mi">1</span><span class="o">..</span><span class="mi">5</span>            <span class="c1"># 同上
+</span><span class="mi">1</span><span class="o">...</span><span class="mi">5</span>           <span class="c1"># 1 以上 5 未満
+</span></code></pre>
+<p>
+この例で分かるように、範囲オブジェクトは終端を含む範囲も含まない範囲も表せます。
+</p>
+<p>
+Ruby 2.6.0 からは、終端に nil を与えることで「終端を持たない範囲オブジェクト」を作ることができるようになりました。
+</p>
+<pre class="highlight ruby">
+<span class="caption">終端を持たない範囲オブジェクト</span>
+<code>
+<span class="nb">p</span> <span class="no">Range</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">1</span>, <span class="k">nil</span><span class="p">)</span> <span class="c1"># 1 以上（上限無し）を表す
+</span><span class="nb">p</span><span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="k">nil</span><span class="p">)</span>           <span class="c1"># 同上
+</span><span class="nb">p</span><span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="p">)</span>              <span class="c1"># 同上（略した書き方）
+</span></code></pre>
+<p>
+また、Ruby 2.7.0 では始端に nil を与えることで「始端を持たない範囲オブジェクト」を作ることもできるようになりました。
+</p>
+<pre class="highlight ruby">
+<span class="caption">始端を持たない範囲オブジェクト</span>
+<code>
+<span class="nb">p</span> <span class="no">Range</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="k">nil</span>, <span class="mi">5</span><span class="p">)</span> <span class="c1"># 5 以下（下限無し）を表す
+</span><span class="nb">p</span><span class="p">(</span><span class="k">nil</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span>           <span class="c1"># 同上
+</span><span class="nb">p</span><span class="p">(</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span>              <span class="c1"># 同上（略した書き方）
+</span></code></pre>
+<p>
+始端も終端も持たない範囲オブジェクトは「全範囲」を表します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">始端も終端も持たない範囲オブジェクト</span>
+<code>
+<span class="c1"># 以下はすべて同じ範囲
+</span><span class="nb">p</span> <span class="no">Range</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="k">nil</span>, <span class="k">nil</span><span class="p">)</span> <span class="c1"># =&gt; nil..nil
+</span><span class="nb">p</span><span class="p">(</span><span class="k">nil</span><span class="o">..</span><span class="k">nil</span><span class="p">)</span>           <span class="c1"># =&gt; nil..nil
+</span><span class="nb">p</span><span class="p">(</span><span class="o">..</span><span class="k">nil</span><span class="p">)</span>              <span class="c1"># =&gt; nil..nil
+</span><span class="nb">p</span><span class="p">(</span><span class="k">nil</span><span class="o">..</span><span class="p">)</span>              <span class="c1"># =&gt; nil..nil
+</span></code></pre>
+<p>
+範囲式で両端を略した書き方はできません。
+</p>
+<pre>
+p(..)  # =&gt; SyntaxError
+p(...) # Ruby 2.7 で導入されたメソッド引数の forward として解釈されてしまう
+</pre>
+<h3 >機能</h3>
+<p>
+範囲オブジェクトは範囲を表しているので、基本的な機能として「ある値がその範囲に含まれるか否かを判定する」ということがあります。
+</p>
+<pre class="highlight ruby">
+<span class="caption">値が範囲に含まれるかどうかを判定</span>
+<code>
+<span class="nb">p</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">cover?</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>  <span class="c1"># =&gt; false
+</span><span class="nb">p</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">cover?</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># =&gt; true
+</span><span class="nb">p</span> <span class="p">(</span><span class="mi">1</span><span class="o">...</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">cover?</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="c1"># =&gt; false
+</span></code></pre>
+<p>
+<a href="../method/-range/i/cover=3f.html">Range#cover?</a> メソッドでの判定には演算子 &lt;=&gt; が使われます。
+</p>
+<p>
+当然、始端と終端は &lt;=&gt; メソッドで比較可能である（nil 以外を返す）必要があります。
+</p>
+<p>
+範囲オブジェクトのもう一つの基本的機能は繰り返しの範囲を表すことです。
+</p>
+<pre class="highlight ruby">
+<span class="caption">繰り返しの範囲を範囲オブジェクトで表す</span>
+<code>
+<span class="p">(</span><span class="mi">3</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">each</span><span class="p">{</span> <span class="o">|</span>i<span class="o">|</span> <span class="nb">p</span> i <span class="p">}</span>
+<span class="c1"># =&gt; 3
+</span><span class="c1">#    4
+</span><span class="c1">#    5
+</span>
+<span class="p">(</span><span class="mi">3</span><span class="o">...</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">each</span><span class="p">{</span> <span class="o">|</span>i<span class="o">|</span> <span class="nb">p</span> i <span class="p">}</span>
+<span class="c1"># =&gt; 3
+</span><span class="c1">#    4
+</span></code></pre>
+<p>
+繰り返しの範囲を表す範囲オブジェクトは、始端が「次の値」を返す succ メソッドを持たなければなりません。
+</p>
+<p>
+Range クラスには <a href="../class/-enumerable.html">Enumerable</a> が include してあるので，<a href="../method/-range/i/each.html">Range#each</a> に基づき、Enumerable モジュールが提供する多様なメソッドを使うことができます。
+</p>
+<h2 >破壊的な変更</h2>
+<p>
+Ruby の Range クラスは immutable です。つまり、オブジェクト自体を破壊的に変更することはできません。ですので、一度生成された Range のオブジェクトの指し示す範囲は決して変更することはできません。
+</p>
+<pre class="highlight ruby">
+<code>
+range <span class="o">=</span> <span class="mi">1</span><span class="o">..</span><span class="mi">10</span>
+range<span class="p">.</span><span class="nf">first</span>     <span class="c1"># =&gt; 1
+</span>range<span class="p">.</span><span class="nf">first</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># =&gt; NoMethodError
+</span></code></pre>
+<p>
+また、Ruby 3.0.0 からすべての Range オブジェクトは freeze されるようになりました。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">10</span><span class="p">)</span><span class="p">.</span><span class="nf">frozen?</span>
+<span class="c1"># =&gt; true
+</span><span class="nb">p</span> <span class="no">Range</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">1</span>, <span class="mi">10</span><span class="p">)</span><span class="p">.</span><span class="nf">frozen?</span>
+<span class="c1"># =&gt; true
+</span></code></pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_NEW">new</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_--25">%</a></li>
+
+<li><a href="#I_--3D--3D">==</a></li>
+
+<li><a href="#I_--3D--3D--3D">===</a></li>
+
+<li><a href="#I_BEGIN">begin</a></li>
+
+<li><a href="#I_BSEARCH">bsearch</a></li>
+
+<li><a href="#I_COVER--3F">cover?</a></li>
+
+<li><a href="#I_EACH">each</a></li>
+
+<li><a href="#I_END">end</a></li>
+
+<li><a href="#I_ENTRIES">entries</a></li>
+
+<li><a href="#I_EQL--3F">eql?</a></li>
+
+<li><a href="#I_EXCLUDE_END--3F">exclude_end?</a></li>
+
+<li><a href="#I_BEGIN">first</a></li>
+
+<li><a href="#I_HASH">hash</a></li>
+
+<li><a href="#I_INCLUDE--3F">include?</a></li>
+
+<li><a href="#I_INSPECT">inspect</a></li>
+
+<li><a href="#I_END">last</a></li>
+
+<li><a href="#I_MAX">max</a></li>
+
+<li><a href="#I_INCLUDE--3F">member?</a></li>
+
+<li><a href="#I_MIN">min</a></li>
+
+<li><a href="#I_MINMAX">minmax</a></li>
+
+<li><a href="#I_SIZE">size</a></li>
+
+<li><a href="#I_--25">step</a></li>
+
+<li><a href="#I_ENTRIES">to_a</a></li>
+
+<li><a href="#I_TO_S">to_s</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+  <h2>継承しているメソッド</h2>
+<dl>
+  
+<dt>Enumerableから継承しているメソッド</dt>
+<dd>
+  <ul class="class-toc">
+    
+      <li><a href="../method/-enumerable/i/all=3f.html">all?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/any=3f.html">any?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/chain.html">chain</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/chunk.html">chunk</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/chunk_while.html">chunk_while</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/collect.html">collect</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/collect_concat.html">collect_concat</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/compact.html">compact</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/count.html">count</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/cycle.html">cycle</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/detect.html">detect</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/drop.html">drop</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/drop_while.html">drop_while</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_cons.html">each_cons</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_entry.html">each_entry</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_slice.html">each_slice</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_with_index.html">each_with_index</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_with_object.html">each_with_object</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/filter.html">filter</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/filter_map.html">filter_map</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/detect.html">find</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/filter.html">find_all</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/find_index.html">find_index</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/collect_concat.html">flat_map</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/grep.html">grep</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/grep_v.html">grep_v</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/group_by.html">group_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/inject.html">inject</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/lazy.html">lazy</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/collect.html">map</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/max_by.html">max_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/min_by.html">min_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/minmax_by.html">minmax_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/none=3f.html">none?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/one=3f.html">one?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/partition.html">partition</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/inject.html">reduce</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/reject.html">reject</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/reverse_each.html">reverse_each</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/filter.html">select</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/slice_after.html">slice_after</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/slice_before.html">slice_before</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/slice_when.html">slice_when</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/sort.html">sort</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/sort_by.html">sort_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/sum.html">sum</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/take.html">take</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/take_while.html">take_while</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/tally.html">tally</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/to_h.html">to_h</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/uniq.html">uniq</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/zip.html">zip</a></li>
+      
+    
+  </ul>
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(first, last, exclude_end = false) -&gt; Range</code><span class="permalink">[<a href="../method/-range/s/new.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+first から last までの範囲オブジェクトを生成して返します。
+</p>
+<p>
+exclude_end が真ならば終端を含まない範囲オブジェクトを生成します。exclude_end 省略時には終端を含みます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] first:</dt>
+<dd>
+最初のオブジェクト
+</dd>
+<dt class='method-param'>[PARAM] last:</dt>
+<dd>
+最後のオブジェクト
+</dd>
+<dt class='method-param'>[PARAM] exclude_end:</dt>
+<dd>
+真をセットした場合終端を含まない範囲オブジェクトを生成します
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+first &lt;=&gt; last が nil の場合に発生します
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例: 整数の範囲オブジェクトの場合</span>
+<code>
+<span class="no">Range</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">1</span>, <span class="mi">10</span><span class="p">)</span>       <span class="c1"># =&gt; 1..10
+</span><span class="no">Range</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">1</span>, <span class="mi">10</span>, <span class="k">true</span><span class="p">)</span> <span class="c1"># =&gt; 1...10
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例: 日付オブジェクトの範囲オブジェクトの場合</span>
+<code>
+<span class="nb">require</span> <span class="s1">'date'</span>
+<span class="no">Range</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span>, <span class="no">Date</span><span class="p">.</span><span class="nf">today</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span><span class="o">|</span>d<span class="o">|</span> <span class="nb">puts</span> d <span class="p">}</span>
+<span class="c1"># =&gt; 2017-09-16
+</span><span class="c1">#    2017-09-17
+</span><span class="c1">#    ...
+</span><span class="c1">#    2017-10-16
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例: IPアドレスの範囲オブジェクトの場合</span>
+<code>
+<span class="nb">require</span> <span class="s1">'ipaddr'</span>
+<span class="no">Range</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">IPAddr</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">192.0.2.1</span><span class="s2">"</span><span class="p">)</span>, <span class="no">IPAddr</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">192.0.2.3</span><span class="s2">"</span><span class="p">)</span><span class="p">)</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span><span class="o">|</span>ip<span class="o">|</span> <span class="nb">puts</span> ip<span class="p">}</span>
+<span class="c1"># =&gt; 192.0.2.1
+</span><span class="c1">#    192.0.2.2
+</span><span class="c1">#    192.0.2.3
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例: 自作のオブジェクトの場合</span>
+<code>
+<span class="no">MyInteger</span> <span class="o">=</span> <span class="no">Struct</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:value</span><span class="p">)</span> <span class="k">do</span>
+  <span class="k">def</span> <span class="nf">succ</span>
+    <span class="nc">self</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>value <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="o">&lt;=&gt;</span><span class="p">(</span><span class="nf">other</span><span class="p">)</span>
+    value <span class="o">&lt;=&gt;</span> other<span class="p">.</span><span class="nf">value</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">to_s</span>
+    value<span class="p">.</span><span class="nf">to_s</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="no">Range</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">MyInteger</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>, <span class="no">MyInteger</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="p">)</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span><span class="o">|</span>i<span class="o">|</span> <span class="nb">puts</span> i <span class="p">}</span>
+<span class="c1"># =&gt; 1
+</span><span class="c1">#    2
+</span><span class="c1">#    3
+</span></code></pre>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--25"><code>step(s = 1) {|item| ... } -&gt; self</code><span class="permalink">[<a href="../method/-range/i/=25.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-25">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>step(s = 1) -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>step(s = 1) -&gt; Enumerator::ArithmeticSequence</code></dt>
+<dt class="method-heading"><code>self % s -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>self % s -&gt; Enumerator::ArithmeticSequence</code></dt>
+<dd class="method-description">
+<p>
+範囲内の要素を s おきに繰り返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] s:</dt>
+<dd>
+各ステップの大きさを数値で指定します。負の数を指定することもできます。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+ブロックを指定した時は self を返します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+ブロックを指定しなかった時かつ数値の Range の時は <a href="../class/-enumerator=3a=3a-arithmetic-sequence.html">Enumerator::ArithmeticSequence</a> を返します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+ブロックを指定しなかったその他の Range の時は <a href="../class/-enumerator.html">Enumerator</a> を返します。(例: String の Range)
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span> <span class="o">..</span> <span class="s2">"</span><span class="s2">f</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">step</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v<span class="p">}</span>
+<span class="c1"># =&gt; &quot;a&quot;
+</span><span class="c1">#    &quot;c&quot;
+</span><span class="c1">#    &quot;e&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--3D--3D"><code>self == other -&gt; bool</code><span class="permalink">[<a href="../method/-range/i/=3d=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-3D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+指定された other が Range クラスのインスタンスであり、始端と終端が == メソッドで比較して等しく、<a href="../method/-range/i/exclude_end=3f.html">Range#exclude_end?</a> が同じ場合に
+true を返します。そうでない場合に false を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身と比較したいオブジェクトを指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">2</span><span class="p">)</span>               <span class="c1"># =&gt; true
+</span><span class="nb">p</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span><span class="o">...</span><span class="mi">2</span><span class="p">)</span>              <span class="c1"># =&gt; false
+</span><span class="nb">p</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="no">Range</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mf">1.0</span>, <span class="mf">2.0</span><span class="p">)</span>  <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--3D--3D--3D"><code>self === obj -&gt; bool</code><span class="permalink">[<a href="../method/-range/i/=3d=3d=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-3D-3D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+始端と終端の中に obj があるとき、true を返します。そうでないとき、false を返します。
+</p>
+<p>
+<a href="../method/-range/i/=3d=3d=3d.html">Range#===</a> は主に case 式での比較に用いられます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="p">(</span><span class="mi">0</span><span class="o">...</span><span class="mi">50</span><span class="p">)</span> <span class="o">===</span> <span class="mi">79</span>  <span class="c1">#=&gt; false
+</span><span class="nb">p</span> <span class="p">(</span><span class="mi">60</span><span class="o">...</span><span class="mi">80</span><span class="p">)</span> <span class="o">===</span> <span class="mi">79</span> <span class="c1">#=&gt; true
+</span>
+<span class="k">case</span> <span class="mi">79</span>
+<span class="k">when</span>  <span class="mi">0</span><span class="o">...</span><span class="mi">60</span>  <span class="k">then</span>  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">low</span><span class="s2">"</span>
+<span class="k">when</span> <span class="mi">60</span><span class="o">...</span><span class="mi">80</span>  <span class="k">then</span>  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">medium</span><span class="s2">"</span> <span class="c1"># =&gt; medium
+</span><span class="k">when</span> <span class="mi">80</span><span class="o">..</span><span class="mi">100</span>  <span class="k">then</span>  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">high</span><span class="s2">"</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+2.5 以前は、単純に <a href="../method/-range/i/include=3f.html">Range#include?</a> メソッドを内部で呼んでいました。
+</p>
+<p>
+しかし、2.6 以降では、(文字列を除いて) <a href="../method/-range/i/cover=3f.html">Range#cover?</a> と同様の処理をするように切り替わりました。
+</p>
+<p>
+ただし、=== は、<a href="../method/-range/i/cover=3f.html">Range#cover?</a> のように Range オブジェクトを引数にはとる設計はありません。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'date'</span>
+<span class="nb">p</span> <span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span> <span class="o">-</span> <span class="mi">100</span><span class="o">...</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span> <span class="o">+</span> <span class="mi">100</span><span class="p">)</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="no">DateTime</span><span class="p">.</span><span class="nf">now</span><span class="p">)</span>  <span class="c1">#=&gt; false
+</span><span class="nb">p</span> <span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span> <span class="o">-</span> <span class="mi">100</span><span class="o">...</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span> <span class="o">+</span> <span class="mi">100</span><span class="p">)</span><span class="p">.</span><span class="nf">cover?</span><span class="p">(</span><span class="no">DateTime</span><span class="p">.</span><span class="nf">now</span><span class="p">)</span>    <span class="c1">#=&gt; true
+</span><span class="nb">p</span> <span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span> <span class="o">-</span> <span class="mi">100</span><span class="o">...</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span> <span class="o">+</span> <span class="mi">100</span><span class="p">)</span> <span class="o">===</span>  <span class="no">DateTime</span><span class="p">.</span><span class="nf">now</span>       <span class="c1">#=&gt; true
+</span><span class="c1"># 2.5 以前は、=== は、include? と同じく比較できず false を返していました。
+</span></code></pre>
+<p>
+2.7 以降の === は、文字列も <a href="../method/-range/i/cover=3f.html">Range#cover?</a> と同様の処理をするようになりました。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="p">(</span><span class="s1">'a'</span><span class="o">..</span><span class="s1">'z'</span><span class="p">)</span><span class="p">.</span><span class="nf">include?</span> <span class="s1">'at'</span>  <span class="c1">#=&gt; false
+</span><span class="nb">p</span> <span class="p">(</span><span class="s1">'a'</span><span class="o">..</span><span class="s1">'z'</span><span class="p">)</span><span class="p">.</span><span class="nf">cover?</span> <span class="s1">'at'</span>    <span class="c1">#=&gt; true
+</span><span class="nb">p</span> <span class="p">(</span><span class="s1">'a'</span><span class="o">..</span><span class="s1">'z'</span><span class="p">)</span> <span class="o">===</span> <span class="s1">'at'</span>       <span class="c1">#=&gt; true
+</span><span class="c1"># 2.6 以前は、=== は、include? と同じく比較できず false を返していました。
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../doc/spec=2fcontrol.html#case">制御構造/case</a>
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-range/i/include=3f.html">Range#include?</a>, <a href="../method/-range/i/cover=3f.html">Range#cover?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_BEGIN"><code>begin -&gt; object</code><span class="permalink">[<a href="../method/-range/i/begin.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-begin">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>first -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+始端の要素を返します。始端を持たない範囲オブジェクトの場合、begin はnilを返しますが, first は例外 <a href="../class/-range-error.html">RangeError</a> が発生します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># 始端を持つ場合
+</span><span class="nb">p</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">begin</span> <span class="c1"># =&gt; 1
+</span><span class="nb">p</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">0</span><span class="p">)</span><span class="p">.</span><span class="nf">begin</span> <span class="c1"># =&gt; 1
+</span><span class="nb">p</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">first</span> <span class="c1"># =&gt; 1
+</span><span class="nb">p</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">0</span><span class="p">)</span><span class="p">.</span><span class="nf">first</span> <span class="c1"># =&gt; 1
+</span>
+<span class="c1"># 始端を持たない場合
+</span><span class="nb">p</span> <span class="p">(</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">begin</span> <span class="c1">#=&gt; nil
+</span><span class="nb">p</span> <span class="p">(</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">first</span> <span class="c1">#=&gt; RangeError
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-range/i/end.html">Range#end</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_BEGIN"><code>first(n) -&gt; [object]</code><span class="permalink">[<a href="../method/-range/i/begin.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-begin">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+最初の n 要素を返します。範囲内に要素が含まれない場合は空の配列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] n:</dt>
+<dd>
+取得する要素数を整数で指定します。整数以外のオブジェクトを指定した場合は to_int メソッドによる暗黙の型変換を試みます。
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+引数に整数以外の(暗黙の型変換が行えない)オブジェクトを指定した場合に発生します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+n に負の数を指定した場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">10</span><span class="o">..</span><span class="mi">20</span><span class="p">)</span><span class="p">.</span><span class="nf">first</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># =&gt; [10, 11, 12]
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-range/i/last.html">Range#last</a>, <a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-core/12697">[ruby-core:12697]</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_BSEARCH"><code>bsearch {|obj| ... } -&gt; object | nil</code><span class="permalink">[<a href="../method/-range/i/bsearch.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-bsearch">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>bsearch -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+ブロックの評価結果で範囲内の各要素の大小判定を行い、条件を満たす値を二分探索(計算量は O(log n))で検索します。要素が見つからない場合は nil を返します。
+</p>
+<p>
+本メソッドはブロックを評価した結果により以下のいずれかのモードで動作します。
+</p>
+<ul>
+<li>find-minimum モード</li>
+<li>find-any モード</li>
+</ul>
+<p>
+find-minimum モード(特に理由がない限りはこのモードを使う方がいいでしょう)では、条件判定の結果を以下のようにする必要があります。
+</p>
+<ul>
+<li>求める値がブロックパラメータの値か前の要素の場合: true を返す</li>
+<li>求める値がブロックパラメータより後の要素の場合: false を返す</li>
+</ul>
+<p>
+ブロックの評価結果が true になる最初の要素を返すか、nil を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+ary <span class="o">=</span> <span class="p">[</span><span class="mi">0</span>, <span class="mi">4</span>, <span class="mi">7</span>, <span class="mi">10</span>, <span class="mi">12</span><span class="p">]</span>
+<span class="p">(</span><span class="mi">0</span><span class="o">...</span>ary<span class="p">.</span><span class="nf">size</span><span class="p">)</span><span class="p">.</span><span class="nf">bsearch</span> <span class="p">{</span><span class="o">|</span>i<span class="o">|</span> ary<span class="p">[</span>i<span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">4</span> <span class="p">}</span> <span class="c1"># =&gt; 1
+</span><span class="p">(</span><span class="mi">0</span><span class="o">...</span>ary<span class="p">.</span><span class="nf">size</span><span class="p">)</span><span class="p">.</span><span class="nf">bsearch</span> <span class="p">{</span><span class="o">|</span>i<span class="o">|</span> ary<span class="p">[</span>i<span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">6</span> <span class="p">}</span> <span class="c1"># =&gt; 2
+</span><span class="p">(</span><span class="mi">0</span><span class="o">...</span>ary<span class="p">.</span><span class="nf">size</span><span class="p">)</span><span class="p">.</span><span class="nf">bsearch</span> <span class="p">{</span><span class="o">|</span>i<span class="o">|</span> ary<span class="p">[</span>i<span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">8</span> <span class="p">}</span> <span class="c1"># =&gt; 3
+</span><span class="p">(</span><span class="mi">0</span><span class="o">...</span>ary<span class="p">.</span><span class="nf">size</span><span class="p">)</span><span class="p">.</span><span class="nf">bsearch</span> <span class="p">{</span><span class="o">|</span>i<span class="o">|</span> ary<span class="p">[</span>i<span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">100</span> <span class="p">}</span> <span class="c1"># =&gt; nil
+</span>
+<span class="p">(</span><span class="mf">0.0</span><span class="o">...</span><span class="no">Float</span><span class="o">::</span><span class="no">INFINITY</span><span class="p">)</span><span class="p">.</span><span class="nf">bsearch</span> <span class="p">{</span><span class="o">|</span>x<span class="o">|</span> <span class="no">Math</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span>x<span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="p">}</span> <span class="c1"># =&gt; 1.0
+</span></code></pre>
+<p>
+find-any モードは <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/bsearch.html">bsearch(3)</a> のように動作します。ブロックは真偽値ではなく、以下のような数値を返す必要があります。求める値の範囲がx...y
+（x &lt;= y）であるとします。また、ブロックパラメータの値を v とします。
+</p>
+<ul>
+<li>ブロックパラメータの値が求める値の範囲よりも小さい（v &lt; x）場合: 正の数を返す</li>
+<li>ブロックパラメータの値が求める値の範囲に合致する（x &lt;= v &lt; y）場合: 0 を返す</li>
+<li>ブロックパラメータの値が求める値の範囲よりも大きい（y &lt;= v）場合: 負の数を返す</li>
+</ul>
+<p>
+ブロックの評価結果が 0 になるいずれかの要素を返すか、nil を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+ary <span class="o">=</span> <span class="p">[</span><span class="mi">0</span>, <span class="mi">100</span>, <span class="mi">100</span>, <span class="mi">100</span>, <span class="mi">200</span><span class="p">]</span>
+<span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mi">4</span><span class="p">)</span><span class="p">.</span><span class="nf">bsearch</span> <span class="p">{</span><span class="o">|</span>i<span class="o">|</span> <span class="mi">100</span> <span class="o">-</span> ary<span class="p">[</span>i<span class="p">]</span> <span class="p">}</span> <span class="c1"># =&gt; 1, 2 or 3
+</span><span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mi">4</span><span class="p">)</span><span class="p">.</span><span class="nf">bsearch</span> <span class="p">{</span><span class="o">|</span>i<span class="o">|</span> <span class="mi">300</span> <span class="o">-</span> ary<span class="p">[</span>i<span class="p">]</span> <span class="p">}</span> <span class="c1"># =&gt; nil
+</span><span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mi">4</span><span class="p">)</span><span class="p">.</span><span class="nf">bsearch</span> <span class="p">{</span><span class="o">|</span>i<span class="o">|</span>  <span class="mi">50</span> <span class="o">-</span> ary<span class="p">[</span>i<span class="p">]</span> <span class="p">}</span> <span class="c1"># =&gt; nil
+</span></code></pre>
+<p>
+上記の 2 つのモードを混在して使用しないでください(ブロックの評価結果は常に true/false、数値のいずれかを一貫して返すようにしてください)。また、二分探索の各イテレーションで値がどのような順序で選ばれるかは未規定です。
+</p>
+<p>
+ブロックが与えられなかった場合は、 <a href="../class/-enumerator.html">Enumerator</a> のインスタンスを返します。
+</p>
+<dl>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+ブロックの評価結果が true、false、nil、数値以外であった場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-array/i/bsearch.html">Array#bsearch</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_COVER--3F"><code>cover?(obj) -&gt; bool</code><span class="permalink">[<a href="../method/-range/i/cover=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-cover-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+obj が範囲内に含まれている時に true を返します。
+</p>
+<p>
+<a href="../method/-range/i/include=3f.html">Range#include?</a> と異なり &lt;=&gt; メソッドによる演算により範囲内かどうかを判定します。
+<a href="../method/-range/i/include=3f.html">Range#include?</a> は原則として離散値を扱い、
+Range#cover? は連続値を扱います。（数値については、例外として <a href="../method/-range/i/include=3f.html">Range#include?</a> も連続的に扱います。）
+</p>
+<p>
+<a href="../method/-range/i/exclude_end=3f.html">Range#exclude_end?</a>がfalseなら「begin &lt;= obj &lt;= end」を、
+trueなら「begin &lt;= obj &lt; end」を意味します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+比較対象のオブジェクトを指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">数値は連続的に扱われているため、 include? / cover? が同じ結果を返す</span>
+<code>
+<span class="p">(</span><span class="mf">1.1</span><span class="o">..</span><span class="mf">2.3</span><span class="p">)</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>    <span class="c1"># =&gt; false
+</span><span class="p">(</span><span class="mf">1.1</span><span class="o">..</span><span class="mf">2.3</span><span class="p">)</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="mf">1.1</span><span class="p">)</span>    <span class="c1"># =&gt; true
+</span><span class="p">(</span><span class="mf">1.1</span><span class="o">..</span><span class="mf">2.3</span><span class="p">)</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="mf">1.555</span><span class="p">)</span>  <span class="c1"># =&gt; true
+</span><span class="p">(</span><span class="mf">1.1</span><span class="o">..</span><span class="mf">2.3</span><span class="p">)</span><span class="p">.</span><span class="nf">cover?</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>      <span class="c1"># =&gt; false
+</span><span class="p">(</span><span class="mf">1.1</span><span class="o">..</span><span class="mf">2.3</span><span class="p">)</span><span class="p">.</span><span class="nf">cover?</span><span class="p">(</span><span class="mf">1.1</span><span class="p">)</span>      <span class="c1"># =&gt; true
+</span><span class="p">(</span><span class="mf">1.1</span><span class="o">..</span><span class="mf">2.3</span><span class="p">)</span><span class="p">.</span><span class="nf">cover?</span><span class="p">(</span><span class="mf">1.555</span><span class="p">)</span>    <span class="c1"># =&gt; true
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">String の例</span>
+<code>
+<span class="p">(</span><span class="s1">'b'</span><span class="o">..</span><span class="s1">'d'</span><span class="p">)</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="s1">'d'</span><span class="p">)</span>    <span class="c1"># =&gt; true
+</span><span class="p">(</span><span class="s1">'b'</span><span class="o">..</span><span class="s1">'d'</span><span class="p">)</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="s1">'ba'</span><span class="p">)</span>   <span class="c1"># =&gt; false
+</span><span class="p">(</span><span class="s1">'b'</span><span class="o">..</span><span class="s1">'d'</span><span class="p">)</span><span class="p">.</span><span class="nf">cover?</span><span class="p">(</span><span class="s1">'d'</span><span class="p">)</span>      <span class="c1"># =&gt; true
+</span><span class="p">(</span><span class="s1">'b'</span><span class="o">..</span><span class="s1">'d'</span><span class="p">)</span><span class="p">.</span><span class="nf">cover?</span><span class="p">(</span><span class="s1">'ba'</span><span class="p">)</span>     <span class="c1"># =&gt; true
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">Date, DateTime の例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'date'</span>
+<span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span> <span class="o">-</span> <span class="mi">365</span> <span class="o">..</span> <span class="no">Date</span><span class="p">.</span><span class="nf">today</span> <span class="o">+</span> <span class="mi">365</span><span class="p">)</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span><span class="p">)</span>    <span class="c1">#=&gt; true
+</span><span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span> <span class="o">-</span> <span class="mi">365</span> <span class="o">..</span> <span class="no">Date</span><span class="p">.</span><span class="nf">today</span> <span class="o">+</span> <span class="mi">365</span><span class="p">)</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="no">DateTime</span><span class="p">.</span><span class="nf">now</span><span class="p">)</span>  <span class="c1">#=&gt; false
+</span><span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span> <span class="o">-</span> <span class="mi">365</span> <span class="o">..</span> <span class="no">Date</span><span class="p">.</span><span class="nf">today</span> <span class="o">+</span> <span class="mi">365</span><span class="p">)</span><span class="p">.</span><span class="nf">cover?</span><span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span><span class="p">)</span>      <span class="c1">#=&gt; true
+</span><span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span> <span class="o">-</span> <span class="mi">365</span> <span class="o">..</span> <span class="no">Date</span><span class="p">.</span><span class="nf">today</span> <span class="o">+</span> <span class="mi">365</span><span class="p">)</span><span class="p">.</span><span class="nf">cover?</span><span class="p">(</span><span class="no">DateTime</span><span class="p">.</span><span class="nf">now</span><span class="p">)</span>    <span class="c1">#=&gt; true
+</span></code></pre>
+</dd>
+<dt class="method-heading" id="I_COVER--3F"><code>cover?(range) -&gt; bool</code><span class="permalink">[<a href="../method/-range/i/cover=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-cover-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+2.6 以降の cover? は、<a href="../method/-range/i/include=3f.html">Range#include?</a> や <a href="../method/-range/i/=3d=3d=3d.html">Range#===</a> と異なり、引数に Range オブジェクトを指定して比較できます。
+</p>
+<p>
+引数が Range オブジェクトの場合、引数の範囲が self の範囲に含まれる時に true を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] range:</dt>
+<dd>
+比較対象の Range クラスのインスタンスを指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">引数が Range の例</span>
+<code>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">cover?</span><span class="p">(</span><span class="mi">2</span><span class="o">..</span><span class="mi">3</span><span class="p">)</span>     <span class="c1">#=&gt; true
+</span><span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">cover?</span><span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mi">6</span><span class="p">)</span>     <span class="c1">#=&gt; false
+</span><span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">cover?</span><span class="p">(</span><span class="mi">1</span><span class="o">...</span><span class="mi">6</span><span class="p">)</span>    <span class="c1">#=&gt; true
+</span></code></pre>
+<p>
+「(a..b).cover?(c...d)」のように終端を含まない Range オブジェクトが引数に渡されており、「a &lt;= c &amp;&amp; b &lt; d」を満たし、cが数値ではない(つまり引数の Range の終端を求めるために succ メソッドの呼び出しが必要な)場合、パフォーマンスの問題が起きる可能性があります。
+</p>
+<pre class="highlight ruby">
+<span class="caption">パフォーマンス上の問題が起きる例</span>
+<code>
+<span class="nb">p</span> <span class="p">(</span><span class="s1">'aaaaa'</span><span class="o">..</span><span class="s1">'zzzzy'</span><span class="p">)</span><span class="p">.</span><span class="nf">cover?</span><span class="p">(</span><span class="s1">'aaaaa'</span><span class="o">...</span><span class="s1">'zzzzz'</span><span class="p">)</span> <span class="c1"># =&gt; true
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-range/i/include=3f.html">Range#include?</a>, <a href="../method/-range/i/=3d=3d=3d.html">Range#===</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH"><code>each {|item|  ... } -&gt; self</code><span class="permalink">[<a href="../method/-range/i/each.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-each">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+範囲内の要素に対して繰り返します。
+</p>
+<p>
+Range#each は各要素の succ メソッドを使用してイテレーションするようになりました。
+</p>
+<dl>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+succ メソッドを持たないクラスの範囲オブジェクトに対してこのメソッドを呼んだ場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">10</span><span class="o">..</span><span class="mi">15</span><span class="p">)</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span><span class="o">|</span>n<span class="o">|</span> <span class="nb">print</span> n, <span class="s1">' '</span> <span class="p">}</span>
+<span class="c1"># prints: 10 11 12 13 14 15
+</span>
+<span class="p">(</span><span class="mf">2.5</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span><span class="o">|</span>n<span class="o">|</span> <span class="nb">print</span> n, <span class="s1">' '</span> <span class="p">}</span>
+<span class="c1"># raises: TypeError: can't iterate from Float
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_END"><code>end -&gt; object</code><span class="permalink">[<a href="../method/-range/i/end.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-end">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>last -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+終端の要素を返します。範囲オブジェクトが終端を含むかどうかは関係ありません。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">10</span><span class="o">..</span><span class="mi">20</span><span class="p">)</span><span class="p">.</span><span class="nf">last</span>      <span class="c1"># =&gt; 20
+</span><span class="p">(</span><span class="mi">10</span><span class="o">...</span><span class="mi">20</span><span class="p">)</span><span class="p">.</span><span class="nf">last</span>     <span class="c1"># =&gt; 20
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-range/i/begin.html">Range#begin</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_END"><code>last(n) -&gt; [object]</code><span class="permalink">[<a href="../method/-range/i/end.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-end">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+最後の n 要素を返します。範囲内に要素が含まれない場合は空の配列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] n:</dt>
+<dd>
+取得する要素数を整数で指定します。整数以外のオブジェクトを指定した場合は to_int メソッドによる暗黙の型変換を試みます。
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+引数に整数以外の(暗黙の型変換が行えない)オブジェクトを指定した場合に発生します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+n に負の数を指定した場合に発生します。
+</dd>
+</dl>
+<p>
+[注意] 引数を省略して実行した場合は、終端を含むかどうか
+(<a href="../method/-range/i/exclude_end=3f.html">Range#exclude_end?</a> の戻り値)に関わらず終端の要素を返す事に注意してください。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">10</span><span class="o">..</span><span class="mi">20</span><span class="p">)</span><span class="p">.</span><span class="nf">last</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>   <span class="c1"># =&gt; [18, 19, 20]
+</span><span class="p">(</span><span class="mi">10</span><span class="o">...</span><span class="mi">20</span><span class="p">)</span><span class="p">.</span><span class="nf">last</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># =&gt; [17, 18, 19]
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-range/i/first.html">Range#first</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ENTRIES"><code>to_a -&gt; Array</code><span class="permalink">[<a href="../method/-range/i/entries.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-entries">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>entries -&gt; Array</code></dt>
+<dd class="method-description">
+<p>
+self を配列に変換します。
+</p>
+<dl>
+<dt>[EXCEPTION] RangeError:</dt>
+<dd>
+終端のない Range オブジェクトを変換しようとしたときに発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="p">(</span><span class="mi">5</span><span class="o">..</span><span class="mi">0</span><span class="p">)</span><span class="p">.</span><span class="nf">to_a</span>      <span class="c1"># =&gt; []
+</span><span class="nb">p</span> <span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mi">3</span><span class="p">)</span><span class="p">.</span><span class="nf">to_a</span>      <span class="c1"># =&gt; [0, 1, 2, 3]
+</span><span class="nb">p</span> <span class="p">(</span><span class="s1">'a'</span><span class="o">..</span><span class="s1">'c'</span><span class="p">)</span><span class="p">.</span><span class="nf">to_a</span>  <span class="c1"># =&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]
+</span><span class="nb">p</span> <span class="p">(</span><span class="ss">:a</span><span class="o">..</span><span class="ss">:d</span><span class="p">)</span><span class="p">.</span><span class="nf">to_a</span>  <span class="c1"># =&gt; [:a, :b, :c, :d]
+</span>
+<span class="nb">require</span> <span class="s1">'date'</span>
+<span class="nb">p</span> <span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">1965</span>, <span class="mi">4</span>, <span class="mi">14</span><span class="p">)</span> <span class="o">..</span> <span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">1965</span>, <span class="mi">4</span>, <span class="mi">14</span><span class="p">)</span><span class="p">)</span><span class="p">.</span><span class="nf">to_a</span> <span class="c1"># =&gt; [#&lt;Date: 1965-04-14 ((2438865j,0s,0n),+0s,2299161j)&gt;]
+</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="p">)</span><span class="p">.</span><span class="nf">to_a</span>   <span class="c1"># RangeError: cannot convert endless range to an array
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_EQL--3F"><code>eql?(other) -&gt; bool</code><span class="permalink">[<a href="../method/-range/i/eql=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-eql-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+指定された other が Range クラスのインスタンスであり、始端と終端が eql? メソッドで比較して等しく、<a href="../method/-range/i/exclude_end=3f.html">Range#exclude_end?</a> が同じ場合に
+true を返します。そうでない場合に false を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身と比較したいオブジェクトを指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">2</span><span class="p">)</span><span class="p">.</span><span class="nf">eql?</span><span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">2</span><span class="p">)</span>                 <span class="c1"># =&gt; true
+</span><span class="nb">p</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">2</span><span class="p">)</span><span class="p">.</span><span class="nf">eql?</span><span class="p">(</span><span class="mi">1</span><span class="o">...</span><span class="mi">2</span><span class="p">)</span>                <span class="c1"># =&gt; false
+</span><span class="nb">p</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">2</span><span class="p">)</span><span class="p">.</span><span class="nf">eql?</span><span class="p">(</span><span class="no">Range</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mf">1.0</span>, <span class="mf">2.0</span><span class="p">)</span><span class="p">)</span>  <span class="c1"># =&gt; false
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_EXCLUDE_END--3F"><code>exclude_end? -&gt; bool</code><span class="permalink">[<a href="../method/-range/i/exclude_end=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-exclude_end-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+範囲オブジェクトが終端を含まないとき真を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">exclude_end?</span>     <span class="c1"># =&gt; false
+</span><span class="p">(</span><span class="mi">1</span><span class="o">...</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">exclude_end?</span>    <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_HASH"><code>hash -&gt; Integer</code><span class="permalink">[<a href="../method/-range/i/hash.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+始端と終端のハッシュ値と <a href="../method/-range/i/exclude_end=3f.html">Range#exclude_end?</a> の値からハッシュ値を計算して整数として返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">2</span><span class="p">)</span><span class="p">.</span><span class="nf">hash</span>    <span class="c1"># =&gt; 5646
+</span><span class="nb">p</span> <span class="p">(</span><span class="mi">1</span><span class="o">...</span><span class="mi">2</span><span class="p">)</span><span class="p">.</span><span class="nf">hash</span>   <span class="c1"># =&gt; 16782863
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_INCLUDE--3F"><code>include?(obj) -&gt; bool</code><span class="permalink">[<a href="../method/-range/i/include=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-include-3F">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>member?(obj) -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+obj が範囲内に含まれている時に true を返します。そうでない場合は、false を返します。
+</p>
+<p>
+&lt;=&gt; メソッドによる演算により範囲内かどうかを判定するには <a href="../method/-range/i/cover=3f.html">Range#cover?</a> を使用してください。
+</p>
+<p>
+始端・終端・引数が数値であれば、 <a href="../method/-range/i/cover=3f.html">Range#cover?</a> と同様の動きをします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+比較対象のオブジェクトを指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="p">(</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span> <span class="o">..</span> <span class="s2">"</span><span class="s2">c</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="s2">"</span><span class="s2">b</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; true
+</span><span class="nb">p</span> <span class="p">(</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span> <span class="o">..</span> <span class="s2">"</span><span class="s2">c</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="s2">"</span><span class="s2">B</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; false
+</span><span class="nb">p</span> <span class="p">(</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span> <span class="o">..</span> <span class="s2">"</span><span class="s2">c</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="s2">"</span><span class="s2">ba</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; false
+</span><span class="nb">p</span> <span class="p">(</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span> <span class="o">..</span> <span class="s2">"</span><span class="s2">c</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">cover?</span><span class="p">(</span><span class="s2">"</span><span class="s2">ba</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; true
+</span>
+<span class="nb">p</span> <span class="p">(</span><span class="mi">1</span> <span class="o">..</span> <span class="mi">3</span><span class="p">)</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="mf">1.5</span><span class="p">)</span> <span class="c1"># =&gt; true
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../doc/spec=2fcontrol.html#case">制御構造/case</a>
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-range/i/cover=3f.html">Range#cover?</a>, <a href="../method/-range/i/=3d=3d=3d.html">Range#===</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-range/i/inspect.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-inspect">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self を文字列に変換します(始端と終端のオブジェクトは #inspect メソッドで文字列に変換されます)。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-range/i/to_s.html">Range#to_s</a>
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">inspect</span>      <span class="c1"># =&gt; &quot;1..5&quot;
+</span><span class="p">(</span><span class="s2">"</span><span class="s2">1</span><span class="s2">"</span><span class="o">..</span><span class="s2">"</span><span class="s2">5</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">inspect</span>  <span class="c1"># =&gt; &quot;\&quot;1\&quot;..\&quot;5\&quot;&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_MAX"><code>max -&gt; object | nil</code><span class="permalink">[<a href="../method/-range/i/max.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-max">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>max(n) -&gt; [object]</code></dt>
+<dd class="method-description">
+<p>
+範囲内の最大の値、もしくは最大の n 要素が降順で入った配列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] n:</dt>
+<dd>
+取得する要素数。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">max</span>     <span class="c1"># =&gt; 5
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">max</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># =&gt; [5, 4, 3]
+</span></code></pre>
+<p>
+始端が終端より大きい場合、もしくは、終端を含まない範囲オブジェクトの始端が終端と等しい場合は、引数を指定しない形式では nil を返します。引数を指定する形式では、空の配列を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">2</span><span class="o">..</span><span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">max</span>     <span class="c1"># =&gt; nil
+</span><span class="p">(</span><span class="mi">1</span><span class="o">...</span><span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">max</span>    <span class="c1"># =&gt; nil
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">2</span><span class="o">..</span><span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">max</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># =&gt; []
+</span><span class="p">(</span><span class="mi">1</span><span class="o">...</span><span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">max</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="c1"># =&gt; []
+</span></code></pre>
+</dd>
+<dt class="method-heading" id="I_MAX"><code>max {|a, b| ... } -&gt; object | nil</code><span class="permalink">[<a href="../method/-range/i/max.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-max">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>max(n) {|a, b| ... } -&gt; [object]</code></dt>
+<dd class="method-description">
+<p>
+ブロックの評価結果で範囲内の各要素の大小判定を行い、最大の要素、もしくは最大の n 要素を返します。引数を指定しない形式では、範囲内に要素が存在しなければ nil を返します。引数を指定する形式では、空の配列を返します。
+</p>
+<p>
+ブロックの値は、a &gt; b のとき正、 a == b のとき 0、a &lt; b のとき負の整数を、期待しています。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] n:</dt>
+<dd>
+取得する要素数。
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+ブロックが整数以外を返したときに発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-range/i/last.html">Range#last</a>, <a href="../method/-range/i/min.html">Range#min</a>, <a href="../method/-enumerable/i/max.html">Enumerable#max</a>
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+h <span class="o">=</span> <span class="p">{</span> <span class="mi">1</span> <span class="o">=&gt;</span> <span class="s2">"</span><span class="s2">C</span><span class="s2">"</span>, <span class="mi">2</span> <span class="o">=&gt;</span> <span class="s2">"</span><span class="s2">Go</span><span class="s2">"</span>, <span class="mi">3</span> <span class="o">=&gt;</span> <span class="s2">"</span><span class="s2">Ruby</span><span class="s2">"</span> <span class="p">}</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">3</span><span class="p">)</span><span class="p">.</span><span class="nf">max</span> <span class="p">{</span> <span class="o">|</span>a, b<span class="o">|</span> h<span class="p">[</span>a<span class="p">]</span><span class="p">.</span><span class="nf">length</span> <span class="o">&lt;=&gt;</span> h<span class="p">[</span>b<span class="p">]</span><span class="p">.</span><span class="nf">length</span> <span class="p">}</span>    <span class="c1"># =&gt; 3
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">3</span><span class="p">)</span><span class="p">.</span><span class="nf">max</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>a, b<span class="o">|</span> h<span class="p">[</span>a<span class="p">]</span><span class="p">.</span><span class="nf">length</span> <span class="o">&lt;=&gt;</span> h<span class="p">[</span>b<span class="p">]</span><span class="p">.</span><span class="nf">length</span> <span class="p">}</span> <span class="c1"># =&gt; [3, 2]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_MIN"><code>min -&gt; object | nil</code><span class="permalink">[<a href="../method/-range/i/min.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-min">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>min(n) -&gt; [object]</code></dt>
+<dd class="method-description">
+<p>
+範囲内の最小の値、もしくは最小の n 要素が昇順で入った配列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] n:</dt>
+<dd>
+取得する要素数。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">min</span>    <span class="c1"># =&gt; 1
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">min</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="c1"># =&gt; [1, 2, 3]
+</span></code></pre>
+<p>
+始端が終端より大きい場合、もしくは、終端を含まない範囲オブジェクトの始端が終端と等しい場合は、引数を指定しない形式では nil を返します。引数を指定する形式では、空の配列を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">2</span><span class="o">..</span><span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">min</span>     <span class="c1"># =&gt; nil
+</span><span class="p">(</span><span class="mi">1</span><span class="o">...</span><span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">min</span>    <span class="c1"># =&gt; nil
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">2</span><span class="o">..</span><span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">min</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># =&gt; []
+</span><span class="p">(</span><span class="mi">1</span><span class="o">...</span><span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">min</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="c1"># =&gt; []
+</span></code></pre>
+</dd>
+<dt class="method-heading" id="I_MIN"><code>min {|a, b| ... } -&gt; object | nil</code><span class="permalink">[<a href="../method/-range/i/min.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-min">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>min(n) {|a, b| ... } -&gt; [object]</code></dt>
+<dd class="method-description">
+<p>
+ブロックの評価結果で範囲内の各要素の大小判定を行い、最小の要素、もしくは最小の n 要素を返します。引数を指定しない形式では、範囲内に要素が存在しなければ
+nil を返します。引数を指定する形式では、空の配列を返します。
+</p>
+<p>
+ブロックの値は、a &gt; b のとき正、a == b のとき 0、 a &lt; b のとき負の整数を、期待しています。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] n:</dt>
+<dd>
+取得する要素数。
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+ブロックが整数以外を返したときに発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-range/i/first.html">Range#first</a>, <a href="../method/-range/i/max.html">Range#max</a>, <a href="../method/-enumerable/i/min.html">Enumerable#min</a>
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+h <span class="o">=</span> <span class="p">{</span> <span class="mi">1</span> <span class="o">=&gt;</span> <span class="s2">"</span><span class="s2">C</span><span class="s2">"</span>, <span class="mi">2</span> <span class="o">=&gt;</span> <span class="s2">"</span><span class="s2">Go</span><span class="s2">"</span>, <span class="mi">3</span> <span class="o">=&gt;</span> <span class="s2">"</span><span class="s2">Ruby</span><span class="s2">"</span> <span class="p">}</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">3</span><span class="p">)</span><span class="p">.</span><span class="nf">min</span> <span class="p">{</span> <span class="o">|</span>a, b<span class="o">|</span> h<span class="p">[</span>a<span class="p">]</span><span class="p">.</span><span class="nf">length</span> <span class="o">&lt;=&gt;</span> h<span class="p">[</span>b<span class="p">]</span><span class="p">.</span><span class="nf">length</span> <span class="p">}</span>    <span class="c1"># =&gt; 1
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">3</span><span class="p">)</span><span class="p">.</span><span class="nf">min</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>a, b<span class="o">|</span> h<span class="p">[</span>a<span class="p">]</span><span class="p">.</span><span class="nf">length</span> <span class="o">&lt;=&gt;</span> h<span class="p">[</span>b<span class="p">]</span><span class="p">.</span><span class="nf">length</span> <span class="p">}</span> <span class="c1"># =&gt; [1, 2]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_MINMAX"><code>minmax -&gt; [object, object]</code><span class="permalink">[<a href="../method/-range/i/minmax.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-minmax">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>minmax {|a, b| ... } -&gt; [object, object]</code></dt>
+<dd class="method-description">
+<p>
+範囲内の要素のうち、最小の要素と最大の要素を要素とするサイズ 2 の配列を返します。
+</p>
+<p>
+一つ目の形式では、全要素が互いに &lt;=&gt; メソッドで比較できることを仮定しています。
+</p>
+<p>
+二つ目の形式では、要素同士の比較をブロックを用いて行います。ブロックの値は、a &gt; b のとき正、 a == b のとき 0、a &lt; b のとき負の整数を、期待しています。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">3</span><span class="p">)</span><span class="p">.</span><span class="nf">minmax</span> <span class="c1"># =&gt; [1, 3]
+</span>
+h <span class="o">=</span> <span class="p">{</span> <span class="mi">1</span> <span class="o">=&gt;</span> <span class="s2">"</span><span class="s2">C</span><span class="s2">"</span>, <span class="mi">2</span> <span class="o">=&gt;</span> <span class="s2">"</span><span class="s2">Go</span><span class="s2">"</span>, <span class="mi">3</span> <span class="o">=&gt;</span> <span class="s2">"</span><span class="s2">Ruby</span><span class="s2">"</span> <span class="p">}</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">3</span><span class="p">)</span><span class="p">.</span><span class="nf">minmax</span> <span class="p">{</span> <span class="o">|</span>a, b<span class="o">|</span> h<span class="p">[</span>a<span class="p">]</span><span class="p">.</span><span class="nf">length</span> <span class="o">&lt;=&gt;</span> h<span class="p">[</span>b<span class="p">]</span><span class="p">.</span><span class="nf">length</span> <span class="p">}</span> <span class="c1"># =&gt; [1, 3]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SIZE"><code>size -&gt; Integer | Float::INFINITY | nil</code><span class="permalink">[<a href="../method/-range/i/size.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-size">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+範囲内の要素数を返します。始端、終端のいずれかのオブジェクトが
+<a href="../class/-numeric.html">Numeric</a> のサブクラスのオブジェクトではない場合には nil を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">10</span><span class="o">..</span><span class="mi">20</span><span class="p">)</span><span class="p">.</span><span class="nf">size</span>    <span class="c1"># =&gt; 11
+</span><span class="p">(</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span><span class="o">..</span><span class="s2">"</span><span class="s2">z</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">size</span>  <span class="c1"># =&gt; nil
+</span><span class="p">(</span><span class="o">-</span><span class="no">Float</span><span class="o">::</span><span class="no">INFINITY</span><span class="o">..</span><span class="no">Float</span><span class="o">::</span><span class="no">INFINITY</span><span class="p">)</span><span class="p">.</span><span class="nf">size</span> <span class="c1"># =&gt; Infinity
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_S"><code>to_s -&gt; String</code><span class="permalink">[<a href="../method/-range/i/to_s.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Range.html#method-i-to_s">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self を文字列に変換します(始端と終端のオブジェクトは #to_s メソッドで文字列に変換されます)。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-range/i/inspect.html">Range#inspect</a>
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">5</span><span class="p">)</span><span class="p">.</span><span class="nf">to_s</span>      <span class="c1"># =&gt; &quot;1..5&quot;
+</span><span class="p">(</span><span class="s2">"</span><span class="s2">1</span><span class="s2">"</span><span class="o">..</span><span class="s2">"</span><span class="s2">5</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">to_s</span>  <span class="c1"># =&gt; &quot;1..5&quot;
+</span></code></pre>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class RDoc::Markup (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="RDoc 形式のドキュメントを目的の形式に変換するためのクラスです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/rdoc=2fmarkup.html">rdoc/markupライブラリ</a>
+      </li>
+      <li>
+        RDoc::Markupクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class RDoc::Markup</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+      <li>
+        RDoc::Markup
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+RDoc 形式のドキュメントを目的の形式に変換するためのクラスです。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'rdoc/markup/to_html'
+
+h = RDoc::Markup::ToHtml.new
+puts h.convert(input_string)
+</pre>
+<p>
+独自のフォーマットを行うようにパーサを拡張する事もできます。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'rdoc/markup'
+require 'rdoc/markup/to_html'
+
+class WikiHtml &lt; RDoc::Markup::ToHtml
+  # WikiWord のフォントを赤く表示。
+  def handle_special_WIKIWORD(special)
+    &quot;&lt;font color=red&gt;&quot; + special.text + &quot;&lt;/font&gt;&quot;
+  end
+end
+
+m = RDoc::Markup.new
+# { 〜 } までを :STRIKE でフォーマットする。
+m.add_word_pair(&quot;{&quot;, &quot;}&quot;, :STRIKE)
+# &lt;no&gt; 〜 &lt;/no&gt; までを :STRIKE でフォーマットする。
+m.add_html(&quot;no&quot;, :STRIKE)
+
+# WikiWord を追加。
+m.add_special(/\b([A-Z][a-z]+[A-Z]\w+)/, :WIKIWORD)
+
+wh = WikiHtml.new(m)
+# :STRIKE のフォーマットを &lt;strike&gt; 〜 &lt;/strike&gt; に指定。
+wh.add_tag(:STRIKE, &quot;&lt;strike&gt;&quot;, &quot;&lt;/strike&gt;&quot;)
+
+puts &quot;&lt;body&gt;#{wh.convert ARGF.read}&lt;/body&gt;&quot;
+</pre>
+<p>
+変換する形式を変更する場合、フォーマッタ(例. <a href="../class/-r-doc=3a=3a-markup=3a=3a-to-html.html">RDoc::Markup::ToHtml</a>)
+を変更、拡張する必要があります。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_NEW">new</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_ADD_HTML">add_html</a></li>
+
+<li><a href="#I_ADD_SPECIAL">add_special</a></li>
+
+<li><a href="#I_ADD_WORD_PAIR">add_word_pair</a></li>
+
+<li><a href="#I_ATTRIBUTE_MANAGER">attribute_manager</a></li>
+
+<li><a href="#I_CONTENT">content</a></li>
+
+<li><a href="#I_CONVERT">convert</a></li>
+
+<li><a href="#I_GET_LINE_TYPES">get_line_types</a></li>
+
+</ul>
+</dd>
+
+<dt>定数</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#C_-L-A-B-E-L_-L-I-S-T_-R-E">LABEL_LIST_RE</a></li>
+
+<li><a href="#C_-S-I-M-P-L-E_-L-I-S-T_-R-E">SIMPLE_LIST_RE</a></li>
+
+<li><a href="#C_-S-P-A-C-E">SPACE</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(attribute_manager = nil) -&gt; RDoc::Markup</code><span class="permalink">[<a href="../method/-r-doc=3a=3a-markup/s/new.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/RDoc/Markup.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を初期化します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] attribute_manager:</dt>
+<dd>
+<a href="../class/-rdoc=3a=3a-attribute-manager.html">Rdoc::AttributeManager</a> オブジェクトを指定します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_ADD_HTML"><code>add_html(tag, name) -&gt; ()</code><span class="permalink">[<a href="../method/-r-doc=3a=3a-markup/i/add_html.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/RDoc/Markup.html#method-i-add_html">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+tag で指定したタグをフォーマットの対象にします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] tag:</dt>
+<dd>
+追加するタグ名を文字列で指定します。大文字、小文字のどちらを指定しても同一のものとして扱われます。
+</dd>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+<a href="../class/-s-m=3a=3a-to-html.html">SM::ToHtml</a> などのフォーマッタに識別させる時の名前を
+<a href="../class/-symbol.html">Symbol</a> で指定します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'rdoc/markup/simple_markup'
+require 'rdoc/markup/simple_markup/to_html'
+m = SM::SimpleMarkup.new
+m.add_html(&quot;no&quot;, :STRIKE)
+
+h = SM::ToHtml.new
+h.add_tag(:STRIKE, &quot;&lt;strike&gt;&quot;, &quot;&lt;/strike&gt;&quot;)
+puts m.convert(input_string, h)
+</pre>
+<p>
+変換時に実際にフォーマットを行うには <a href="../method/-s-m=3a=3a-to-html/i/add_tag.html">SM::ToHtml#add_tag</a> のように、フォーマッタ側でも操作を行う必要があります。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ADD_SPECIAL"><code>add_special(pattern, name) -&gt; ()</code><span class="permalink">[<a href="../method/-r-doc=3a=3a-markup/i/add_special.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/RDoc/Markup.html#method-i-add_special">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+pattern で指定した正規表現にマッチする文字列をフォーマットの対象にします。
+</p>
+<p>
+例えば WikiWord のような、<a href="../method/-s-m=3a=3a-simple-markup/i/add_word_pair.html">SM::SimpleMarkup#add_word_pair</a>、
+<a href="../method/-s-m=3a=3a-simple-markup/i/add_html.html">SM::SimpleMarkup#add_html</a> でフォーマットできないものに対して使用します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+正規表現を指定します。
+</dd>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+<a href="../class/-s-m=3a=3a-to-html.html">SM::ToHtml</a> などのフォーマッタに識別させる時の名前を
+<a href="../class/-symbol.html">Symbol</a> で指定します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'rdoc/markup/simple_markup'
+require 'rdoc/markup/simple_markup/to_html'
+
+class WikiHtml &lt; SM::ToHtml
+  def handle_special_WIKIWORD(special)
+    &quot;&lt;font color=red&gt;&quot; + special.text + &quot;&lt;/font&gt;&quot;
+  end
+end
+
+m = SM::SimpleMarkup.new
+m.add_special(/\b([A-Z][a-z]+[A-Z]\w+)/, :WIKIWORD)
+
+h = WikiHtml.new
+puts m.convert(input_string, h)
+</pre>
+<p>
+変換時に実際にフォーマットを行うには SM::ToHtml#accept_special_&lt;name で指定した名前&gt;
+のように、フォーマッタ側でも操作を行う必要があります。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ADD_WORD_PAIR"><code>add_word_pair(start, stop, name) -&gt; ()</code><span class="permalink">[<a href="../method/-r-doc=3a=3a-markup/i/add_word_pair.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/RDoc/Markup.html#method-i-add_word_pair">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+start と stop ではさまれる文字列(例. *bold*)をフォーマットの対象にします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] start:</dt>
+<dd>
+開始となる文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] stop:</dt>
+<dd>
+終了となる文字列を指定します。start と同じ文字列にする事も可能です。
+</dd>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+<a href="../class/-s-m=3a=3a-to-html.html">SM::ToHtml</a> などのフォーマッタに識別させる時の名前を
+<a href="../class/-symbol.html">Symbol</a> で指定します。
+</dd>
+<dt>[EXCEPTION] RuntimeError:</dt>
+<dd>
+start に &quot;&lt;&quot; で始まる文字列を指定した場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'rdoc/markup/simple_markup'
+require 'rdoc/markup/simple_markup/to_html'
+m = SM::SimpleMarkup.new
+m.add_word_pair(&quot;{&quot;, &quot;}&quot;, :STRIKE)
+
+h = SM::ToHtml.new
+h.add_tag(:STRIKE, &quot;&lt;strike&gt;&quot;, &quot;&lt;/strike&gt;&quot;)
+puts m.convert(input_string, h)
+</pre>
+<p>
+変換時に実際にフォーマットを行うには <a href="../method/-s-m=3a=3a-to-html/i/add_tag.html">SM::ToHtml#add_tag</a> のように、フォーマッタ側でも操作を行う必要があります。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ATTRIBUTE_MANAGER"><code>attribute_manager -&gt; RDoc::AttributeManager</code><span class="permalink">[<a href="../method/-r-doc=3a=3a-markup/i/attribute_manager.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/RDoc/Markup.html#method-i-attribute_manager">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身の <a href="../class/-r-doc=3a=3a-attribute-manager.html">RDoc::AttributeManager</a> オブジェクトを返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CONTENT"><code>content -&gt; String</code><span class="permalink">[<a href="../method/-r-doc=3a=3a-markup/i/content.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/RDoc/Markup.html#method-i-content">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+変換する文字列を返します。
+</p>
+<p>
+rdoc ライブラリのデバッグ用途に使用します。
+<a href="../method/-s-m=3a=3a-simple-markup/i/convert.html">SM::SimpleMarkup#convert</a> の後に実行します。
+</p>
+<p>
+変換のために加工したオブジェクトを改行で連結したものを返すため、変換前の文字列と結果が異なる事があります。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-s-m=3a=3a-simple-markup/i/convert.html">SM::SimpleMarkup#convert</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CONVERT"><code>convert(str, formatter) -&gt; object | &quot;&quot;</code><span class="permalink">[<a href="../method/-r-doc=3a=3a-markup/i/convert.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/RDoc/Markup.html#method-i-convert">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+str で指定された文字列を formatter に変換させます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+変換する文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] formatter:</dt>
+<dd>
+<a href="../class/-s-m=3a=3a-to-html.html">SM::ToHtml</a>、<a href="../class/-s-m=3a=3a-to-la-te-x.html">SM::ToLaTeX</a> などのインスタンスを指定します。
+</dd>
+</dl>
+<p>
+変換結果は formatter によって文字列や配列を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_GET_LINE_TYPES"><code>get_line_types -&gt; [Symbol]</code><span class="permalink">[<a href="../method/-r-doc=3a=3a-markup/i/get_line_types.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/RDoc/Markup.html#method-i-get_line_types">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+変換する文字列の各行のタイプを <a href="../class/-symbol.html">Symbol</a> の配列で返します。
+</p>
+<p>
+rdoc ライブラリのデバッグ用途に使用します。
+<a href="../method/-s-m=3a=3a-simple-markup/i/convert.html">SM::SimpleMarkup#convert</a> の後に実行します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-s-m=3a=3a-simple-markup/i/convert.html">SM::SimpleMarkup#convert</a>
+</p>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-L-A-B-E-L_-L-I-S-T_-R-E"><code>LABEL_LIST_RE -&gt; Regexp</code><span class="permalink">[<a href="../method/-r-doc=3a=3a-markup/c/-l-a-b-e-l_-l-i-s-t_-r-e.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/RDoc/Markup.html#method-c-LABEL_LIST_RE">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ラベル付きリストにマッチする正規表現です。ライブラリの内部で使用します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-S-I-M-P-L-E_-L-I-S-T_-R-E"><code>SIMPLE_LIST_RE -&gt; Regexp</code><span class="permalink">[<a href="../method/-r-doc=3a=3a-markup/c/-s-i-m-p-l-e_-l-i-s-t_-r-e.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/RDoc/Markup.html#method-c-SIMPLE_LIST_RE">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+リストにマッチする正規表現です。ライブラリの内部で使用します。
+</p>
+<p>
+ラベルの有無を問わずマッチします。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-S-P-A-C-E"><code>SPACE -&gt; ?\s</code><span class="permalink">[<a href="../method/-r-doc=3a=3a-markup/c/-s-p-a-c-e.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/RDoc/Markup.html#method-c-SPACE">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+空白文字です。?\s を返します。ライブラリの内部で使用します。
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

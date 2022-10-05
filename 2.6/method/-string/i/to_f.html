@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>String#to_f (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="文字列を 10 進数表現と解釈して、浮動小数点数 [[c:Float]] に変換します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-string.html">Stringクラス</a>
+      </li>
+      <li>
+        to_f 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method String#to_f</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_TO_F"><code>to_f -&gt; Float</code><span class="permalink">[<a href="../../../method/-string/i/to_f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/String.html#method-i-to_f">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列を 10 進数表現と解釈して、浮動小数点数 <a href="../../../class/-float.html">Float</a> に変換します。
+</p>
+<p>
+浮動小数点数とみなせなくなるところまでを変換対象とします。途中に変換できないような文字列がある場合、それより先の文字列は無視されます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="s2">"</span><span class="s2">-10</span><span class="s2">"</span><span class="p">.</span><span class="nf">to_f</span>   <span class="c1"># =&gt; -10.0
+</span><span class="nb">p</span> <span class="s2">"</span><span class="s2">10e2</span><span class="s2">"</span><span class="p">.</span><span class="nf">to_f</span>  <span class="c1"># =&gt; 1000.0
+</span><span class="nb">p</span> <span class="s2">"</span><span class="s2">1e-2</span><span class="s2">"</span><span class="p">.</span><span class="nf">to_f</span>  <span class="c1"># =&gt; 0.01
+</span><span class="nb">p</span> <span class="s2">"</span><span class="s2">.1</span><span class="s2">"</span><span class="p">.</span><span class="nf">to_f</span>    <span class="c1"># =&gt; 0.1
+</span>
+<span class="nb">p</span> <span class="s2">"</span><span class="s2">1_0_0</span><span class="s2">"</span><span class="p">.</span><span class="nf">to_f</span> <span class="c1"># =&gt; 100.0  # 数値リテラルと同じように区切りに _ を使える
+</span><span class="nb">p</span> <span class="s2">"</span><span class="s2"> \n10</span><span class="s2">"</span><span class="p">.</span><span class="nf">to_f</span> <span class="c1"># =&gt; 10.0   # 先頭の空白・改行は無視される
+</span><span class="nb">p</span> <span class="s2">"</span><span class="s2">7xa.5</span><span class="s2">"</span><span class="p">.</span><span class="nf">to_f</span> <span class="c1"># =&gt; 7.0
+</span></code></pre>
+<p>
+以下の例は、先頭に浮動小数点数とみなせるものがないため、0.0 を返します。変換対象が空文字列のケースでも、0.0 を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="s2">"</span><span class="s2">"</span><span class="p">.</span><span class="nf">to_f</span>      <span class="c1"># =&gt; 0.0
+</span><span class="nb">p</span> <span class="s2">"</span><span class="s2">nan</span><span class="s2">"</span><span class="p">.</span><span class="nf">to_f</span>   <span class="c1"># =&gt; 0.0
+</span><span class="nb">p</span> <span class="s2">"</span><span class="s2">INF</span><span class="s2">"</span><span class="p">.</span><span class="nf">to_f</span>   <span class="c1"># =&gt; 0.0
+</span><span class="nb">p</span> <span class="s2">"</span><span class="s2">-Inf</span><span class="s2">"</span><span class="p">.</span><span class="nf">to_f</span>  <span class="c1"># =&gt; 0.0
+</span></code></pre>
+<p>
+変換後の <a href="../../../class/-float.html">Float</a> が有限の値を取れないときは、<a href="../../../method/-float/c/-i-n-f-i-n-i-t-y.html">Float::INFINITY</a> を用います。このとき、全ての警告を有効にすると、警告が表示されます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1">#!ruby -W2
+</span>
+<span class="nb">p</span> <span class="p">(</span><span class="s2">"</span><span class="s2">10</span><span class="s2">"</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span><span class="p">.</span><span class="nf">to_f</span>   <span class="c1"># =&gt; Infinity
+</span><span class="c1"># warning: Float 10101010101010101010... out of range
+</span></code></pre>
+<p>
+なお、このメソッドとは逆に、数値を文字列に変換するには
+<a href="../../../method/-kernel/m/sprintf.html">Kernel.#sprintf</a>, <a href="../../../method/-string/i/=25.html">String#%</a>, <a href="../../../method/-integer/i/to_s.html">Integer#to_s</a>
+を使用します。
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-string/i/hex.html">String#hex</a>, <a href="../../../method/-string/i/oct.html">String#oct</a>, <a href="../../../method/-string/i/to_i.html">String#to_i</a>,
+<a href="../../../method/-kernel/m/-integer.html">Kernel.#Integer</a>, <a href="../../../method/-kernel/m/-float.html">Kernel.#Float</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

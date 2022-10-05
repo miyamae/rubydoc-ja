@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Thread#[] (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="name に対応したスレッドに固有のデータを取り出します。
+name に対応するスレッド固有データがなければ nil を返し
+ます。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-thread.html">Threadクラス</a>
+      </li>
+      <li>
+        [] 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Thread#[]</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_--5B--5D"><code>self[name] -&gt; object | nil</code><span class="permalink">[<a href="../../../method/-thread/i/=5b=5d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Thread.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+name に対応したスレッドに固有のデータを取り出します。
+name に対応するスレッド固有データがなければ nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+スレッド固有データのキーを文字列か <a href="../../../class/-symbol.html">Symbol</a> で指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">[</span>
+  <span class="no">Thread</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="no">Thread</span><span class="p">.</span><span class="nf">current</span><span class="p">[</span><span class="s2">"</span><span class="s2">name</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"</span><span class="s2">A</span><span class="s2">"</span> <span class="p">}</span>,
+  <span class="no">Thread</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="no">Thread</span><span class="p">.</span><span class="nf">current</span><span class="p">[</span><span class="ss">:name</span><span class="p">]</span>  <span class="o">=</span> <span class="s2">"</span><span class="s2">B</span><span class="s2">"</span> <span class="p">}</span>,
+  <span class="no">Thread</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="no">Thread</span><span class="p">.</span><span class="nf">current</span><span class="p">[</span><span class="s2">"</span><span class="s2">name</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"</span><span class="s2">C</span><span class="s2">"</span> <span class="p">}</span>
+<span class="p">]</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span>th<span class="o">|</span>
+  th<span class="p">.</span><span class="nf">join</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="si">#{</span><span class="n">th</span><span class="p">.</span><span class="nf">inspect</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">th</span><span class="p">[</span><span class="ss">:name</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+<span class="k">end</span>
+
+<span class="c1"># =&gt; #&lt;Thread:0x00000002a54220 dead&gt;: A
+</span><span class="c1"># =&gt; #&lt;Thread:0x00000002a541a8 dead&gt;: B
+</span><span class="c1"># =&gt; #&lt;Thread:0x00000002a54130 dead&gt;: C
+</span></code></pre>
+<p>
+<a href="../../../method/-thread/i/=5b=5d.html">Thread#[]</a> と <a href="../../../method/-thread/i/=5b=5d=3d.html">Thread#[]=</a> を用いたスレッド固有の変数は
+Fiber を切り替えると異なる変数を返す事に注意してください。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">def</span> <span class="nf">meth</span><span class="p">(</span>newvalue<span class="p">)</span>
+  <span class="k">begin</span>
+    oldvalue <span class="o">=</span> <span class="no">Thread</span><span class="p">.</span><span class="nf">current</span><span class="p">[</span><span class="ss">:name</span><span class="p">]</span>
+    <span class="no">Thread</span><span class="p">.</span><span class="nf">current</span><span class="p">[</span><span class="ss">:name</span><span class="p">]</span> <span class="o">=</span> newvalue
+    <span class="k">yield</span>
+  <span class="k">ensure</span>
+    <span class="no">Thread</span><span class="p">.</span><span class="nf">current</span><span class="p">[</span><span class="ss">:name</span><span class="p">]</span> <span class="o">=</span> oldvalue
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+この関数に与えるブロックがFiberを切り替える場合は動的スコープとしては正しく動作しません。
+</p>
+<pre class="highlight ruby">
+<code>
+f <span class="o">=</span> <span class="no">Fiber</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span>
+  meth<span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+    <span class="no">Fiber</span><span class="p">.</span><span class="nf">yield</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+meth<span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+  f<span class="p">.</span><span class="nf">resume</span>
+<span class="p">}</span>
+f<span class="p">.</span><span class="nf">resume</span>
+<span class="nb">p</span> <span class="no">Thread</span><span class="p">.</span><span class="nf">current</span><span class="p">[</span><span class="ss">:name</span><span class="p">]</span>
+<span class="c1"># =&gt; nil if fiber-local
+</span><span class="c1"># =&gt; 2 if thread-local (The value 2 is leaked to outside of meth method.)
+</span></code></pre>
+<p>
+Fiber を切り替えても同じ変数を返したい場合は
+<a href="../../../method/-thread/i/thread_variable_get.html">Thread#thread_variable_get</a> と <a href="../../../method/-thread/i/thread_variable_set.html">Thread#thread_variable_set</a>
+を使用してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-thread/i/fetch.html">Thread#fetch</a>, <a href="../../../method/-thread/i/=5b=5d=3d.html">Thread#[]=</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

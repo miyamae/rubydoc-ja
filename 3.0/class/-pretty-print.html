@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class PrettyPrint (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="pretty printing アルゴリズムのためのクラスです。
+改行の位置を探し、きれいなインデントを施します。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/prettyprint.html">prettyprintライブラリ</a>
+      </li>
+      <li>
+        PrettyPrintクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class PrettyPrint</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+      <li>
+        PrettyPrint
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+pretty printing アルゴリズムのためのクラスです。改行の位置を探し、きれいなインデントを施します。
+</p>
+<p>
+デフォルトでは、このクラスは文字列を扱います。また、文字1バイトが出力幅の中で1カラムを占めると仮定しています。しかし、以下のメソッドに対して適切な引数を与えることで、そうでない場合にも利用できます。
+</p>
+<ul>
+<li><a href="../method/-pretty-print/s/new.html">PrettyPrint.new</a>: 出力バッファ、空白の生成をするブロックや改行オブジェクトを設定できます。</li>
+<li><a href="../method/-pretty-print/i/text.html">PrettyPrint#text</a>: 幅を設定できます。</li>
+<li><a href="../method/-pretty-print/i/breakable.html">PrettyPrint#breakable</a></li>
+</ul>
+<p>
+ですので、このクラスは以下のようなことにも応用が可能です。
+</p>
+<ul>
+<li>proportional font を使ったテキストの整形</li>
+<li>出力幅とバイト数が異なるような多バイト文字</li>
+<li>文字以外の整形</li>
+</ul>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_FORMAT">format</a></li>
+
+<li><a href="#S_NEW">new</a></li>
+
+<li><a href="#S_SINGLELINE_FORMAT">singleline_format</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_BREAKABLE">breakable</a></li>
+
+<li><a href="#I_FLUSH">flush</a></li>
+
+<li><a href="#I_GENSPACE">genspace</a></li>
+
+<li><a href="#I_GROUP">group</a></li>
+
+<li><a href="#I_INDENT">indent</a></li>
+
+<li><a href="#I_MAXWIDTH">maxwidth</a></li>
+
+<li><a href="#I_NEST">nest</a></li>
+
+<li><a href="#I_NEWLINE">newline</a></li>
+
+<li><a href="#I_OUTPUT">output</a></li>
+
+<li><a href="#I_TEXT">text</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_FORMAT"><code>format(output = '', maxwidth = 79, newline = &quot;\n&quot;, genspace = lambda{|n| ' ' * n}) {|pp| ...} -&gt; object</code><span class="permalink">[<a href="../method/-pretty-print/s/format.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/PrettyPrint.html#method-c-format">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+PrettyPrint オブジェクトを生成し、それを引数としてブロックを実行します。与えられた output を返します。
+</p>
+<p>
+以下と同じ働きをするもので簡便のために用意されています。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'prettyprint'</span>
+
+<span class="k">begin</span>
+  pp <span class="o">=</span> <span class="no">PrettyPrint</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>output, maxwidth, newline, <span class="o">&amp;</span>genspace<span class="p">)</span>
+  <span class="o">...</span>
+  pp<span class="p">.</span><span class="nf">flush</span>
+  output
+<span class="k">end</span>
+</code></pre>
+<dl>
+<dt class='method-param'>[PARAM] output:</dt>
+<dd>
+出力先を指定します。output は &lt;&lt; メソッドを持っていなければなりません。
+</dd>
+<dt class='method-param'>[PARAM] maxwidth:</dt>
+<dd>
+行の最大幅を指定します。ただし、改行できないものが渡された場合は、実際の出力幅は maxwidth を越えることがあります。
+</dd>
+<dt class='method-param'>[PARAM] newline:</dt>
+<dd>
+改行に使われます。
+</dd>
+<dt class='method-param'>[PARAM] genspace:</dt>
+<dd>
+空白の生成に使われる <a href="../class/-proc.html">Proc</a> オブジェクトを指定します。生成したい空白の幅を表す整数を引数として呼ばれます。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_NEW"><code>new(output = '', maxwidth = 79, newline = &quot;\n&quot;) -&gt; PrettyPrint</code><span class="permalink">[<a href="../method/-pretty-print/s/new.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/PrettyPrint.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>new(output = '', maxwidth = 79, newline = &quot;\n&quot;) {|width| ...} -&gt; PrettyPrint</code></dt>
+<dd class="method-description">
+<p>
+pretty printing のためのバッファを生成します。
+output は出力先です。output は &lt;&lt; メソッドを持っていなければなりません。
+&lt;&lt; メソッドには
+</p>
+<ul>
+<li><a href="../method/-pretty-print/i/text.html">PrettyPrint#text</a> の第1引数 obj</li>
+<li><a href="../method/-pretty-print/i/breakable.html">PrettyPrint#breakable</a> の第1引数 sep</li>
+<li><a href="../method/-pretty-print/s/new.html">PrettyPrint.new</a> の第3引数 newline</li>
+<li><a href="../method/-pretty-print/s/new.html">PrettyPrint.new</a> に与えたブロックを評価した結果</li>
+</ul>
+<p>
+のどれかひとつが引数として与えられます。
+</p>
+<p>
+ブロックが指定された場合は、空白を生成するために使われます。ブロックは、生成したい空白の幅を表す整数を引数として呼ばれます。ブロックが指定されない場合は、空白を生成するために {|width| ' ' * width} が使われます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] output:</dt>
+<dd>
+出力先を指定します。output は &lt;&lt; メソッドを持っていなければなりません。
+</dd>
+<dt class='method-param'>[PARAM] maxwidth:</dt>
+<dd>
+行の最大幅を指定します。ただし、改行できないものが渡された場合は、実際の出力幅は maxwidth を越えることがあります。
+</dd>
+<dt class='method-param'>[PARAM] newline:</dt>
+<dd>
+改行に使われます。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_SINGLELINE_FORMAT"><code>singleline_format(output = '', maxwidth = 79, newline = &quot;\n&quot;, genspace = lambda{|n| ' ' * n}) {|pp| ...} -&gt; object</code><span class="permalink">[<a href="../method/-pretty-print/s/singleline_format.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/PrettyPrint.html#method-c-singleline_format">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+PrettyPrint オブジェクトを生成し、それを引数としてブロックを実行します。
+<a href="../method/-pretty-print/s/format.html">PrettyPrint.format</a> に似ていますが、改行しません。
+</p>
+<p>
+引数 maxwidth, newline と genspace は無視されます。ブロック中の breakable の実行は、改行せずに text の実行であるかのように扱います。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] output:</dt>
+<dd>
+出力先を指定します。output は &lt;&lt; メソッドを持っていなければなりません。
+</dd>
+<dt class='method-param'>[PARAM] maxwidth:</dt>
+<dd>
+無視されます。
+</dd>
+<dt class='method-param'>[PARAM] newline:</dt>
+<dd>
+無視されます。
+</dd>
+<dt class='method-param'>[PARAM] genspace:</dt>
+<dd>
+無視されます。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_BREAKABLE"><code>breakable(sep = ' ') -&gt; ()</code><span class="permalink">[<a href="../method/-pretty-print/i/breakable.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/PrettyPrint.html#method-i-breakable">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>breakable(sep, width = sep.length) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+「必要ならここで改行出来る」ということを自身に通知します。もしその位置で改行されなければ、width カラムのテキスト sep が出力の際にそこに挿入されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] sep:</dt>
+<dd>
+改行が起きなかった場合に挿入されるテキストを文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] width:</dt>
+<dd>
+テキスト sep は width カラムであると仮定されます。指定されなければ、
+sep.length が利用されます。例えば sep が多バイト文字の際に指定する必要があるかも知れません。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_FLUSH"><code>flush -&gt; ()</code><span class="permalink">[<a href="../method/-pretty-print/i/flush.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/PrettyPrint.html#method-i-flush">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+バッファされたデータを出力します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_GENSPACE"><code>genspace -&gt; Proc</code><span class="permalink">[<a href="../method/-pretty-print/i/genspace.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/PrettyPrint.html#method-i-genspace">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+空白を生成する Proc を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_GROUP"><code>group(indent = 0, open_obj = '', close_obj = '', open_width = open_obj.length, close_width = close_obj.length) {...} -&gt; ()</code><span class="permalink">[<a href="../method/-pretty-print/i/group.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/PrettyPrint.html#method-i-group">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+与えられたブロックを実行します。ブロック内で自身に追加される文字列やオブジェクトは、1行にまとめて表示してもよい同じグループに属すると仮定されます。
+</p>
+<p>
+もう少し詳しく説明します。pretty printing アルゴリズムはインデントと改行を、ツリー構造を作ることによって決定します。そして、group メソッドは子ノードの作成と子ノードのインデントの深さの決定を担当します。
+</p>
+<p>
+同じノード内で呼ばれた breakable は、改行するならば全て同時に改行します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] indent:</dt>
+<dd>
+グループのインデントの深さを指定します。
+</dd>
+<dt class='method-param'>[PARAM] open_obj:</dt>
+<dd>
+指定された場合、self.text(open_obj, open_width) がブロックが実行される前に呼ばれます。開き括弧などを出力するのに使用されます。
+</dd>
+<dt class='method-param'>[PARAM] close_obj:</dt>
+<dd>
+指定された場合、self.text(close_obj, close_width) がブロックが実行された後に呼ばれます。閉じ括弧などを出力するのに使用されます。
+</dd>
+<dt class='method-param'>[PARAM] open_width:</dt>
+<dd>
+open_obj のカラムを指定します。
+</dd>
+<dt class='method-param'>[PARAM] close_width:</dt>
+<dd>
+close_obj のカラムを指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_INDENT"><code>indent -&gt; Integer</code><span class="permalink">[<a href="../method/-pretty-print/i/indent.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/PrettyPrint.html#method-i-indent">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在のインデントの深さを返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_MAXWIDTH"><code>maxwidth -&gt; Integer</code><span class="permalink">[<a href="../method/-pretty-print/i/maxwidth.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/PrettyPrint.html#method-i-maxwidth">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身の幅を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_NEST"><code>nest(indent) {...} -&gt; ()</code><span class="permalink">[<a href="../method/-pretty-print/i/nest.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/PrettyPrint.html#method-i-nest">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身の現在のインデントを indent だけ増加させてから、ブロックを実行し、元に戻します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] indent:</dt>
+<dd>
+インデントの増加分を整数で指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_NEWLINE"><code>newline -&gt; String</code><span class="permalink">[<a href="../method/-pretty-print/i/newline.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/PrettyPrint.html#method-i-newline">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身の改行文字を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OUTPUT"><code>output -&gt; object</code><span class="permalink">[<a href="../method/-pretty-print/i/output.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/PrettyPrint.html#method-i-output">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身の output を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TEXT"><code>text(obj) -&gt; ()</code><span class="permalink">[<a href="../method/-pretty-print/i/text.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/PrettyPrint.html#method-i-text">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>text(obj, width = obj.length) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+obj を width カラムのテキストとして自身に追加します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+自身に追加するテキストを文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] width:</dt>
+<dd>
+obj のカラムを指定します。指定されなかった場合、obj.length が利用されます。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

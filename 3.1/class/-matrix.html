@@ -1,0 +1,2411 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class Matrix (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="数[[c:Numeric]]を要素とする行列を扱うクラスです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/matrix.html">matrixライブラリ</a>
+      </li>
+      <li>
+        Matrixクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class Matrix</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-enumerable.html">Enumerable</a>
+        </li>
+        
+      
+      <li>
+        Matrix
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+数<a href="../class/-numeric.html">Numeric</a>を要素とする行列を扱うクラスです。
+</p>
+<p>
+行列
+</p>
+<p>
+m * n 個の数a(i,j)を
+</p>
+<pre>
+[ a(0,0) a(0,1) a(0,2)  a(0,3) ... a(0,n-1)   ]
+[ a(1,0) a(1,1) a(1,2)  a(1,3) ... a(1,n-1)   ]
+[ a(2,0) a(2,1) a(2,2)  a(2,3) ... a(2,n-1)   ]
+[                                             ]
+[ a(m-1,0)                         a(m-1,n-1) ]
+</pre>
+<p>
+のように、縦横の表にあらわしたものを(m,n)型の行列といいます。
+m=nの行列をm次の正方行列(square matrix)といいます。インデックスは 0 から始まることに注意してください。
+</p>
+<p>
+上からi番目の横の数の並びを第i行(the i-th row)、左からj番目の縦の数の並びを第j列(the j-th column)といいます。
+</p>
+<p>
+(m,n)型行列は、大きさnの行(横)ベクトルをm個縦に並べたものとみなすこともできますし、大きさmの列(縦)ベクトルをn個横に並べたものとみなすこともできます。
+</p>
+<p>
+第i行、第j列にある数a(i,j)を(i,j)要素(the (i,j)-th element)といいます。
+</p>
+<p>
+i=jの要素a(i,j)を対角要素(diagonal element)、それ以外の要素を非対角要素(nondiagonal element)といいます。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_--5B--5D">[]</a></li>
+
+<li><a href="#S_-I">I</a></li>
+
+<li><a href="#S_BUILD">build</a></li>
+
+<li><a href="#S_COLUMN_VECTOR">column_vector</a></li>
+
+<li><a href="#S_COLUMNS">columns</a></li>
+
+<li><a href="#S_COMBINE">combine</a></li>
+
+<li><a href="#S_DIAGONAL">diagonal</a></li>
+
+<li><a href="#S_EMPTY">empty</a></li>
+
+<li><a href="#S_HSTACK">hstack</a></li>
+
+<li><a href="#S_-I">identity</a></li>
+
+<li><a href="#S_ROW_VECTOR">row_vector</a></li>
+
+<li><a href="#S_ROWS">rows</a></li>
+
+<li><a href="#S_SCALAR">scalar</a></li>
+
+<li><a href="#S_-I">unit</a></li>
+
+<li><a href="#S_VSTACK">vstack</a></li>
+
+<li><a href="#S_ZERO">zero</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_--2A">*</a></li>
+
+<li><a href="#I_--2A--2A">**</a></li>
+
+<li><a href="#I_--2B">+</a></li>
+
+<li><a href="#I_--2B--40">+@</a></li>
+
+<li><a href="#I_--2D">-</a></li>
+
+<li><a href="#I_--2D--40">-@</a></li>
+
+<li><a href="#I_--2F">/</a></li>
+
+<li><a href="#I_--3D--3D">==</a></li>
+
+<li><a href="#I_--5B--5D">[]</a></li>
+
+<li><a href="#I_--5B--5D--3D">[]=</a></li>
+
+<li><a href="#I_ADJUGATE">adjugate</a></li>
+
+<li><a href="#I_ANTISYMMETRIC--3F">antisymmetric?</a></li>
+
+<li><a href="#I_COERCE">coerce</a></li>
+
+<li><a href="#I_COFACTOR">cofactor</a></li>
+
+<li><a href="#I_COFACTOR_EXPANSION">cofactor_expansion</a></li>
+
+<li><a href="#I_COLLECT">collect</a></li>
+
+<li><a href="#I_COLLECT--21">collect!</a></li>
+
+<li><a href="#I_COLUMN">column</a></li>
+
+<li><a href="#I_COLUMN_COUNT">column_count</a></li>
+
+<li><a href="#I_COLUMN_COUNT">column_size</a></li>
+
+<li><a href="#I_COLUMN_VECTORS">column_vectors</a></li>
+
+<li><a href="#I_COMBINE">combine</a></li>
+
+<li><a href="#I_--5B--5D">component</a></li>
+
+<li><a href="#I_CONJ">conj</a></li>
+
+<li><a href="#I_CONJ">conjugate</a></li>
+
+<li><a href="#I_DET">det</a></li>
+
+<li><a href="#I_DET_E">det_e</a></li>
+
+<li><a href="#I_DET">determinant</a></li>
+
+<li><a href="#I_DET_E">determinant_e</a></li>
+
+<li><a href="#I_DIAGONAL--3F">diagonal?</a></li>
+
+<li><a href="#I_EACH">each</a></li>
+
+<li><a href="#I_EACH_WITH_INDEX">each_with_index</a></li>
+
+<li><a href="#I_EIGEN">eigen</a></li>
+
+<li><a href="#I_EIGEN">eigensystem</a></li>
+
+<li><a href="#I_--5B--5D">element</a></li>
+
+<li><a href="#I_ELEMENTS_TO_F">elements_to_f</a></li>
+
+<li><a href="#I_ELEMENTS_TO_I">elements_to_i</a></li>
+
+<li><a href="#I_ELEMENTS_TO_R">elements_to_r</a></li>
+
+<li><a href="#I_EMPTY--3F">empty?</a></li>
+
+<li><a href="#I_ENTRYWISE_PRODUCT">entrywise_product</a></li>
+
+<li><a href="#I_--3D--3D">eql?</a></li>
+
+<li><a href="#I_FIND_INDEX">find_index</a></li>
+
+<li><a href="#I_FIRST_MINOR">first_minor</a></li>
+
+<li><a href="#I_ENTRYWISE_PRODUCT">hadamard_product</a></li>
+
+<li><a href="#I_HASH">hash</a></li>
+
+<li><a href="#I_HERMITIAN--3F">hermitian?</a></li>
+
+<li><a href="#I_HSTACK">hstack</a></li>
+
+<li><a href="#I_IMAG">imag</a></li>
+
+<li><a href="#I_IMAG">imaginary</a></li>
+
+<li><a href="#I_FIND_INDEX">index</a></li>
+
+<li><a href="#I_INSPECT">inspect</a></li>
+
+<li><a href="#I_INV">inv</a></li>
+
+<li><a href="#I_INV">inverse</a></li>
+
+<li><a href="#I_COFACTOR_EXPANSION">laplace_expansion</a></li>
+
+<li><a href="#I_LOWER_TRIANGULAR--3F">lower_triangular?</a></li>
+
+<li><a href="#I_LUP">lup</a></li>
+
+<li><a href="#I_LUP">lup_decomposition</a></li>
+
+<li><a href="#I_COLLECT">map</a></li>
+
+<li><a href="#I_COLLECT--21">map!</a></li>
+
+<li><a href="#I_MINOR">minor</a></li>
+
+<li><a href="#I_NORMAL--3F">normal?</a></li>
+
+<li><a href="#I_ORTHOGONAL--3F">orthogonal?</a></li>
+
+<li><a href="#I_PERMUTATION--3F">permutation?</a></li>
+
+<li><a href="#I_RANK">rank</a></li>
+
+<li><a href="#I_RANK_E">rank_e</a></li>
+
+<li><a href="#I_REAL">real</a></li>
+
+<li><a href="#I_REAL--3F">real?</a></li>
+
+<li><a href="#I_RECT">rect</a></li>
+
+<li><a href="#I_RECT">rectangular</a></li>
+
+<li><a href="#I_REGULAR--3F">regular?</a></li>
+
+<li><a href="#I_ROUND">round</a></li>
+
+<li><a href="#I_ROW">row</a></li>
+
+<li><a href="#I_ROW_COUNT">row_count</a></li>
+
+<li><a href="#I_ROW_COUNT">row_size</a></li>
+
+<li><a href="#I_ROW_VECTORS">row_vectors</a></li>
+
+<li><a href="#I_SINGULAR--3F">singular?</a></li>
+
+<li><a href="#I_ANTISYMMETRIC--3F">skew_symmetric?</a></li>
+
+<li><a href="#I_SQUARE--3F">square?</a></li>
+
+<li><a href="#I_SYMMETRIC--3F">symmetric?</a></li>
+
+<li><a href="#I_T">t</a></li>
+
+<li><a href="#I_TO_A">to_a</a></li>
+
+<li><a href="#I_TO_S">to_s</a></li>
+
+<li><a href="#I_TR">tr</a></li>
+
+<li><a href="#I_TR">trace</a></li>
+
+<li><a href="#I_T">transpose</a></li>
+
+<li><a href="#I_UNITARY--3F">unitary?</a></li>
+
+<li><a href="#I_UPPER_TRIANGULAR--3F">upper_triangular?</a></li>
+
+<li><a href="#I_VSTACK">vstack</a></li>
+
+<li><a href="#I_ZERO--3F">zero?</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+  <h2>継承しているメソッド</h2>
+<dl>
+  
+<dt>Enumerableから継承しているメソッド</dt>
+<dd>
+  <ul class="class-toc">
+    
+      <li><a href="../method/-enumerable/i/all=3f.html">all?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/any=3f.html">any?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/chain.html">chain</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/chunk.html">chunk</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/chunk_while.html">chunk_while</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/collect_concat.html">collect_concat</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/compact.html">compact</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/count.html">count</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/cycle.html">cycle</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/detect.html">detect</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/drop.html">drop</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/drop_while.html">drop_while</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_cons.html">each_cons</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_entry.html">each_entry</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_slice.html">each_slice</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_with_object.html">each_with_object</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/entries.html">entries</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/filter.html">filter</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/filter_map.html">filter_map</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/detect.html">find</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/filter.html">find_all</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/first.html">first</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/collect_concat.html">flat_map</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/grep.html">grep</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/grep_v.html">grep_v</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/group_by.html">group_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/include=3f.html">include?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/inject.html">inject</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/lazy.html">lazy</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/max.html">max</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/max_by.html">max_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/include=3f.html">member?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/min.html">min</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/min_by.html">min_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/minmax.html">minmax</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/minmax_by.html">minmax_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/none=3f.html">none?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/one=3f.html">one?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/partition.html">partition</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/inject.html">reduce</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/reject.html">reject</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/reverse_each.html">reverse_each</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/filter.html">select</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/slice_after.html">slice_after</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/slice_before.html">slice_before</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/slice_when.html">slice_when</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/sort.html">sort</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/sort_by.html">sort_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/sum.html">sum</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/take.html">take</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/take_while.html">take_while</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/tally.html">tally</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/to_h.html">to_h</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/uniq.html">uniq</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/zip.html">zip</a></li>
+      
+    
+  </ul>
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_-I"><code>identity(n) -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/s/-i.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-c-I">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>unit(n) -&gt; Matrix</code></dt>
+<dt class="method-heading"><code>I(n) -&gt; Matrix</code></dt>
+<dd class="method-description">
+<p>
+n次の単位行列を生成します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] n:</dt>
+<dd>
+単位行列の次元
+</dd>
+</dl>
+<p>
+単位行列とは、対角要素が全て1で非対角要素が全て0であるような行列のことです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_--5B--5D"><code>self[*rows] -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/s/=5b=5d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-c-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+rows[i] を第 i 行とする行列を生成します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] rows:</dt>
+<dd>
+行列の要素を数の配列の配列として渡します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">11</span>, <span class="mi">12</span><span class="p">]</span>, <span class="p">[</span><span class="mi">21</span>, <span class="mi">22</span><span class="p">]</span><span class="p">]</span>
+<span class="nb">p</span> m  <span class="c1"># =&gt; Matrix[[11, 12], [21, 22]]
+</span>     <span class="c1">#    [11, 12]
+</span>     <span class="c1">#    [21, 22]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_BUILD"><code>build(row_size, column_size = row_size) {|row, col| ... } -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/s/build.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-c-build">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>build(row_size, column_size = row_size) -&gt; Enumerable</code></dt>
+<dd class="method-description">
+<p>
+row_size×column_sizeの行列をブロックの返り値から生成します。
+</p>
+<p>
+行列の各要素の位置がブロックに渡され、それの返り値が行列の要素となります。
+</p>
+<p>
+ブロックを省略した場合は <a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="mi">2</span>, <span class="mi">4</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>row, col<span class="o">|</span> col <span class="o">-</span> row <span class="p">}</span>
+  <span class="c1"># =&gt; Matrix[[0, 1, 2, 3], [-1, 0, 1, 2]]
+</span>m <span class="o">=</span> <span class="no">Matrix</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="p">{</span> <span class="nb">rand</span> <span class="p">}</span>
+  <span class="c1"># =&gt; a 3x3 matrix with random elements
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] row_size:</dt>
+<dd>
+行列の行数
+</dd>
+<dt class='method-param'>[PARAM] column_size:</dt>
+<dd>
+行列の列数
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_COLUMN_VECTOR"><code>column_vector(column) -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/s/column_vector.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-c-column_vector">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+要素がcolumnの(n,1)型の行列(列ベクトル)を生成します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] column:</dt>
+<dd>
+(n,1)型の行列として生成する<a href="../class/-vector.html">Vector</a> <a href="../class/-array.html">Array</a> オブジェクト
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_COLUMNS"><code>columns(columns) -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/s/columns.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-c-columns">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数 columns を列ベクトルの集合とする行列を生成します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] columns:</dt>
+<dd>
+配列の配列を渡します。
+</dd>
+</dl>
+<h3 >注意</h3>
+<p>
+<a href="../method/-matrix/s/rows.html">Matrix.rows</a> との違いは引数として渡す配列の配列を列ベクトルの配列とみなして行列を生成します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+
+a1 <span class="o">=</span> <span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span>
+a2 <span class="o">=</span> <span class="p">[</span><span class="mi">4</span>, <span class="mi">5</span>, <span class="mi">6</span><span class="p">]</span>
+a3 <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span>, <span class="o">-</span><span class="mi">2</span>, <span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+
+<span class="c1"># 配列を行ベクトルとして生成
+</span>m <span class="o">=</span> <span class="no">Matrix</span><span class="p">.</span><span class="nf">rows</span><span class="p">(</span><span class="p">[</span>a1, a2, a3<span class="p">]</span>, <span class="k">true</span><span class="p">)</span>
+<span class="nb">p</span> m <span class="c1"># =&gt; Matrix[[1, 2, 3], [4, 5, 6], [-1, -2, -3]]
+</span>    <span class="c1"># 行列としてのイメージ =&gt;  [ 1,  2,  3]
+</span>    <span class="c1">#                          [ 4,  5,  6]
+</span>    <span class="c1">#                          [-1, -2, -3]
+</span>
+<span class="c1"># 配列を列ベクトルとして生成
+</span>m <span class="o">=</span> <span class="no">Matrix</span><span class="p">.</span><span class="nf">columns</span><span class="p">(</span><span class="p">[</span>a1, a2, a3<span class="p">]</span><span class="p">)</span>
+<span class="nb">p</span> m <span class="c1"># =&gt; Matrix[[1, 4, -1], [2, 5, -2], [3, 6, -3]]
+</span>    <span class="c1"># 行列としてのイメージ =&gt;  [1, 4, -1]
+</span>    <span class="c1">#                          [2, 5, -2]
+</span>    <span class="c1">#                          [3, 6, -3]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_COMBINE"><code>combine(*matrices) {|*elements| ... } -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/s/combine.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-c-combine">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>combine(*matrices) -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+要素ごとにブロックを呼び出した結果を組み合わせた Matrix を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+x <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">6</span>, <span class="mi">6</span><span class="p">]</span>, <span class="p">[</span><span class="mi">4</span>, <span class="mi">4</span><span class="p">]</span><span class="p">]</span>
+y <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>, <span class="mi">4</span><span class="p">]</span><span class="p">]</span>
+<span class="no">Matrix</span><span class="p">.</span><span class="nf">combine</span><span class="p">(</span>x, y<span class="p">)</span> <span class="p">{</span><span class="o">|</span>a, b<span class="o">|</span> a <span class="o">-</span> b<span class="p">}</span> <span class="c1"># =&gt; Matrix[[5, 4], [1, 0]]
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] matrices:</dt>
+<dd>
+並べる行列。すべての行列の行数と列数が一致していなければならない
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行や列の要素数が一致しない時に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-matrix/i/combine.html">Matrix#combine</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_DIAGONAL"><code>diagonal(*values) -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/s/diagonal.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-c-diagonal">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+対角要素がvaluesで、非対角要素が全て0であるような正方行列を生成します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] values:</dt>
+<dd>
+行列の対角要素
+</dd>
+</dl>
+<h3 >注意</h3>
+<p>
+valuesに一次元Arrayを1個指定すると、そのArrayを唯一の要素とした1×1の行列が生成されます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">.</span><span class="nf">diagonal</span><span class="p">(</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">)</span>
+<span class="nb">p</span> m <span class="c1"># =&gt; Matrix[[1, 0, 0], [0, 2, 0], [0, 0, 3]]
+</span>a <span class="o">=</span> <span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span><span class="p">]</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">.</span><span class="nf">diagonal</span><span class="p">(</span>a<span class="p">)</span>
+<span class="nb">p</span> m <span class="c1"># =&gt; Matrix[[[1, 2, 3]]]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_EMPTY"><code>empty(row_size=0, column_size=0) -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/s/empty.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-c-empty">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+要素を持たない行列を返します。
+</p>
+<p>
+「要素を持たない」とは、行数もしくは列数が0の行列のことです。
+</p>
+<p>
+row_size 、 column_size のいずれか一方は0である必要があります。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">.</span><span class="nf">empty</span><span class="p">(</span><span class="mi">2</span>, <span class="mi">0</span><span class="p">)</span>
+m <span class="o">==</span> <span class="no">Matrix</span><span class="p">[</span> <span class="p">[</span><span class="p">]</span>, <span class="p">[</span><span class="p">]</span> <span class="p">]</span>
+<span class="c1"># =&gt; true
+</span>n <span class="o">=</span> <span class="no">Matrix</span><span class="p">.</span><span class="nf">empty</span><span class="p">(</span><span class="mi">0</span>, <span class="mi">3</span><span class="p">)</span>
+n <span class="o">==</span> <span class="no">Matrix</span><span class="p">.</span><span class="nf">columns</span><span class="p">(</span><span class="p">[</span> <span class="p">[</span><span class="p">]</span>, <span class="p">[</span><span class="p">]</span>, <span class="p">[</span><span class="p">]</span> <span class="p">]</span><span class="p">)</span>
+<span class="c1"># =&gt; true
+</span>m <span class="o">*</span> n
+<span class="c1"># =&gt; Matrix[[0, 0, 0], [0, 0, 0]]
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] row_size:</dt>
+<dd>
+行列の行数
+</dd>
+<dt class='method-param'>[PARAM] column_size:</dt>
+<dd>
+行列の列数
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+row_size, column_size が両方とも0でない場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_HSTACK"><code>hstack(*matrices) -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/s/hstack.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-c-hstack">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列 matrices を横に並べた行列を生成します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+x <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>, <span class="mi">4</span><span class="p">]</span><span class="p">]</span>
+y <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">5</span>, <span class="mi">6</span><span class="p">]</span>, <span class="p">[</span><span class="mi">7</span>, <span class="mi">8</span><span class="p">]</span><span class="p">]</span>
+<span class="no">Matrix</span><span class="p">.</span><span class="nf">hstack</span><span class="p">(</span>x, y<span class="p">)</span> <span class="c1"># =&gt; Matrix[[1, 2, 5, 6], [3, 4, 7, 8]]
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] matrices:</dt>
+<dd>
+並べる行列。すべての行列の行数が一致していなければならない
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行数の異なる行列がある場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-matrix/s/vstack.html">Matrix.vstack</a>, <a href="../method/-matrix/i/hstack.html">Matrix#hstack</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_ROW_VECTOR"><code>row_vector(row) -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/s/row_vector.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-c-row_vector">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+要素がrowの(1,n)型の行列(行ベクトル)を生成します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] row:</dt>
+<dd>
+(1,n)型の行列として生成する<a href="../class/-vector.html">Vector</a> <a href="../class/-array.html">Array</a> オブジェクト
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_ROWS"><code>rows(rows, copy = true) -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/s/rows.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-c-rows">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数 rows を行ベクトルの列とする行列を生成します。
+</p>
+<p>
+引数 copy が偽(false)ならば、rows の複製を行いません。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+
+a1 <span class="o">=</span> <span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span>
+a2 <span class="o">=</span> <span class="p">[</span><span class="mi">10</span>, <span class="mi">15</span>, <span class="mi">20</span><span class="p">]</span>
+
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">.</span><span class="nf">rows</span><span class="p">(</span><span class="p">[</span>a1, a2<span class="p">]</span>, <span class="k">false</span><span class="p">)</span> <span class="c1"># 配列を複製せずに行列を生成
+</span><span class="nb">p</span> m <span class="c1"># =&gt; Matrix[[1, 2, 3], [10, 15, 20]]
+</span>a2<span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1000</span> <span class="c1"># 配列のデータを変更
+</span><span class="nb">p</span> m <span class="c1"># =&gt; Matrix[[1, 2, 3], [10, 1000, 20]]
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] rows:</dt>
+<dd>
+配列の配列
+</dd>
+<dt class='method-param'>[PARAM] copy:</dt>
+<dd>
+配列を複製するかどうかを真偽値で指定
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_SCALAR"><code>scalar(n, value) -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/s/scalar.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-c-scalar">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+対角要素が全てvalue(数)で、非対角要素が全て0であるようなn次の正方行列を生成します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] n:</dt>
+<dd>
+生成する行列の次元
+</dd>
+<dt class='method-param'>[PARAM] value:</dt>
+<dd>
+生成する行列の対角要素の値
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">.</span><span class="nf">scalar</span><span class="p">(</span><span class="mi">3</span>, <span class="mf">2.5</span><span class="p">)</span>
+<span class="nb">p</span> m <span class="c1"># =&gt; Matrix[[2.5, 0, 0], [0, 2.5, 0], [0, 0, 2.5]]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_VSTACK"><code>vstack(*matrices) -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/s/vstack.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-c-vstack">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列 matrices を縦に並べた行列を生成します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+x <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>, <span class="mi">4</span><span class="p">]</span><span class="p">]</span>
+y <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">5</span>, <span class="mi">6</span><span class="p">]</span>, <span class="p">[</span><span class="mi">7</span>, <span class="mi">8</span><span class="p">]</span><span class="p">]</span>
+<span class="no">Matrix</span><span class="p">.</span><span class="nf">vstack</span><span class="p">(</span>x, y<span class="p">)</span> <span class="c1"># =&gt; Matrix[[1, 2], [3, 4], [5, 6], [7, 8]]
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] matrices:</dt>
+<dd>
+並べる行列。すべての行列の列数が一致していなければならない
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+列数の異なる行列がある場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-matrix/s/hstack.html">Matrix.hstack</a>, <a href="../method/-matrix/i/vstack.html">Matrix#vstack</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_ZERO"><code>zero(n) -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/s/zero.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-c-zero">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+n × n の零行列（要素が全て 0 の行列）を生成して返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+<span class="nb">p</span> <span class="no">Matrix</span><span class="p">.</span><span class="nf">zero</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1">#=&gt; Matrix[[0, 0], [0, 0]]
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] n:</dt>
+<dd>
+生成する正方零行列の次数
+</dd>
+</dl>
+</dd>
+<dt class="method-heading" id="S_ZERO"><code>zero(row, column) -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/s/zero.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-c-zero">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+row × column の零行列（要素が全て 0 の行列）を生成して返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+<span class="nb">p</span> <span class="no">Matrix</span><span class="p">.</span><span class="nf">zero</span><span class="p">(</span><span class="mi">2</span>, <span class="mi">3</span><span class="p">)</span> <span class="c1">#=&gt; Matrix[[0, 0, 0], [0, 0, 0]]
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] row:</dt>
+<dd>
+生成する行列の行数
+</dd>
+<dt class='method-param'>[PARAM] column:</dt>
+<dd>
+生成する行列の列数
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--2A"><code>self * m -&gt; Matrix | Vector</code><span class="permalink">[<a href="../method/-matrix/i/=2a.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-2A">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self に行列またはベクトル m を右から乗じた行列を返します。
+</p>
+<p>
+m が <a href="../class/-vector.html">Vector</a> オブジェクトなら返り値も <a href="../class/-vector.html">Vector</a> オブジェクトになります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] m:</dt>
+<dd>
+右からの乗算が定義可能な行列やベクトルを指定します。
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+次元が合わない場合に発生します
+</dd>
+</dl>
+</dd>
+<dt class="method-heading" id="I_--2A"><code>self * other -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/=2a.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-2A">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の各成分に数 other を掛けた行列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+self の各成分に掛ける <a href="../class/-numeric.html">Numeric</a> オブジェクトを指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_--2A--2A"><code>self ** n -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/=2a=2a.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-2A-2A">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の n 乗を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] n:</dt>
+<dd>
+べき数の指定
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrNotRegular:</dt>
+<dd>
+n が 0 以下で、行列が正則でない場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_--2B"><code>self + m -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/=2b.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-2B">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self に行列 m を加算した行列を返します。
+self の column_size が 1 なら <a href="../class/-vector.html">Vector</a> オブジェクトも指定出来ます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] m:</dt>
+<dd>
+加算する行列。加算可能な行列やベクトルを指定します。
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+次元が合わない場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_--2B--40"><code>+ self -&gt; self</code><span class="permalink">[<a href="../method/-matrix/i/=2b=40.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-2B-40">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+単項 +。self を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_--2D"><code>self - m -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/=2d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-2D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self から行列mを減算した行列を返します。
+self の column_size が 1 なら <a href="../class/-vector.html">Vector</a> オブジェクトも指定出来ます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] m:</dt>
+<dd>
+減算する行列。減算可能な行列やベクトルを指定します。
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+次元が合わない場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_--2D--40"><code>- self -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/=2d=40.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-2D-40">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+単項 -。各要素の符号を反転させた行列を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_--2F"><code>self / m -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/=2f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-2F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self に行列 m の逆行列を右から乗じた行列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] m:</dt>
+<dd>
+逆行列を右から乗算する行列。可逆行列でselfと乗算可能な行列を指定します。
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+次元が合わない場合に発生します
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrNotRegular:</dt>
+<dd>
+m が正則でない場合に発生します
+</dd>
+</dl>
+</dd>
+<dt class="method-heading" id="I_--2F"><code>self / other -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/=2f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-2F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の各成分を数 other で割った行列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+self の各成分を割る <a href="../class/-numeric.html">Numeric</a> オブジェクトを指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_--3D--3D"><code>self == other -&gt; bool</code><span class="permalink">[<a href="../method/-matrix/i/=3d=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-3D-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>eql?(other) -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+自分自身と other を比較し、同値であれば真(true)を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+比較対象のオブジェクト
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_--5B--5D"><code>self[i, j] -&gt; ()</code><span class="permalink">[<a href="../method/-matrix/i/=5b=5d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>element(i, j) -&gt; ()</code></dt>
+<dt class="method-heading"><code>component(i, j) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+(i,j)要素を返します。行列の範囲外の値を指定した場合には nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] i:</dt>
+<dd>
+要素の行成分を0オリジンで指定します。
+</dd>
+<dt class='method-param'>[PARAM] j:</dt>
+<dd>
+要素の列成分を0オリジンで指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+
+a1 <span class="o">=</span> <span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span>
+a2 <span class="o">=</span> <span class="p">[</span><span class="mi">10</span>, <span class="mi">15</span>, <span class="mi">20</span><span class="p">]</span>
+a3 <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mf">1.5</span><span class="p">]</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span>a1, a2, a3<span class="p">]</span>
+
+<span class="nb">p</span> m<span class="p">[</span><span class="mi">0</span>, <span class="mi">0</span><span class="p">]</span> <span class="c1"># =&gt; 1
+</span><span class="nb">p</span> m<span class="p">[</span><span class="mi">1</span>, <span class="mi">1</span><span class="p">]</span> <span class="c1"># =&gt; 15
+</span><span class="nb">p</span> m<span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span> <span class="c1"># =&gt; 20
+</span><span class="nb">p</span> m<span class="p">[</span><span class="mi">1</span>, <span class="mi">3</span><span class="p">]</span> <span class="c1"># =&gt; nil
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--5B--5D--3D"><code>self[row, col] = v</code><span class="permalink">[<a href="../method/-matrix/i/=5b=5d=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-5B-5D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行が row、列が col である範囲を v に変更する。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] row:</dt>
+<dd>
+self の変更する行の範囲を <a href="../class/-integer.html">Integer</a> か <a href="../class/-range.html">Range</a> で指定します。
+</dd>
+<dt class='method-param'>[PARAM] col:</dt>
+<dd>
+self の変更する列の範囲を <a href="../class/-integer.html">Integer</a> か <a href="../class/-range.html">Range</a> で指定します。
+</dd>
+<dt class='method-param'>[PARAM] v:</dt>
+<dd>
+セットする要素を指定します。
+v が <a href="../class/-vector.html">Vector</a> のとき、変更の対象範囲は <a href="../class/-integer.html">Integer</a> と <a href="../class/-range.html">Range</a> で指定し、サイズが同じである必要があります。
+v が <a href="../class/-matrix.html">Matrix</a> のとき、変更の対象範囲と行数・列数が同じである必要があります。
+v が上記以外のとき、変更の対象範囲の全ての要素を v に変更します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">0</span>, <span class="mi">0</span><span class="p">]</span>, <span class="p">[</span><span class="mi">0</span>, <span class="mi">0</span><span class="p">]</span><span class="p">]</span>
+m<span class="p">[</span><span class="mi">0</span>, <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">6</span>
+m<span class="p">[</span><span class="o">-</span><span class="mi">1</span>, <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="nb">p</span> m  <span class="c1"># =&gt; Matrix[[0, 6], [0, 9]]
+</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">0</span>, <span class="mi">0</span>, <span class="mi">0</span><span class="p">]</span>, <span class="p">[</span><span class="mi">0</span>, <span class="mi">0</span>, <span class="mi">0</span><span class="p">]</span>, <span class="p">[</span><span class="mi">0</span>, <span class="mi">0</span>, <span class="mi">0</span><span class="p">]</span><span class="p">]</span>
+m<span class="p">[</span><span class="mi">0</span>, <span class="mi">0</span><span class="o">..</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span>
+m<span class="p">[</span><span class="mi">1</span>, <span class="mi">0</span><span class="o">..</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="no">Vector</span><span class="p">[</span><span class="mi">2</span>, <span class="mi">4</span><span class="p">]</span>
+m<span class="p">[</span><span class="mi">2</span>, <span class="mi">0</span><span class="o">..</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">3</span>, <span class="mi">6</span>, <span class="mi">9</span><span class="p">]</span><span class="p">]</span>
+<span class="nb">p</span> m <span class="c1">#=&gt; Matrix[[5, 5, 5], [2, 4, 0], [3, 6, 9]]
+</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">0</span>, <span class="mi">0</span>, <span class="mi">0</span><span class="p">]</span>, <span class="p">[</span><span class="mi">0</span>, <span class="mi">0</span>, <span class="mi">0</span><span class="p">]</span>, <span class="p">[</span><span class="mi">0</span>, <span class="mi">0</span>, <span class="mi">0</span><span class="p">]</span><span class="p">]</span>
+m<span class="p">[</span><span class="mi">0</span><span class="o">..</span><span class="mi">2</span>, <span class="mi">0</span><span class="o">..</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="nb">p</span> m  <span class="c1"># =&gt; Matrix[[9, 9, 0], [9, 9, 0], [9, 9, 0]]
+</span>m<span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="o">-</span><span class="mi">1</span>, <span class="mi">0</span><span class="o">..</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>, <span class="mi">4</span><span class="p">]</span><span class="p">]</span>
+<span class="nb">p</span> m  <span class="c1"># =&gt; Matrix[[9, 9, 0], [1, 2, 0], [3, 4, 0]]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ADJUGATE"><code>adjugate -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/adjugate.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-adjugate">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+余因子行列を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+<span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">7</span>,<span class="mi">6</span><span class="p">]</span>,<span class="p">[</span><span class="mi">3</span>,<span class="mi">9</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">adjugate</span> <span class="c1"># =&gt; Matrix[[9, -6], [-3, 7]]
+</span></code></pre>
+<dl>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行列が正方でない場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-matrix/i/cofactor.html">Matrix#cofactor</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ANTISYMMETRIC--3F"><code>antisymmetric? -&gt; bool</code><span class="permalink">[<a href="../method/-matrix/i/antisymmetric=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-antisymmetric-3F">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>skew_symmetric? -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+行列が反対称行列 (交代行列、歪〔わい〕対称行列とも) ならば true を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行列が正方行列でない場合に発生します
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+
+<span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">0</span>, <span class="o">-</span><span class="mi">2</span>, <span class="no">Complex</span><span class="p">(</span><span class="mi">1</span>, <span class="mi">3</span><span class="p">)</span><span class="p">]</span>, <span class="p">[</span><span class="mi">2</span>, <span class="mi">0</span>, <span class="mi">5</span><span class="p">]</span>, <span class="p">[</span><span class="o">-</span><span class="no">Complex</span><span class="p">(</span><span class="mi">1</span>, <span class="mi">3</span><span class="p">)</span>, <span class="o">-</span><span class="mi">5</span>, <span class="mi">0</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">antisymmetric?</span> <span class="c1"># =&gt; true
+</span><span class="no">Matrix</span><span class="p">.</span><span class="nf">empty</span><span class="p">.</span><span class="nf">antisymmetric?</span> <span class="c1"># =&gt; true
+</span>
+<span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span>, <span class="p">[</span><span class="mi">4</span>, <span class="mi">5</span>, <span class="mi">6</span><span class="p">]</span>, <span class="p">[</span><span class="mi">7</span>, <span class="mi">8</span>, <span class="mi">9</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">antisymmetric?</span> <span class="c1"># =&gt; false
+</span><span class="c1"># 対角要素が違う
+</span><span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">1</span>, <span class="o">-</span><span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span>, <span class="p">[</span><span class="mi">2</span>, <span class="mi">0</span>, <span class="mi">6</span><span class="p">]</span>, <span class="p">[</span><span class="o">-</span><span class="mi">3</span>, <span class="o">-</span><span class="mi">6</span>, <span class="mi">0</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">antisymmetric?</span> <span class="c1"># =&gt; false
+</span><span class="c1"># 符号が違う
+</span><span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">0</span>, <span class="mi">2</span>, <span class="o">-</span><span class="mi">3</span><span class="p">]</span>, <span class="p">[</span><span class="mi">2</span>, <span class="mi">0</span>, <span class="mi">6</span><span class="p">]</span>, <span class="p">[</span><span class="o">-</span><span class="mi">3</span>, <span class="mi">6</span>, <span class="mi">0</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">antisymmetric?</span> <span class="c1"># =&gt; false
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_COERCE"><code>coerce(other) -&gt; Array</code><span class="permalink">[<a href="../method/-matrix/i/coerce.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-coerce">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+他の数値オブジェクトとの変換を行います。
+</p>
+<p>
+他の数値オブジェクトを<a href="../class/-matrix=3a=3a-scalar.html">Matrix::Scalar</a>のオブジェクトに変換し、selfとの組を配列として返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+変換する数値オブジェクト
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+a1 <span class="o">=</span> <span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span>
+a2 <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.25</span>, <span class="mf">2.2</span><span class="p">]</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span>a1, a2<span class="p">]</span>
+r <span class="o">=</span> <span class="no">Rational</span><span class="p">(</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">)</span>
+<span class="nb">p</span> m<span class="p">.</span><span class="nf">coerce</span><span class="p">(</span>r<span class="p">)</span> <span class="c1">#=&gt; [#&lt;Matrix::Scalar:0x832df18 @value=(1/2)&gt;, Matrix[[1, 2], [-1.25, 2.2]]]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_COFACTOR"><code>cofactor(row, column) -&gt; Integer | Rational | Float</code><span class="permalink">[<a href="../method/-matrix/i/cofactor.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-cofactor">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+(row, column)-余因子を返します。
+</p>
+<p>
+各要素の型によって返り値が変わります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] row:</dt>
+<dd>
+行
+</dd>
+<dt class='method-param'>[PARAM] column:</dt>
+<dd>
+列
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行列が正方でない場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-matrix/i/adjugate.html">Matrix#adjugate</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_COFACTOR_EXPANSION"><code>cofactor_expansion(row: nil, column: nil) -&gt; object | Integer | Rational | Float</code><span class="permalink">[<a href="../method/-matrix/i/cofactor_expansion.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-cofactor_expansion">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>laplace_expansion(row: nil, column: nil) -&gt; object | Integer | Rational | Float</code></dt>
+<dd class="method-description">
+<p>
+row 行、もしくは column 列に関するラプラス展開をする。
+</p>
+<p>
+通常の行列に対してはこれは単に固有値を計算するだけです。かわりに<a href="../method/-matrix/i/determinant.html">Matrix#determinant</a> を利用すべきです。
+</p>
+<p>
+変則的な形状の行列に対してはそれ以上の意味を持ちます。例えば
+row行/column列が行列やベクトルである場合には
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+<span class="c1"># Matrix[[7,6], [3,9]].laplace_expansion(column: 1) # =&gt; 45
+</span><span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="no">Vector</span><span class="p">[</span><span class="mi">1</span>, <span class="mi">0</span><span class="p">]</span>, <span class="no">Vector</span><span class="p">[</span><span class="mi">0</span>, <span class="mi">1</span><span class="p">]</span><span class="p">]</span>, <span class="p">[</span><span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">laplace_expansion</span><span class="p">(</span><span class="ss">row:</span> <span class="mi">0</span><span class="p">)</span> <span class="c1"># =&gt; Vector[3, -2]
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] row:</dt>
+<dd>
+行
+</dd>
+<dt class='method-param'>[PARAM] column:</dt>
+<dd>
+列
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+row と column を両方指定した、もしくは両方とも指定していない、場合に発生します
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行列が正方でない場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-matrix/i/cofactor.html">Matrix#cofactor</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_COLLECT"><code>map(which = :all) {|x| ... } -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/collect.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-collect">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>collect(which = :all) {|x| ... } -&gt; Matrix</code></dt>
+<dt class="method-heading"><code>map(which = :all) -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>collect(which = :all) -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+行列の各要素に対してブロックの適用を繰り返した結果を、要素として持つ行列を生成します。
+</p>
+<p>
+ブロックがない場合、 <a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] which:</dt>
+<dd>
+which に以下の <a href="../class/-symbol.html">Symbol</a> を指定することで、引数として使われる要素を限定できます。デフォルトは、:all (全ての要素)です。指定できる <a href="../class/-symbol.html">Symbol</a> の詳細は、 <a href="../method/-matrix/i/each.html">Matrix#each</a> の項目を参照して下さい。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>, <span class="mi">4</span><span class="p">]</span><span class="p">]</span>
+<span class="nb">p</span> m<span class="p">.</span><span class="nf">map</span> <span class="p">{</span> <span class="o">|</span>x<span class="o">|</span> x <span class="o">+</span> <span class="mi">100</span> <span class="p">}</span> <span class="c1"># =&gt; Matrix[[101, 102], [103, 104]]
+</span><span class="nb">p</span> m<span class="p">.</span><span class="nf">map</span><span class="p">(</span><span class="ss">:diagonal</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>x<span class="o">|</span> x <span class="o">*</span> <span class="mi">10</span> <span class="p">}</span> <span class="c1"># =&gt; Matrix[[10, 2], [3, 40]]
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-matrix/i/each.html">Matrix#each</a>, <a href="../method/-matrix/i/map=21.html">Matrix#map!</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_COLLECT--21"><code>map!(which = :all) {|element| ... } -&gt; self</code><span class="permalink">[<a href="../method/-matrix/i/collect=21.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-collect-21">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>collect!(which = :all) {|element| ... } -&gt; self</code></dt>
+<dt class="method-heading"><code>map!(which = :all) -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>collect!(which = :all) -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+行列の各要素に対してブロックの適用を繰り返した結果で要素を置き換えます。
+</p>
+<p>
+ブロックのない場合は、自身と map! から生成した <a href="../class/-enumerator.html">Enumerator</a> オブジェクトを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] which:</dt>
+<dd>
+which に以下の <a href="../class/-symbol.html">Symbol</a> を指定することで、引数として使われる要素を限定できます。デフォルトは、:all (全ての要素)です。指定できる <a href="../class/-symbol.html">Symbol</a> の詳細は、 <a href="../method/-matrix/i/each.html">Matrix#each</a> の項目を参照して下さい。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>, <span class="mi">4</span><span class="p">]</span><span class="p">]</span>
+
+<span class="nb">p</span> m<span class="p">.</span><span class="nf">map!</span> <span class="p">{</span> <span class="o">|</span>element<span class="o">|</span> element <span class="o">*</span> <span class="mi">10</span> <span class="p">}</span> <span class="c1">#=&gt; Matrix[[10, 20], [30, 40]]
+</span><span class="nb">p</span> m                                 <span class="c1">#=&gt; Matrix[[10, 20], [30, 40]]
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-matrix/i/each.html">Matrix#each</a>, <a href="../method/-matrix/i/map.html">Matrix#map</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_COLUMN"><code>column(j) -&gt; Vector | nil</code><span class="permalink">[<a href="../method/-matrix/i/column.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-column">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>column(j) {|x| ... } -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+j 番目の列を <a href="../class/-vector.html">Vector</a> オブジェクトで返します。
+j 番目の列が存在しない場合は nil を返します。ブロックが与えられた場合はその列の各要素についてブロックを繰り返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] j:</dt>
+<dd>
+列の位置を指定します。先頭の列が 0 番目になります。j の値が負の時には末尾からのインデックスと見倣します。末尾の列が -1 番目になります。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+
+a1 <span class="o">=</span> <span class="p">[</span> <span class="mi">1</span>,  <span class="mi">2</span>,   <span class="mi">3</span><span class="p">]</span>
+a2 <span class="o">=</span> <span class="p">[</span><span class="mi">10</span>, <span class="mi">15</span>,  <span class="mi">20</span><span class="p">]</span>
+a3 <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span>, <span class="o">-</span><span class="mi">2</span>, <span class="mf">1.5</span><span class="p">]</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span>a1, a2, a3<span class="p">]</span>
+
+<span class="nb">p</span> m<span class="p">.</span><span class="nf">column</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># =&gt; Vector[2, 15, -2]
+</span>
+cnt <span class="o">=</span> <span class="mi">0</span>
+m<span class="p">.</span><span class="nf">column</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>x<span class="o">|</span>
+  cnt <span class="o">=</span> cnt <span class="o">+</span> x
+<span class="p">}</span>
+<span class="nb">p</span> cnt <span class="c1"># =&gt; 24.5
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_COLUMN_COUNT"><code>column_size -&gt; Integer</code><span class="permalink">[<a href="../method/-matrix/i/column_count.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-column_count">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>column_count -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+行列の列数を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_COLUMN_VECTORS"><code>column_vectors -&gt; [Vector]</code><span class="permalink">[<a href="../method/-matrix/i/column_vectors.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-column_vectors">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自分自身を列ベクトルの配列として返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+a1 <span class="o">=</span> <span class="p">[</span> <span class="mi">1</span>,  <span class="mi">2</span>,  <span class="mi">3</span><span class="p">]</span>
+a2 <span class="o">=</span> <span class="p">[</span><span class="mi">10</span>, <span class="mi">15</span>, <span class="mi">20</span><span class="p">]</span>
+a3 <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span>, <span class="o">-</span><span class="mi">2</span>, <span class="mf">1.5</span><span class="p">]</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span>a1, a2, a3<span class="p">]</span>
+
+<span class="nb">p</span> m<span class="p">.</span><span class="nf">column_vectors</span> <span class="c1"># =&gt; [Vector[1, 10, -1], Vector[2, 15, -2], Vector[3, 20, 1.5]]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_COMBINE"><code>combine(*matrices) {|*elements| ... } -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/combine.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-combine">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+要素ごとにブロックを呼び出した結果を組み合わせた Matrix を返します。
+</p>
+<p>
+Matrix.combine(self, *matrices) { ... } と同じです。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-matrix/s/combine.html">Matrix.combine</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CONJ"><code>conjugate -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/conj.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-conj">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>conj -&gt; Matrix</code></dt>
+<dd class="method-description">
+<p>
+複素共役を取った行列を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+<span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="no">Complex</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">)</span>, <span class="no">Complex</span><span class="p">(</span><span class="mi">0</span>,<span class="mi">1</span><span class="p">)</span>, <span class="mi">0</span><span class="p">]</span>, <span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span><span class="p">]</span>
+  <span class="c1"># =&gt; 1+2i   i  0
+</span>  <span class="c1">#       1   2  3
+</span><span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="no">Complex</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">)</span>, <span class="no">Complex</span><span class="p">(</span><span class="mi">0</span>,<span class="mi">1</span><span class="p">)</span>, <span class="mi">0</span><span class="p">]</span>, <span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">conjugate</span>
+  <span class="c1"># =&gt; 1-2i  -i  0
+</span>  <span class="c1">#       1   2  3
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_DET"><code>determinant -&gt; Numeric</code><span class="permalink">[<a href="../method/-matrix/i/det.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-det">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>det -&gt; Numeric</code></dt>
+<dd class="method-description">
+<p>
+行列式 (determinant) の値を返します。
+</p>
+<p>
+<a href="../class/-float.html">Float</a> を使用すると、精度が不足するため、誤った結果が生じる可能性があることに注意してください。代わりに、<a href="../class/-rational.html">Rational</a> や <a href="../class/-big-decimal.html">BigDecimal</a> などの正確なオブジェクトを使用することを検討してください。
+</p>
+<dl>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+正方行列でない場合に発生します
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+
+<span class="nb">p</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">2</span>, <span class="mi">1</span><span class="p">]</span>, <span class="p">[</span><span class="o">-</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">det</span>         <span class="c1">#=&gt; 5
+</span><span class="nb">p</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mf">2.0</span>, <span class="mf">1.0</span><span class="p">]</span>, <span class="p">[</span><span class="o">-</span><span class="mf">1.0</span>, <span class="mf">2.0</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">det</span> <span class="c1">#=&gt; 5.0
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_DET_E"><code>determinant_e -&gt; Rational | Float</code><span class="permalink">[<a href="../method/-matrix/i/det_e.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-det_e">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>det_e -&gt; Rational | Float</code></dt>
+<dd class="method-description">
+<p>
+このメソッドは deprecated です。
+<a href="../method/-matrix/i/determinant.html">Matrix#determinant</a> を代わりに使ってください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DIAGONAL--3F"><code>diagonal? -&gt; bool</code><span class="permalink">[<a href="../method/-matrix/i/diagonal=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-diagonal-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列が対角行列ならば true を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行列が正方行列でない場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH"><code>each(which = :all) {|e| ... } -&gt; self</code><span class="permalink">[<a href="../method/-matrix/i/each.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-each">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each(which = :all) -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+行列の各要素を引数としてブロックを呼び出します。
+</p>
+<p>
+0行目、1行目、…という順番で処理します。
+which に以下の <a href="../class/-symbol.html">Symbol</a> を指定することで引数として使われる要素を限定することができます。
+</p>
+<ul>
+<li>:all - すべての要素(デフォルト)</li>
+<li>:diagonal - 対角要素</li>
+<li>:off_diagonal 対角要素以外</li>
+<li>:lower 対角成分とそれより下側の部分</li>
+<li>:upper対角成分とそれより上側の部分</li>
+<li>:strict_lower 対角成分の下側</li>
+<li>:strict_upper 対角成分の上側</li>
+</ul>
+<p>
+ブロックを省略した場合、 <a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+<span class="no">Matrix</span><span class="p">[</span> <span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>,<span class="mi">4</span><span class="p">]</span> <span class="p">]</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span> <span class="o">|</span>e<span class="o">|</span> <span class="nb">puts</span> e <span class="p">}</span>
+<span class="c1"># =&gt; prints the numbers 1 to 4
+</span><span class="no">Matrix</span><span class="p">[</span> <span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>,<span class="mi">4</span><span class="p">]</span> <span class="p">]</span><span class="p">.</span><span class="nf">each</span><span class="p">(</span><span class="ss">:strict_lower</span><span class="p">)</span><span class="p">.</span><span class="nf">to_a</span> <span class="c1"># =&gt; [3]
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] which:</dt>
+<dd>
+どの要素に対してブロックを呼び出すのかを <a href="../class/-symbol.html">Symbol</a> で指定します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-matrix/i/each_with_index.html">Matrix#each_with_index</a>, <a href="../method/-matrix/i/map.html">Matrix#map</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_WITH_INDEX"><code>each_with_index(which = :all) {|e, row, col| ... } -&gt; self</code><span class="permalink">[<a href="../method/-matrix/i/each_with_index.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-each_with_index">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_with_index(which = :all) -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+行列の各要素をその位置とともに引数としてブロックを呼び出します。
+</p>
+<p>
+which で処理する要素の範囲を指定することができます。
+<a href="../method/-matrix/i/each.html">Matrix#each</a> と同じなのでそちらを参照してください。
+</p>
+<p>
+ブロックを省略した場合、 <a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+<span class="no">Matrix</span><span class="p">[</span> <span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>,<span class="mi">4</span><span class="p">]</span> <span class="p">]</span><span class="p">.</span><span class="nf">each_with_index</span> <span class="k">do</span> <span class="o">|</span>e, row, col<span class="o">|</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="si">#{</span><span class="n">e</span><span class="si">}</span><span class="s2"> at </span><span class="si">#{</span><span class="n">row</span><span class="si">}</span><span class="s2">, </span><span class="si">#{</span><span class="n">col</span><span class="si">}</span><span class="s2">"</span>
+<span class="k">end</span>
+  <span class="c1"># =&gt; 1 at 0, 0
+</span>  <span class="c1"># =&gt; 2 at 0, 1
+</span>  <span class="c1"># =&gt; 3 at 1, 0
+</span>  <span class="c1"># =&gt; 4 at 1, 1
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] which:</dt>
+<dd>
+どの要素に対してブロックを呼び出すのかを <a href="../class/-symbol.html">Symbol</a> で指定します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-matrix/i/each.html">Matrix#each</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EIGEN"><code>eigen -&gt; Matrix::EigenvalueDecomposition</code><span class="permalink">[<a href="../method/-matrix/i/eigen.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-eigen">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>eigensystem -&gt; Matrix::EigenvalueDecomposition</code></dt>
+<dd class="method-description">
+<p>
+行列の固有値と左右の固有ベクトルを保持したオブジェクトを返します。
+</p>
+<p>
+<a href="../class/-matrix=3a=3a-eigenvalue-decomposition.html">Matrix::EigenvalueDecomposition</a> は to_ary を定義しているため、多重代入によって3つの行列(右固有ベクトル、固有値行列、左固有ベクトル)
+を得ることができます。これを [V, D, W] と書くと、
+(元の行列が対角化可能ならば)、
+D は対角行列で、 self == V*D*W, V = W.inverse を満たします。
+D のそれぞれの対角成分が行列の固有値です。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>, <span class="mi">4</span><span class="p">]</span><span class="p">]</span>
+v, d, v_inv <span class="o">=</span> m<span class="p">.</span><span class="nf">eigensystem</span>
+d<span class="p">.</span><span class="nf">diagonal?</span> <span class="c1"># =&gt; true
+</span>v<span class="p">.</span><span class="nf">inv</span> <span class="o">==</span> v_inv <span class="c1"># =&gt; true
+</span><span class="p">(</span>v <span class="o">*</span> d <span class="o">*</span> v_inv<span class="p">)</span><span class="p">.</span><span class="nf">round</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">==</span> m <span class="c1"># =&gt; true
+</span></code></pre>
+<dl>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行列が正方行列でない場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../class/-matrix=3a=3a-eigenvalue-decomposition.html">Matrix::EigenvalueDecomposition</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ELEMENTS_TO_F"><code>elements_to_f -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/elements_to_f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-elements_to_f">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+各要素を浮動小数点数 <a href="../class/-float.html">Float</a> に変換した行列を返します。
+</p>
+<p>
+このメソッドは deprecated です。 map(&amp;:to_f) を使ってください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ELEMENTS_TO_I"><code>elements_to_i -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/elements_to_i.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-elements_to_i">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+各要素を整数 <a href="../class/-integer.html">Integer</a> に変換した行列を返します。
+</p>
+<p>
+このメソッドは deprecated です。 map(&amp;:to_i) を使ってください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ELEMENTS_TO_R"><code>elements_to_r -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/elements_to_r.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-elements_to_r">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+各要素を有理数 <a href="../class/-rational.html">Rational</a> に変換した行列を返します。
+</p>
+<p>
+このメソッドは deprecated です。 map(&amp;:to_r) を使ってください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EMPTY--3F"><code>empty? -&gt; bool</code><span class="permalink">[<a href="../method/-matrix/i/empty=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-empty-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列が要素を持たないならば true を返します。
+</p>
+<p>
+要素を持たないとは、行数か列数のいずれかが0であることを意味します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-matrix/s/empty.html">Matrix.empty</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ENTRYWISE_PRODUCT"><code>hadamard_product(m) -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/entrywise_product.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-entrywise_product">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>entrywise_product(m) -&gt; Matrix</code></dt>
+<dd class="method-description">
+<p>
+アダマール積(要素ごとの積)を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行や列の要素数が一致しない時に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+
+<span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>,<span class="mi">4</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">hadamard_product</span><span class="p">(</span><span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>,<span class="mi">2</span><span class="p">]</span><span class="p">]</span><span class="p">)</span> <span class="c1"># =&gt; Matrix[[1, 4], [9, 8]]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_FIND_INDEX"><code>index(value, selector = :all) -&gt; [Integer, Integer] | nil</code><span class="permalink">[<a href="../method/-matrix/i/find_index.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-find_index">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>index(selector = :all) {|e| ... } -&gt; [Integer, Integer] | nil</code></dt>
+<dt class="method-heading"><code>index(selector = :all) -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>find_index(value, selector = :all) -&gt; [Integer, Integer] | nil</code></dt>
+<dt class="method-heading"><code>find_index(selector = :all) {|e| ... } -&gt; [Integer, Integer] | nil</code></dt>
+<dt class="method-heading"><code>find_index(selector = :all) -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+指定した値と一致する要素の位置を [row, column] という配列で返します。ブロックを与えた場合は各要素を引数としてブロックを呼び出し、返り値が真であった要素の位置を返します。
+</p>
+<p>
+複数の位置で値が一致する/ブロックが真を返す、場合は最初に見つかった要素の位置を返します。
+</p>
+<p>
+selector で行列のどの部分を探すかを指定します。この引数の意味は
+<a href="../method/-matrix/i/each.html">Matrix#each</a> を参照してください。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+<span class="no">Matrix</span><span class="p">[</span> <span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>,<span class="mi">4</span><span class="p">]</span> <span class="p">]</span><span class="p">.</span><span class="nf">index</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:even?</span><span class="p">)</span> <span class="c1"># =&gt; [0, 1]
+</span><span class="no">Matrix</span><span class="p">[</span> <span class="p">[</span><span class="mi">1</span>,<span class="mi">1</span><span class="p">]</span>, <span class="p">[</span><span class="mi">1</span>,<span class="mi">1</span><span class="p">]</span> <span class="p">]</span><span class="p">.</span><span class="nf">index</span><span class="p">(</span><span class="mi">1</span>, <span class="ss">:strict_lower</span><span class="p">)</span> <span class="c1"># =&gt; [1, 0]
+</span></code></pre>
+<p>
+value を指定せず、さらにブロックを省略した場合、
+<a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] value:</dt>
+<dd>
+探索する値
+</dd>
+<dt class='method-param'>[PARAM] selector:</dt>
+<dd>
+探索範囲
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_FIRST_MINOR"><code>first_minor(row, column) -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/first_minor.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-first_minor">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self から第 row 行と第 column 列を取り除いた行列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] row:</dt>
+<dd>
+行
+</dd>
+<dt class='method-param'>[PARAM] column:</dt>
+<dd>
+列
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+row, column が行列の行数/列数を越えている場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_HASH"><code>hash -&gt; Integer</code><span class="permalink">[<a href="../method/-matrix/i/hash.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列のHash値を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_HERMITIAN--3F"><code>hermitian? -&gt; bool</code><span class="permalink">[<a href="../method/-matrix/i/hermitian=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-hermitian-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列がエルミートならば true を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行列が正方行列でない場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_HSTACK"><code>hstack(*matrices) -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/hstack.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-hstack">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列 self と matrices を横に並べた行列を生成します。
+</p>
+<p>
+Matrix.hstack(self, *matrices) と同じです。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+x <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>, <span class="mi">4</span><span class="p">]</span><span class="p">]</span>
+y <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">5</span>, <span class="mi">6</span><span class="p">]</span>, <span class="p">[</span><span class="mi">7</span>, <span class="mi">8</span><span class="p">]</span><span class="p">]</span>
+x<span class="p">.</span><span class="nf">hstack</span><span class="p">(</span>y<span class="p">)</span> <span class="c1"># =&gt; Matrix[[1, 2, 5, 6], [3, 4, 7, 8]]
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] matrices:</dt>
+<dd>
+並べる行列。すべての行列の行数がselfの行数と一致していなければならない
+</dd>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行数の異なる行列がある場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-matrix/s/hstack.html">Matrix.hstack</a>, <a href="../method/-matrix/i/vstack.html">Matrix#vstack</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_IMAG"><code>imaginary -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/imag.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-imag">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>imag -&gt; Matrix</code></dt>
+<dd class="method-description">
+<p>
+行列の虚部を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+<span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="no">Complex</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">)</span>, <span class="no">Complex</span><span class="p">(</span><span class="mi">0</span>,<span class="mi">1</span><span class="p">)</span>, <span class="mi">0</span><span class="p">]</span>, <span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span><span class="p">]</span>
+<span class="c1">#  =&gt; 1+2i  i  0
+</span><span class="c1">#        1  2  3
+</span><span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="no">Complex</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">)</span>, <span class="no">Complex</span><span class="p">(</span><span class="mi">0</span>,<span class="mi">1</span><span class="p">)</span>, <span class="mi">0</span><span class="p">]</span>, <span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">imaginary</span>
+<span class="c1">#  =&gt;   2i  i  0
+</span><span class="c1">#        0  0  0
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-matrix/i/inspect.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-inspect">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自分自身を見やすい形式に文字列化し、その文字列を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+a1 <span class="o">=</span> <span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span>
+a2 <span class="o">=</span> <span class="p">[</span><span class="mi">3</span>, <span class="mf">4.5</span><span class="p">]</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span>a1, a2<span class="p">]</span>
+
+<span class="nb">p</span> m<span class="p">.</span><span class="nf">inspect</span> <span class="c1"># =&gt; &quot;Matrix[[1, 2], [3, 4.5]]&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_INV"><code>inverse -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/inv.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-inv">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>inv -&gt; Matrix</code></dt>
+<dd class="method-description">
+<p>
+逆行列を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+
+<span class="nb">p</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">2</span>, <span class="mi">1</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>, <span class="mi">2</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">inv</span>         <span class="c1">#=&gt; Matrix[[(2/1), (-1/1)], [(-3/1), (2/1)]]
+</span>
+<span class="nb">p</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mf">2.0</span>, <span class="mf">1.0</span><span class="p">]</span>, <span class="p">[</span><span class="mf">3.0</span>, <span class="mf">2.0</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">inv</span> <span class="c1">#=&gt; Matrix[[2.0000000000000004, -1.0000000000000002], [-3.000000000000001, 2.0000000000000004]]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_LOWER_TRIANGULAR--3F"><code>lower_triangular? -&gt; bool</code><span class="permalink">[<a href="../method/-matrix/i/lower_triangular=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-lower_triangular-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列が下三角行列ならば true を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LUP"><code>lup -&gt; Matrix::LUPDecomposition</code><span class="permalink">[<a href="../method/-matrix/i/lup.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-lup">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>lup_decomposition -&gt; Matrix::LUPDecomposition</code></dt>
+<dd class="method-description">
+<p>
+行列の LUP 分解を保持したオブジェクトを返します。
+</p>
+<p>
+<a href="../class/-matrix=3a=3a-l-u-p-decomposition.html">Matrix::LUPDecomposition</a> は to_ary を定義しているため、多重代入によって3つの行列(下三角行列、上三角行列、置換行列)
+を得ることができます。これを [L, U, P] と書くと、
+L*U = P*self を満たします。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+a <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>, <span class="mi">4</span><span class="p">]</span><span class="p">]</span>
+l, u, <span class="nb">p</span> <span class="o">=</span> a<span class="p">.</span><span class="nf">lup</span>
+l<span class="p">.</span><span class="nf">lower_triangular?</span> <span class="c1"># =&gt; true
+</span>u<span class="p">.</span><span class="nf">upper_triangular?</span> <span class="c1"># =&gt; true
+</span><span class="nb">p</span><span class="p">.</span><span class="nf">permutation?</span>      <span class="c1"># =&gt; true
+</span>l <span class="o">*</span> u <span class="o">==</span> <span class="nb">p</span> <span class="o">*</span> a      <span class="c1"># =&gt; true
+</span>a<span class="p">.</span><span class="nf">lup</span><span class="p">.</span><span class="nf">solve</span><span class="p">(</span><span class="p">[</span><span class="mi">2</span>, <span class="mi">5</span><span class="p">]</span><span class="p">)</span> <span class="c1"># =&gt; Vector[(1/1), (1/2)]
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../class/-matrix=3a=3a-l-u-p-decomposition.html">Matrix::LUPDecomposition</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_MINOR"><code>minor(from_row, row_size, from_col, col_size) -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/minor.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-minor">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>minor(from_row..to_row, from_col..to_col) -&gt; Matrix</code></dt>
+<dd class="method-description">
+<p>
+selfの部分行列を返します。
+</p>
+<p>
+自分自身の部分行列を返します。ただし、パラメータは次の方法で指定します。
+</p>
+<ol>
+<li>開始行番号, 行の大きさ, 開始列番号, 列の大きさ</li>
+<li>開始行番号..終了行番号, 開始列番号..終了列番号</li>
+</ol>
+<dl>
+<dt class='method-param'>[PARAM] from_row:</dt>
+<dd>
+部分行列の開始行(0オリジンで指定)
+</dd>
+<dt class='method-param'>[PARAM] row_size:</dt>
+<dd>
+部分行列の行サイズ
+</dd>
+<dt class='method-param'>[PARAM] from_col:</dt>
+<dd>
+部分行列の開始列(0オリジンで指定)
+</dd>
+<dt class='method-param'>[PARAM] col_size:</dt>
+<dd>
+部分行列の列サイズ
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+a1 <span class="o">=</span> <span class="p">[</span> <span class="mi">1</span>,  <span class="mi">2</span>,  <span class="mi">3</span>,  <span class="mi">4</span>,  <span class="mi">5</span><span class="p">]</span>
+a2 <span class="o">=</span> <span class="p">[</span><span class="mi">11</span>, <span class="mi">12</span>, <span class="mi">13</span>, <span class="mi">14</span>, <span class="mi">15</span><span class="p">]</span>
+a3 <span class="o">=</span> <span class="p">[</span><span class="mi">21</span>, <span class="mi">22</span>, <span class="mi">23</span>, <span class="mi">24</span>, <span class="mi">25</span><span class="p">]</span>
+a4 <span class="o">=</span> <span class="p">[</span><span class="mi">31</span>, <span class="mi">32</span>, <span class="mi">33</span>, <span class="mi">34</span>, <span class="mi">35</span><span class="p">]</span>
+a5 <span class="o">=</span> <span class="p">[</span><span class="mi">51</span>, <span class="mi">52</span>, <span class="mi">53</span>, <span class="mi">54</span>, <span class="mi">55</span><span class="p">]</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span>a1, a2, a3, a4, a5<span class="p">]</span>
+
+<span class="nb">p</span> m<span class="p">.</span><span class="nf">minor</span><span class="p">(</span><span class="mi">0</span>, <span class="mi">2</span>, <span class="mi">1</span>, <span class="mi">2</span><span class="p">)</span> <span class="c1"># =&gt; Matrix[[2, 3], [12, 13]]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_NORMAL--3F"><code>normal? -&gt; bool</code><span class="permalink">[<a href="../method/-matrix/i/normal=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-normal-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列が正規行列ならば true を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行列が正方行列でない場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_ORTHOGONAL--3F"><code>orthogonal? -&gt; bool</code><span class="permalink">[<a href="../method/-matrix/i/orthogonal=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-orthogonal-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列が直交行列ならば true を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行列が正方行列でない場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_PERMUTATION--3F"><code>permutation? -&gt; bool</code><span class="permalink">[<a href="../method/-matrix/i/permutation=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-permutation-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列が置換行列ならば true を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行列が正方行列でない場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_RANK"><code>rank -&gt; Integer</code><span class="permalink">[<a href="../method/-matrix/i/rank.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-rank">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+階数 (rank) を返します。
+</p>
+<p>
+<a href="../class/-float.html">Float</a> を使用すると、精度が不足するため、誤った結果が生じる可能性があることに注意してください。代わりに、<a href="../class/-rational.html">Rational</a> や <a href="../class/-big-decimal.html">BigDecimal</a> などの正確なオブジェクトを使用することを検討してください。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">2</span>, <span class="mi">6</span><span class="p">]</span>, <span class="p">[</span><span class="mi">1</span>, <span class="mi">3</span><span class="p">]</span><span class="p">]</span>
+m<span class="p">.</span><span class="nf">rank</span>  <span class="c1"># =&gt; 1
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_RANK_E"><code>rank_e -&gt; Integer</code><span class="permalink">[<a href="../method/-matrix/i/rank_e.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-rank_e">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+階数 (rank) を返します。
+</p>
+<p>
+このメソッドは deprecated です。代わりに <a href="../method/-matrix/i/rank.html">Matrix#rank</a> を使ってください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_REAL"><code>real -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/real.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-real">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列の実部を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+<span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="no">Complex</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">)</span>, <span class="no">Complex</span><span class="p">(</span><span class="mi">0</span>,<span class="mi">1</span><span class="p">)</span>, <span class="mi">0</span><span class="p">]</span>, <span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span><span class="p">]</span>
+<span class="c1">#  =&gt; 1+2i  i  0
+</span><span class="c1">#        1  2  3
+</span><span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="no">Complex</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">)</span>, <span class="no">Complex</span><span class="p">(</span><span class="mi">0</span>,<span class="mi">1</span><span class="p">)</span>, <span class="mi">0</span><span class="p">]</span>, <span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">real</span>
+<span class="c1">#  =&gt;    1  0  0
+</span><span class="c1">#        1  2  3
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_REAL--3F"><code>real? -&gt; bool</code><span class="permalink">[<a href="../method/-matrix/i/real=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-real-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列の全要素が実(<a href="../method/-numeric/i/real=3f.html">Numeric#real?</a>)であれば true を返します。
+</p>
+<p>
+Complexオブジェクトを要素に持つ場合は虚部が0でも偽を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+<span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">1</span>, <span class="mi">0</span><span class="p">]</span>, <span class="p">[</span><span class="mi">0</span>, <span class="mi">1</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">real?</span> <span class="c1"># =&gt; true
+</span><span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="no">Complex</span><span class="p">(</span><span class="mi">0</span>, <span class="mi">1</span><span class="p">)</span>, <span class="mi">0</span><span class="p">]</span>, <span class="p">[</span><span class="mi">0</span>, <span class="mi">1</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">real?</span> <span class="c1"># =&gt; false
+</span><span class="c1"># 要素が実数であっても Complex オブジェクトなら偽を返す。
+</span><span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="no">Complex</span><span class="p">(</span><span class="mi">1</span>, <span class="mi">0</span><span class="p">)</span>, <span class="mi">0</span><span class="p">]</span>, <span class="p">[</span><span class="mi">0</span>, <span class="mi">1</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">real?</span> <span class="c1"># =&gt; false
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_RECT"><code>rectangular -&gt; [Matrix, Matrix]</code><span class="permalink">[<a href="../method/-matrix/i/rect.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-rect">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>rect -&gt; [Matrix, Matrix]</code></dt>
+<dd class="method-description">
+<p>
+行列を実部と虚部に分解したものを返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+m<span class="p">.</span><span class="nf">rect</span> <span class="o">==</span> <span class="p">[</span>m<span class="p">.</span><span class="nf">real</span>, m<span class="p">.</span><span class="nf">imag</span><span class="p">]</span>  <span class="c1"># ==&gt; true for all matrices m
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-matrix/i/imaginary.html">Matrix#imaginary</a>, <a href="../method/-matrix/i/real.html">Matrix#real</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_REGULAR--3F"><code>regular? -&gt; bool</code><span class="permalink">[<a href="../method/-matrix/i/regular=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-regular-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列が正方で正則なら true を、特異なら false を返します。
+</p>
+<p>
+行列が正則であるとは、正方行列であり、かつ、その逆行列が存在することです。行列式が0でないことと同値です。
+</p>
+<p>
+正方行列でない場合には例外 ExceptionForMatrix::ErrDimensionMismatch を発生させます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+
+a1 <span class="o">=</span> <span class="p">[</span> <span class="mi">1</span>,  <span class="mi">2</span>,  <span class="mi">3</span><span class="p">]</span>
+a2 <span class="o">=</span> <span class="p">[</span><span class="mi">10</span>, <span class="mi">15</span>, <span class="mi">20</span><span class="p">]</span>
+a3 <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span>, <span class="o">-</span><span class="mi">2</span>, <span class="mf">1.5</span><span class="p">]</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span>a1, a2, a3<span class="p">]</span>
+<span class="nb">p</span> m<span class="p">.</span><span class="nf">regular?</span> <span class="c1"># =&gt; true
+</span>
+a1 <span class="o">=</span> <span class="p">[</span> <span class="mi">1</span>,  <span class="mi">2</span>,  <span class="mi">3</span><span class="p">]</span>
+a2 <span class="o">=</span> <span class="p">[</span><span class="mi">10</span>, <span class="mi">15</span>, <span class="mi">20</span><span class="p">]</span>
+a3 <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span>, <span class="o">-</span><span class="mi">2</span>, <span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span>a1, a2, a3<span class="p">]</span>
+<span class="nb">p</span> m<span class="p">.</span><span class="nf">regular?</span> <span class="c1"># =&gt; false
+</span>
+a1 <span class="o">=</span> <span class="p">[</span> <span class="mi">1</span>,  <span class="mi">2</span>,  <span class="mi">3</span><span class="p">]</span>
+a2 <span class="o">=</span> <span class="p">[</span><span class="mi">10</span>, <span class="mi">15</span>, <span class="mi">20</span><span class="p">]</span>
+a3 <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span>, <span class="o">-</span><span class="mi">2</span>, <span class="mf">1.5</span><span class="p">]</span>
+a4 <span class="o">=</span> <span class="p">[</span><span class="mi">1</span>, <span class="mi">1</span>, <span class="mi">1</span><span class="p">]</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span>a1, a2, a3, a4<span class="p">]</span>
+<span class="nb">p</span> m<span class="p">.</span><span class="nf">regular?</span> <span class="c1"># =&gt; raise ExceptionForMatrix::ErrDimensionMismatch
+</span></code></pre>
+<dl>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行列が正方行列でない場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_ROUND"><code>round(ndigits = 0) -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/round.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-round">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列の各要素を指定した桁数で丸めた行列を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-float/i/round.html">Float#round</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ROW"><code>row(i) -&gt; Vector | nil</code><span class="permalink">[<a href="../method/-matrix/i/row.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-row">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>row(i) {|x| ... } -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+i 番目の行を <a href="../class/-vector.html">Vector</a> オブジェクトで返します。
+i 番目の行が存在しない場合は nil を返します。ブロックが与えられた場合はその行の各要素についてブロックを繰り返します。
+</p>
+<p>
+<a href="../class/-vector.html">Vector</a> オブジェクトは <a href="../class/-matrix.html">Matrix</a> オブジェクトとの演算の際には列ベクトルとして扱われることに注意してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] i:</dt>
+<dd>
+行の位置を指定します。先頭の行が 0 番目になります。i の値が負の時には末尾からのインデックスと見倣します。末尾の行が -1 番目になります。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+a1 <span class="o">=</span> <span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span>
+a2 <span class="o">=</span> <span class="p">[</span><span class="mi">10</span>, <span class="mi">15</span>, <span class="mi">20</span><span class="p">]</span>
+a3 <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span>, <span class="o">-</span><span class="mi">2</span>, <span class="mf">1.5</span><span class="p">]</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span>a1, a2, a3<span class="p">]</span>
+
+<span class="nb">p</span> m<span class="p">.</span><span class="nf">row</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># =&gt; Vector[10, 15, 20]
+</span>
+cnt <span class="o">=</span> <span class="mi">0</span>
+m<span class="p">.</span><span class="nf">row</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>x<span class="o">|</span>
+  cnt <span class="o">=</span> cnt <span class="o">+</span> x
+<span class="p">}</span>
+<span class="nb">p</span> cnt <span class="c1"># =&gt; 6
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ROW_COUNT"><code>row_size -&gt; Integer</code><span class="permalink">[<a href="../method/-matrix/i/row_count.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-row_count">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>row_count -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+行列の行数を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ROW_VECTORS"><code>row_vectors -&gt; [Vector]</code><span class="permalink">[<a href="../method/-matrix/i/row_vectors.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-row_vectors">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自分自身を行ベクトルの配列として返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+a1 <span class="o">=</span> <span class="p">[</span> <span class="mi">1</span>,  <span class="mi">2</span>,  <span class="mi">3</span><span class="p">]</span>
+a2 <span class="o">=</span> <span class="p">[</span><span class="mi">10</span>, <span class="mi">15</span>, <span class="mi">20</span><span class="p">]</span>
+a3 <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span>, <span class="o">-</span><span class="mi">2</span>, <span class="mf">1.5</span><span class="p">]</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span>a1, a2, a3<span class="p">]</span>
+
+<span class="nb">p</span> m<span class="p">.</span><span class="nf">row_vectors</span> <span class="c1"># =&gt; [Vector[1, 2, 3], Vector[10, 15, 20], Vector[-1, -2, 1.5]]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SINGULAR--3F"><code>singular? -&gt; bool</code><span class="permalink">[<a href="../method/-matrix/i/singular=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-singular-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列が正方で特異なら true を、正則なら false を返します。
+</p>
+<p>
+行列が特異(singular)であるとは、正則でないことです。行列式が0であること同値です。
+</p>
+<p>
+正方行列でない場合には例外 ExceptionForMatrix::ErrDimensionMismatch を発生させます。
+</p>
+<dl>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行列が正方行列でない場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_SQUARE--3F"><code>square? -&gt; bool</code><span class="permalink">[<a href="../method/-matrix/i/square=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-square-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+正方行列であるなら、 true を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SYMMETRIC--3F"><code>symmetric? -&gt; bool</code><span class="permalink">[<a href="../method/-matrix/i/symmetric=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-symmetric-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列が対称ならば true を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行列が正方行列でない場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_T"><code>transpose -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/t.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-t">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>t -&gt; Matrix</code></dt>
+<dd class="method-description">
+<p>
+転置行列 (transpose matrix) を返します。
+</p>
+<p>
+self を <a href="../class/-matrix.html">Matrix</a> のオブジェクトで、(m,n) 型行列としたとき a(j,i) を (i,j) 要素とする (n,m) 型行列を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_A"><code>to_a -&gt; Array</code><span class="permalink">[<a href="../method/-matrix/i/to_a.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-to_a">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自分自身を<a href="../class/-array.html">Array</a>に変換したものを返します。
+</p>
+<p>
+行ベクトルを配列(<a href="../class/-array.html">Array</a>)としたものの配列(つまり配列の配列)として返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+a1 <span class="o">=</span> <span class="p">[</span> <span class="mi">1</span>,  <span class="mi">2</span>,  <span class="mi">3</span><span class="p">]</span>
+a2 <span class="o">=</span> <span class="p">[</span><span class="mi">10</span>, <span class="mi">15</span>, <span class="mi">20</span><span class="p">]</span>
+a3 <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span>, <span class="o">-</span><span class="mi">2</span>, <span class="mf">1.5</span><span class="p">]</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span>a1, a2, a3<span class="p">]</span>
+
+<span class="nb">p</span> m<span class="p">.</span><span class="nf">to_a</span> <span class="c1"># =&gt; [[1, 2, 3], [10, 15, 20], [-1, -2, 1.5]]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_S"><code>to_s -&gt; String</code><span class="permalink">[<a href="../method/-matrix/i/to_s.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-to_s">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列を文字列化し、その文字列を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+a1 <span class="o">=</span> <span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span>
+a2 <span class="o">=</span> <span class="p">[</span><span class="mi">3</span>, <span class="mf">4.5</span><span class="p">]</span>
+m <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span>a1, a2<span class="p">]</span>
+
+<span class="nb">p</span> m<span class="p">.</span><span class="nf">to_s</span> <span class="c1"># =&gt; &quot;Matrix[[1, 2], [3, 4.5]]&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TR"><code>trace -&gt; Integer | Float | Rational | Complex</code><span class="permalink">[<a href="../method/-matrix/i/tr.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-tr">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>tr -&gt; Integer | Float | Rational | Complex</code></dt>
+<dd class="method-description">
+<p>
+トレース (trace) を返します。
+</p>
+<p>
+行列のトレース (trace) とは、対角要素の和です。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+<span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">7</span>,<span class="mi">6</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>,<span class="mi">9</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">trace</span> <span class="c1"># =&gt; 16
+</span></code></pre>
+<p>
+trace は正方行列でのみ定義されます。
+</p>
+<dl>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行列が正方行列でない場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_UNITARY--3F"><code>unitary? -&gt; bool</code><span class="permalink">[<a href="../method/-matrix/i/unitary=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-unitary-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列がユニタリならば true を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] ExceptionForMatrix::ErrDimensionMismatch:</dt>
+<dd>
+行列が正方行列でない場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_UPPER_TRIANGULAR--3F"><code>upper_triangular? -&gt; bool</code><span class="permalink">[<a href="../method/-matrix/i/upper_triangular=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-upper_triangular-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列が上三角行列ならば true を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_VSTACK"><code>vstack -&gt; Matrix</code><span class="permalink">[<a href="../method/-matrix/i/vstack.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-vstack">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列 self と matrices を縦に並べた行列を生成します。
+</p>
+<p>
+Matrix.vstack(self, *matrices) と同じです。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'matrix'</span>
+x <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>, <span class="mi">4</span><span class="p">]</span><span class="p">]</span>
+y <span class="o">=</span> <span class="no">Matrix</span><span class="p">[</span><span class="p">[</span><span class="mi">5</span>, <span class="mi">6</span><span class="p">]</span>, <span class="p">[</span><span class="mi">7</span>, <span class="mi">8</span><span class="p">]</span><span class="p">]</span>
+x<span class="p">.</span><span class="nf">vstack</span><span class="p">(</span>y<span class="p">)</span> <span class="c1"># =&gt; Matrix[[1, 2], [3, 4], [5, 6], [7, 8]]
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-matrix/s/vstack.html">Matrix.vstack</a>, <a href="../method/-matrix/i/hstack.html">Matrix#hstack</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ZERO--3F"><code>zero? -&gt; bool</code><span class="permalink">[<a href="../method/-matrix/i/zero=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Matrix.html#method-i-zero-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行列が零行列ならば true を返します。
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

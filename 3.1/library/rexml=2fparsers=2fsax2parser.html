@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>library rexml/parsers/sax2parser (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="SAX2 と同等の API を持つストリーム式の XML パーサ。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        rexml/parsers/sax2parserライブラリ
+      </li>
+    </ol>
+  </nav>
+
+<h1>library rexml/parsers/sax2parser</h1>
+</header>
+
+<main>
+
+
+
+<h2>要約</h2>
+<p>
+SAX2 と同等の API を持つストリーム式の XML パーサ。
+</p>
+<p>
+コールバックをパーサオブジェクトに <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser/i/listen.html">REXML::Parsers::SAX2Parser#listen</a> で設定してから <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser/i/parse.html">REXML::Parsers::SAX2Parser#parse</a> を呼び出すことで、パーサからコールバックが呼び出されます。
+</p>
+<p>
+コールバックには2種類あって、ブロックを使う方式と <a href="../class/-r-e-x-m-l=3a=3a-s-a-x2-listener.html">REXML::SAX2Listener</a>
+を include したクラスのオブジェクトを使う方式があります。詳しくは
+<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser/i/listen.html">REXML::Parsers::SAX2Parser#listen</a> を参照してください。
+</p>
+<p>
+<a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-stream-parser.html">REXML::Parsers::StreamParser</a> のパーサよりは高機能です。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'rexml/parsers/sax2parser'</span>
+<span class="nb">require</span> <span class="s1">'rexml/sax2listener'</span>
+
+parser <span class="o">=</span> <span class="no">REXML</span><span class="o">::</span><span class="no">Parsers</span><span class="o">::</span><span class="no">SAX2Parser</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">&lt;&lt;XML</span><span class="p">)</span>
+<span class="sh">&lt;root n=&quot;0&quot;&gt;
+  &lt;a n=&quot;1&quot;&gt;111&lt;/a&gt;
+  &lt;b n=&quot;2&quot;&gt;222&lt;/b&gt;
+  &lt;a n=&quot;3&quot;&gt;333&lt;/a&gt;
+&lt;/root&gt;
+</span><span class="no">XML
+</span>
+elements <span class="o">=</span> <span class="p">[</span><span class="p">]</span>
+parser<span class="p">.</span><span class="nf">listen</span><span class="p">(</span><span class="ss">:start_element</span><span class="p">)</span><span class="p">{</span><span class="o">|</span>uri, localname, qname, attrs<span class="o">|</span>
+  elements <span class="o">&lt;&lt;</span> <span class="p">[</span>qname, attrs<span class="p">]</span>
+<span class="p">}</span>
+as <span class="o">=</span> <span class="p">[</span><span class="p">]</span>
+parser<span class="p">.</span><span class="nf">listen</span><span class="p">(</span><span class="ss">:start_element</span>, <span class="p">[</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span><span class="p">]</span><span class="p">)</span><span class="p">{</span><span class="o">|</span>uri, localname, qname, attrs<span class="o">|</span>
+  as <span class="o">&lt;&lt;</span> <span class="p">[</span>qname, attrs<span class="p">]</span>
+<span class="p">}</span>
+texts <span class="o">=</span> <span class="p">[</span><span class="p">]</span>
+parser<span class="p">.</span><span class="nf">listen</span><span class="p">(</span><span class="ss">:characters</span>, <span class="p">[</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span><span class="p">]</span><span class="p">)</span><span class="p">{</span><span class="o">|</span>c<span class="o">|</span> texts <span class="o">&lt;&lt;</span> c <span class="p">}</span>
+parser<span class="p">.</span><span class="nf">parse</span>
+elements <span class="c1"># =&gt; [[&quot;root&quot;, {&quot;n&quot;=&gt;&quot;0&quot;}], [&quot;a&quot;, {&quot;n&quot;=&gt;&quot;1&quot;}], [&quot;b&quot;, {&quot;n&quot;=&gt;&quot;2&quot;}], [&quot;a&quot;, {&quot;n&quot;=&gt;&quot;3&quot;}]]
+</span>as <span class="c1"># =&gt; [[&quot;a&quot;, {&quot;n&quot;=&gt;&quot;1&quot;}], [&quot;a&quot;, {&quot;n&quot;=&gt;&quot;3&quot;}]]
+</span>texts <span class="c1"># =&gt; [&quot;111&quot;, &quot;333&quot;]
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">仕様確認サンプル</span>
+<code>
+<span class="nb">require</span> <span class="s1">'rexml/parsers/sax2parser'</span>
+<span class="nb">require</span> <span class="s1">'rexml/sax2listener'</span>
+
+xml <span class="o">=</span> <span class="no">&lt;&lt;EOS</span>
+<span class="sh">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;?xml-stylesheet type=&quot;text/css&quot; href=&quot;style.css&quot;?&gt;
+&lt;!DOCTYPE root SYSTEM &quot;foo&quot; [
+  &lt;!ELEMENT root (a+)&gt;
+  &lt;!ELEMENT a&gt;
+  &lt;!ENTITY bar &quot;barbarbarbar&quot;&gt;
+  &lt;!ATTLIST a att CDATA #REQUIRED xyz CDATA &quot;foobar&quot;&gt;
+  &lt;!NOTATION foobar SYSTEM &quot;http://example.org/foobar.dtd&quot;&gt;
+  &lt;!ENTITY % HTMLsymbol PUBLIC
+      &quot;-//W3C//ENTITIES Symbols for XHTML//EN&quot;
+      &quot;xhtml-symbol.ent&quot;&gt;
+  %HTMLsymbol;
+]&gt;
+&lt;root xmlns=&quot;http://example.org/default&quot;
+      xmlns:foo=&quot;http://example.org/foo&quot;
+      xmlns:bar=&quot;http://example.org/bar&quot;&gt;&lt;![CDATA[cdata is here]]&gt;
+  &lt;a foo:att='1' bar:att='2' att='&amp;lt;'&gt;
+  &lt;bar:b /&gt;
+  &lt;/a&gt;
+  &amp;amp;&amp;amp; &lt;!-- comment here--&gt; &amp;bar;
+&lt;/root&gt;
+</span><span class="no">EOS
+</span>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Listener</span>
+  <span class="c1">#include REXML::SAX2Listener
+</span>  <span class="k">def</span> <span class="nf">method_missing</span><span class="p">(</span><span class="nb">name</span>, <span class="o">*</span>args<span class="p">)</span>
+    <span class="nb">p</span> <span class="p">[</span><span class="nb">name</span>, <span class="o">*</span>args<span class="p">]</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">respond_to_missing?</span><span class="p">(</span><span class="nb">name</span>, include_private<span class="p">)</span>
+    <span class="nb">name</span> <span class="o">!=</span> <span class="ss">:call</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+parser <span class="o">=</span> <span class="no">REXML</span><span class="o">::</span><span class="no">Parsers</span><span class="o">::</span><span class="no">SAX2Parser</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>xml<span class="p">)</span>
+parser<span class="p">.</span><span class="nf">listen</span><span class="p">(</span><span class="no">Listener</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span>
+parser<span class="p">.</span><span class="nf">parse</span>
+<span class="c1"># &gt;&gt; [:start_document]
+</span><span class="c1"># &gt;&gt; [:xmldecl, &quot;1.0&quot;, &quot;UTF-8&quot;, nil]
+</span><span class="c1"># &gt;&gt; [:progress, 39]
+</span><span class="c1"># &gt;&gt; [:characters, &quot;\n&quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 91]
+</span><span class="c1"># &gt;&gt; [:processing_instruction, &quot;xml-stylesheet&quot;, &quot; type=\&quot;text/css\&quot; href=\&quot;style.css\&quot;&quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 91]
+</span><span class="c1"># &gt;&gt; [:characters, &quot;\n&quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 144]
+</span><span class="c1"># &gt;&gt; [:doctype, &quot;root&quot;, &quot;SYSTEM&quot;, &quot;foo&quot;, nil]
+</span><span class="c1"># &gt;&gt; [:progress, 144]
+</span><span class="c1"># &gt;&gt; [:elementdecl, &quot;&lt;!ELEMENT root (a+)&quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 144]
+</span><span class="c1"># &gt;&gt; [:elementdecl, &quot;&lt;!ELEMENT a&quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 159]
+</span><span class="c1"># &gt;&gt; [:entitydecl, &quot;bar&quot;, &quot;barbarbarbar&quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 190]
+</span><span class="c1"># &gt;&gt; [:attlistdecl, &quot;a&quot;, {&quot;att&quot;=&gt;nil, &quot;xyz&quot;=&gt;&quot;foobar&quot;}, &quot; \n  &lt;!ATTLIST a att CDATA #REQUIRED xyz CDATA \&quot;foobar\&quot;&gt;&quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 245]
+</span><span class="c1"># &gt;&gt; [:notationdecl, &quot;foobar&quot;, &quot;SYSTEM&quot;, nil, &quot;http://example.org/foobar.dtd&quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:entitydecl, &quot;HTMLsymbol&quot;, &quot;PUBLIC&quot;, &quot;-//W3C//ENTITIES Symbols for XHTML//EN&quot;, &quot;xhtml-symbol.ent&quot;, &quot;%&quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:characters, &quot;\n&quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:start_prefix_mapping, nil, &quot;http://example.org/default&quot;]
+</span><span class="c1"># &gt;&gt; [:start_prefix_mapping, &quot;foo&quot;, &quot;http://example.org/foo&quot;]
+</span><span class="c1"># &gt;&gt; [:start_prefix_mapping, &quot;bar&quot;, &quot;http://example.org/bar&quot;]
+</span><span class="c1"># &gt;&gt; [:start_element, &quot;http://example.org/default&quot;, &quot;root&quot;, &quot;root&quot;, {&quot;xmlns&quot;=&gt;&quot;http://example.org/default&quot;, &quot;xmlns:foo&quot;=&gt;&quot;http://example.org/foo&quot;, &quot;xmlns:bar&quot;=&gt;&quot;http://example.org/bar&quot;}]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:cdata, &quot;cdata is here&quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:characters, &quot;\n  &quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:start_element, &quot;http://example.org/default&quot;, &quot;a&quot;, &quot;a&quot;, {&quot;foo:att&quot;=&gt;&quot;1&quot;, &quot;bar:att&quot;=&gt;&quot;2&quot;, &quot;att&quot;=&gt;&quot;&amp;lt;&quot;}]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:characters, &quot;\n  &quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:start_element, &quot;http://example.org/bar&quot;, &quot;b&quot;, &quot;bar:b&quot;, {}]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:end_element, &quot;http://example.org/bar&quot;, &quot;b&quot;, &quot;bar:b&quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:characters, &quot;\n  &quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:end_element, &quot;http://example.org/default&quot;, &quot;a&quot;, &quot;a&quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:characters, &quot;\n  &amp;amp;&amp;amp; &quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:comment, &quot; comment here&quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:characters, &quot; barbarbarbar\n&quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:end_element, &quot;http://example.org/default&quot;, &quot;root&quot;, &quot;root&quot;]
+</span><span class="c1"># &gt;&gt; [:end_prefix_mapping, nil]
+</span><span class="c1"># &gt;&gt; [:end_prefix_mapping, &quot;foo&quot;]
+</span><span class="c1"># &gt;&gt; [:end_prefix_mapping, &quot;bar&quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:characters, &quot;\n&quot;]
+</span><span class="c1"># &gt;&gt; [:progress, 683]
+</span><span class="c1"># &gt;&gt; [:end_document]
+</span></code></pre>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser.html">REXML::Parsers::SAX2Parser</a>
+</td>
+<td class="description"><p>
+SAX2 と同等の API を持つストリーム式の XML パーサクラス。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

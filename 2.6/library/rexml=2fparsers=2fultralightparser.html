@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>library rexml/parsers/ultralightparser (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="パース結果を配列で作られた木構造により返すパーサ。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        rexml/parsers/ultralightparserライブラリ
+      </li>
+    </ol>
+  </nav>
+
+<h1>library rexml/parsers/ultralightparser</h1>
+</header>
+
+<main>
+
+
+
+<h2>要約</h2>
+<p>
+パース結果を配列で作られた木構造により返すパーサ。
+</p>
+<p>
+<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-ultra-light-parser/s/new.html">REXML::Parsers::UltraLightParser.new</a> でパーサオブジェクトを生成し、<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-ultra-light-parser/i/parse.html">REXML::Parsers::UltraLightParser#parse</a> でパースしその結果の木構造を返します。
+</p>
+<h2 id='nodes'>ノードの表現</h2>
+<p>
+<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-ultra-light-parser/i/parse.html">REXML::Parsers::UltraLightParser#parse</a> が返す
+XML の各ノードは配列で表現されます。配列の最初の要素はシンボルでノードの種類を表わし、2番目以降の要素でそのノードの情報を保持しています。例えばテキストノードは [:text, テキスト文字列 ] という2要素の配列で表現されます。XML 要素のように子ノードを持つ場合、それらの子ノードもこの配列の要素として保持されます。
+</p>
+<p>
+<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-ultra-light-parser/i/parse.html">REXML::Parsers::UltraLightParser#parse</a> の返り値となる木のルートは特別で、ノードの種類を表すシンボルを持ちません。
+XML宣言、DTD、ルート要素、テキストノードの配列です。例も確認してください。木のルートの配列に含まれるテキストノードはあまり意味がないのでたいがいの場合には無視すべきでしょう。
+</p>
+<p>
+各ノードは以下のような配列で表現されます。
+</p>
+<dl>
+<dt>[:start_element, 親ノード, 要素名, 属性, *子ノード]</dt>
+<dd>
+<p>
+XML要素。属性は { 属性名文字列 =&gt; 属性値文字列 } という <a href="../class/-hash.html">Hash</a>。子ノードの配列は node[4..-1] で得られる。
+</p>
+</dd>
+<dt>[:text, 正規化文字列]</dt>
+<dd>
+<p>
+テキストノード
+</p>
+</dd>
+<dt>[:processing_instruction, ターゲット文字列, 内容文字列 | nil]</dt>
+<dd>
+<p>
+XML処理命令(Processing Instruction, PI)
+</p>
+</dd>
+<dt>[:comment ,コメント文字列]</dt>
+<dd>
+<p>
+コメント
+</p>
+</dd>
+<dt>[:start_doctype, 親ノード, ルート要素名, &quot;SYSTEM&quot; | &quot;PUBLIC&quot; | nil, システム識別子 | nil, 公開識別子 | nil, *子ノード]</dt>
+<dd>
+<p>
+DTD。子ノードの配列は node[6..-1] で得られる。
+</p>
+</dd>
+<dt>[:attlistdecl, 要素名, 属性名とデフォルト値, 宣言文字列]</dt>
+<dd>
+<p>
+DTDの属性リスト宣言。属性名とデフォルト値 は { 属性名文字列 =&gt; デフォルト値文字列(なければnil) } という <a href="../class/-hash.html">Hash</a>
+</p>
+</dd>
+<dt>[:elementdecl, 宣言文字列]</dt>
+<dd>
+<p>
+DTDの要素宣言
+</p>
+</dd>
+<dt>[:entitydecl, *パラメータ]</dt>
+<dd>
+<p>
+DTDの実体宣言
+</p>
+</dd>
+<dt>[:notationdecl, 記法名文字列, &quot;PUBLIC&quot; | &quot;SYSTEM&quot; | nil, 公開識別子文字列 | nil, URI文字列 | nil]</dt>
+<dd>
+<p>
+DTDの記法宣言
+</p>
+</dd>
+<dt>[:cdata, テキスト文字列]</dt>
+<dd>
+<p>
+cdata セクション
+</p>
+</dd>
+<dt>[:xmldecl, バージョン文字列, エンコーディング文字列 | nil, standalone (&quot;yes&quot; | &quot;no&quot; | nil)]</dt>
+<dd>
+<p>
+XML宣言
+</p>
+</dd>
+<dt>[:externalentity,エンティティ文字列]</dt>
+<dd>
+<p>
+doctype内のパラメータ実体参照。
+</p>
+</dd>
+</dl>
+<h2 >例</h2>
+<p>
+以下の例は簡単な XML をパースし、その結果を返しています。[...]の部分は親ノードを指しているので、pp の表示では省略されています。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'rexml/parsers/ultralightparser'</span>
+<span class="nb">require</span> <span class="s1">'pp'</span>
+parser <span class="o">=</span> <span class="no">REXML</span><span class="o">::</span><span class="no">Parsers</span><span class="o">::</span><span class="no">UltraLightParser</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">&lt;&lt;XML</span><span class="p">)</span>
+<span class="sh">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;root&gt;
+  &lt;a n=&quot;1&quot;&gt;xyz&lt;/a&gt;
+  &lt;b m=&quot;2&quot; /&gt;
+&lt;/root&gt;
+</span><span class="no">XML
+</span>pp parser<span class="p">.</span><span class="nf">parse</span>
+<span class="c1"># &gt;&gt; [[:xmldecl, &quot;1.0&quot;, &quot;UTF-8&quot;, nil],
+</span><span class="c1"># &gt;&gt;  [:text, &quot;\n&quot;],
+</span><span class="c1"># &gt;&gt;  [:start_element,
+</span><span class="c1"># &gt;&gt;   [...],
+</span><span class="c1"># &gt;&gt;   &quot;root&quot;,
+</span><span class="c1"># &gt;&gt;   {},
+</span><span class="c1"># &gt;&gt;   [:text, &quot;\n  &quot;],
+</span><span class="c1"># &gt;&gt;   [:start_element, [...], &quot;a&quot;, {&quot;n&quot;=&gt;&quot;1&quot;}, [:text, &quot;xyz&quot;]],
+</span><span class="c1"># &gt;&gt;   [:text, &quot;\n  &quot;],
+</span><span class="c1"># &gt;&gt;   [:start_element, [...], &quot;b&quot;, {&quot;m&quot;=&gt;&quot;2&quot;}],
+</span><span class="c1"># &gt;&gt;   [:text, &quot;\n&quot;]],
+</span><span class="c1"># &gt;&gt;  [:text, &quot;\n&quot;]]
+</span></code></pre>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-ultra-light-parser.html">REXML::Parsers::UltraLightParser</a>
+</td>
+<td class="description"><p>
+パース結果を配列で作られた木構造により返すパーサクラス。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

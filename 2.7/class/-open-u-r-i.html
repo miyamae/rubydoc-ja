@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>module OpenURI (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="http/ftp に簡単にアクセスするためのモジュールです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/open=2duri.html">open-uriライブラリ</a>
+      </li>
+      <li>
+        OpenURIモジュール
+      </li>
+    </ol>
+  </nav>
+
+<h1>module OpenURI</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+      <li>
+        OpenURI
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+http/ftp に簡単にアクセスするためのモジュールです。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_OPEN_URI">open_uri</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_OPEN_URI"><code>open_uri(name, mode = 'r', perm = nil, options = {}) -&gt; StringIO</code><span class="permalink">[<a href="../method/-open-u-r-i/s/open_uri.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/OpenURI.html#method-c-open_uri">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>open_uri(name, mode = 'r', perm = nil, options = {}) {|sio| ... } -&gt; nil</code></dt>
+<dd class="method-description">
+<p>
+URI である文字列 name のリソースを取得して <a href="../class/-string-i-o.html">StringIO</a> オブジェクトとして返します。
+</p>
+<p>
+ブロックを与えた場合は <a href="../class/-string-i-o.html">StringIO</a> オブジェクトを引数としてブロックを評価します。ブロックの終了時に StringIO は close されます。nil を返します。
+</p>
+<pre>
+require 'open-uri'
+sio = OpenURI.open_uri('http://www.example.com')
+p sio.last_modified
+puts sio.read
+
+OpenURI.open_uri('http://www.example.com'){|sio| sio.read }
+</pre>
+<p>
+options には <a href="../class/-hash.html">Hash</a> を与えます。理解するハッシュのキーは以下のシンボル、
+</p>
+<ul>
+<li>:proxy</li>
+<li>:progress_proc</li>
+<li>:content_length_proc</li>
+<li>:http_basic_authentication</li>
+<li>:proxy_http_basic_authentication</li>
+<li>:read_timeout</li>
+<li>:ssl_ca_cert</li>
+<li>:ssl_verify_mode</li>
+<li>:ftp_active_mode</li>
+<li>:redirect</li>
+</ul>
+<p>
+です。「:content_length_proc」と「:progress_proc」はプログレスバーに利用されることを想定しています。
+</p>
+<pre>
+require 'open-uri'
+sio = OpenURI.open_uri('http://www.example.com',
+                       { :proxy =&gt; 'http://proxy.example.com:8000/',
+                         :http_basic_authentication =&gt; [username, password] })
+</pre>
+<dl>
+<dt>:proxy</dt>
+<dd>
+<p>
+プロクシの設定をします。値には以下のいずれかを与えます。
+</p>
+<pre>
+   文字列:           &quot;http://proxy.example.com:8000/&quot; のようなプロクシの URI。
+   URI オブジェクト: URI.parse(&quot;http://proxy.example.com:8000/&quot;) のようなプロクシの URI オブジェクト。
+   true:             Proxy を環境変数などから見つけようとする。使う環境変数は schema に応じて
+                     http_proxy, https_proxy, ftp_proxy が使われる。
+   false:            Proxy を用いない。
+   nil:              Proxy を用いない。
+</pre>
+</dd>
+<dt>:http_basic_authentication</dt>
+<dd>
+<p>
+HTTP の Basic 認証のためのユーザ名とパスワードを、文字列の配列 [&quot;user&quot;, &quot;password&quot;] として与えます。
+</p>
+</dd>
+<dt>:content_length_proc</dt>
+<dd>
+<p>
+値にはブロックを与えます。ブロックは対象となる URI の
+Content-Length ヘッダの値を引数として、実際の転送が始まる前に評価されます。Redirect された場合は、実際に転送されるリソースの HTTP ヘッダを利用します。Content-Length ヘッダがない場合は、nil を引数としてブロックを評価します。ブロックの返り値は特に利用されません。
+</p>
+</dd>
+<dt>:progress_proc</dt>
+<dd>
+<p>
+値にはブロックを与えます。ブロックは対象となる URI からデータの断片が転送されるたびに、その断片のサイズを引数として評価されます。ブロックの返り値は特に利用されません。
+</p>
+</dd>
+<dt>:proxy_http_basic_authentication</dt>
+<dd>
+<p>
+パスワード付きプロクシの設定を与えます。設定には3要素の配列を渡します。最初の要素はプロクシのURIで、文字列かURIオブジェクトを指定します。
+2番目にはプロクシのユーザ名、3番目にはプロクシのパスワードを指定します。
+</p>
+<p>
+:proxy と :proxy_http_basic_authentication を同時に指定すると
+<a href="../class/-argument-error.html">ArgumentError</a> が発生します。
+</p>
+<p>
+使い方:
+</p>
+<pre>
+   :proxy_http_basic_authentication =&gt;
+     [&quot;http://proxy.example.com:8000/&quot;, &quot;proxy-user&quot;, &quot;proxy-password&quot;]
+   :proxy_http_basic_authentication =&gt;
+     [URI.parse(&quot;http://proxy.example.com:8000/&quot;), &quot;proxy-user&quot;, &quot;proxy-password&quot;]
+</pre>
+</dd>
+<dt>:read_timeout</dt>
+<dd>
+<p>
+http コネクションのタイムアウト秒数を指定します。nil でタイムアウトなしを指定できます。
+</p>
+</dd>
+<dt>:ssl_ca_cert</dt>
+<dd>
+<p>
+SSL の CA 証明書を指定します。これを指定した場合は OpenSSL がデフォルトで使う
+CA 証明書は使われません。
+</p>
+<p>
+証明書のファイル名、証明書のディレクトリ名を指定できます。詳しくは
+<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-store/i/add_file.html">OpenSSL::X509::Store#add_file</a>、
+<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-store/i/add_path.html">OpenSSL::X509::Store#add_path</a>
+を参照してください。デフォルトの証明書については
+<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-store/i/set_default_paths.html">OpenSSL::X509::Store#set_default_paths</a>
+を参照してください。
+</p>
+</dd>
+<dt>:ssl_verify_mode</dt>
+<dd>
+<p>
+SSL の証明書の検証のモードを指定します。詳しくは <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context/i/verify_mode=3d.html">OpenSSL::SSL::SSLContext#verify_mode=</a> を参照してください。
+</p>
+</dd>
+<dt>:ftp_active_mode</dt>
+<dd>
+<p>
+ftp を active mode で使うかどうかを指定します。デフォルトは false (passive mode) です。
+</p>
+</dd>
+<dt>:redirect</dt>
+<dd>
+<p>
+HTTP でサーバがリダイレクトを指示してきたとき、対応するかどうかを指定します。デフォルトは true (リダイレクトする) です。
+</p>
+<p>
+HTTP と FTP の間のリダイレクトもこれで指定します。
+</p>
+</dd>
+</dl>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+オープンしたいリソースを文字列で与えます。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+モードを文字列で与えます。<a href="../method/-kernel/m/open.html">Kernel.#open</a> と同じです。
+</dd>
+<dt class='method-param'>[PARAM] perm:</dt>
+<dd>
+無視されます。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+ハッシュを与えます。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+返り値である StringIO オブジェクトは <a href="../class/-open-u-r-i=3a=3a-meta.html">OpenURI::Meta</a> モジュールで extend されています。
+</dd>
+<dt>[EXCEPTION] OpenURI::HTTPError:</dt>
+<dd>
+対象となる URI のスキームが http であり、かつリソースの取得に失敗した時に発生します。
+</dd>
+<dt>[EXCEPTION] Net::FTPError:</dt>
+<dd>
+対象となる URI のスキームが ftp であり、かつリソースの取得に失敗した時に
+<a href="../class/-net=3a=3a-f-t-p-error.html">Net::FTPError</a> のサブクラスが発生します。詳しくは <a href="../library/net=2fftp.html">net/ftp</a>
+を参照して下さい。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+与えられた mode が読み込みモードでなかった場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Enumerator::Lazy#enum_for (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="[[m:Object#to_enum]] と同じですが、Enumerator::Lazy を返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-enumerator=3a=3a-lazy.html">Enumerator::Lazyクラス</a>
+      </li>
+      <li>
+        enum_for 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Enumerator::Lazy#enum_for</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_ENUM_FOR"><code>to_enum(method = :each, *args) -&gt; Enumerator::Lazy</code><span class="permalink">[<a href="../../../method/-enumerator=3a=3a-lazy/i/enum_for.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Enumerator/Lazy.html#method-i-enum_for">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>enum_for(method = :each, *args) -&gt; Enumerator::Lazy</code></dt>
+<dt class="method-heading"><code>to_enum(method = :each, *args) {|*args| block} -&gt; Enumerator::Lazy</code></dt>
+<dt class="method-heading"><code>enum_for(method = :each, *args) {|*args| block} -&gt; Enumerator::Lazy</code></dt>
+<dd class="method-description">
+<p>
+<a href="../../../method/-object/i/to_enum.html">Object#to_enum</a> と同じですが、Enumerator::Lazy を返します。
+</p>
+<p>
+to_enum は「ブロック付きで呼ぶとループを実行し、ブロックを省略した場合は
+Enumerator を返す」ようなメソッドを定義するときによく使われます。このときに lazy 性が正しく引き継がれるように、Lazy#to_enum は素のEnumerator ではなく Enumerator::Lazy を返すようになっています。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">module</span> <span class="nn">Enumerable</span>
+  <span class="c1"># 要素をn回ずつ繰り返すメソッド
+</span>  <span class="c1"># 例：[1,2,3].repeat(2)  #=&gt; [1,1,2,2,3,3]
+</span>  <span class="k">def</span> <span class="nf">repeat</span><span class="p">(</span>n<span class="p">)</span>
+    <span class="nb">raise</span> <span class="no">ArgumentError</span> <span class="k">if</span> n <span class="o">&lt;</span> <span class="mi">0</span>
+    <span class="k">if</span> block_given?
+      each <span class="k">do</span> <span class="o">|</span><span class="o">*</span>val<span class="o">|</span>
+        n<span class="p">.</span><span class="nf">times</span> <span class="p">{</span> <span class="k">yield</span> <span class="o">*</span>val <span class="p">}</span>
+      <span class="k">end</span>
+    <span class="k">else</span>
+      to_enum<span class="p">(</span><span class="ss">:repeat</span>, n<span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+r <span class="o">=</span> <span class="mi">1</span><span class="o">..</span><span class="mi">10</span>
+<span class="nb">p</span> r<span class="p">.</span><span class="nf">map</span><span class="p">{</span><span class="o">|</span>n<span class="o">|</span> n<span class="o">**</span><span class="mi">2</span><span class="p">}</span><span class="p">.</span><span class="nf">repeat</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="p">.</span><span class="nf">first</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="c1">#=&gt; [1, 1, 4, 4, 9]
+</span>
+r <span class="o">=</span> <span class="mi">1</span><span class="o">..</span><span class="no">Float</span><span class="o">::</span><span class="no">INFINITY</span>
+<span class="nb">p</span> r<span class="p">.</span><span class="nf">lazy</span><span class="p">.</span><span class="nf">map</span><span class="p">{</span><span class="o">|</span>n<span class="o">|</span> n<span class="o">**</span><span class="mi">2</span><span class="p">}</span><span class="p">.</span><span class="nf">repeat</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="p">.</span><span class="nf">first</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="c1">#=&gt; [1, 1, 4, 4, 9]
+</span>
+<span class="c1"># Lazy#to_enum のおかげで、repeat の返り値は
+</span><span class="c1"># もとが Enumerator のときは Enumerator に、
+</span><span class="c1"># もとが Lazy のときは Lazy になる
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

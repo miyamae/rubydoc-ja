@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class Rinda::TupleSpace (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="Tuple Space を表すクラスです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/rinda=2ftuplespace.html">rinda/tuplespaceライブラリ</a>
+      </li>
+      <li>
+        Rinda::TupleSpaceクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class Rinda::TupleSpace</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-d-rb=3a=3a-d-rb-undumped.html">DRb::DRbUndumped</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-monitor-mixin.html">MonitorMixin</a>
+        </li>
+        
+      
+      <li>
+        Rinda::TupleSpace
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+Tuple Space を表すクラスです。
+</p>
+<p>
+このクラスのインスタンスを
+<a href="../library/drb.html">drb</a> を経由して公開することでタプルスペースを他のプロセスからアクセスさせることができるようになります。
+</p>
+<p>
+タプルスペースを drb 経由で利用する側は
+<a href="../method/-d-rb=3a=3a-d-rb-object/s/new_with_uri.html">DRb::DRbObject.new_with_uri</a> などでこのオブジェクトのリモートオブジェクトを取得し、<a href="../class/-rinda=3a=3a-tuple-space-proxy.html">Rinda::TupleSpaceProxy</a> をかぶせることで利用します。
+</p>
+<h2 id='renewer'>タプルの寿命と renewer</h2>
+<p>
+タプルを <a href="../method/-rinda=3a=3a-tuple-space/i/write.html">Rinda::TupleSpace#write</a> などで追加するときにその寿命を秒数で指定することができます。タプルをタプルスペースに追加してからその秒数過ぎるとタプルは削除されます。
+</p>
+<p>
+ただし、指定秒数を過ぎてもすぐには削除されず、<a href="../method/-rinda=3a=3a-tuple-space/s/new.html">Rinda::TupleSpace.new</a> の引数で指定した秒数ごとに「掃除用スレッド」が動き、それによって
+cancel されたタプルや期限切れになったタプルが削除されます。
+</p>
+<p>
+sec には秒数の代わりに renewer を指定することもできます。これは renew という名前を持つオブジェクトで、上で説明した掃除用スレッドによって renew メソッドが呼び出されます。renew が 正の秒数を返した場合、有効期限がその秒数に更新されます。ただし、renew はタプルの有効期限が切れていない場合のみ呼び出されます(有効期限切れのタプルは削除されます)。
+</p>
+<p>
+<a href="../class/-rinda=3a=3a-simple-renewer.html">Rinda::SimpleRenewer</a> はシンプルな renewer で renewer のサンプル実装でもあります。このクラスはデフォルトで寿命を180秒後に変更します。つまりこのクラスのインスタンスを renewer に指定すると無限に renew され続けるように思われますが、そうではありません。このクラスは
+<a href="../class/-d-rb=3a=3a-d-rb-undumped.html">DRb::DRbUndumped</a> を include しているので、オブジェクトが生成されたプロセスが止まるとそのオブジェクトは無効になります。その時点でrenewの呼び出しに失敗するようになるので、そこからしばらく(数分)するとそのタプルは有効期限切れとなります。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_NEW">new</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_NOTIFY">notify</a></li>
+
+<li><a href="#I_READ">read</a></li>
+
+<li><a href="#I_READ_ALL">read_all</a></li>
+
+<li><a href="#I_TAKE">take</a></li>
+
+<li><a href="#I_WRITE">write</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+  <h2>継承しているメソッド</h2>
+<dl>
+  
+<dt>MonitorMixinから継承しているメソッド</dt>
+<dd>
+  <ul class="class-toc">
+    
+      <li><a href="../method/-monitor-mixin/i/mon_enter.html">mon_enter</a></li>
+      
+    
+      <li><a href="../method/-monitor-mixin/i/mon_exit.html">mon_exit</a></li>
+      
+    
+      <li><a href="../method/-monitor-mixin/i/mon_locked=3f.html">mon_locked?</a></li>
+      
+    
+      <li><a href="../method/-monitor-mixin/i/mon_owned=3f.html">mon_owned?</a></li>
+      
+    
+      <li><a href="../method/-monitor-mixin/i/mon_synchronize.html">mon_synchronize</a></li>
+      
+    
+      <li><a href="../method/-monitor-mixin/i/mon_try_enter.html">mon_try_enter</a></li>
+      
+    
+      <li><a href="../method/-monitor-mixin/i/new_cond.html">new_cond</a></li>
+      
+    
+      <li><a href="../method/-monitor-mixin/i/mon_synchronize.html">synchronize</a></li>
+      
+    
+      <li><a href="../method/-monitor-mixin/i/mon_try_enter.html">try_mon_enter</a></li>
+      
+    
+  </ul>
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(period = 60) -&gt; Rinda::TupleSpace</code><span class="permalink">[<a href="../method/-rinda=3a=3a-tuple-space/s/new.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Rinda/TupleSpace.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-rinda=3a=3a-tuple-space.html">Rinda::TupleSpace</a> オブジェクトを生成します。
+</p>
+<p>
+period で掃除用スレッドが動く周期を指定します。このスレッドでは cancel されたタプルや expire(期限切れ、タイムアウト) されたタプルをタプルスペース内から取り除きます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] period:</dt>
+<dd>
+cancel/expireされたタプルを取り除く周期を秒で指定します
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_NOTIFY"><code>notify(event, pattern, sec = nil) -&gt; Rinda::NotifyTemplateEntry</code><span class="permalink">[<a href="../method/-rinda=3a=3a-tuple-space/i/notify.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Rinda/TupleSpace.html#method-i-notify">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+event で指定した種類のイベントの監視を開始します。
+</p>
+<p>
+イベントを生じさせたタプルがpattern にマッチした場合にのみ報告されます。
+</p>
+<p>
+イベントが生じた場合、このメソッドの返り値の <a href="../class/-rinda=3a=3a-notify-template-entry.html">Rinda::NotifyTemplateEntry</a> を経由し、
+<a href="../method/-rinda=3a=3a-notify-template-entry/i/each.html">Rinda::NotifyTemplateEntry#each</a> を用いて報告を受け取ります。
+</p>
+<p>
+sec で監視期間を秒数で指定できます。 nil で無限に監視し続けます。
+</p>
+<p>
+event として以下の3つを指定できます。
+</p>
+<ul>
+<li>'write' : タプルが追加された</li>
+<li>'take' : タプルが take された</li>
+<li>'delete' : タプルが有効期限切れや上書きされたなどでタプルスペースから削除された</li>
+</ul>
+<p>
+これで指定したイベントに加えて、有効期限切れによって監視が終了した場合には 'close' イベントが報告されます。
+</p>
+<p>
+pattern で指定できるパターンについては <a href="../library/rinda=2frinda.html#tuplepattern">rinda/rinda/タプルのパターンについて</a> を参照してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] event:</dt>
+<dd>
+監視対象のイベント(文字列)
+</dd>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+監視対象となるタプルのパターン
+</dd>
+<dt class='method-param'>[PARAM] sec:</dt>
+<dd>
+監視期間の長さ(秒数)
+</dd>
+</dl>
+<h3 >例</h3>
+<pre>
+require 'rinda/tuplespace'
+
+tuplespace = Rinda::TupleSpace.new
+observer = tuplespace.notify(&quot;write&quot;, [&quot;xyz&quot;, nil, nil])
+Therad.new do
+  observer.each{|event, tuple| p event, tuple }
+end
+
+tuplespace.write([&quot;xyz&quot;, 0, 1])
+tuplespace.write([&quot;pqr&quot;, 0, 1])
+tuplespace.write([&quot;xyz&quot;, 4, 2])
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_READ"><code>read(tuple, sec=nil) -&gt; [Array|Hash]</code><span class="permalink">[<a href="../method/-rinda=3a=3a-tuple-space/i/read.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Rinda/TupleSpace.html#method-i-read">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+タプルスペース内の tuple にマッチするタプルを一つコピーして返します。
+</p>
+<p>
+このメソッド呼び出しが終了しても、タプルスペースからタプルは取り除かれません。
+</p>
+<p>
+tuple で指定できるパターンについては <a href="../library/rinda=2frinda.html#tuplepattern">rinda/rinda/タプルのパターンについて</a> を参照してください。
+</p>
+<p>
+マッチするタプルが存在しない場合は、マッチするタプルがタプルスペースに投入されるまで待ちます。
+</p>
+<p>
+sec でタイムアウト秒数を指定できます。待ち時間が sec 秒を過ぎた時には read をあきらめ例外 <a href="../class/-rinda=3a=3a-request-expired-error.html">Rinda::RequestExpiredError</a> を発生させます。
+sec に nil を指定するとタイムアウトせずに無限に待ち続けます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] tuple:</dt>
+<dd>
+タプルのパターン
+</dd>
+<dt class='method-param'>[PARAM] sec:</dt>
+<dd>
+タイムアウト秒数
+</dd>
+<dt>[EXCEPTION] Rinda::RequestExpiredError:</dt>
+<dd>
+read がタイムアウトした場合に発生します
+</dd>
+<dt>[EXCEPTION] Ridna::RequestCanceledError:</dt>
+<dd>
+read が何らかの理由でキャンセルされた場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_READ_ALL"><code>read_all(tuple) -&gt; [Array|Hash]</code><span class="permalink">[<a href="../method/-rinda=3a=3a-tuple-space/i/read_all.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Rinda/TupleSpace.html#method-i-read_all">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+タプルスペース内の tuple にマッチするタプルをすべてコピーして返します。
+</p>
+<p>
+このメソッド呼び出しが終了しても、タプルスペースからタプルは取り除かれません。
+</p>
+<p>
+tuple で指定できるパターンについては <a href="../library/rinda=2frinda.html#tuplepattern">rinda/rinda/タプルのパターンについて</a> を参照してください。
+</p>
+<p>
+マッチするタプルが存在しない場合は、待たずに空の配列を返します。
+</p>
+<p>
+このメソッドは主にデバッグのための利用を想定しています。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] tuple:</dt>
+<dd>
+タプルのパターン
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_TAKE"><code>take(tuple, sec = nil) -&gt; Array | Hash</code><span class="permalink">[<a href="../method/-rinda=3a=3a-tuple-space/i/take.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Rinda/TupleSpace.html#method-i-take">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+tuple にマッチするタプルをタプルスペースから取り出して返します。
+</p>
+<p>
+tuple で指定できるパターンについては <a href="../library/rinda=2frinda.html#tuplepattern">rinda/rinda/タプルのパターンについて</a> を参照してください。
+</p>
+<p>
+マッチするタプルが存在しない場合は、マッチするタプルがタプルスペースに投入されるまで待ちます。
+</p>
+<p>
+sec でタイムアウト秒数を指定できます。待ち時間が sec 秒を過ぎた時には take をあきらめ例外 <a href="../class/-rinda=3a=3a-request-expired-error.html">Rinda::RequestExpiredError</a> を発生させます。
+sec に nil を指定するとタイムアウトせずに無限に待ち続けます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] tuple:</dt>
+<dd>
+タプルのパターン
+</dd>
+<dt class='method-param'>[PARAM] sec:</dt>
+<dd>
+タイムアウト秒数
+</dd>
+<dt>[EXCEPTION] Rinda::RequestExpiredError:</dt>
+<dd>
+take がタイムアウトした場合に発生します
+</dd>
+<dt>[EXCEPTION] Ridna::RequestCanceledError:</dt>
+<dd>
+take が何らかの理由でキャンセルされた場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_WRITE"><code>write(tuple, sec = nil) -&gt; Rinda::TupleEntry</code><span class="permalink">[<a href="../method/-rinda=3a=3a-tuple-space/i/write.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Rinda/TupleSpace.html#method-i-write">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+tuple をタプルスペースに加えます。
+tuple を管理するための <a href="../class/-rinda=3a=3a-tuple-entry.html">Rinda::TupleEntry</a> オブジェクトを返します。
+</p>
+<p>
+sec で追加したタプルの有効期限を指定できます。追加されてから sec 秒過ぎたタプルはタプルスペースから削除されます。
+nil は無限を意味し、この場合にはタプルは経過時間によっては削除されません。
+</p>
+<p>
+返り値の <a href="../class/-rinda=3a=3a-tuple-entry.html">Rinda::TupleEntry</a> オブジェクトを使ってタプルを明示的にキャンセルしたり有効期限を変更したりできます。ただし、利用にはGCなどに気を付ける必要があります。詳しくは<a href="../class/-rinda=3a=3a-tuple-entry.html">Rinda::TupleEntry</a> のエントリーを見てください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] tuple:</dt>
+<dd>
+追加する tuple (配列かHash)
+</dd>
+<dt class='method-param'>[PARAM] sec:</dt>
+<dd>
+有効期限(秒数)
+</dd>
+<dt>[EXCEPTION] Rinda::InvalidHashTupleKey:</dt>
+<dd>
+不正な Hash tuple (キーが文字列以外のもの)を追加しようとすると発生します
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+tuple 管理用の <a href="../class/-rinda=3a=3a-tuple-entry.html">Rinda::TupleEntry</a> オブジェクト
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

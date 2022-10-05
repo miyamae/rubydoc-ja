@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>File#flock (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="ファイルをロックします。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-file.html">Fileクラス</a>
+      </li>
+      <li>
+        flock 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method File#flock</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_FLOCK"><code>flock(operation) -&gt; 0 | false</code><span class="permalink">[<a href="../../../method/-file/i/flock.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/File.html#method-i-flock">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ファイルをロックします。
+</p>
+<p>
+ロックを取得するまでブロックされます。ロックの取得に成功した場合は 0 を返します。
+File::LOCK_NB (ノンブロッキング) を指定すると、本来ならブロックされる場合にブロックされずに false を返すようになります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] operation:</dt>
+<dd>
+ロックに対する操作の種類を示す定数を指定します。どのような定数が利用可能かは以下を参照して下さい。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が close されている場合に発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+operation に不正な整数を与えた場合などに発生します。
+</dd>
+</dl>
+<p>
+引数 operation に有効な定数は以下の通りです。定数は <a href="../../../class/-file=3a=3a-constants.html">File::Constants</a> で定義されていますが、
+<a href="../../../class/-file.html">File</a> クラスの親クラスの IO が <a href="../../../class/-file=3a=3a-constants.html">File::Constants</a> をインクルードしているので、これらの定数は File::LOCK_SH などとして参照可能です。
+</p>
+<dl>
+<dt>LOCK_SH</dt>
+<dd>
+<p>
+共有ロック。複数のプロセスが同時にロックを共有できます。システムによってはロック対象のファイルは読み込みモード
+(&quot;r&quot;, &quot;r+&quot; など)でオープンされている必要があります。そのようなシステムでは読み込み可能でないファイルに対するロックは例外
+<a href="../../../class/-errno=3a=3a-e-x-x-x.html">Errno::EXXX</a> が発生するかもしれません。
+</p>
+</dd>
+<dt>LOCK_EX</dt>
+<dd>
+<p>
+排他ロック。同時にはただひとつのプロセスだけがロックを保持できます。システムによってはロック対象のファイルは書き込みモード
+(&quot;w&quot;, &quot;r+&quot; など)でオープンされている必要があります。そのようなシステムでは書き込み可能でないファイルに対するロックは例外
+<a href="../../../class/-errno=3a=3a-e-x-x-x.html">Errno::EXXX</a> が発生するかもしれません。
+</p>
+</dd>
+<dt>LOCK_UN</dt>
+<dd>
+<p>
+アンロック。この明示的なアンロック以外に、ファイルのcloseやRubyインタプリタの終了
+(プロセスの終了)によっても自動的にロック状態は解除されます。
+</p>
+</dd>
+<dt>LOCK_NB</dt>
+<dd>
+<p>
+ノンブロックモード。
+File::LOCK_SH | File::LOCK_NB のように他の指定と or することで指定します。この指定がない場合、ブロックされる条件での flock
+の呼び出しはロックが解除されるまでブロックされます。
+</p>
+</dd>
+</dl>
+<p>
+File::LOCK_NB の指定がある場合、ブロックされる条件での
+flock は false を返します。
+</p>
+<p>
+「ブロックされる条件」とは以下のいずれかです。
+</p>
+<ul>
+<li>他のプロセスが排他ロックをすでに行っている場合にロックを行う</li>
+<li>他のプロセスがロックしている状態で排他ロックを行う</li>
+</ul>
+<pre class="highlight ruby">
+<span class="caption">例1:</span>
+<code>
+<span class="c1"># 書き込みロック(write lock)を使用してカウンタを更新。
+</span><span class="c1"># ロック前にファイルを切り詰めてしまうので、
+</span><span class="c1"># モードに&quot;w&quot;を使ってはいけません。
+</span><span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">counter</span><span class="s2">"</span>, <span class="no">File</span><span class="o">::</span><span class="no">RDWR</span><span class="o">|</span><span class="no">File</span><span class="o">::</span><span class="no">CREAT</span>, <span class="mi">0644</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>f<span class="o">|</span>
+  f<span class="p">.</span><span class="nf">flock</span><span class="p">(</span><span class="no">File</span><span class="o">::</span><span class="no">LOCK_EX</span><span class="p">)</span>
+  value <span class="o">=</span> f<span class="p">.</span><span class="nf">read</span><span class="p">.</span><span class="nf">to_i</span> <span class="o">+</span> <span class="mi">1</span>
+  f<span class="p">.</span><span class="nf">rewind</span>
+  f<span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="n">value</span><span class="si">}</span><span class="s2">\n</span><span class="s2">"</span><span class="p">)</span>
+  f<span class="p">.</span><span class="nf">flush</span>
+  f<span class="p">.</span><span class="nf">truncate</span><span class="p">(</span>f<span class="p">.</span><span class="nf">pos</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1"># 読み込みロック(read lock)を使用してカウンタを読み込み。
+</span><span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">counter</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">r</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>f<span class="o">|</span>
+  f<span class="p">.</span><span class="nf">flock</span><span class="p">(</span><span class="no">File</span><span class="o">::</span><span class="no">LOCK_SH</span><span class="p">)</span>
+  <span class="nb">p</span> f<span class="p">.</span><span class="nf">read</span>
+<span class="p">}</span>
+</code></pre>
+<pre class="highlight ruby">
+<span class="caption">例2:</span>
+<code>
+f <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">/tmp/foo</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span>
+
+f<span class="p">.</span><span class="nf">flock</span><span class="p">(</span><span class="no">File</span><span class="o">::</span><span class="no">LOCK_EX</span><span class="p">)</span>
+<span class="nb">puts</span> <span class="s2">"</span><span class="s2">locked by process1</span><span class="s2">"</span>
+
+<span class="nb">fork</span> <span class="p">{</span>
+  f <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">/tmp/foo</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">r</span><span class="s2">"</span><span class="p">)</span>
+  f<span class="p">.</span><span class="nf">flock</span><span class="p">(</span><span class="no">File</span><span class="o">::</span><span class="no">LOCK_SH</span><span class="p">)</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">locked by process2</span><span class="s2">"</span>
+  <span class="nb">sleep</span> <span class="mi">5</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">unlocked by process2</span><span class="s2">"</span>
+<span class="p">}</span>
+
+<span class="nb">sleep</span> <span class="mi">5</span>
+
+f<span class="p">.</span><span class="nf">flock</span><span class="p">(</span><span class="no">File</span><span class="o">::</span><span class="no">LOCK_UN</span><span class="p">)</span>
+<span class="nb">puts</span> <span class="s2">"</span><span class="s2">unlocked by process1</span><span class="s2">"</span>
+<span class="nb">sleep</span> <span class="mi">1</span> <span class="c1"># &lt;- 子プロセスが確実に先にロックするための sleep
+</span>f<span class="p">.</span><span class="nf">flock</span><span class="p">(</span><span class="no">File</span><span class="o">::</span><span class="no">LOCK_EX</span><span class="p">)</span>
+<span class="nb">puts</span> <span class="s2">"</span><span class="s2">re-locked by process1</span><span class="s2">"</span>
+
+<span class="c1"># =&gt; locked by process1
+</span><span class="c1">#    unlocked by process1
+</span><span class="c1">#    locked by process2
+</span><span class="c1">#    unlocked by process2
+</span><span class="c1">#    re-locked by process1
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

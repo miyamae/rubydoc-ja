@@ -1,0 +1,2516 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class CSV (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="このクラスは CSV ファイルやデータに対する完全なインターフェイスを提供します。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/csv.html">csvライブラリ</a>
+      </li>
+      <li>
+        CSVクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class CSV</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-enumerable.html">Enumerable</a>
+        </li>
+        
+      
+      <li>
+        CSV
+      </li>
+    </ol>
+  </nav>
+
+
+
+<p>
+  extend: <a href="../class/-forwardable.html">Forwardable</a>
+</p>
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+このクラスは CSV ファイルやデータに対する完全なインターフェイスを提供します。
+</p>
+<h2 >読み込み</h2>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv_text <span class="o">=</span> <span class="no">&lt;&lt;~CSV_TEXT</span>
+  <span class="sh">Ruby,1995
+</span>  <span class="sh">Rust,2010
+</span><span class="no">CSV_TEXT
+</span>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span> <span class="s2">"</span><span class="s2">sample.csv</span><span class="s2">"</span>, csv_text
+
+<span class="c1"># ファイルから一行ずつ
+</span><span class="no">CSV</span><span class="p">.</span><span class="nf">foreach</span><span class="p">(</span><span class="s2">"</span><span class="s2">sample.csv</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>row<span class="o">|</span>
+  <span class="nb">p</span> row
+<span class="k">end</span>
+<span class="c1"># =&gt; [&quot;Ruby&quot;, &quot;1995&quot;]
+</span><span class="c1">#    [&quot;Rust&quot;, &quot;2010&quot;]
+</span>
+<span class="c1"># ファイルから一度に
+</span><span class="nb">p</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"</span><span class="s2">sample.csv</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [[&quot;Ruby&quot;, &quot;1995&quot;], [&quot;Rust&quot;, &quot;2010&quot;]]
+</span>
+<span class="c1"># 文字列から一行ずつ
+</span><span class="no">CSV</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span>csv_text<span class="p">)</span> <span class="k">do</span> <span class="o">|</span>row<span class="o">|</span>
+  <span class="nb">p</span> row
+<span class="k">end</span>
+<span class="c1"># =&gt; [&quot;Ruby&quot;, &quot;1995&quot;]
+</span><span class="c1">#    [&quot;Rust&quot;, &quot;2010&quot;]
+</span>
+<span class="c1"># 文字列から一度に
+</span><span class="nb">p</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span>csv_text<span class="p">)</span>
+<span class="c1"># =&gt; [[&quot;Ruby&quot;, &quot;1995&quot;], [&quot;Rust&quot;, &quot;2010&quot;]]
+</span></code></pre>
+<h2 >書き込み</h2>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'csv'</span>
+
+<span class="c1"># ファイルへ書き込み
+</span><span class="no">CSV</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">path/to/file.csv</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">wb</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>csv<span class="o">|</span>
+  csv <span class="o">&lt;&lt;</span> <span class="p">[</span><span class="s2">"</span><span class="s2">row</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">of</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">CSV</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">data</span><span class="s2">"</span><span class="p">]</span>
+  csv <span class="o">&lt;&lt;</span> <span class="p">[</span><span class="s2">"</span><span class="s2">another</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">row</span><span class="s2">"</span><span class="p">]</span>
+  <span class="c1"># ...
+</span><span class="k">end</span>
+
+<span class="c1"># 文字列へ書き込み
+</span>csv_string <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">generate</span> <span class="k">do</span> <span class="o">|</span>csv<span class="o">|</span>
+  csv <span class="o">&lt;&lt;</span> <span class="p">[</span><span class="s2">"</span><span class="s2">row</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">of</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">CSV</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">data</span><span class="s2">"</span><span class="p">]</span>
+  csv <span class="o">&lt;&lt;</span> <span class="p">[</span><span class="s2">"</span><span class="s2">another</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">row</span><span class="s2">"</span><span class="p">]</span>
+  <span class="c1"># ...
+</span><span class="k">end</span>
+</code></pre>
+<h2 >一行変換</h2>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'csv'</span>
+
+csv_string <span class="o">=</span> <span class="p">[</span><span class="s2">"</span><span class="s2">CSV</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">data</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">to_csv</span>   <span class="c1"># =&gt; &quot;CSV,data&quot;
+</span>csv_array  <span class="o">=</span> <span class="s2">"</span><span class="s2">CSV,String</span><span class="s2">"</span><span class="p">.</span><span class="nf">parse_csv</span>   <span class="c1"># =&gt; [&quot;CSV&quot;, &quot;String&quot;]
+</span></code></pre>
+<h2 >ショートカット</h2>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'csv'</span>
+
+<span class="no">CSV</span>             <span class="p">{</span> <span class="o">|</span>csv_out<span class="o">|</span> csv_out <span class="o">&lt;&lt;</span> <span class="sx">%w{my data here}</span> <span class="p">}</span>  <span class="c1"># to $stdout
+</span><span class="no">CSV</span><span class="p">(</span>csv <span class="o">=</span> <span class="s2">"</span><span class="s2">"</span><span class="p">)</span>   <span class="p">{</span> <span class="o">|</span>csv_str<span class="o">|</span> csv_str <span class="o">&lt;&lt;</span> <span class="sx">%w{my data here}</span> <span class="p">}</span>  <span class="c1"># to a String
+</span><span class="no">CSV</span><span class="p">(</span><span class="vg">$stderr</span><span class="p">)</span>    <span class="p">{</span> <span class="o">|</span>csv_err<span class="o">|</span> csv_err <span class="o">&lt;&lt;</span> <span class="sx">%w{my data here}</span> <span class="p">}</span>  <span class="c1"># to $stderr
+</span></code></pre>
+<h2 >CSV と文字エンコーディング (M17n or Multilingualization)</h2>
+<p>
+This new CSV parser is m17n savvy.  The parser works in the Encoding of the IO
+or String object being read from or written to.  Your data is never transcoded
+(unless you ask Ruby to transcode it for you) and will literally be parsed in
+the Encoding it is in.  Thus CSV will return Arrays or Rows of Strings in the
+Encoding of your data.  This is accomplished by transcoding the parser itself
+into your Encoding.
+</p>
+<p>
+Some transcoding must take place, of course, to accomplish this multiencoding
+support.  For example, &lt;tt&gt;:col_sep&lt;/tt&gt;, &lt;tt&gt;:row_sep&lt;/tt&gt;, and
+&lt;tt&gt;:quote_char&lt;/tt&gt; must be transcoded to match your data.  Hopefully this
+makes the entire process feel transparent, since CSV's defaults should just
+magically work for you data.  However, you can set these values manually in
+the target Encoding to avoid the translation.
+</p>
+<p>
+It's also important to note that while all of CSV's core parser is now
+Encoding agnostic, some features are not.  For example, the built-in
+converters will try to transcode data to UTF-8 before making conversions.
+Again, you can provide custom converters that are aware of your Encodings to
+avoid this translation.  It's just too hard for me to support native
+conversions in all of Ruby's Encodings.
+</p>
+<p>
+Anyway, the practical side of this is simple:  make sure IO and String objects
+passed into CSV have the proper Encoding set and everything should just work.
+CSV methods that allow you to open IO objects (CSV::foreach(), CSV::open(),
+CSV::read(), and CSV::readlines()) do allow you to specify the Encoding.
+</p>
+<p>
+One minor exception comes when generating CSV into a String with an Encoding
+that is not ASCII compatible.  There's no existing data for CSV to use to
+prepare itself and thus you will probably need to manually specify the desired
+Encoding for most of those cases.  It will try to guess using the fields in a
+row of output though, when using CSV::generate_line() or Array#to_csv().
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_FILTER">filter</a></li>
+
+<li><a href="#S_FOREACH">foreach</a></li>
+
+<li><a href="#S_GENERATE">generate</a></li>
+
+<li><a href="#S_GENERATE_LINE">generate_line</a></li>
+
+<li><a href="#S_INSTANCE">instance</a></li>
+
+<li><a href="#S_NEW">new</a></li>
+
+<li><a href="#S_OPEN">open</a></li>
+
+<li><a href="#S_PARSE">parse</a></li>
+
+<li><a href="#S_PARSE_LINE">parse_line</a></li>
+
+<li><a href="#S_READ">read</a></li>
+
+<li><a href="#S_READ">readlines</a></li>
+
+<li><a href="#S_TABLE">table</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_--3C--3C">&lt;&lt;</a></li>
+
+<li><a href="#I_--3C--3C">add_row</a></li>
+
+<li><a href="#I_BINMODE">binmode</a></li>
+
+<li><a href="#I_BINMODE--3F">binmode?</a></li>
+
+<li><a href="#I_CLOSE">close</a></li>
+
+<li><a href="#I_CLOSE_READ">close_read</a></li>
+
+<li><a href="#I_CLOSE_WRITE">close_write</a></li>
+
+<li><a href="#I_CLOSED--3F">closed?</a></li>
+
+<li><a href="#I_COL_SEP">col_sep</a></li>
+
+<li><a href="#I_CONVERT">convert</a></li>
+
+<li><a href="#I_CONVERTERS">converters</a></li>
+
+<li><a href="#I_EACH">each</a></li>
+
+<li><a href="#I_ENCODING">encoding</a></li>
+
+<li><a href="#I_EOF">eof</a></li>
+
+<li><a href="#I_EOF">eof?</a></li>
+
+<li><a href="#I_EXTERNAL_ENCODING">external_encoding</a></li>
+
+<li><a href="#I_FCNTL">fcntl</a></li>
+
+<li><a href="#I_FIELD_SIZE_LIMIT">field_size_limit</a></li>
+
+<li><a href="#I_FILENO">fileno</a></li>
+
+<li><a href="#I_FLOCK">flock</a></li>
+
+<li><a href="#I_FLUSH">flush</a></li>
+
+<li><a href="#I_FORCE_QUOTES--3F">force_quotes?</a></li>
+
+<li><a href="#I_FSYNC">fsync</a></li>
+
+<li><a href="#I_GETS">gets</a></li>
+
+<li><a href="#I_HEADER_CONVERT">header_convert</a></li>
+
+<li><a href="#I_HEADER_CONVERTERS">header_converters</a></li>
+
+<li><a href="#I_HEADER_ROW--3F">header_row?</a></li>
+
+<li><a href="#I_HEADERS">headers</a></li>
+
+<li><a href="#I_INSPECT">inspect</a></li>
+
+<li><a href="#I_INTERNAL_ENCODING">internal_encoding</a></li>
+
+<li><a href="#I_IOCTL">ioctl</a></li>
+
+<li><a href="#I_ISATTY">isatty</a></li>
+
+<li><a href="#I_LINENO">lineno</a></li>
+
+<li><a href="#I_PATH">path</a></li>
+
+<li><a href="#I_PID">pid</a></li>
+
+<li><a href="#I_POS">pos</a></li>
+
+<li><a href="#I_POS--3D">pos=</a></li>
+
+<li><a href="#I_--3C--3C">puts</a></li>
+
+<li><a href="#I_QUOTE_CHAR">quote_char</a></li>
+
+<li><a href="#I_READ">read</a></li>
+
+<li><a href="#I_GETS">readline</a></li>
+
+<li><a href="#I_READ">readlines</a></li>
+
+<li><a href="#I_REOPEN">reopen</a></li>
+
+<li><a href="#I_RETURN_HEADERS--3F">return_headers?</a></li>
+
+<li><a href="#I_REWIND">rewind</a></li>
+
+<li><a href="#I_ROW_SEP">row_sep</a></li>
+
+<li><a href="#I_SEEK">seek</a></li>
+
+<li><a href="#I_GETS">shift</a></li>
+
+<li><a href="#I_SKIP_BLANKS--3F">skip_blanks?</a></li>
+
+<li><a href="#I_STAT">stat</a></li>
+
+<li><a href="#I_STRING">string</a></li>
+
+<li><a href="#I_SYNC">sync</a></li>
+
+<li><a href="#I_SYNC--3D">sync=</a></li>
+
+<li><a href="#I_POS">tell</a></li>
+
+<li><a href="#I_FILENO">to_i</a></li>
+
+<li><a href="#I_TO_IO">to_io</a></li>
+
+<li><a href="#I_TRUNCATE">truncate</a></li>
+
+<li><a href="#I_ISATTY">tty?</a></li>
+
+<li><a href="#I_UNCONVERTED_FIELDS--3F">unconverted_fields?</a></li>
+
+<li><a href="#I_WRITE_HEADERS--3F">write_headers?</a></li>
+
+</ul>
+</dd>
+
+<dt>定数</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#C_-CONVERTER-ENCODING">ConverterEncoding</a></li>
+
+<li><a href="#C_-CONVERTERS">Converters</a></li>
+
+<li><a href="#C_-D-E-F-A-U-L-T_-O-P-T-I-O-N-S">DEFAULT_OPTIONS</a></li>
+
+<li><a href="#C_-DATE-MATCHER">DateMatcher</a></li>
+
+<li><a href="#C_-DATE-TIME-MATCHER">DateTimeMatcher</a></li>
+
+<li><a href="#C_-HEADER-CONVERTERS">HeaderConverters</a></li>
+
+<li><a href="#C_-V-E-R-S-I-O-N">VERSION</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+  <h2>継承しているメソッド</h2>
+<dl>
+  
+<dt>Enumerableから継承しているメソッド</dt>
+<dd>
+  <ul class="class-toc">
+    
+      <li><a href="../method/-enumerable/i/all=3f.html">all?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/any=3f.html">any?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/chain.html">chain</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/chunk.html">chunk</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/chunk_while.html">chunk_while</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/collect.html">collect</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/collect_concat.html">collect_concat</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/compact.html">compact</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/count.html">count</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/cycle.html">cycle</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/detect.html">detect</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/drop.html">drop</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/drop_while.html">drop_while</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_cons.html">each_cons</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_entry.html">each_entry</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_slice.html">each_slice</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_with_index.html">each_with_index</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_with_object.html">each_with_object</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/entries.html">entries</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/filter.html">filter</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/filter_map.html">filter_map</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/detect.html">find</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/filter.html">find_all</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/find_index.html">find_index</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/first.html">first</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/collect_concat.html">flat_map</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/grep.html">grep</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/grep_v.html">grep_v</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/group_by.html">group_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/include=3f.html">include?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/inject.html">inject</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/lazy.html">lazy</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/collect.html">map</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/max.html">max</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/max_by.html">max_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/include=3f.html">member?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/min.html">min</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/min_by.html">min_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/minmax.html">minmax</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/minmax_by.html">minmax_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/none=3f.html">none?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/one=3f.html">one?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/partition.html">partition</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/inject.html">reduce</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/reject.html">reject</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/reverse_each.html">reverse_each</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/filter.html">select</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/slice_after.html">slice_after</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/slice_before.html">slice_before</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/slice_when.html">slice_when</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/sort.html">sort</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/sort_by.html">sort_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/sum.html">sum</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/take.html">take</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/take_while.html">take_while</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/tally.html">tally</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/entries.html">to_a</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/to_h.html">to_h</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/uniq.html">uniq</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/zip.html">zip</a></li>
+      
+    
+  </ul>
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_FILTER"><code>filter(options = Hash.new) {|row| ... }</code><span class="permalink">[<a href="../method/-c-s-v/s/filter.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-filter">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>filter(input, options = Hash.new) {|row| ... }</code></dt>
+<dt class="method-heading"><code>filter(input, output, options = Hash.new) {|row| ... }</code></dt>
+<dd class="method-description">
+<p>
+このメソッドは CSV データに対して Unix のツール群のようなフィルタを構築するのに便利です。
+</p>
+<p>
+与えられたブロックに一行ずつ渡されます。ブロックに渡された行は必要であれば変更することができます。ブロックの評価後に行を全て output に書き込みます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] input:</dt>
+<dd>
+<a href="../class/-string.html">String</a> か <a href="../class/-i-o.html">IO</a> のインスタンスを指定します。デフォルトは <a href="../class/-a-r-g-f.html">ARGF</a> です。
+</dd>
+<dt class='method-param'>[PARAM] output:</dt>
+<dd>
+<a href="../class/-string.html">String</a> か <a href="../class/-i-o.html">IO</a> のインスタンスを指定します。デフォルトは <a href="../method/-kernel/v/stdout.html">$stdout</a> です。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+&quot;:in_&quot;, &quot;:input_&quot; で始まるキーは input にだけ適用されます。
+&quot;:out_&quot;, &quot;:output_&quot; で始まるキーは output にだけ適用されます。それ以外のキーは両方に適用されます。
+&quot;:output_row_sep&quot; のデフォルト値は <a href="../method/-kernel/v/=2f.html">$/</a> です。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例: input, output は初期値</span>
+<code>
+<span class="c1"># $ echo &quot;header1,header2\nrow1_1,row1_2&quot; &gt; in.csv; ruby test.rb in.csv
+</span>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+options <span class="o">=</span> <span class="p">{</span> <span class="ss">headers:</span> <span class="k">true</span>, <span class="ss">return_headers:</span> <span class="k">true</span>, <span class="ss">write_headers:</span> <span class="k">true</span> <span class="p">}</span>
+
+<span class="no">CSV</span><span class="p">.</span><span class="nf">filter</span><span class="p">(</span>options<span class="p">)</span> <span class="k">do</span> <span class="o">|</span>row<span class="o">|</span>
+  <span class="k">if</span> row<span class="p">.</span><span class="nf">header_row?</span>
+    row <span class="o">&lt;&lt;</span> <span class="s2">"</span><span class="s2">header3</span><span class="s2">"</span>
+    <span class="k">next</span>
+  <span class="k">end</span>
+  row <span class="o">&lt;&lt;</span> <span class="s2">"</span><span class="s2">row1_3</span><span class="s2">"</span>
+<span class="k">end</span>
+
+<span class="c1"># =&gt; header1,header2,header3
+</span><span class="c1"># row1_1,row1_2,row1_3
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例: input, output を指定する</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+content <span class="o">=</span> <span class="no">&lt;&lt;EOS</span>
+<span class="sh">id,first name,last name,age
+1,taro,tanaka,20
+2,jiro,suzuki,18
+3,ami,sato,19
+4,yumi,adachi,21
+</span><span class="no">EOS
+</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s1">'test.csv'</span>,content<span class="p">)</span>
+options <span class="o">=</span> <span class="p">{</span> <span class="ss">headers:</span> <span class="k">true</span>, <span class="ss">return_headers:</span> <span class="k">true</span>, <span class="ss">write_headers:</span> <span class="k">true</span> <span class="p">}</span>
+
+<span class="no">CSV</span><span class="p">.</span><span class="nf">filter</span><span class="p">(</span><span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span><span class="p">)</span>, <span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">out.csv</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span>, options<span class="p">)</span> <span class="k">do</span> <span class="o">|</span>row<span class="o">|</span>
+  <span class="k">if</span> row<span class="p">.</span><span class="nf">header_row?</span>
+    row <span class="o">&lt;&lt;</span> <span class="s2">"</span><span class="s2">full name</span><span class="s2">"</span>
+    <span class="k">next</span>
+  <span class="k">end</span>
+  row <span class="o">&lt;&lt;</span> row<span class="p">[</span><span class="s2">"</span><span class="s2">first name</span><span class="s2">"</span><span class="p">]</span> <span class="o">+</span> <span class="s2">"</span><span class="s2"> </span><span class="s2">"</span> <span class="o">+</span> row<span class="p">[</span><span class="s2">"</span><span class="s2">last name</span><span class="s2">"</span><span class="p">]</span>
+<span class="k">end</span>
+
+<span class="c1"># out.csv の内容
+</span><span class="c1"># =&gt; id,first name,last name,age,full name
+</span><span class="c1">#    1,taro,tanaka,20,taro tanaka
+</span><span class="c1">#    2,jiro,suzuki,18,jiro suzuki
+</span><span class="c1">#    3,ami,sato,19,ami sato
+</span><span class="c1">#    4,yumi,adachi,21,yumi adachi
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/new.html">CSV.new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_FOREACH"><code>foreach(path, options = Hash.new) {|row| ... } -&gt; nil</code><span class="permalink">[<a href="../method/-c-s-v/s/foreach.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-foreach">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このメソッドは CSV ファイルを読むための主要なインターフェイスです。各行が与えられたブロックに渡されます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'csv'</span>
+
+<span class="c1"># UTF-32BE な CSV ファイルを読み込んで UTF-8 な row をブロックに渡します
+</span><span class="no">CSV</span><span class="p">.</span><span class="nf">foreach</span><span class="p">(</span><span class="s2">"</span><span class="s2">a.csv</span><span class="s2">"</span>, <span class="ss">encoding:</span> <span class="s2">"</span><span class="s2">UTF-32BE:UTF-8</span><span class="s2">"</span><span class="p">)</span><span class="p">{</span><span class="o">|</span>row<span class="o">|</span> <span class="nb">p</span> row <span class="p">}</span>
+</code></pre>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+CSV ファイルのパスを指定します。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+<a href="../method/-c-s-v/s/new.html">CSV.new</a> のオプションと同じオプションを指定できます。
+:encoding というキーを使用すると入出力のエンコーディングを指定することができます。
+<a href="../method/-encoding/s/default_external.html">Encoding.default_external</a> と異なるエンコーディングを持つ入力を使用する場合は、必ずエンコーディングを指定してください。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/new.html">CSV.new</a>, <a href="../method/-file/s/open.html">File.open</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_GENERATE"><code>generate(str = &quot;&quot;, options = Hash.new) {|csv| ... } -&gt; String</code><span class="permalink">[<a href="../method/-c-s-v/s/generate.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-generate">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このメソッドは与えられた文字列をラップして <a href="../class/-c-s-v.html">CSV</a> のオブジェクトとしてブロックに渡します。ブロック内で <a href="../class/-c-s-v.html">CSV</a> オブジェクトに行を追加することができます。ブロックを評価した結果は文字列を返します。
+</p>
+<p>
+このメソッドに与えられた文字列は変更されるので、新しい文字列オブジェクトが必要な場合は <a href="../method/-object/i/dup.html">Object#dup</a> で複製してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+文字列を指定します。デフォルトは空文字列です。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+<a href="../method/-c-s-v/s/new.html">CSV.new</a> のオプションと同じオプションを指定できます。
+:encoding というキーを使用すると出力のエンコーディングを指定することができます。
+ASCII と互換性の無い文字エンコーディングを持つ文字列を出力する場合は、このヒントを指定する必要があります。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+text <span class="o">=</span><span class="no">&lt;&lt;-EOS</span>
+<span class="sh">id,first name,last name,age
+1,taro,tanaka,20
+2,jiro,suzuki,18
+3,ami,sato,19
+4,yumi,adachi,21
+</span><span class="no">EOS
+</span>
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">generate</span><span class="p">(</span>text, <span class="ss">headers:</span> <span class="k">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>csv<span class="o">|</span>
+  csv<span class="p">.</span><span class="nf">add_row</span><span class="p">(</span><span class="p">[</span><span class="s2">"</span><span class="s2">5</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">saburo</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">kondo</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">34</span><span class="s2">"</span><span class="p">]</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="nb">print</span> csv
+<span class="c1"># =&gt; id,first name,last name,age
+</span><span class="c1"># 1,taro,tanaka,20
+</span><span class="c1"># 2,jiro,suzuki,18
+</span><span class="c1"># 3,ami,sato,19
+</span><span class="c1"># 4,yumi,adachi,21
+</span><span class="c1"># 5,saburo,kondo,34
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/new.html">CSV.new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_GENERATE_LINE"><code>generate_line(row, options = Hash.new) -&gt; String</code><span class="permalink">[<a href="../method/-c-s-v/s/generate_line.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-generate_line">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このメソッドは一つの <a href="../class/-array.html">Array</a> オブジェクトを CSV 文字列に変換するためのショートカットです。複数行のCSVを扱う際は<a href="../method/-c-s-v/i/=3c=3c.html">CSV#&lt;&lt;</a>を使うとより高速です。
+</p>
+<p>
+このメソッドは可能であれば row に含まれる最初の nil でない値を用いて出力のエンコーディングを推測します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] row:</dt>
+<dd>
+文字列の配列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+<a href="../method/-c-s-v/s/new.html">CSV.new</a> のオプションと同じオプションを指定できます。
+:encoding というキーを使用すると出力のエンコーディングを指定することができます。
+:row_sep というキーの値には <a href="../method/-kernel/v/=2f.html">$/</a> がセットされます。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+taro <span class="o">=</span> <span class="p">[</span><span class="s1">'1'</span>, <span class="s1">'taro'</span>, <span class="s1">'tanaka'</span>, <span class="s1">'20'</span><span class="p">]</span>
+<span class="no">CSV</span><span class="p">.</span><span class="nf">generate_line</span><span class="p">(</span>taro, <span class="ss">col_sep:</span> <span class="s1">'|'</span><span class="p">)</span> <span class="c1"># =&gt; &quot;1|taro|tanaka|20\n&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/new.html">CSV.new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_INSTANCE"><code>instance(data = $stdout, options = Hash.new) -&gt; CSV</code><span class="permalink">[<a href="../method/-c-s-v/s/instance.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-instance">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>instance(data = $stdout, options = Hash.new) {|csv| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+このメソッドは <a href="../method/-c-s-v/s/new.html">CSV.new</a> のように <a href="../class/-c-s-v.html">CSV</a> のインスタンスを返します。しかし、返される値は <a href="../method/-object/i/object_id.html">Object#object_id</a> と与えられたオプションをキーとしてキャッシュされます。
+</p>
+<p>
+ブロックが与えられた場合、生成されたインスタンスをブロックに渡して評価した結果を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] data:</dt>
+<dd>
+<a href="../class/-string.html">String</a> か <a href="../class/-i-o.html">IO</a> のインスタンスを指定します。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+<a href="../method/-c-s-v/s/new.html">CSV.new</a> のオプションと同じオプションを指定できます。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/new.html">CSV.new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_NEW"><code>new(data, options = Hash.new) -&gt; CSV</code><span class="permalink">[<a href="../method/-c-s-v/s/new.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このメソッドは CSV ファイルを読み込んだり、書き出したりするために
+<a href="../class/-string.html">String</a> か <a href="../class/-i-o.html">IO</a> のインスタンスをラップします。
+</p>
+<p>
+ラップされた文字列の先頭から読み込むことになります。文字列に追記したい場合は <a href="../method/-c-s-v/s/generate.html">CSV.generate</a> を使用してください。他の位置から処理したい場合はあらかじめそのように設定した <a href="../class/-string-i-o.html">StringIO</a> を渡してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] data:</dt>
+<dd>
+<a href="../class/-string.html">String</a> か <a href="../class/-i-o.html">IO</a> のインスタンスを指定します。
+<a href="../class/-string.html">String</a> のインスタンスを指定した場合、<a href="../method/-c-s-v/i/string.html">CSV#string</a> を使用して後からデータを取り出すことが出来ます。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+CSV をパースするためのオプションをハッシュで指定します。パフォーマンス上の理由でインスタンスメソッドではオプションを上書きすることが出来ないので、上書きしたい場合は必ずここで上書きするようにしてください。
+</dd>
+</dl>
+<dl>
+<dt>:col_sep</dt>
+<dd>
+<p>
+フィールドの区切り文字列を指定します。この文字列はパースする前にデータのエンコーディングに変換されます。
+</p>
+</dd>
+<dt>:row_sep</dt>
+<dd>
+<p>
+行区切りの文字列を指定します。:auto という特別な値をセットすることができます。
+:auto を指定した場合データから自動的に行区切りの文字列を見つけ出します。このときデータの先頭から次の &quot;\r\n&quot;, &quot;\n&quot;, &quot;\r&quot; の並びまでを読みます。
+A sequence will be selected even if it occurs in a quoted field, assuming that you
+would have the same line endings there.  If none of those sequences is
+found, +data+ is <a href="../class/-a-r-g-f.html">ARGF</a>, <a href="../method/-object/c/-s-t-d-i-n.html">Object::STDIN</a>, <a href="../method/-object/c/-s-t-d-o-u-t.html">Object::STDOUT</a>, or
+<a href="../method/-object/c/-s-t-d-e-r-r.html">Object::STDERR</a>, or the stream is only  available for output, the default
+<a href="../method/-kernel/v/-i-n-p-u-t_-r-e-c-o-r-d_-s-e-p-a-r-a-t-o-r.html">$INPUT_RECORD_SEPARATOR</a>  (<a href="../method/-kernel/v/=2f.html">$/</a>) is used.  Obviously,
+discovery takes a little time.  Set  manually if speed is important.  Also
+note that IO objects should be opened  in binary mode on Windows if this
+feature will be used as the  line-ending translation can cause
+problems with resetting the document  position to where it was before the
+read ahead. This String will be  transcoded into the data's Encoding  before parsing.
+</p>
+</dd>
+<dt>:quote_char</dt>
+<dd>
+<p>
+フィールドをクオートする文字を指定します。長さ 1 の文字列でなければなりません。正しいダブルクオートではなく間違ったシングルクオートを使用しているアプリケーションで便利です。
+CSV will always consider a double  sequence this character to be an
+escaped quote.
+この文字列はパースする前にデータのエンコーディングに変換されます。
+</p>
+</dd>
+<dt>:field_size_limit</dt>
+<dd>
+<p>
+This is a maximum size CSV will read  ahead looking for the closing quote
+for a field.  (In truth, it reads to  the first line ending beyond this
+size.)  If a quote cannot be found  within the limit CSV will raise a
+MalformedCSVError, assuming the data  is faulty.  You can use this limit to
+prevent what are effectively DoS  attacks on the parser.  However, this
+limit can cause a legitimate parse to  fail and thus is set to +nil+, or off,
+by default.
+</p>
+</dd>
+<dt>:converters</dt>
+<dd>
+<p>
+<a href="../method/-c-s-v/c/-converters.html">CSV::Converters</a> から取り出した名前の配列です。変換器が一つだけの場合は配列に格納する必要はありません。全ての組み込みの変換器は、値を変換する前に UTF-8 にエンコーディング変換を試みます。エンコーディング変換に失敗した場合はフィールドは変換されません。
+</p>
+</dd>
+<dt>:unconverted_fields</dt>
+<dd>
+<p>
+真をセットすると <a href="../method/-c-s-v=3a=3a-row/i/unconverted_fields.html">CSV::Row#unconverted_fields</a> という変換前のフィールドを返すメソッドを全ての行に追加します。headers オプションによって追加したヘッダはフィールドではないので
+<a href="../method/-c-s-v=3a=3a-row/i/unconverted_fields.html">CSV::Row#unconverted_fields</a> は空の配列を返します。
+</p>
+</dd>
+<dt>:headers</dt>
+<dd>
+<p>
+:first_row というシンボルか真を指定すると、CSV ファイルの一行目をヘッダとして扱います。配列を指定するとそれをヘッダとして扱います。文字列を指定すると <a href="../method/-c-s-v/s/parse_line.html">CSV.parse_line</a> を使用してパースした結果をヘッダとして扱います。このとき、:col_sep, :row_sep, :quote_char
+はこのインスタンスと同じものを使用します。この設定は <a href="../method/-c-s-v/i/shift.html">CSV#shift</a>
+の返り値を配列のかわりに <a href="../class/-c-s-v=3a=3a-row.html">CSV::Row</a> のインスタンスに変更します。
+<a href="../method/-c-s-v/i/read.html">CSV#read</a> の返り値を配列の配列のかわりに <a href="../class/-c-s-v=3a=3a-table.html">CSV::Table</a> のインスタンスに変更します。
+</p>
+</dd>
+<dt>:return_headers</dt>
+<dd>
+<p>
+偽を指定すると、ヘッダ行を無視します。真を指定すると、ヘッダ行をヘッダと値が同一の <a href="../class/-c-s-v=3a=3a-row.html">CSV::Row</a> のインスタンスとして返します。
+</p>
+</dd>
+<dt>:write_headers</dt>
+<dd>
+<p>
+真を指定して :headers にも値をセットすると、ヘッダを出力します。
+</p>
+</dd>
+<dt>:header_converters</dt>
+<dd>
+<p>
+:converters オプションに似ていますが、ヘッダ専用の変換器を定義します。全ての組み込みの変換器は、値を変換する前に UTF-8 にエンコーディング変換を試みます。エンコーディング変換に失敗した場合はヘッダは変換されません。
+</p>
+</dd>
+<dt>:skip_blanks</dt>
+<dd>
+<p>
+真を指定すると、空行を読み飛ばします。
+</p>
+</dd>
+<dt>:force_quotes</dt>
+<dd>
+<p>
+真を指定すると、全てのフィールドを作成時にクオートします。
+</p>
+</dd>
+<dt>:skip_lines</dt>
+<dd>
+<p>
+指定した正規表現にマッチしたそれぞれの行をコメントとして読み飛ばします。
+</p>
+</dd>
+</dl>
+<dl>
+<dt>[EXCEPTION] CSV::MalformedCSVError:</dt>
+<dd>
+不正な CSV をパースしようとしたときに発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例: ファイルの読み込み</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+users <span class="o">=</span><span class="no">&lt;&lt;-EOS</span>
+<span class="sh">id,first name,last name,age
+1,taro,tanaka,20
+2,jiro,suzuki,18
+3,ami,sato,19
+4,yumi,adachi,21
+</span><span class="no">EOS
+</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span>, users<span class="p">)</span>
+
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">r</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>f, <span class="ss">headers:</span> <span class="k">true</span><span class="p">)</span>
+  csv<span class="p">.</span><span class="nf">class</span> <span class="c1"># =&gt; CSV
+</span>  csv<span class="p">.</span><span class="nf">first</span> <span class="c1"># =&gt; #&lt;CSV::Row &quot;id&quot;:&quot;1&quot; &quot;first name&quot;:&quot;taro&quot; &quot;last name&quot;:&quot;tanaka&quot; &quot;age&quot;:&quot;20&quot;&gt;
+</span><span class="k">end</span>
+</code></pre>
+<pre class="highlight ruby">
+<span class="caption">例 文字列の読み込み</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+users <span class="o">=</span><span class="no">&lt;&lt;-EOS</span>
+<span class="sh">id|first name|last name|age
+1|taro|tanaka|20
+2|jiro|suzuki|18
+3|ami|sato|19
+4|yumi|adachi|21
+</span><span class="no">EOS
+</span>
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>users, <span class="p">{</span> <span class="ss">headers:</span> <span class="k">true</span>, <span class="ss">col_sep:</span> <span class="s2">"</span><span class="s2">|</span><span class="s2">"</span> <span class="p">}</span><span class="p">)</span>
+<span class="nb">p</span> csv<span class="p">.</span><span class="nf">class</span> <span class="c1"># =&gt; CSV
+</span><span class="nb">p</span> csv<span class="p">.</span><span class="nf">first</span> <span class="c1"># =&gt; #&lt;CSV::Row &quot;id&quot;:&quot;1&quot; &quot;first name&quot;:&quot;taro&quot; &quot;last name&quot;:&quot;tanaka&quot; &quot;age&quot;:&quot;20&quot;&gt;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/c/-d-e-f-a-u-l-t_-o-p-t-i-o-n-s.html">CSV::DEFAULT_OPTIONS</a>, <a href="../method/-c-s-v/s/open.html">CSV.open</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_OPEN"><code>open(filename, mode = &quot;rb&quot;, options = Hash.new) {|csv| ... } -&gt; nil</code><span class="permalink">[<a href="../method/-c-s-v/s/open.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-open">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>open(filename, mode = &quot;rb&quot;, options = Hash.new) -&gt; CSV</code></dt>
+<dt class="method-heading"><code>open(filename, options = Hash.new) {|csv| ... } -&gt; nil</code></dt>
+<dt class="method-heading"><code>open(filename, options = Hash.new) -&gt; CSV</code></dt>
+<dd class="method-description">
+<p>
+このメソッドは <a href="../class/-i-o.html">IO</a> オブジェクトをオープンして <a href="../class/-c-s-v.html">CSV</a> でラップします。これは CSV ファイルを書くための主要なインターフェイスとして使うことを意図しています。
+</p>
+<p>
+このメソッドは <a href="../method/-i-o/s/open.html">IO.open</a> と同じように動きます。ブロックが与えられた場合はブロックに <a href="../class/-c-s-v.html">CSV</a> オブジェクトを渡し、ブロック終了時にそれをクローズします。ブロックが与えられなかった場合は <a href="../class/-c-s-v.html">CSV</a> オブジェクトを返します。
+</p>
+<p>
+データが <a href="../method/-encoding/s/default_external.html">Encoding.default_external</a> と異なる場合は、mode にエンコーディングを指定する文字列を埋め込まなければなりません。データをどのように解析するか決定するために CSV ライブラリはユーザが mode に指定したエンコーディングをチェックします。&quot;rb:UTF-32BE:UTF-8&quot; のように mode を指定すると UTF-32BE のデータを読み込んでUTF-8 に変換してから解析します。
+</p>
+<p>
+また &quot;rb:BOM|UTF-8&quot; のように mode を指定すると BOM を自動的に取り除きます。
+</p>
+<p>
+CSV オブジェクトは多くのメソッドを <a href="../class/-i-o.html">IO</a> や <a href="../class/-file.html">File</a> に委譲します。
+</p>
+<ul>
+<li><a href="../method/-i-o/i/binmode.html">IO#binmode</a></li>
+<li><a href="../method/-i-o/i/binmode=3f.html">IO#binmode?</a></li>
+<li><a href="../method/-i-o/i/close.html">IO#close</a></li>
+<li><a href="../method/-i-o/i/close_read.html">IO#close_read</a></li>
+<li><a href="../method/-i-o/i/close_write.html">IO#close_write</a></li>
+<li><a href="../method/-i-o/i/closed=3f.html">IO#closed?</a></li>
+<li><a href="../method/-i-o/i/eof.html">IO#eof</a></li>
+<li><a href="../method/-i-o/i/eof=3f.html">IO#eof?</a></li>
+<li><a href="../method/-i-o/i/external_encoding.html">IO#external_encoding</a></li>
+<li><a href="../method/-i-o/i/fcntl.html">IO#fcntl</a></li>
+<li><a href="../method/-i-o/i/fileno.html">IO#fileno</a></li>
+<li><a href="../method/-file/i/flock.html">File#flock</a></li>
+<li><a href="../method/-i-o/i/flush.html">IO#flush</a></li>
+<li><a href="../method/-i-o/i/fsync.html">IO#fsync</a></li>
+<li><a href="../method/-i-o/i/internal_encoding.html">IO#internal_encoding</a></li>
+<li><a href="../method/-i-o/i/ioctl.html">IO#ioctl</a></li>
+<li><a href="../method/-i-o/i/isatty.html">IO#isatty</a></li>
+<li><a href="../method/-file/i/path.html">File#path</a></li>
+<li><a href="../method/-i-o/i/pid.html">IO#pid</a></li>
+<li><a href="../method/-i-o/i/pos.html">IO#pos</a></li>
+<li><a href="../method/-i-o/i/pos=3d.html">IO#pos=</a></li>
+<li><a href="../method/-i-o/i/reopen.html">IO#reopen</a></li>
+<li><a href="../method/-i-o/i/seek.html">IO#seek</a></li>
+<li><a href="../method/-i-o/i/stat.html">IO#stat</a></li>
+<li><a href="../method/-string-i-o/i/string.html">StringIO#string</a></li>
+<li><a href="../method/-i-o/i/sync.html">IO#sync</a></li>
+<li><a href="../method/-i-o/i/sync=3d.html">IO#sync=</a></li>
+<li><a href="../method/-i-o/i/tell.html">IO#tell</a></li>
+<li><a href="../method/-i-o/i/to_i.html">IO#to_i</a></li>
+<li><a href="../method/-i-o/i/to_io.html">IO#to_io</a></li>
+<li><a href="../method/-file/i/truncate.html">File#truncate</a></li>
+<li><a href="../method/-i-o/i/tty=3f.html">IO#tty?</a></li>
+</ul>
+<dl>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+ファイル名を指定します。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+<a href="../method/-i-o/s/open.html">IO.open</a> に指定できるものと同じものを指定できます。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+<a href="../method/-c-s-v/s/new.html">CSV.new</a> のオプションと同じオプションを指定できます。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例 読み取り・ブロック指定なし</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+<span class="no">File</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span>, <span class="no">&lt;&lt;CSV</span><span class="p">)</span>
+<span class="sh">id,first name,last name,age
+1,taro,tanaka,20
+2,jiro,suzuki,18
+3,ami,sato,19
+4,yumi,adachi,21
+</span><span class="no">CSV
+</span>csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span>, <span class="ss">headers:</span> <span class="k">true</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">class</span> <span class="c1"># =&gt; CSV
+</span>csv<span class="p">.</span><span class="nf">first</span> <span class="c1"># =&gt; #&lt;CSV::Row &quot;id&quot;:&quot;1&quot; &quot;first name&quot;:&quot;taro&quot; &quot;last name&quot;:&quot;tanaka&quot; &quot;age&quot;:&quot;20&quot;&gt;
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例 読み取り・ブロック指定あり</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+users <span class="o">=</span><span class="no">&lt;&lt;-EOS</span>
+<span class="sh">id,first name,last name,age
+1,taro,tanaka,20
+2,jiro,suzuki,18
+3,ami,sato,19
+4,yumi,adachi,21
+</span><span class="no">EOS
+</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span>, users<span class="p">)</span>
+<span class="no">CSV</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span>, <span class="ss">headers:</span> <span class="k">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>csv<span class="o">|</span>
+  csv<span class="p">.</span><span class="nf">class</span> <span class="c1"># =&gt; CSV
+</span>  csv<span class="p">.</span><span class="nf">first</span> <span class="c1"># =&gt; #&lt;CSV::Row &quot;id&quot;:&quot;1&quot; &quot;first name&quot;:&quot;taro&quot; &quot;last name&quot;:&quot;tanaka&quot; &quot;age&quot;:&quot;20&quot;&gt;
+</span><span class="k">end</span>
+</code></pre>
+<pre class="highlight ruby">
+<span class="caption">例 書き込み・ブロック指定あり</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+<span class="no">CSV</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>csv<span class="o">|</span>
+  csv <span class="o">&lt;&lt;</span> <span class="p">[</span><span class="s2">"</span><span class="s2">id</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">first name</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">last name</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">age</span><span class="s2">"</span><span class="p">]</span>
+  csv <span class="o">&lt;&lt;</span> <span class="p">[</span><span class="s2">"</span><span class="s2">1</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">taro</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">tanaka</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">20</span><span class="s2">"</span><span class="p">]</span>
+  csv <span class="o">&lt;&lt;</span> <span class="p">[</span><span class="s2">"</span><span class="s2">2</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">jiro</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">suzuki</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">18</span><span class="s2">"</span><span class="p">]</span>
+  csv <span class="o">&lt;&lt;</span> <span class="p">[</span><span class="s2">"</span><span class="s2">3</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">ami</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">sato</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">19</span><span class="s2">"</span><span class="p">]</span>
+  csv <span class="o">&lt;&lt;</span> <span class="p">[</span><span class="s2">"</span><span class="s2">4</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">yumi</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">adachi</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">21</span><span class="s2">"</span><span class="p">]</span>
+<span class="k">end</span>
+<span class="nb">print</span> <span class="no">File</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="c1"># =&gt; id,first name,last name,age
+</span><span class="c1">#    1,taro,tanaka,20
+</span><span class="c1">#    2,jiro,suzuki,18
+</span><span class="c1">#    3,ami,sato,19
+</span><span class="c1">#    4,yumi,adachi,21
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/new.html">CSV.new</a>, <a href="../method/-i-o/s/open.html">IO.open</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_PARSE"><code>parse(str, options = Hash.new) {|row| ... } -&gt; nil</code><span class="permalink">[<a href="../method/-c-s-v/s/parse.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-parse">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>parse(str, options = Hash.new) -&gt; Array</code></dt>
+<dd class="method-description">
+<p>
+このメソッドは文字列を簡単にパースすることができます。ブロックを与えた場合は、ブロックにそれぞれの行を渡します。ブロックを省略した場合は、配列の配列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+<a href="../method/-c-s-v/s/new.html">CSV.new</a> のオプションと同じオプションを指定できます。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'csv'</span>
+<span class="nb">require</span> <span class="s1">'pp'</span>
+
+s <span class="o">=</span> <span class="no">&lt;&lt;EOS</span>
+<span class="sh">id,first name,last name,age
+1,taro,tanaka,20
+2,jiro,suzuki,18
+</span><span class="no">EOS
+</span>
+pp <span class="no">CSV</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span>s<span class="p">)</span>
+<span class="c1"># =&gt; [[&quot;id&quot;, &quot;first name&quot;, &quot;last name&quot;, &quot;age&quot;],
+</span><span class="c1">#     [&quot;1&quot;, &quot;taro&quot;, &quot;tanaka&quot;, &quot;20&quot;],
+</span><span class="c1">#     [&quot;2&quot;, &quot;jiro&quot;, &quot;suzuki&quot;, &quot;18&quot;]]
+</span>
+<span class="no">CSV</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span>s, <span class="ss">headers:</span> <span class="k">true</span><span class="p">)</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span>row<span class="o">|</span>
+  <span class="nb">p</span> <span class="p">[</span>row<span class="p">[</span><span class="s1">'first name'</span><span class="p">]</span>, row<span class="p">[</span><span class="s1">'age'</span><span class="p">]</span><span class="p">]</span>
+<span class="k">end</span>
+<span class="c1"># =&gt; [&quot;taro&quot;, &quot;20&quot;]
+</span><span class="c1">#    [&quot;jiro&quot;, &quot;18&quot;]
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="s2">"</span><span class="s2">id|first name|last name|age\n1|taro|tanaka|20\n2|jiro|suzuki|18</span><span class="s2">"</span>
+<span class="no">CSV</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span>csv, <span class="ss">col_sep:</span> <span class="s1">'|'</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>row<span class="o">|</span>
+  <span class="nb">p</span> <span class="p">[</span>row<span class="p">[</span><span class="mi">1</span><span class="p">]</span>, row<span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="p">]</span>
+<span class="k">end</span>
+<span class="c1"># =&gt; [&quot;first name&quot;, &quot;last name&quot;]
+</span><span class="c1"># =&gt; [&quot;taro&quot;, &quot;tanaka&quot;]
+</span><span class="c1"># =&gt; [&quot;jiro&quot;, &quot;suzuki&quot;]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_PARSE_LINE"><code>parse_line(line, options = Hash.new) -&gt; Array</code><span class="permalink">[<a href="../method/-c-s-v/s/parse_line.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-parse_line">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このメソッドは一行の CSV 文字列を配列に変換するためのショートカットです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] line:</dt>
+<dd>
+文字列を指定します。複数行の文字列を指定した場合は、一行目以外は無視します。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+<a href="../method/-c-s-v/s/new.html">CSV.new</a> のオプションと同じオプションを指定できます。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'csv'</span>
+
+<span class="nb">p</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">parse_line</span><span class="p">(</span><span class="s2">"</span><span class="s2">1,taro,tanaka,20</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;1&quot;, &quot;taro&quot;, &quot;tanaka&quot;, &quot;20&quot;]
+</span>
+<span class="nb">p</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">parse_line</span><span class="p">(</span><span class="s2">"</span><span class="s2">1|taro|tanaka|20</span><span class="s2">"</span>, <span class="ss">col_sep:</span> <span class="s1">'|'</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;1&quot;, &quot;taro&quot;, &quot;tanaka&quot;, &quot;20&quot;]
+</span>
+<span class="c1"># 列をダブルクオートで囲むとその中にカンマや改行を含める事もできる。
+</span><span class="c1"># 他の仕様も含め詳しくはRFC4180を参照。
+</span><span class="nb">p</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">parse_line</span><span class="p">(</span><span class="s2">"</span><span class="s2">1,\&quot;ta,ro\&quot;,\&quot;tana\nka\&quot;, 20</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;1&quot;, &quot;ta,ro&quot;, &quot;tana\nka&quot;, &quot; 20&quot;]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_READ"><code>read(path, options = Hash.new) -&gt; [Array] | CSV::Table</code><span class="permalink">[<a href="../method/-c-s-v/s/read.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-read">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>readlines(path, options = Hash.new) -&gt; [Array] | CSV::Table</code></dt>
+<dd class="method-description">
+<p>
+CSV ファイルを配列の配列にするために使います。
+headers オプションに偽でない値を指定した場合は <a href="../class/-c-s-v=3a=3a-table.html">CSV::Table</a> オブジェクトを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+CSV ファイルのパスを指定します。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+<a href="../method/-c-s-v/s/new.html">CSV.new</a> のオプションと同じオプションを指定できます。
+:encoding というキーを使用すると入力のエンコーディングを指定することができます。入力のエンコーディングか <a href="../method/-encoding/s/default_external.html">Encoding.default_external</a> と異なる場合は必ず指定しなければなりません。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">pp</span><span class="s2">"</span>
+
+<span class="no">File</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span>, <span class="no">&lt;&lt;CSV</span><span class="p">)</span>
+<span class="sh">id,first name,last name,age
+1,taro,tanaka,20
+2,jiro,suzuki,18
+3,ami,sato,19
+4,yumi,adachi,21
+</span><span class="no">CSV
+</span>
+pp <span class="no">CSV</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="c1"># =&gt; [[&quot;id&quot;, &quot;first name&quot;, &quot;last name&quot;, &quot;age&quot;],
+</span><span class="c1">#    [&quot;1&quot;, &quot;taro&quot;, &quot;tanaka&quot;, &quot;20&quot;],
+</span><span class="c1">#    [&quot;2&quot;, &quot;jiro&quot;, &quot;suzuki&quot;, &quot;18&quot;],
+</span><span class="c1">#    [&quot;3&quot;, &quot;ami&quot;, &quot;sato&quot;, &quot;19&quot;],
+</span><span class="c1">#    [&quot;4&quot;, &quot;yumi&quot;, &quot;adachi&quot;, &quot;21&quot;]]
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+<span class="no">File</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span>, <span class="no">&lt;&lt;CSV</span><span class="p">)</span>
+<span class="sh">id,first name,last name,age
+1,taro,tanaka,20
+2,jiro,suzuki,18
+3,ami,sato,19
+4,yumi,adachi,21
+</span><span class="no">CSV
+</span>
+table <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span>, <span class="ss">headers:</span> <span class="k">true</span><span class="p">)</span>
+<span class="nb">p</span> table<span class="p">.</span><span class="nf">class</span> <span class="c1"># =&gt; CSV::Table
+</span><span class="nb">p</span> table<span class="p">[</span><span class="mi">0</span><span class="p">]</span>    <span class="c1"># =&gt; #&lt;CSV::Row &quot;id&quot;:&quot;1&quot; &quot;first name&quot;:&quot;taro&quot; &quot;last name&quot;:&quot;tanaka&quot; &quot;age&quot;:&quot;20&quot;&gt;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/new.html">CSV.new</a>, <a href="../method/-c-s-v/s/table.html">CSV.table</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_TABLE"><code>table(path, options = Hash.new) -&gt; CSV::Table | [Array]</code><span class="permalink">[<a href="../method/-c-s-v/s/table.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-table">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+以下と同等のことを行うメソッドです。日本語の CSV ファイルを扱う場合はあまり使いません。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="no">CSV</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span> path, <span class="p">{</span> <span class="ss">headers:</span>           <span class="k">true</span>,
+                  <span class="ss">converters:</span>        <span class="ss">:numeric</span>,
+                  <span class="ss">header_converters:</span> <span class="ss">:symbol</span> <span class="p">}</span><span class="p">.</span><span class="nf">merge</span><span class="p">(</span>options<span class="p">)</span> <span class="p">)</span>
+</code></pre>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+ファイル名を指定します。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+<a href="../method/-c-s-v/s/new.html">CSV.new</a> のオプションと同じオプションを指定できます。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/read.html">CSV.read</a>
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--3C--3C"><code>self &lt;&lt; row -&gt; self</code><span class="permalink">[<a href="../method/-c-s-v/i/=3c=3c.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-3C-3C">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>add_row(row) -&gt; self</code></dt>
+<dt class="method-heading"><code>puts(row) -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+自身に row を追加します。
+</p>
+<p>
+データソースは書き込み用にオープンされていなければなりません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] row:</dt>
+<dd>
+配列か <a href="../class/-c-s-v=3a=3a-row.html">CSV::Row</a> のインスタンスを指定します。
+<a href="../class/-c-s-v=3a=3a-row.html">CSV::Row</a> のインスタンスが指定された場合は、<a href="../method/-c-s-v=3a=3a-row/i/fields.html">CSV::Row#fields</a> の値のみが追加されます。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例 配列を指定</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+<span class="no">File</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span>, <span class="no">&lt;&lt;CSV</span><span class="p">)</span>
+<span class="sh">id,first name,last name,age
+1,taro,tanaka,20
+2,jiro,suzuki,18
+3,ami,sato,19
+4,yumi,adachi,21
+</span><span class="no">CSV
+</span><span class="no">CSV</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">a</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>csv<span class="o">|</span>
+  csv<span class="p">.</span><span class="nf">puts</span><span class="p">(</span><span class="p">[</span><span class="s2">"</span><span class="s2">5</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">saburo</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">kondo</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">34</span><span class="s2">"</span><span class="p">]</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="nb">print</span> <span class="no">File</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; id,first name,last name,age
+</span><span class="c1">#    1,taro,tanaka,20
+</span><span class="c1">#    2,jiro,suzuki,18
+</span><span class="c1">#    3,ami,sato,19
+</span><span class="c1">#    4,yumi,adachi,21
+</span><span class="c1">#    5,saburo,kondo,34
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例 CSV::Row を指定</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+<span class="no">File</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span>, <span class="no">&lt;&lt;CSV</span><span class="p">)</span>
+<span class="sh">id,first name,last name,age
+1,taro,tanaka,20
+2,jiro,suzuki,18
+3,ami,sato,19
+4,yumi,adachi,21
+</span><span class="no">CSV
+</span><span class="no">CSV</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">a</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>csv<span class="o">|</span>
+  row <span class="o">=</span> <span class="no">CSV</span><span class="o">::</span><span class="no">Row</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="p">[</span><span class="s2">"</span><span class="s2">id</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">first name</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">last name</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">age</span><span class="s2">"</span><span class="p">]</span>, <span class="p">[</span><span class="s2">"</span><span class="s2">5</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">saburo</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">kondo</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">34</span><span class="s2">"</span><span class="p">]</span><span class="p">)</span>
+  csv<span class="p">.</span><span class="nf">add_row</span><span class="p">(</span>row<span class="p">)</span>
+<span class="k">end</span>
+
+<span class="nb">print</span> <span class="no">File</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;id&quot;, first name,last name,age
+</span><span class="c1">#    1,taro,tanaka,20
+</span><span class="c1">#    2,jiro,suzuki,18
+</span><span class="c1">#    3,ami,sato,19
+</span><span class="c1">#    4,yumi,adachi,21
+</span><span class="c1">#    5,saburo,kondo,34
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_BINMODE"><code>binmode -&gt; self</code><span class="permalink">[<a href="../method/-c-s-v/i/binmode.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-binmode">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/binmode.html">IO#binmode</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/binmode.html">IO#binmode</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_BINMODE--3F"><code>binmode? -&gt; bool</code><span class="permalink">[<a href="../method/-c-s-v/i/binmode=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-binmode-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/binmode=3f.html">IO#binmode?</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/binmode=3f.html">IO#binmode?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CLOSE"><code>close -&gt; nil</code><span class="permalink">[<a href="../method/-c-s-v/i/close.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-close">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/close.html">IO#close</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/close.html">IO#close</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CLOSE_READ"><code>close_read -&gt; nil</code><span class="permalink">[<a href="../method/-c-s-v/i/close_read.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-close_read">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/close_read.html">IO#close_read</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/close_read.html">IO#close_read</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CLOSE_WRITE"><code>close_write -&gt; nil</code><span class="permalink">[<a href="../method/-c-s-v/i/close_write.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-close_write">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/close_write.html">IO#close_write</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/close_write.html">IO#close_write</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CLOSED--3F"><code>closed? -&gt; bool</code><span class="permalink">[<a href="../method/-c-s-v/i/closed=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-closed-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/closed=3f.html">IO#closed?</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/closed=3f.html">IO#closed?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_COL_SEP"><code>col_sep -&gt; String</code><span class="permalink">[<a href="../method/-c-s-v/i/col_sep.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-col_sep">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+カラム区切り文字列として使用する文字列を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+users <span class="o">=</span><span class="no">&lt;&lt;-EOS</span>
+<span class="sh">id|first name|last name|age
+1|taro|tanaka|20
+2|jiro|suzuki|18
+3|ami|sato|19
+4|yumi|adachi|21
+</span><span class="no">EOS
+</span>
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>users, <span class="ss">headers:</span> <span class="k">true</span>, <span class="ss">col_sep:</span> <span class="s2">"</span><span class="s2">|</span><span class="s2">"</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">col_sep</span> <span class="c1"># =&gt; &quot;|&quot;
+</span>csv<span class="p">.</span><span class="nf">first</span><span class="p">.</span><span class="nf">to_a</span> <span class="c1"># =&gt; [[&quot;id&quot;, &quot;1&quot;], [&quot;first name&quot;, &quot;taro&quot;], [&quot;last name&quot;, &quot;tanaka&quot;], [&quot;age&quot;, &quot;20&quot;]]
+</span>
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>users, <span class="ss">headers:</span> <span class="k">true</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">col_sep</span> <span class="c1"># =&gt; &quot;,&quot;
+</span>csv<span class="p">.</span><span class="nf">first</span><span class="p">.</span><span class="nf">to_a</span> <span class="c1"># =&gt; [[&quot;id|first name|last name|age&quot;, &quot;1|taro|tanaka|20&quot;]]
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/new.html">CSV.new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CONVERT"><code>convert(name)</code><span class="permalink">[<a href="../method/-c-s-v/i/convert.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-convert">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>convert {|field| ... }</code></dt>
+<dt class="method-heading"><code>convert {|field, field_info| ... }</code></dt>
+<dd class="method-description">
+<p>
+引数 name で指定した変換器かブロックに各フィールドを渡して文字列から別のオブジェクトへと変換します。
+</p>
+<p>
+引数 name を指定した場合は、組み込みの <a href="../method/-c-s-v/c/-converters.html">CSV::Converters</a> を変換器として利用するために使います。また、独自の変換器を追加することもできます。
+</p>
+<p>
+ブロックパラメータを一つ受け取るブロックを与えた場合は、そのブロックはフィールドを受け取ります。ブロックパラメータを二つ受け取るブロックを与えた場合は、そのブロックは、フィールドと <a href="../class/-c-s-v=3a=3a-field-info.html">CSV::FieldInfo</a> のインスタンスを受け取ります。ブロックは変換後の値かフィールドそのものを返さなければなりません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+変換器の名前を指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例 name で Converter を指定</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">date1,date2\n2018-07-09,2018-07-10</span><span class="s2">"</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">convert</span><span class="p">(</span><span class="ss">:date</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">read</span> <span class="c1"># =&gt; [[&quot;date1&quot;, &quot;date2&quot;], [#&lt;Date: 2018-07-09 ((2458309j,0s,0n),+0s,2299161j)&gt;, #&lt;Date: 2018-07-10 ((2458310j,0s,0n),+0s,2299161j)&gt;]]
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例 ブロックを指定</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">date1,date2\n2018-07-09,2018-07-10</span><span class="s2">"</span>, <span class="ss">headers:</span> <span class="k">true</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">convert</span> <span class="k">do</span> <span class="o">|</span>field,field_info<span class="o">|</span>
+  <span class="nb">p</span> field
+  <span class="nb">p</span> field_info
+  <span class="no">Date</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span>field<span class="p">)</span>
+<span class="k">end</span>
+<span class="nb">p</span> csv<span class="p">.</span><span class="nf">first</span>
+
+<span class="c1"># =&gt; &quot;2018-07-09&quot;
+</span><span class="c1"># =&gt; &lt;struct CSV::FieldInfo index=0, line=2, header=&quot;date1&quot;&gt;
+</span><span class="c1"># =&gt; &quot;2018-07-10&quot;
+</span><span class="c1"># =&gt; #&lt;struct CSV::FieldInfo index=1, line=2, header=&quot;date2&quot;&gt;
+</span><span class="c1"># =&gt; #&lt;CSV::Row &quot;date1&quot;:#&lt;Date: 2018-07-09 ((2458309j,0s,0n),+0s,2299161j)&gt; &quot;date2&quot;:#&lt;Date: 2018-07-10 ((2458310j,0s,0n),+0s,2299161j)&gt;&gt;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/i/converters.html">CSV#converters</a>, <a href="../method/-c-s-v/i/header_convert.html">CSV#header_convert</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CONVERTERS"><code>converters -&gt; Array</code><span class="permalink">[<a href="../method/-c-s-v/i/converters.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-converters">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在の変換器のリストを返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">header1,header2\nrow1_1,row1_2</span><span class="s2">"</span>, <span class="ss">converters:</span> <span class="no">CSV</span><span class="o">::</span><span class="no">Converters</span><span class="p">.</span><span class="nf">keys</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">converters</span>  <span class="c1"># =&gt; [:integer, :float, :integer, :float, :date, :date_time, :date_time, :integer, :float]
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/c/-converters.html">CSV::Converters</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH"><code>each {|row| ... } -&gt; nil</code><span class="permalink">[<a href="../method/-c-s-v/i/each.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-each">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+各行に対してブロックを評価します。
+</p>
+<p>
+データソースは読み込み用にオープンされていなければなりません。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例 CSV.new 時に :header =&gt; true を指定した場合</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+users <span class="o">=</span> <span class="no">&lt;&lt;CSV</span>
+<span class="sh">id,first name,last name,age
+1,taro,tanaka,20
+2,jiro,suzuki,18
+3,ami,sato,19
+4,yumi,adachi,21
+</span><span class="no">CSV
+</span>csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>users, <span class="ss">headers:</span> <span class="k">true</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span>row<span class="o">|</span>
+  <span class="nb">p</span> row
+<span class="k">end</span>
+
+<span class="c1"># =&gt; #&lt;CSV::Row &quot;id&quot;:&quot;1&quot; &quot;first name&quot;:&quot;taro&quot; &quot;last name&quot;:&quot;tanaka&quot; &quot;age&quot;:&quot;20&quot;&gt;
+</span><span class="c1"># =&gt; #&lt;CSV::Row &quot;id&quot;:&quot;2&quot; &quot;first name&quot;:&quot;jiro&quot; &quot;last name&quot;:&quot;suzuki&quot; &quot;age&quot;:&quot;18&quot;&gt;
+</span><span class="c1"># =&gt; #&lt;CSV::Row &quot;id&quot;:&quot;3&quot; &quot;first name&quot;:&quot;ami&quot; &quot;last name&quot;:&quot;sato&quot; &quot;age&quot;:&quot;19&quot;&gt;
+</span><span class="c1"># =&gt; #&lt;CSV::Row &quot;id&quot;:&quot;4&quot; &quot;first name&quot;:&quot;yumi&quot; &quot;last name&quot;:&quot;adachi&quot; &quot;age&quot;:&quot;21&quot;&gt;
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例 CSV.new 時に :header =&gt; true を指定しない場合</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+users <span class="o">=</span> <span class="no">&lt;&lt;CSV</span>
+<span class="sh">id,first name,last name,age
+1,taro,tanaka,20
+2,jiro,suzuki,18
+3,ami,sato,19
+4,yumi,adachi,21
+</span><span class="no">CSV
+</span>csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>users<span class="p">)</span>
+csv<span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span>row<span class="o">|</span>
+  <span class="nb">p</span> row
+<span class="k">end</span>
+
+<span class="c1"># =&gt; [&quot;id&quot;, &quot;first name&quot;, &quot;last name&quot;, &quot;age&quot;]
+</span><span class="c1"># =&gt; [&quot;1&quot;, &quot;taro&quot;, &quot;tanaka&quot;, &quot;20&quot;]
+</span><span class="c1"># =&gt; [&quot;2&quot;, &quot;jiro&quot;, &quot;suzuki&quot;, &quot;18&quot;]
+</span><span class="c1"># =&gt; [&quot;3&quot;, &quot;ami&quot;, &quot;sato&quot;, &quot;19&quot;]
+</span><span class="c1"># =&gt; [&quot;4&quot;, &quot;yumi&quot;, &quot;adachi&quot;, &quot;21&quot;]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ENCODING"><code>encoding -&gt; Encoding</code><span class="permalink">[<a href="../method/-c-s-v/i/encoding.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-encoding">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+読み書きするときに使用するエンコーディングを返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">header1,header2\nrow1_1,row1_2</span><span class="s2">"</span>, <span class="ss">headers:</span> <span class="k">true</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">encoding</span> <span class="c1"># =&gt; #&lt;Encoding:UTF-8&gt;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_EOF"><code>eof -&gt; bool</code><span class="permalink">[<a href="../method/-c-s-v/i/eof.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-eof">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>eof? -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/eof.html">IO#eof</a>, <a href="../method/-i-o/i/eof=3f.html">IO#eof?</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/eof.html">IO#eof</a>, <a href="../method/-i-o/i/eof=3f.html">IO#eof?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EXTERNAL_ENCODING"><code>external_encoding -&gt; Encoding | nil</code><span class="permalink">[<a href="../method/-c-s-v/i/external_encoding.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-external_encoding">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/external_encoding.html">IO#external_encoding</a> に委譲します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FCNTL"><code>fcntl(cmd, arg = 0) -&gt; Integer</code><span class="permalink">[<a href="../method/-c-s-v/i/fcntl.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-fcntl">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/fcntl.html">IO#fcntl</a> に委譲します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FIELD_SIZE_LIMIT"><code>field_size_limit -&gt; Integer</code><span class="permalink">[<a href="../method/-c-s-v/i/field_size_limit.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-field_size_limit">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+フィールドサイズの最大値を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">DATA</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">field_size_limit</span> <span class="c1"># =&gt; nil
+</span><span class="nb">p</span> csv<span class="p">.</span><span class="nf">read</span> <span class="c1"># =&gt; [[&quot;a&quot;, &quot;b&quot;], [&quot;\n2\n2\n&quot;, &quot;&quot;]]
+</span>
+<span class="no">DATA</span><span class="p">.</span><span class="nf">rewind</span>
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">DATA</span>, <span class="ss">field_size_limit:</span> <span class="mi">4</span><span class="p">)</span>
+<span class="nb">p</span> csv<span class="p">.</span><span class="nf">field_size_limit</span> <span class="c1"># =&gt; 4
+</span>csv<span class="p">.</span><span class="nf">read</span> <span class="c1"># =&gt; #&lt;CSV::MalformedCSVError: Field size exceeded on line 2.&gt;
+</span>
+<span class="k">__END__
+</span><span class="c1">&quot;a&quot;,&quot;b&quot;
+&quot;
+2
+2
+&quot;,&quot;&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/new.html">CSV.new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FILENO"><code>fileno -&gt; Integer</code><span class="permalink">[<a href="../method/-c-s-v/i/fileno.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-fileno">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_i -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/fileno.html">IO#fileno</a>, <a href="../method/-i-o/i/to_i.html">IO#to_i</a> に委譲します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FLOCK"><code>flock(operation) -&gt; 0 | false</code><span class="permalink">[<a href="../method/-c-s-v/i/flock.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-flock">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-file/i/flock.html">File#flock</a> に委譲します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FLUSH"><code>flush -&gt; self</code><span class="permalink">[<a href="../method/-c-s-v/i/flush.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-flush">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/flush.html">IO#flush</a> に委譲します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FORCE_QUOTES--3F"><code>force_quotes? -&gt; bool</code><span class="permalink">[<a href="../method/-c-s-v/i/force_quotes=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-force_quotes-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+出力される全てのフィールドがクオートされる場合は、真を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+rows <span class="o">=</span> <span class="p">[</span><span class="p">[</span><span class="s2">"</span><span class="s2">header1</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">header2</span><span class="s2">"</span><span class="p">]</span>, <span class="p">[</span><span class="s2">"</span><span class="s2">row1_1,</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">row1_2</span><span class="s2">"</span><span class="p">]</span><span class="p">]</span>
+result <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">generate</span><span class="p">(</span><span class="ss">force_quotes:</span> <span class="k">false</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>csv<span class="o">|</span>
+  rows<span class="p">.</span><span class="nf">each</span> <span class="p">{</span> <span class="o">|</span>row<span class="o">|</span> csv <span class="o">&lt;&lt;</span> row <span class="p">}</span>
+  csv<span class="p">.</span><span class="nf">force_quotes?</span> <span class="c1"># =&gt; false
+</span><span class="k">end</span>
+<span class="nb">print</span> result
+
+<span class="c1"># =&gt; header1,header2
+</span><span class="c1">#    &quot;row1_1,&quot;,row1_2
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+rows <span class="o">=</span> <span class="p">[</span><span class="p">[</span><span class="s2">"</span><span class="s2">header1</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">header2</span><span class="s2">"</span><span class="p">]</span>, <span class="p">[</span><span class="s2">"</span><span class="s2">row1_1,</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">row1_2</span><span class="s2">"</span><span class="p">]</span><span class="p">]</span>
+result <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">generate</span><span class="p">(</span><span class="ss">force_quotes:</span> <span class="k">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>csv<span class="o">|</span>
+  rows<span class="p">.</span><span class="nf">each</span> <span class="p">{</span> <span class="o">|</span>row<span class="o">|</span> csv <span class="o">&lt;&lt;</span> row <span class="p">}</span>
+  csv<span class="p">.</span><span class="nf">force_quotes?</span> <span class="c1"># =&gt; true
+</span><span class="k">end</span>
+<span class="nb">print</span> result
+
+<span class="c1"># =&gt; true
+</span><span class="c1"># =&gt; &quot;header1&quot;,&quot;header2&quot;
+</span><span class="c1">#    &quot;row1_1,&quot;,&quot;row1_2&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/new.html">CSV.new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FSYNC"><code>fsync -&gt; 0 | nil</code><span class="permalink">[<a href="../method/-c-s-v/i/fsync.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-fsync">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/fsync.html">IO#fsync</a> に委譲します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_GETS"><code>shift -&gt; Array | CSV::Row</code><span class="permalink">[<a href="../method/-c-s-v/i/gets.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-gets">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>gets -&gt; Array | CSV::Row</code></dt>
+<dt class="method-heading"><code>readline -&gt; Array | CSV::Row</code></dt>
+<dd class="method-description">
+<p>
+<a href="../class/-string.html">String</a> や <a href="../class/-i-o.html">IO</a> をラップしたデータソースから一行だけ読み込んでフィールドの配列か <a href="../class/-c-s-v=3a=3a-row.html">CSV::Row</a> のインスタンスを返します。
+</p>
+<p>
+データソースは読み込み用にオープンされている必要があります。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+ヘッダを使用しない場合は配列を返します。ヘッダを使用する場合は <a href="../class/-c-s-v=3a=3a-row.html">CSV::Row</a> を返します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">DATA</span><span class="p">.</span><span class="nf">read</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">readline</span> <span class="c1"># =&gt; [&quot;header1&quot;, &quot;header2&quot;]
+</span>csv<span class="p">.</span><span class="nf">readline</span> <span class="c1"># =&gt; [&quot;row1_1&quot;, &quot;row1_2&quot;]
+</span>
+<span class="k">__END__
+</span><span class="c1">header1,header2
+row1_1,row1_2
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_HEADER_CONVERT"><code>header_convert(name)</code><span class="permalink">[<a href="../method/-c-s-v/i/header_convert.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-header_convert">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>header_convert {|field| ... }</code></dt>
+<dt class="method-heading"><code>header_convert {|field, field_info| ... }</code></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-c-s-v/i/convert.html">CSV#convert</a> に似ていますが、ヘッダ行用のメソッドです。
+</p>
+<p>
+このメソッドはヘッダ行を読み込む前に呼び出さなければなりません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+変換器の名前を指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例 name を指定</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">header1,header2\nrow1_1,row1_2</span><span class="s2">"</span>, <span class="p">{</span> <span class="ss">headers:</span> <span class="k">true</span> <span class="p">}</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">header_convert</span><span class="p">(</span><span class="ss">:symbol</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">first</span><span class="p">.</span><span class="nf">headers</span> <span class="c1"># =&gt; [:header1, :header2]
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例 ブロックを指定</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">header1,header2\nrow1_1,row1_2</span><span class="s2">"</span>, <span class="p">{</span> <span class="ss">headers:</span> <span class="k">true</span> <span class="p">}</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">header_convert</span> <span class="k">do</span> <span class="o">|</span>field<span class="o">|</span>
+  field<span class="p">.</span><span class="nf">to_sym</span>
+<span class="k">end</span>
+csv<span class="p">.</span><span class="nf">first</span><span class="p">.</span><span class="nf">headers</span> <span class="c1"># =&gt; [:header1, :header2]
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/i/header_converters.html">CSV#header_converters</a>, <a href="../method/-c-s-v/i/convert.html">CSV#convert</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_HEADER_CONVERTERS"><code>header_converters -&gt; Array</code><span class="permalink">[<a href="../method/-c-s-v/i/header_converters.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-header_converters">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在有効なヘッダ用変換器のリストを返します。
+</p>
+<p>
+組込みの変換器は名前を返します。それ以外は、オブジェクトを返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">HEADER1,HEADER2\nrow1_1,row1_2</span><span class="s2">"</span>, <span class="ss">headers:</span> <span class="k">true</span>, <span class="ss">header_converters:</span> <span class="no">CSV</span><span class="o">::</span><span class="no">HeaderConverters</span><span class="p">.</span><span class="nf">keys</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">header_converters</span> <span class="c1"># =&gt; [:downcase, :symbol]
+</span>csv<span class="p">.</span><span class="nf">read</span><span class="p">.</span><span class="nf">to_a</span>         <span class="c1"># =&gt; [[:header1, :header2], [&quot;row1_1&quot;, &quot;row1_2&quot;]]
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/new.html">CSV.new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_HEADER_ROW--3F"><code>header_row? -&gt; bool</code><span class="permalink">[<a href="../method/-c-s-v/i/header_row=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-header_row-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+次に読み込まれる行が、ヘッダである場合に真を返します。そうでない場合は、偽を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">header1,header2\nrow1_1,row1_2</span><span class="s2">"</span>, <span class="ss">headers:</span> <span class="k">true</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">header_row?</span> <span class="c1"># =&gt; true
+</span>csv<span class="p">.</span><span class="nf">readline</span>
+csv<span class="p">.</span><span class="nf">header_row?</span> <span class="c1"># =&gt; false
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_HEADERS"><code>headers -&gt; Array | true | nil</code><span class="permalink">[<a href="../method/-c-s-v/i/headers.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-headers">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+nil を返した場合は、ヘッダは使用されません。真を返した場合は、ヘッダを使用するが、まだ読み込まれていません。配列を返した場合は、ヘッダは既に読み込まれています。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">header1,header2\nrow1_1,row1_2</span><span class="s2">"</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">headers</span> <span class="c1"># =&gt; nil
+</span>csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">header1,header2\nrow1_1,row1_2</span><span class="s2">"</span>, <span class="ss">headers:</span> <span class="k">true</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">headers</span> <span class="c1"># =&gt; true
+</span>csv<span class="p">.</span><span class="nf">read</span>
+csv<span class="p">.</span><span class="nf">headers</span> <span class="c1"># =&gt;[&quot;header1&quot;, &quot;header2&quot;]
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/new.html">CSV.new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-c-s-v/i/inspect.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-inspect">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ASCII 互換文字列で自身の情報を表したものを返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">header1,header2\nrow1_1,row1_2</span><span class="s2">"</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">inspect</span> <span class="c1"># =&gt; &quot;&lt;#CSV io_type:StringIO encoding:UTF-8 lineno:0 col_sep:\&quot;,\&quot; row_sep:\&quot;\\n\&quot; quote_char:\&quot;\\\&quot;\&quot;&gt;&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_INTERNAL_ENCODING"><code>internal_encoding -&gt; Encoding | nil</code><span class="permalink">[<a href="../method/-c-s-v/i/internal_encoding.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-internal_encoding">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/internal_encoding.html">IO#internal_encoding</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/internal_encoding.html">IO#internal_encoding</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_IOCTL"><code>ioctl(cmd, arg = 0) -&gt; Integer</code><span class="permalink">[<a href="../method/-c-s-v/i/ioctl.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-ioctl">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/ioctl.html">IO#ioctl</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/ioctl.html">IO#ioctl</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ISATTY"><code>isatty -&gt; bool</code><span class="permalink">[<a href="../method/-c-s-v/i/isatty.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-isatty">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>tty? -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/isatty.html">IO#isatty</a>, <a href="../method/-i-o/i/tty=3f.html">IO#tty?</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/isatty.html">IO#isatty</a>, <a href="../method/-i-o/i/tty=3f.html">IO#tty?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LINENO"><code>lineno -&gt; Integer</code><span class="permalink">[<a href="../method/-c-s-v/i/lineno.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-lineno">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このファイルから読み込んだ最終行の行番号を返します。フィールドに含まれる改行はこの値には影響しません。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">header1,header2\nrow1_1,row1_2</span><span class="s2">"</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">lineno</span> <span class="c1"># =&gt; 0
+</span>csv<span class="p">.</span><span class="nf">readline</span>
+csv<span class="p">.</span><span class="nf">lineno</span> <span class="c1"># =&gt; 1
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_PATH"><code>path -&gt; String</code><span class="permalink">[<a href="../method/-c-s-v/i/path.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-path">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/path.html">IO#path</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/path.html">IO#path</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PID"><code>pid -&gt; Integer | nil</code><span class="permalink">[<a href="../method/-c-s-v/i/pid.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-pid">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/pid.html">IO#pid</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/pid.html">IO#pid</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_POS"><code>pos -&gt; Integer</code><span class="permalink">[<a href="../method/-c-s-v/i/pos.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-pos">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>tell -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/pos.html">IO#pos</a>, <a href="../method/-i-o/i/tell.html">IO#tell</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/pos.html">IO#pos</a>, <a href="../method/-i-o/i/tell.html">IO#tell</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_POS--3D"><code>pos=(n)</code><span class="permalink">[<a href="../method/-c-s-v/i/pos=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-pos-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/pos=3d.html">IO#pos=</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/pos=3d.html">IO#pos=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_QUOTE_CHAR"><code>quote_char -&gt; String</code><span class="permalink">[<a href="../method/-c-s-v/i/quote_char.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-quote_char">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+フィールドをクオートするのに使用する文字列を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">header1,header2\nrow1_1,row1_2</span><span class="s2">"</span>, <span class="ss">quote_char:</span> <span class="s2">"</span><span class="s2">'</span><span class="s2">"</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">quote_char</span> <span class="c1"># =&gt; &quot;'&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/new.html">CSV.new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_READ"><code>read -&gt; [Array] | CSV::Table</code><span class="permalink">[<a href="../method/-c-s-v/i/read.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-read">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>readlines -&gt; [Array] | CSV::Table</code></dt>
+<dd class="method-description">
+<p>
+残りの行を読み込んで配列の配列を返します。
+self の生成時に headers オプションに偽でない値が指定されていた場合は <a href="../class/-c-s-v=3a=3a-table.html">CSV::Table</a> オブジェクトを返します。
+</p>
+<p>
+データソースは読み込み用にオープンされている必要があります。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例 headers: false</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">DATA</span><span class="p">.</span><span class="nf">read</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">read</span>
+<span class="c1"># =&gt; [[&quot;header1&quot;, &quot;header2&quot;], [&quot;row1_1&quot;, &quot;row1_2&quot;], [&quot;row2_1&quot;, &quot;row2_2&quot;]]
+</span>
+<span class="k">__END__
+</span><span class="c1">header1,header2
+row1_1,row1_2
+row2_1,row2_2
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例 headers: true</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">DATA</span><span class="p">.</span><span class="nf">read</span>, <span class="ss">headers:</span> <span class="k">true</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">read</span>
+<span class="c1"># =&gt; #&lt;CSV::Table mode:col_or_row row_count:3&gt;
+</span>
+<span class="k">__END__
+</span><span class="c1">header1,header2
+row1_1,row1_2
+row2_1,row2_2
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_REOPEN"><code>reopen(io) -&gt; self</code><span class="permalink">[<a href="../method/-c-s-v/i/reopen.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-reopen">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/reopen.html">IO#reopen</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/reopen.html">IO#reopen</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_RETURN_HEADERS--3F"><code>return_headers? -&gt; bool</code><span class="permalink">[<a href="../method/-c-s-v/i/return_headers=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-return_headers-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ヘッダを返す場合は、真を返します。そうでない場合は、偽を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">header1,header2\nrow1_1,row1_2</span><span class="s2">"</span>, <span class="ss">headers:</span> <span class="k">true</span>, <span class="ss">return_headers:</span> <span class="k">false</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">return_headers?</span> <span class="c1"># =&gt; false
+</span>csv<span class="p">.</span><span class="nf">shift</span> <span class="c1"># =&gt; #&lt;CSV::Row &quot;header1&quot;:&quot;row1_1&quot; &quot;header2&quot;:&quot;row1_2&quot;&gt;
+</span>
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">header1,header2\nrow1_1,row1_2</span><span class="s2">"</span>, <span class="ss">headers:</span> <span class="k">true</span>, <span class="ss">return_headers:</span> <span class="k">true</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">return_headers?</span> <span class="c1"># =&gt; true
+</span>csv<span class="p">.</span><span class="nf">shift</span> <span class="c1"># =&gt; #&lt;CSV::Row &quot;header1&quot;:&quot;header1&quot; &quot;header2&quot;:&quot;header2&quot;&gt;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/new.html">CSV.new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_REWIND"><code>rewind -&gt; 0</code><span class="permalink">[<a href="../method/-c-s-v/i/rewind.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-rewind">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/rewind.html">IO#rewind</a> に似ています。<a href="../method/-c-s-v/i/lineno.html">CSV#lineno</a> を 0 にします。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">header1,header2\nrow1_1,row1_2</span><span class="s2">"</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">lineno</span> <span class="c1"># =&gt; 0
+</span>csv<span class="p">.</span><span class="nf">readline</span>
+csv<span class="p">.</span><span class="nf">lineno</span> <span class="c1"># =&gt; 1
+</span>csv<span class="p">.</span><span class="nf">rewind</span>
+csv<span class="p">.</span><span class="nf">lineno</span> <span class="c1"># =&gt; 0
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/rewind.html">IO#rewind</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ROW_SEP"><code>row_sep -&gt; String</code><span class="permalink">[<a href="../method/-c-s-v/i/row_sep.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-row_sep">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+行区切り文字列として使用する文字列を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">header1,header2|row1_1,row1_2</span><span class="s2">"</span>, <span class="ss">row_sep:</span> <span class="s2">"</span><span class="s2">|</span><span class="s2">"</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">row_sep</span> <span class="c1"># =&gt; &quot;|&quot;
+</span>csv<span class="p">.</span><span class="nf">read</span>    <span class="c1"># =&gt; [[&quot;header1&quot;, &quot;header2&quot;], [&quot;row1_1&quot;, &quot;row1_2&quot;]]
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/new.html">CSV.new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SEEK"><code>seek(offset, whence = IO::SEEK_SET) -&gt; 0</code><span class="permalink">[<a href="../method/-c-s-v/i/seek.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-seek">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/seek.html">IO#seek</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/seek.html">IO#seek</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SKIP_BLANKS--3F"><code>skip_blanks? -&gt; bool</code><span class="permalink">[<a href="../method/-c-s-v/i/skip_blanks=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-skip_blanks-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+真である場合は、空行を読み飛ばします。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">header1,header2\n\nrow1_1,row1_2</span><span class="s2">"</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">skip_blanks?</span> <span class="c1"># =&gt; false
+</span>csv<span class="p">.</span><span class="nf">read</span>         <span class="c1"># =&gt; [[&quot;header1&quot;, &quot;header2&quot;], [], [&quot;row1_1&quot;, &quot;row1_2&quot;]]
+</span>csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">header1,header2\n\nrow1_1,row1_2</span><span class="s2">"</span>, <span class="ss">skip_blanks:</span> <span class="k">true</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">skip_blanks?</span> <span class="c1"># =&gt; true
+</span>csv<span class="p">.</span><span class="nf">read</span>         <span class="c1"># =&gt; [[&quot;header1&quot;, &quot;header2&quot;], [&quot;row1_1&quot;, &quot;row1_2&quot;]]
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/new.html">CSV.new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_STAT"><code>stat -&gt; File::Stat</code><span class="permalink">[<a href="../method/-c-s-v/i/stat.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-stat">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/stat.html">IO#stat</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/stat.html">IO#stat</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_STRING"><code>string -&gt; String</code><span class="permalink">[<a href="../method/-c-s-v/i/string.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-string">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-string-i-o/i/string.html">StringIO#string</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-string-i-o/i/string.html">StringIO#string</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SYNC"><code>sync -&gt; bool</code><span class="permalink">[<a href="../method/-c-s-v/i/sync.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-sync">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/sync.html">IO#sync</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/sync.html">IO#sync</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SYNC--3D"><code>sync=(newstate)</code><span class="permalink">[<a href="../method/-c-s-v/i/sync=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-sync-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/sync=3d.html">IO#sync=</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/sync=3d.html">IO#sync=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_IO"><code>to_io -&gt; self</code><span class="permalink">[<a href="../method/-c-s-v/i/to_io.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-to_io">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/to_io.html">IO#to_io</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/to_io.html">IO#to_io</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TRUNCATE"><code>truncate(path, length) -&gt; 0</code><span class="permalink">[<a href="../method/-c-s-v/i/truncate.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-truncate">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-file/i/truncate.html">File#truncate</a> に委譲します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-file/i/truncate.html">File#truncate</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_UNCONVERTED_FIELDS--3F"><code>unconverted_fields? -&gt; bool</code><span class="permalink">[<a href="../method/-c-s-v/i/unconverted_fields=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-unconverted_fields-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+パースした結果が unconverted_fields というメソッドを持つ場合に真を返します。そうでない場合は、偽を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">date1,date2\n2018-07-09,2018-07-10</span><span class="s2">"</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">unconverted_fields?</span> <span class="c1"># =&gt; nil
+</span>csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">date1,date2\n2018-07-09,2018-07-10</span><span class="s2">"</span>, <span class="ss">unconverted_fields:</span> <span class="k">false</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">unconverted_fields?</span> <span class="c1"># =&gt; false
+</span>csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">date1,date2\n2018-07-09,2018-07-10</span><span class="s2">"</span>, <span class="ss">headers:</span> <span class="k">true</span>, <span class="ss">unconverted_fields:</span> <span class="k">true</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">unconverted_fields?</span> <span class="c1"># =&gt; true
+</span>csv<span class="p">.</span><span class="nf">convert</span><span class="p">(</span><span class="ss">:date</span><span class="p">)</span>
+row <span class="o">=</span> csv<span class="p">.</span><span class="nf">readline</span>
+row<span class="p">.</span><span class="nf">fields</span>              <span class="c1"># =&gt; [#&lt;Date: 2018-07-09 ((2458309j,0s,0n),+0s,2299161j)&gt;, #&lt;Date: 2018-07-10 ((2458310j,0s,0n),+0s,2299161j)&gt;]
+</span>row<span class="p">.</span><span class="nf">unconverted_fields</span>  <span class="c1"># =&gt; [&quot;2018-07-09&quot;, &quot;2018-07-10&quot;]
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/new.html">CSV.new</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_WRITE_HEADERS--3F"><code>write_headers? -&gt; bool</code><span class="permalink">[<a href="../method/-c-s-v/i/write_headers=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-i-write_headers-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ヘッダを出力先に書き込む場合は真を返します。そうでない場合は偽を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+csv <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">date1,date2\n2018-07-09,2018-07-10</span><span class="s2">"</span><span class="p">)</span>
+csv<span class="p">.</span><span class="nf">write_headers?</span> <span class="c1"># =&gt; nil
+</span>
+header <span class="o">=</span> <span class="p">[</span><span class="s2">"</span><span class="s2">header1</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">header2</span><span class="s2">"</span><span class="p">]</span>
+row <span class="o">=</span> <span class="p">[</span><span class="s2">"</span><span class="s2">row1_1</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">row1_2</span><span class="s2">"</span><span class="p">]</span>
+result <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">generate</span><span class="p">(</span><span class="ss">headers:</span> header, <span class="ss">write_headers:</span> <span class="k">false</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>csv<span class="o">|</span>
+  csv<span class="p">.</span><span class="nf">write_headers?</span> <span class="c1"># =&gt; false
+</span>  csv <span class="o">&lt;&lt;</span> row
+<span class="k">end</span>
+result <span class="c1"># =&gt; &quot;row1_1,row1_2\n&quot;
+</span>
+result <span class="o">=</span> <span class="no">CSV</span><span class="p">.</span><span class="nf">generate</span><span class="p">(</span><span class="ss">headers:</span> header, <span class="ss">write_headers:</span> <span class="k">true</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>csv<span class="o">|</span>
+  csv<span class="p">.</span><span class="nf">write_headers?</span> <span class="c1"># =&gt; true
+</span>  csv <span class="o">&lt;&lt;</span> row
+<span class="k">end</span>
+result <span class="c1"># =&gt; &quot;header1,header2\nrow1_1,row1_2\n&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-c-s-v/s/new.html">CSV.new</a>
+</p>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-CONVERTER-ENCODING"><code>ConverterEncoding -&gt; Encoding</code><span class="permalink">[<a href="../method/-c-s-v/c/-converter-encoding.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-ConverterEncoding">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+すべての変換器で使用するエンコーディングです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-CONVERTERS"><code>Converters -&gt; Hash</code><span class="permalink">[<a href="../method/-c-s-v/c/-converters.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-Converters">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このハッシュは名前でアクセスできる組み込みの変換器を保持しています。
+</p>
+<p>
+<a href="../method/-c-s-v/i/convert.html">CSV#convert</a> で使用する変換器として使用できます。また <a href="../method/-c-s-v/s/new.html">CSV.new</a> のオプションとして使用することもできます。
+</p>
+<dl>
+<dt>:integer</dt>
+<dd>
+<p>
+<a href="../method/-kernel/m/-integer.html">Kernel.#Integer</a> を使用してフィールドを変換します。
+</p>
+</dd>
+<dt>:float</dt>
+<dd>
+<p>
+<a href="../method/-kernel/m/-float.html">Kernel.#Float</a> を使用してフィールドを変換します。
+</p>
+</dd>
+<dt>:numeric</dt>
+<dd>
+<p>
+:integer と :float の組み合わせです。
+</p>
+</dd>
+<dt>:date</dt>
+<dd>
+<p>
+<a href="../method/-date/s/parse.html">Date.parse</a> を使用してフィールドを変換します。
+</p>
+</dd>
+<dt>:date_time</dt>
+<dd>
+<p>
+<a href="../method/-date-time/s/parse.html">DateTime.parse</a> を使用してフィールドを変換します。
+</p>
+</dd>
+<dt>:all</dt>
+<dd>
+<p>
+:date_time と :numeric の組み合わせです。
+</p>
+</dd>
+</dl>
+<p>
+全ての組み込みの変換器は、実際に変換する前にフィールドのデータの文字エンコーディングを UTF-8 に変換します。そのデータの文字エンコーディングを UTF-8 に変換出来なかった場合は、変換には失敗しますが、データは変更されません。
+</p>
+<p>
+このハッシュは <a href="../method/-object/i/freeze.html">Object#freeze</a> されていないので、ユーザは自由に値を追加することが出来ます。
+</p>
+<p>
+複数の変換器を持つ要素を追加するときは、値に名前の配列を指定する必要があります。この要素の値には他の複数の変換器を持つ要素の名前を指定することもできます。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-D-E-F-A-U-L-T_-O-P-T-I-O-N-S"><code>DEFAULT_OPTIONS -&gt; Hash</code><span class="permalink">[<a href="../method/-c-s-v/c/-d-e-f-a-u-l-t_-o-p-t-i-o-n-s.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-DEFAULT_OPTIONS">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このオプションは呼び出し側で上書きしなかったときに使用するオプションです。
+</p>
+<dl>
+<dt>:col_sep</dt>
+<dd>
+<p>
+&quot;,&quot;
+</p>
+</dd>
+<dt>:row_sep</dt>
+<dd>
+<p>
+:auto
+</p>
+</dd>
+<dt>:quote_char</dt>
+<dd>
+<p>
+'&quot;'
+</p>
+</dd>
+<dt>:field_size_limit</dt>
+<dd>
+<p>
+nil
+</p>
+</dd>
+<dt>:converters</dt>
+<dd>
+<p>
+nil
+</p>
+</dd>
+<dt>:unconverted_fields</dt>
+<dd>
+<p>
+nil
+</p>
+</dd>
+<dt>:headers</dt>
+<dd>
+<p>
+false
+</p>
+</dd>
+<dt>:return_headers</dt>
+<dd>
+<p>
+false
+</p>
+</dd>
+<dt>:header_converters</dt>
+<dd>
+<p>
+nil
+</p>
+</dd>
+<dt>:skip_blanks</dt>
+<dd>
+<p>
+false
+</p>
+</dd>
+<dt>:force_quotes</dt>
+<dd>
+<p>
+false
+</p>
+</dd>
+<dt>:skip_lines</dt>
+<dd>
+<p>
+nil
+</p>
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="C_-DATE-MATCHER"><code>DateMatcher -&gt; Regexp</code><span class="permalink">[<a href="../method/-c-s-v/c/-date-matcher.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-DateMatcher">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+日付 (Date) 形式のデータを発見したり変換したりするための正規表現です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-DATE-TIME-MATCHER"><code>DateTimeMatcher -&gt; Regexp</code><span class="permalink">[<a href="../method/-c-s-v/c/-date-time-matcher.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-DateTimeMatcher">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+日時 (DateTime) 形式のデータを発見したり変換したりするための正規表現です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-HEADER-CONVERTERS"><code>HeaderConverters -&gt; Hash</code><span class="permalink">[<a href="../method/-c-s-v/c/-header-converters.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-HeaderConverters">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このハッシュは名前でアクセスできる組み込みのヘッダ用変換器を保存しています。
+</p>
+<p>
+<a href="../method/-c-s-v/i/header_convert.html">CSV#header_convert</a> で使用する変換器として使用できます。また <a href="../method/-c-s-v/s/new.html">CSV.new</a> のオプションとして使用することもできます。
+</p>
+<dl>
+<dt>:downcase</dt>
+<dd>
+<p>
+ヘッダの文字列に対して <a href="../method/-string/i/downcase.html">String#downcase</a> を呼び出します。
+</p>
+</dd>
+<dt>:symbol</dt>
+<dd>
+<p>
+ヘッダの文字列を小文字に変換してから、空白文字列 (\s) をアンダースコアに置換し、非英数字 (\W) を削除します。最後に <a href="../method/-string/i/to_sym.html">String#to_sym</a> を呼び出します。
+</p>
+</dd>
+</dl>
+<p>
+全ての組み込みのヘッダ用変換器は、実際に変換する前にヘッダのデータの文字エンコーディングを UTF-8 に変換します。そのヘッダの文字エンコーディングを UTF-8 に変換できなかった場合は、変換には失敗しますが、データは変更されません。
+</p>
+<p>
+このハッシュは <a href="../method/-object/i/freeze.html">Object#freeze</a> されていないので、ユーザは自由に値を追加することが出来ます。
+</p>
+<p>
+複数の変換器を持つ要素を追加するときは、値に名前の配列を指定する必要があります。この要素の値には他の複数の変換器を持つ要素の名前を指定することもできます。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-V-E-R-S-I-O-N"><code>VERSION -&gt; String</code><span class="permalink">[<a href="../method/-c-s-v/c/-v-e-r-s-i-o-n.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-VERSION">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ライブラリのバージョンを表す文字列です。
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

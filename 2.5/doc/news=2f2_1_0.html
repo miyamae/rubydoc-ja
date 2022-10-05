@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>NEWS for Ruby 2.1.0 (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="このドキュメントは前回リリース以降のバグ修正を除くユーザーに影響のある機能の変更のリストです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      
+        <li>
+          <a href="../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+        </li>
+        <li>
+          NEWS for Ruby 2.1.0
+        </li>
+      
+    </ol>
+  </nav>
+
+<h1>NEWS for Ruby 2.1.0</h1>
+</header>
+
+<main>
+
+<p>
+このドキュメントは前回リリース以降のバグ修正を除くユーザーに影響のある機能の変更のリストです。
+</p>
+<p>
+それぞれのエントリーは参照情報があるため短いです。十分な情報と共に書かれた全ての変更のリストは ChangeLog ファイルか bugs.ruby-lang.org の issue を参照してください。
+</p>
+<h1 >2.0.0 以降の変更</h1>
+<h2 >言語仕様の変更</h2>
+<ul>
+<li>キーワード引数のデフォルト値が省略可能になりました。これらの「必須キーワード引数」は呼び出し時に明示的に与えなければなりません。</li>
+</ul>
+<ul>
+<li>整数や小数のリテラルの末尾に'r','i','ri'という接尾辞を付けられるようになりました</li>
+</ul>
+<pre>
+    # r を付けると有理数になる
+    42r  # =&gt; Rational(42, 1)
+    3.14 # =&gt; 3.14.rationalize
+    6.022e+23r # 指数形式と一緒には使えない
+
+    # i を付けると虚数単位 i を掛けた数になる
+    42i  # =&gt; Complex(0, 42)
+    3.14i # =&gt; Complex(0, 3.14)
+
+    # ri を付けると複素数の虚部が有理数になる
+    42ri   # =&gt; Complex(0, 42r)
+    3.14ri # =&gt; Complex(0, 3.14r)
+</pre>
+<ul>
+<li>def によるメソッド定義式は nil の代わりにメソッド名をシンボルで返します</li>
+</ul>
+<h2 >組み込みクラスの更新</h2>
+<ul>
+<li><a href="../class/-array.html">Array</a><ul>
+<li>追加: <a href="../method/-array/i/to_h.html">Array#to_h</a> キーと値のペアの配列をハッシュに変換します。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-binding.html">Binding</a><ul>
+<li>追加: <a href="../method/-binding/i/local_variable_get.html">Binding#local_variable_get</a></li>
+<li>追加: <a href="../method/-binding/i/local_variable_set.html">Binding#local_variable_set</a></li>
+<li>追加: <a href="../method/-binding/i/local_variable_defined=3f.html">Binding#local_variable_defined?</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-enumerable.html">Enumerable</a><ul>
+<li>追加: <a href="../method/-enumerable/i/to_h.html">Enumerable#to_h</a> キーと値のペアのリストをハッシュに変換します。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-exception.html">Exception</a><ul>
+<li>追加: <a href="../method/-exception/i/cause.html">Exception#cause</a> 一つ前の例外を新しい例外を返します。
+例外を rescue して raise しなおしたときに元の例外が一つ前の例外としてセットされています。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-g-c.html">GC</a><ul>
+<li>改良: RGenGC として知られている世代別GCが導入しました</li>
+<li>追加した環境変数<ul>
+<li>RUBY_GC_HEAP_INIT_SLOTS</li>
+<li>RUBY_GC_HEAP_FREE_SLOTS</li>
+<li>RUBY_GC_HEAP_GROWTH_FACTOR</li>
+<li>RUBY_GC_HEAP_GROWTH_MAX_SLOTS</li>
+<li>RUBY_GC_MALLOC_LIMIT_MAX</li>
+<li>RUBY_GC_MALLOC_LIMIT_GROWTH_FACTOR</li>
+<li>RUBY_GC_OLDMALLOC_LIMIT</li>
+<li>RUBY_GC_OLDMALLOC_LIMIT_MAX</li>
+<li>RUBY_GC_OLDMALLOC_LIMIT_GROWTH_FACTOR</li>
+</ul>
+</li>
+<li>廃止した環境変数<ul>
+<li>RUBY_FREE_MIN (RUBY_GC_HEAP_FREE_SLOTS を代わりに使います)</li>
+<li>RUBY_HEAP_MIN_SLOTS (RUBY_GC_HEAP_INIT_SLOTS を代わりに使います)</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-integer.html">Integer</a><ul>
+<li>追加: Fixnum#bit_length</li>
+<li>追加: Bignum#bit_length</li>
+<li><a href="../class/-bignum.html">Bignum</a> の性能向上<ul>
+<li>GMP をいくつかの操作で使えるときは使います。
+乗算、除算、基数変換、GCD</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-i-o.html">IO</a><ul>
+<li>拡張: <a href="../method/-i-o/i/seek.html">IO#seek</a> SEEK_DATA と SEEK_HOLE を whence としてサポートしました？？</li>
+<li>拡張: <a href="../method/-i-o/i/seek.html">IO#seek</a> 第2引数としてシンボルを受け付けるようになりました (:CUR, :END, :SET, :DATA, :HOLE)</li>
+<li>拡張: <a href="../method/-i-o/i/read_nonblock.html">IO#read_nonblock</a> シンボルを返すためにキーワード引数 `exception: false` を受け付けるようになりました</li>
+<li>拡張: <a href="../method/-i-o/i/write_nonblock.html">IO#write_nonblock</a> シンボルを返すためにキーワード引数 `exception: false` を受け付けるようになりました</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-kernel.html">Kernel</a><ul>
+<li>追加: Kernel#singleton_method(<a href="../method/-object/i/singleton_method.html">Object#singleton_method</a>)</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-module.html">Module</a><ul>
+<li>追加: <a href="../method/-module/i/using.html">Module#using</a>, which activates refinements of the specified module only
+in the current class or module definition.</li>
+<li>追加: <a href="../method/-module/i/singleton_class=3f.html">Module#singleton_class?</a> レシーバーが特異クラスであれば true を返します。
+レシーバーが通常のクラスやモジュールであれば false を返します。</li>
+<li>拡張: <a href="../method/-module/i/refine.html">Module#refine</a> はもはや実験的な機能でなくなりました</li>
+<li>拡張: <a href="../method/-module/i/include.html">Module#include</a> と <a href="../method/-module/i/prepend.html">Module#prepend</a> はパブリックメソッドになりました</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-mutex.html">Mutex</a><ul>
+<li><a href="../method/-mutex/i/owned=3f.html">Mutex#owned?</a> はもはや実験的な機能ではありません。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-numeric.html">Numeric</a><ul>
+<li>拡張: <a href="../method/-numeric/i/step.html">Numeric#step</a> limit が省略可能になり無限数列を作れるようになりました。
+キーワード引数の to と by を使いやすさのために導入しました。
+by に 0 を指定すると無限に同じ数値を生成することができます。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-process.html">Process</a><ul>
+<li>追加: <a href="../method/-process/m/argv0.html">Process.#argv0</a> オリジナルの $0 の値を返します。</li>
+<li>追加: <a href="../method/-process/m/setproctitle.html">Process.#setproctitle</a> $0 に影響を与えずにプロセス名をセットできます。</li>
+<li>追加: <a href="../method/-process/m/clock_gettime.html">Process.#clock_gettime</a></li>
+<li>追加: <a href="../method/-process/m/clock_getres.html">Process.#clock_getres</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-string.html">String</a><ul>
+<li>&quot;literal&quot;.freeze は同じオブジェクトを返すように最適化されました。</li>
+<li>追加: <a href="../method/-string/i/scrub.html">String#scrub</a>, <a href="../method/-string/i/scrub=21.html">String#scrub!</a> 不正なバイト列を検証して修正します。
+古いバージョンのRubyと一緒に使いたいときは string-scrub gem を使います。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-symbol.html">Symbol</a><ul>
+<li>全てのシンボルは freeze されるようになりました</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>pack/unpack (Array/String)<ul>
+<li>プラットフォームが対応していれば Q! と q! は long long 型を表します</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>toplevel<ul>
+<li>main.using はもはや実験的な機能ではありません。
+The method activates refinements in the ancestors of the argument module to
+support refinement inheritance by <a href="../method/-module/i/include.html">Module#include</a></li>
+</ul>
+</li>
+</ul>
+<h2 >組み込みクラスの互換性 (機能追加とバグ修正を除く)</h2>
+<ul>
+<li><a href="../class/-hash.html">Hash</a><ul>
+<li>非互換: <a href="../method/-hash/i/reject.html">Hash#reject</a> は将来のバージョンでは単なるハッシュオブジェクトを返すようにする予定です。
+サブクラス、インスタンス変数、デフォルト値、汚染フラグはコピーされなくなります。
+そのようなハッシュに対してこのメソッドを呼び出すと警告するようになりました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-i-o.html">IO</a><ul>
+<li>非互換: <a href="../method/-i-o/s/open.html">IO.open</a> は外部エンコーディングが ASCII-8BIT のとき内部エンコーディングを無視します。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../method/-kernel/m/eval.html">Kernel.#eval</a>, <a href="../method/-kernel/m/instance_eval.html">Kernel.#instance_eval</a>, <a href="../method/-module/i/module_eval.html">Module#module_eval</a>
+元の環境のスコープ情報をコピーするようになりました。これは、引数なしの
+private, protected, public, module_function を文字列として eval しても
+その外側には影響を与えないという意味です。
+以下のコードは Foo#foo をプライベートにしません。</li>
+</ul>
+<pre>
+    class Foo
+      eval &quot;private&quot;
+      def foo
+      end
+    end
+</pre>
+<ul>
+<li><a href="../method/-object/i/untrusted=3f.html">Object#untrusted?</a>,<a href="../method/-object/i/untrust.html">Object#untrust</a>,<a href="../method/-object/i/trust.html">Object#trust</a><ul>
+<li>これらのメソッドは非推奨になりました。$VERBOSE が true のときは警告を表示します。
+<a href="../method/-object/i/tainted=3f.html">Object#tainted?</a>,<a href="../method/-object/i/taint.html">Object#taint</a>,<a href="../method/-object/i/untaint.html">Object#untaint</a> とそれぞれ同じ動作です。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../method/-module/i/ancestors.html">Module#ancestors</a><ul>
+<li>特異クラスの祖先はそれ自身を含みます。
+The ancestors of a singleton class now include singleton classes,
+in particular itself.</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../method/-module/i/define_method.html">Module#define_method</a> <a href="../method/-object/i/define_singleton_method.html">Object#define_singleton_method</a><ul>
+<li>定義したメソッドの名前をシンボルで返すようになりました。メソッドオブジェクトではありません。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../method/-numeric/i/quo.html">Numeric#quo</a><ul>
+<li>レシーバーが to_r メソッドを持たないとき <a href="../class/-argument-error.html">ArgumentError</a> ではなく <a href="../class/-type-error.html">TypeError</a> を発生させるようになりました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-proc.html">Proc</a><ul>
+<li>Returning from lambda proc now always exits from the Proc, not from the
+method where the lambda is created.  Returning from non-lambda proc exits
+from the method, same as the former behavior.</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-string.html">String</a><ul>
+<li>以下のコードでレシーバーのエンコーディングと変換後のエンコーディングが同一でも
+不正なバイト列を置き換えるようになりました。</li>
+</ul>
+</li>
+</ul>
+<pre>
+    include_invalid_byte_string.encode(&quot;UTF-8&quot;, invalid: :replace)
+</pre>
+<h2 >標準添付ライブラリの更新 (優れたもののみ)</h2>
+<ul>
+<li><a href="../library/cgi=2futil.html">cgi/util</a><ul>
+<li>全てのクラスメソッドをモジュールに移動しました</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/digest.html">digest</a><ul>
+<li>拡張: <a href="../method/-digest=3a=3a-class/s/file.html">Digest::Class.file</a> コンストラクタのためにオプショナル引数を取れるようになりました</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/matrix.html">matrix</a><ul>
+<li>追加: <a href="../method/-vector/i/cross_product.html">Vector#cross_product</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/net=2fsmtp.html">net/smtp</a><ul>
+<li>追加: <a href="../method/-net=3a=3a-s-m-t-p/i/rset.html">Net::SMTP#rset</a> RSET コマンドに対応している</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/objspace.html">objspace</a><ul>
+<li>追加: <a href="../method/-object-space/m/trace_object_allocations.html">ObjectSpace.#trace_object_allocations</a></li>
+<li>追加: <a href="../method/-object-space/m/trace_object_allocations_start.html">ObjectSpace.#trace_object_allocations_start</a></li>
+<li>追加: <a href="../method/-object-space/m/trace_object_allocations_stop.html">ObjectSpace.#trace_object_allocations_stop</a></li>
+<li>追加: <a href="../method/-object-space/m/trace_object_allocations_clear.html">ObjectSpace.#trace_object_allocations_clear</a></li>
+<li>追加: <a href="../method/-object-space/m/allocation_sourcefile.html">ObjectSpace.#allocation_sourcefile</a></li>
+<li>追加: <a href="../method/-object-space/m/allocation_sourceline.html">ObjectSpace.#allocation_sourceline</a></li>
+<li>追加: <a href="../method/-object-space/m/allocation_class_path.html">ObjectSpace.#allocation_class_path</a></li>
+<li>追加: <a href="../method/-object-space/m/allocation_method_id.html">ObjectSpace.#allocation_method_id</a></li>
+<li>追加: <a href="../method/-object-space/m/allocation_generation.html">ObjectSpace.#allocation_generation</a></li>
+<li>追加: <a href="../method/-object-space/m/reachable_objects_from_root.html">ObjectSpace.#reachable_objects_from_root</a></li>
+<li>追加: <a href="../method/-object-space/m/dump.html">ObjectSpace.#dump</a></li>
+<li>追加: <a href="../method/-object-space/m/dump_all.html">ObjectSpace.#dump_all</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>OpenSSL::BN<ul>
+<li>拡張: <a href="../method/-open-s-s-l=3a=3a-b-n/s/new.html">OpenSSL::BN.new</a> Fixnum や Bignum を引数として取れるようになりました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/open=2duri.html">open-uri</a><ul>
+<li>複数フィールドに同じ名前を使うことをサポートしました (Set-Cookieのように)</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-pathname.html">Pathname</a><ul>
+<li>追加: <a href="../method/-pathname/i/write.html">Pathname#write</a></li>
+<li>追加: <a href="../method/-pathname/i/binwrite.html">Pathname#binwrite</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/rake.html">rake</a><ul>
+<li>10.1.0 に更新しました。古い名前空間を削除しました。また、古い rake の機能も削除しました。
+<a class="external" href="http://rake.rubyforge.org/doc/release_notes/rake-10_1_0_rdoc.html">http://rake.rubyforge.org/doc/release_notes/rake-10_1_0_rdoc.html</a>
+<a class="external" href="http://rake.rubyforge.org/doc/release_notes/rake-10_0_3_rdoc.html">http://rake.rubyforge.org/doc/release_notes/rake-10_0_3_rdoc.html</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/rbconfig.html">rbconfig</a><ul>
+<li>追加: <a href="../method/-rb-config/c/-s-i-z-e-o-f.html">RbConfig::SIZEOF</a> C の型のサイズを提供するために追加しました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/rdoc.html">rdoc</a><ul>
+<li>4.1.0 に更新。主にデフォルトのテンプレートとアクセシビリティを改善しました。
+<a class="external" href="https://github.com/ruby/rdoc/blob/v4.1.0.preview.1/History.rdoc">https://github.com/ruby/rdoc/blob/v4.1.0.preview.1/History.rdoc</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/resolv.html">resolv</a><ul>
+<li>追加: <a href="../method/-resolv=3a=3a-d-n-s/s/fetch_resource.html">Resolv::DNS.fetch_resource</a></li>
+<li>One-shot multicast DNS support</li>
+<li>Support LOC resources</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/rexml.html">rexml</a><ul>
+<li>REXML::Parsers::SAX2Parser<ul>
+<li>entitydecl イベントの引数が間違っている問題を修正しました。
+ドキュメントにはエンティティ定義の配列を渡すと書いてあるのに、
+実装は2つ以上の引数を渡すようになっていた。これは実装のバグだったが、
+修正したことで後方互換性が壊れました。</li>
+</ul>
+</li>
+<li>REXML::Parsers::StreamParser<ul>
+<li>entityイベントをサポート</li>
+</ul>
+</li>
+<li>REXML::Text<ul>
+<li><a href="../method/-r-e-x-m-l=3a=3a-text/i/=3c=3c.html">REXML::Text#&lt;&lt;</a> 'text &lt;&lt; &quot;XXX&quot; &lt;&lt; &quot;YYY&quot;' のようなメソッドチェインをサポート</li>
+<li><a href="../method/-r-e-x-m-l=3a=3a-text/i/=3c=3c.html">REXML::Text#&lt;&lt;</a> &quot;raw&quot; でないモードをサポート</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/rinda.html">rinda</a><ul>
+<li><a href="../class/-rinda=3a=3a-ring-server.html">Rinda::RingServer</a>, <a href="../class/-rinda=3a=3a-ring-finger.html">Rinda::RingFinger</a><ul>
+<li>マルチキャストソケットをサポート</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/rubygems.html">rubygems</a><ul>
+<li>2.2.0 に更新。  Notable new features include:<ul>
+<li>Gemfile or gem.deps.rb support including Gem.file.lock (experimental)</li>
+<li>Improved, iterative resolver (compared to RubyGems 2.1 and earlier)</li>
+<li>Support for a sharing a GEM_HOME across ruby platforms and versions</li>
+<li><a class="external" href="https://github.com/rubygems/rubygems/tree/master/History.txt">https://github.com/rubygems/rubygems/tree/master/History.txt</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/set.html">set</a><ul>
+<li>追加: <a href="../method/-set/i/intersect=3f.html">Set#intersect?</a></li>
+<li>追加: <a href="../method/-set/i/disjoint=3f.html">Set#disjoint?</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/socket.html">socket</a><ul>
+<li>追加: <a href="../method/-socket/s/getifaddrs.html">Socket.getifaddrs</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/strscan.html">strscan</a><ul>
+<li><a href="../method/-string-scanner/i/=5b=5d.html">StringScanner#[]</a> 名前付きキャプチャをサポートしました</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/syslog=2flogger.html">syslog/logger</a><ul>
+<li>ファイリティを追加</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/tempfile.html">tempfile</a><ul>
+<li>追加: <a href="../method/-tempfile/s/create.html">Tempfile.create</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/timeout.html">timeout</a><ul>
+<li>明示的に例外クラスを指定しない限り、ブロックを抜けるための例外はブロック内部で rescue されなくなりました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/tsort.html">tsort</a><ul>
+<li>追加: <a href="../method/-t-sort/i/tsort.html">TSort#tsort</a></li>
+<li>追加: <a href="../method/-t-sort/i/tsort_each.html">TSort#tsort_each</a></li>
+<li>追加: <a href="../method/-t-sort/i/strongly_connected_components.html">TSort#strongly_connected_components</a></li>
+<li>追加: <a href="../method/-t-sort/i/each_strongly_connected_component.html">TSort#each_strongly_connected_component</a></li>
+<li>追加: <a href="../method/-t-sort/i/each_strongly_connected_component_from.html">TSort#each_strongly_connected_component_from</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/webrick.html">webrick</a><ul>
+<li>レスポンスボディは readpartial や read をサポートする StringIO か他の IO のようなオブジェクトになりました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/xmlrpc.html">xmlrpc</a><ul>
+<li>XMLRPC::Client<ul>
+<li>追加: XMLRPC::Client#http クライアントのために <a href="../class/-net=3a=3a-h-t-t-p.html">Net::HTTP</a> のインスタンスを返します。
+通常、それは必要ありません。HTTP クライアントのオプションを少し変更したいときに便利です。
+HTTPクライアントの主要なオプションを変更するときは XMLRPC::Client のメソッドを使うべきです。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 >標準添付ライブラリの互換性 (機能追加とバグ修正を除く)</h2>
+<ul>
+<li><a href="../library/set.html">set</a><ul>
+<li>非互換: <a href="../method/-set/i/to_set.html">Set#to_set</a> はコピーを生成して返す代わりに self を返すようになりました</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/uri.html">uri</a><ul>
+<li>非互換: <a href="../method/-u-r-i/s/decode_www_form.html">URI.decode_www_form</a> は現在の WHATWG による URL 標準に従います。
+文字列エンコーディングを指定するために、エンコーディング引数を取ります。
+いい加減なパーセントエンコードされた文字列を受け入れますが、セパレータにセミコロンは拒否します。</li>
+<li>非互換: <a href="../method/-u-r-i/s/decode_www_form.html">URI.decode_www_form</a> は現在の WHATWG による URL 標準に従います。
+パーセントエンコードする前に、エンコーディング引数を取ります。
+デフォルトでは、パーセントエンコードする前にUTF-16文字列をUTF-8に変換しません。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>curses<ul>
+<li>削除。curses は gem になりました。
+<a class="external" href="https://rubygems.org/gems/curses">https://rubygems.org/gems/curses</a></li>
+</ul>
+</li>
+</ul>
+<h2 >組込みのグローバル変数の互換性に影響のある変更</h2>
+<ul>
+<li>$SAFE<ul>
+<li>$SAFE=4 は廃止されました。$SAFE に4以上の値をセットすると <a href="../class/-argument-error.html">ArgumentError</a> が発生します。</li>
+</ul>
+</li>
+</ul>
+<h2 >C API の更新</h2>
+<ul>
+<li>非推奨: rb_gc_set_params() Ruby内部でのみ使います。</li>
+</ul>
+<ul>
+<li>追加: rb_gc_count() GCが発生した回数を返します。</li>
+</ul>
+<ul>
+<li>追加: rb_gc_stat() <a href="../method/-g-c/s/stat.html">GC.stat</a> が返す値にオーバーヘッドなしにアクセスできます。</li>
+</ul>
+<ul>
+<li>追加: rb_gc_latest_gc_info() <a href="../method/-g-c/s/latest_gc_info.html">GC.latest_gc_info</a> にアクセスできます。</li>
+</ul>
+<ul>
+<li>追加: rb_postponed_job_register()  VMが一貫性のある状態になったときに呼ぶコールバック関数を引数に取ります。
+例えば、Cのシグナルハンドラから実行するために使います。</li>
+</ul>
+<ul>
+<li>追加: rb_profile_frames() コールスタックのプロファイルのために現在のRubyのスタックに
+低コストでアクセスする機能を提供します。</li>
+</ul>
+<ul>
+<li>rb_tracepoint_new() C言語からアクセス可能な新しい内部的なイベントをサポートしました:<ul>
+<li>RUBY_INTERNAL_EVENT_NEWOBJ</li>
+<li>RUBY_INTERNAL_EVENT_FREEOBJ</li>
+<li>RUBY_INTERNAL_EVENT_GC_START</li>
+<li>RUBY_INTERNAL_EVENT_GC_END_MARK</li>
+<li>RUBY_INTERNAL_EVENT_GC_END_SWEEP</li>
+<li>内部的なイベントを通常のイベントと同時に使うことはできません。
+(例: RUBY_EVENT_CALL と RUBY_EVENT_RETURN)</li>
+</ul>
+</li>
+</ul>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

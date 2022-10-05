@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Enumerator.produce (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="与えられたブロックを呼び出し続ける、停止しない Enumerator を返します。
+ブロックの戻り値が、次にブロックを呼び出す時に引数として渡されます。
+initial 引数が渡された場合、最初にブロックを呼び出す時にそれがブロック
+呼び出しの引数として渡されます。initial が渡されなかった場合は nil が
+渡されます。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-enumerator.html">Enumeratorクラス</a>
+      </li>
+      <li>
+        produce 
+      </li>
+    </ol>
+  </nav>
+
+<h1>singleton method Enumerator.produce</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_PRODUCE"><code>produce(initial = nil) { |prev| ... } -&gt; Enumerator</code><span class="permalink">[<a href="../../../method/-enumerator/s/produce.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Enumerator.html#method-c-produce">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+与えられたブロックを呼び出し続ける、停止しない Enumerator を返します。ブロックの戻り値が、次にブロックを呼び出す時に引数として渡されます。
+initial 引数が渡された場合、最初にブロックを呼び出す時にそれがブロック呼び出しの引数として渡されます。initial が渡されなかった場合は nil が渡されます。
+</p>
+<p>
+ブロックが例外 <a href="../../../class/-stop-iteration.html">StopIteration</a>を投げた場合、繰り返しが終了します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] initial:</dt>
+<dd>
+ブロックに最初に渡される値です。任意のオブジェクトを渡せます。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># 1, 2, 3, 4, ... と続く Enumerator
+</span><span class="no">Enumerator</span><span class="p">.</span><span class="nf">produce</span><span class="p">(</span><span class="mi">1</span>, <span class="o">&amp;</span><span class="ss">:succ</span><span class="p">)</span>
+
+<span class="c1"># next を呼ぶたびランダムな数値を返す Enumerator
+</span><span class="no">Enumerator</span><span class="p">.</span><span class="nf">produce</span> <span class="p">{</span> <span class="nb">rand</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="p">}</span>
+
+<span class="c1"># ツリー構造の祖先ノードを列挙する Enumerator
+</span><span class="nb">ancestors</span> <span class="o">=</span> <span class="no">Enumerator</span><span class="p">.</span><span class="nf">produce</span><span class="p">(</span>node<span class="p">)</span> <span class="p">{</span> <span class="o">|</span>prev<span class="o">|</span> node <span class="o">=</span> prev<span class="p">.</span><span class="nf">parent</span> <span class="k">or</span> <span class="nb">raise</span> <span class="no">StopIteration</span> <span class="p">}</span>
+enclosing_section <span class="o">=</span> <span class="nb">ancestors</span><span class="p">.</span><span class="nf">find</span> <span class="p">{</span> <span class="o">|</span>n<span class="o">|</span> n<span class="p">.</span><span class="nf">type</span> <span class="o">==</span> <span class="ss">:section</span> <span class="p">}</span>
+</code></pre>
+<p>
+このメソッドは Enumerable の各メソッドと組み合わせて使うことで、
+while や until ループのような処理を実装できます。例えば <a href="../../../method/-enumerable/i/detect.html">Enumerable#detect</a>, <a href="../../../method/-enumerable/i/slice_after.html">Enumerable#slice_after</a>, <a href="../../../method/-enumerable/i/take_while.html">Enumerable#take_while</a>
+などと合わせて使えるでしょう。
+</p>
+<pre class="highlight ruby">
+<span class="caption">Enumerable のメソッドと組み合わせる例</span>
+<code>
+<span class="c1"># 次の火曜日を返す例
+</span><span class="nb">require</span> <span class="s2">"</span><span class="s2">date</span><span class="s2">"</span>
+<span class="no">Enumerator</span><span class="p">.</span><span class="nf">produce</span><span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span>, <span class="o">&amp;</span><span class="ss">:succ</span><span class="p">)</span><span class="p">.</span><span class="nf">detect</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:tuesday?</span><span class="p">)</span>
+
+<span class="c1"># シンプルなレキサーの例
+</span><span class="nb">require</span> <span class="s2">"</span><span class="s2">strscan</span><span class="s2">"</span>
+scanner <span class="o">=</span> <span class="no">StringScanner</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">7+38/6</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">PATTERN</span> <span class="o">=</span> <span class="sr">%r{\d+|[-/+*]}</span>
+<span class="no">Enumerator</span><span class="p">.</span><span class="nf">produce</span> <span class="p">{</span> scanner<span class="p">.</span><span class="nf">scan</span><span class="p">(</span><span class="no">PATTERN</span><span class="p">)</span> <span class="p">}</span><span class="p">.</span><span class="nf">slice_after</span> <span class="p">{</span> scanner<span class="p">.</span><span class="nf">eos?</span> <span class="p">}</span><span class="p">.</span><span class="nf">first</span>
+<span class="c1"># =&gt; [&quot;7&quot;, &quot;+&quot;, &quot;38&quot;, &quot;/&quot;, &quot;6&quot;]
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

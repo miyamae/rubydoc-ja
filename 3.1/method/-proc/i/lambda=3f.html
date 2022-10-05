@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Proc#lambda? (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="引数の取扱の厳密さの意味は以下の例を参考にしてください。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-proc.html">Procクラス</a>
+      </li>
+      <li>
+        lambda? 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Proc#lambda?</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_LAMBDA--3F"><code>lambda? -&gt; bool</code><span class="permalink">[<a href="../../../method/-proc/i/lambda=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Proc.html#method-i-lambda-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+手続きオブジェクトの引数の取扱が厳密であるならば true を返します。
+</p>
+<p>
+引数の取扱の厳密さの意味は以下の例を参考にしてください。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># lambda で生成した Proc オブジェクトでは true 
+</span><span class="nb">lambda</span><span class="p">{</span><span class="p">}</span><span class="p">.</span><span class="nf">lambda?</span> <span class="c1"># =&gt; true
+</span><span class="c1"># proc で生成した Proc オブジェクトでは false
+</span><span class="nb">proc</span><span class="p">{</span><span class="p">}</span><span class="p">.</span><span class="nf">lambda?</span>   <span class="c1"># =&gt; false
+</span><span class="c1"># Proc.new で生成した Proc オブジェクトでは false
+</span><span class="no">Proc</span><span class="p">.</span><span class="nf">new</span><span class="p">{</span><span class="p">}</span><span class="p">.</span><span class="nf">lambda?</span> <span class="c1"># =&gt; false
+</span>
+<span class="c1"># 以下、lambda?が偽である場合
+</span><span class="c1"># 余分な引数を無視する
+</span><span class="nb">proc</span><span class="p">{</span><span class="o">|</span>a,b<span class="o">|</span> <span class="p">[</span>a,b<span class="p">]</span><span class="p">}</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span><span class="p">)</span> <span class="c1"># =&gt; [1,2]
+</span><span class="c1"># 足りない引数には nil が渡される
+</span><span class="nb">proc</span><span class="p">{</span><span class="o">|</span>a,b<span class="o">|</span> <span class="p">[</span>a,b<span class="p">]</span><span class="p">}</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># =&gt; [1, nil]
+</span><span class="c1"># 配列1つだと展開される
+</span><span class="nb">proc</span><span class="p">{</span><span class="o">|</span>a,b<span class="o">|</span> <span class="p">[</span>a,b<span class="p">]</span><span class="p">}</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">]</span><span class="p">)</span> <span class="c1"># =&gt; [1,2]
+</span><span class="c1"># lambdaの場合これらはすべて ArgumentError となる
+</span> 
+<span class="c1"># &amp;が付いた仮引数で生成される Proc は lambda? が偽となる
+</span><span class="k">def</span> <span class="nf">n</span><span class="p">(</span><span class="o">&amp;</span>b<span class="p">)</span> b<span class="p">.</span><span class="nf">lambda?</span> <span class="k">end</span>
+n <span class="p">{</span><span class="p">}</span> <span class="c1"># =&gt; false
+</span>
+<span class="c1"># &amp;が付いた実引数によるものは、lambda?が元の Procオブジェクトから
+</span><span class="c1"># 引き継がれる
+</span><span class="nb">lambda</span><span class="p">(</span><span class="o">&amp;</span><span class="nb">lambda</span> <span class="p">{</span><span class="p">}</span><span class="p">)</span><span class="p">.</span><span class="nf">lambda?</span>   <span class="c1">#=&gt; true
+</span><span class="nb">proc</span><span class="p">(</span><span class="o">&amp;</span><span class="nb">lambda</span> <span class="p">{</span><span class="p">}</span><span class="p">)</span><span class="p">.</span><span class="nf">lambda?</span>     <span class="c1">#=&gt; true
+</span><span class="no">Proc</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="o">&amp;</span><span class="nb">lambda</span> <span class="p">{</span><span class="p">}</span><span class="p">)</span><span class="p">.</span><span class="nf">lambda?</span> <span class="c1">#=&gt; true
+</span>
+<span class="nb">lambda</span><span class="p">(</span><span class="o">&amp;</span><span class="nb">proc</span> <span class="p">{</span><span class="p">}</span><span class="p">)</span><span class="p">.</span><span class="nf">lambda?</span>     <span class="c1">#=&gt; false
+</span><span class="nb">proc</span><span class="p">(</span><span class="o">&amp;</span><span class="nb">proc</span> <span class="p">{</span><span class="p">}</span><span class="p">)</span><span class="p">.</span><span class="nf">lambda?</span>       <span class="c1">#=&gt; false
+</span><span class="no">Proc</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="o">&amp;</span><span class="nb">proc</span> <span class="p">{</span><span class="p">}</span><span class="p">)</span><span class="p">.</span><span class="nf">lambda?</span>   <span class="c1">#=&gt; false
+</span>
+n<span class="p">(</span><span class="o">&amp;</span><span class="nb">lambda</span> <span class="p">{</span><span class="p">}</span><span class="p">)</span>                <span class="c1">#=&gt; true
+</span>n<span class="p">(</span><span class="o">&amp;</span><span class="nb">proc</span> <span class="p">{</span><span class="p">}</span><span class="p">)</span>                  <span class="c1">#=&gt; false
+</span>n<span class="p">(</span><span class="o">&amp;</span><span class="no">Proc</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span><span class="p">}</span><span class="p">)</span>              <span class="c1">#=&gt; false
+</span>
+<span class="c1"># Method#to_proc によるものは lambda?が真となる
+</span><span class="k">def</span> <span class="nf">m</span><span class="p">(</span><span class="p">)</span> <span class="k">end</span>
+<span class="nb">method</span><span class="p">(</span><span class="ss">:m</span><span class="p">)</span><span class="p">.</span><span class="nf">to_proc</span><span class="p">.</span><span class="nf">lambda?</span> <span class="c1">#=&gt; true
+</span>
+<span class="c1"># Module#define_method は特別扱いで、
+</span><span class="c1"># これで定義されたメソッドの引数は常に厳密に取り扱われる
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">C</span>
+  define_method<span class="p">(</span><span class="ss">:d</span><span class="p">)</span> <span class="p">{</span><span class="p">}</span>
+<span class="k">end</span>
+<span class="no">C</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">d</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">)</span>       <span class="c1">#=&gt; ArgumentError
+</span><span class="no">C</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:d</span><span class="p">)</span><span class="p">.</span><span class="nf">to_proc</span><span class="p">.</span><span class="nf">lambda?</span>   <span class="c1">#=&gt; true
+</span>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">C</span>
+  define_method<span class="p">(</span><span class="ss">:e</span>, <span class="o">&amp;</span><span class="nb">proc</span> <span class="p">{</span><span class="p">}</span><span class="p">)</span>
+<span class="k">end</span>
+<span class="no">C</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">e</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">)</span>       <span class="c1">#=&gt; ArgumentError
+</span><span class="no">C</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:e</span><span class="p">)</span><span class="p">.</span><span class="nf">to_proc</span><span class="p">.</span><span class="nf">lambda?</span>   <span class="c1">#=&gt; true
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Module#autoload (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="定数 const_name を最初に参照した時に feature を [[m:Kernel.#require]] するように設定します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-module.html">Moduleクラス</a>
+      </li>
+      <li>
+        autoload 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Module#autoload</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_AUTOLOAD"><code>autoload(const_name, feature) -&gt; nil</code><span class="permalink">[<a href="../../../method/-module/i/autoload.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Module.html#method-i-autoload">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+定数 const_name を最初に参照した時に feature を <a href="../../../method/-kernel/m/require.html">Kernel.#require</a> するように設定します。
+</p>
+<p>
+const_name が autoload 設定されていて、まだ定義されてない(ロードされていない)ときは、
+autoload する対象を置き換えます。
+const_name が(autoloadではなく)既に定義されているときは何もしません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] const_name:</dt>
+<dd>
+<a href="../../../class/-string.html">String</a> または <a href="../../../class/-symbol.html">Symbol</a> で指定します。なお、const_name には、&quot;::&quot; 演算子を含めることはできません。つまり、self の直下に定義された定数しか指定できません。
+</dd>
+<dt class='method-param'>[PARAM] feature:</dt>
+<dd>
+<a href="../../../method/-kernel/m/require.html">Kernel.#require</a> と同様な方法で autoload する対象を指定する。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># ------- /tmp/foo.rb ---------
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="c1"># ----- end of /tmp/foo.rb ----
+</span>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="nb">autoload</span> <span class="ss">:Bar</span>, <span class="s1">'/tmp/foo'</span>
+<span class="k">end</span>
+<span class="nb">p</span> <span class="no">Foo</span><span class="o">::</span><span class="no">Bar</span> <span class="c1">#=&gt; Foo::Bar
+</span></code></pre>
+<p>
+以下のようにモジュールを明示的にレシーバとして呼び出すこともできます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># ------- /tmp/foo.rb ---------
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="c1"># ----- end of /tmp/foo.rb ----
+</span>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+<span class="k">end</span>
+<span class="no">Foo</span><span class="p">.</span><span class="nf">autoload</span> <span class="ss">:Bar</span>, <span class="s1">'/tmp/foo'</span>
+<span class="nb">p</span> <span class="no">Foo</span><span class="o">::</span><span class="no">Bar</span> <span class="c1">#=&gt; Foo::Bar
+</span></code></pre>
+<p>
+以下のように、autoload したライブラリがネストした定数を定義しない場合、NameError が発生します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># ------- /tmp/bar.rb ---------
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span>
+<span class="k">end</span>
+<span class="c1"># ----- end of /tmp/bar.rb ----
+</span>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="nb">autoload</span> <span class="ss">:Bar</span>, <span class="s1">'/tmp/bar.rb'</span>
+<span class="k">end</span>
+<span class="nb">p</span> <span class="no">Foo</span><span class="o">::</span><span class="no">Bar</span>
+<span class="c1">#=&gt; -:4:in `&lt;main&gt;': uninitialized constant Foo::Bar (NameError)
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/autoload.html">Kernel.#autoload</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

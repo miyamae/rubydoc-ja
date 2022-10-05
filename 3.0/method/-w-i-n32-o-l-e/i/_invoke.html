@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>WIN32OLE#_invoke (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="呼び出すメソッドのインターフェイスを事前に知っている場合に、DISPIDとパ
+ラメータの型を指定してメソッドを呼び出します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/win32ole.html">win32oleライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-w-i-n32-o-l-e.html">WIN32OLEクラス</a>
+      </li>
+      <li>
+        _invoke 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method WIN32OLE#_invoke</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I__INVOKE"><code>_invoke(dispid, args, types) -&gt; object | nil</code><span class="permalink">[<a href="../../../method/-w-i-n32-o-l-e/i/_invoke.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/WIN32OLE.html#method-i-_invoke">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+DISPIDとパラメータの型を指定してオブジェクトのメソッドを呼び出します。
+</p>
+<p>
+呼び出すメソッドのインターフェイスを事前に知っている場合に、DISPIDとパラメータの型を指定してメソッドを呼び出します。
+</p>
+<p>
+このメソッドは引数の変換方法をプログラマが制御できるようにすることと、
+COMアーリーバインディングを利用して外部プロセスサーバとのラウンドトリップを減らして処理速度を向上させることを目的としたものです。後者の目的については、DLLの形式で型情報（TypeLib）を提供しているサーバに対してはあまり意味を持ちません。そのため、型の高精度な制御が不要な場合は、直接メソッド名を指定したメソッド呼び出しを行うことを、プログラムの可読性の点から推奨します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] dispid:</dt>
+<dd>
+メソッドのDISPID（メソッドを一意に特定する数値）を指定します。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+メソッドの引数を配列で指定します。引数の順序は最左端の引数のインデックスを0とします。引数が不要な場合は空配列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] types:</dt>
+<dd>
+メソッドの引数の型を配列で指定します。引数の順序は最左端の引数のインデックスを0とします。型の指定には、
+<a href="../../../class/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t.html">WIN32OLE::VARIANT</a>の定数を利用します。引数が不要な場合は空配列を指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+メソッドの返り値。ただし返り値を持たないメソッドの場合はnil。
+</dd>
+<dt>[EXCEPTION] WIN32OLERuntimeError:</dt>
+<dd>
+オートメーションサーバの呼び出しに失敗しました。理由はメッセージのHRESULTを調べてください。
+</dd>
+</dl>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+excel._invoke(302, [], []) #  DISPID 302は、Quitメソッド
+</pre>
+<p>
+MFCの制約により、バイト配列の型情報は通常
+<a href="../../../method/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t/c/-v-t_-v-a-r-i-a-n-t.html">WIN32OLE::VARIANT::VT_VARIANT</a>となります。このような場合に、バイト配列を与えるつもりで
+</p>
+<pre>
+include WIN32OLE::VARIANT
+obj.method(DISPID, [[0, 1, 2, 3]], [VT_VARIANT])
+</pre>
+<p>
+のように記述すると、単に32ビット整数（VT_I4）の配列が送られることになり空間効率が低下します。
+</p>
+<p>
+引数の最終的な型がわかっている場合は、下記の例のように型指定パラメータには実際の型を指定してください。
+</p>
+<pre>
+include WIN32OLE::VARIANT
+obj.method(DISPID, [[0, 1, 2, 3]], [VT_BYREF | VT_ARRAY | VT_UI1])
+</pre>
+<p>
+なお、VB6で作成したCOMコンポーネントのパラメータに配列を与える場合は、
+<a href="../../../method/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t/c/-v-t_-b-y-r-e-f.html">WIN32OLE::VARIANT::VT_BYREF</a>の指定が必須です。
+</p>
+<p>
+DISPIDは<a href="../../../method/-w-i-n32-o-l-e_-m-e-t-h-o-d/i/dispid.html">WIN32OLE_METHOD#dispid</a>から取得できます。
+</p>
+<p>
+[SEE_ALSO] <a href="../../../class/-w-i-n32-o-l-e=3a=3a-v-a-r-i-a-n-t.html">WIN32OLE::VARIANT</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

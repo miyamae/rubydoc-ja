@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>セキュリティモデル (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="RubyにはCGI等のプログラミングを安全に行うことを助ける為に、セキュリティ
+機構が備わっています。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      
+        <li>
+          <a href="../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+        </li>
+        <li>
+          セキュリティモデル
+        </li>
+      
+    </ol>
+  </nav>
+
+<h1>セキュリティモデル</h1>
+</header>
+
+<main>
+
+<p>
+RubyにはCGI等のプログラミングを安全に行うことを助ける為に、セキュリティ機構が備わっています。
+</p>
+<p>
+Rubyのセキュリティモデルは「オブジェクトの汚染」と「セーフレベル」という仕組みによってなりたっています。
+</p>
+<h2 >オブジェクトの汚染</h2>
+<p>
+Rubyではオブジェクトは「汚染されている」とみなされることがあります。このしくみは大きく分けて二つの使われ方をします。
+</p>
+<p>
+ひとつ目は、信用できない入力をもとに作られたオブジェクトを「汚染されている」とみなし、「危険な操作」の引数として使えないようにすることです。悪意あるデータによって、プログラムが意図しない動作をする事を防ぐことを目的としています。
+</p>
+<p>
+もうひとつは、信用しているオブジェクト(汚染されていないオブジェクト)を信用できないプログラムから守るという使い方です。
+</p>
+<p>
+オブジェクトの汚染に関連するメソッド
+</p>
+<dl>
+<dt>Object#taint</dt>
+<dd>
+<p>
+オブジェクトを汚染する
+</p>
+</dd>
+<dt>Object#tainted?</dt>
+<dd>
+<p>
+オブジェクトが汚染されている場合に真を返す
+</p>
+</dd>
+<dt>Object#untaint</dt>
+<dd>
+<p>
+オブジェクトの汚染を取り除く
+</p>
+</dd>
+</dl>
+<h2 >セーフレベル</h2>
+<p>
+セーフレベルはグローバル変数 <a href="../method/-kernel/v/-s-a-f-e.html">$SAFE</a> で設定します。各スレッドで個別のセーフレベルを設定することはできません。セーフレベルが高くなるほど、行える操作は制限されます。
+</p>
+<p>
+<a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-list/37415">[ruby-list:37415]</a>
+</p>
+<p>
+<a href="../method/-kernel/v/-s-a-f-e.html">$SAFE</a> に関するルール
+</p>
+<ul>
+<li>プログラム開始時の$SAFEの値は0</li>
+<li>各スレッド固有ではなくなったので必要に応じて ensure で戻す</li>
+</ul>
+<pre>
+      $SAFE = 0
+      th = Thread.new do
+        p $SAFE # =&gt; 0
+        $SAFE = 1
+      ensure
+        $SAFE = 0
+      end
+      th.join
+      p $SAFE # =&gt; 0
+</pre>
+<ul>
+<li>$SAFE の値を現在の値より小さく変更する事もできる</li>
+</ul>
+<pre>
+      $ ruby -e '$SAFE = 1; $SAFE = 0'
+</pre>
+<p>
+原則として、各セキュリティレベルにはそれ以下のセキュリティレベルの制限も適用されます。たとえばレベル1で許されない操作はレベル2でも行えません。
+</p>
+<h3 >レベル 0</h3>
+<p>
+デフォルトのセーフレベルです。
+</p>
+<h4 >汚染されるオブジェクト</h4>
+<ul>
+<li>IOや環境変数、コマンドライン引数(ARGV)から得られた文字列</li>
+</ul>
+<pre>
+$ ruby -e 'p ARGV[0].tainted?' hoge
+true
+</pre>
+<p>
+環境変数PATHだけは例外で、値に危険なパスを含む場合のみ汚染されます。
+</p>
+<p>
+ここでは危険なパスとは誰でも変更／書き込みが可能なパスをいいます。ルートディレクトリから階層が順番にチェックされ、一箇所でも誰でも変更可能な個所があればそのパスは危険とみなされます。
+</p>
+<p>
+なお、DOSISH(DOSとWindows)、cygwin では権限をチェックしません。
+</p>
+<h4 >禁止される操作</h4>
+<ul>
+<li>特になし</li>
+</ul>
+<h3 >レベル 1</h3>
+<p>
+信用しているプログラムで信用できないデータを処理する為のレベルです。
+CGI等でユーザからの入力を処理するのに適しています。
+</p>
+<h4 >汚染されるオブジェクト</h4>
+<ul>
+<li>レベル0と同様</li>
+</ul>
+<h4 >禁止される操作</h4>
+<ul>
+<li>汚染された文字列を引数とした以下の操作</li>
+</ul>
+<ul>
+<li><a href="../class/-dir.html">Dir</a>, <a href="../class/-i-o.html">IO</a>, <a href="../class/-file.html">File</a>, <a href="../class/-file-test.html">FileTest</a> のメソッド呼び出し</li>
+</ul>
+<pre>
+          $ ruby -e '$SAFE = 1; open(ARGV[0])' hoge
+          -e:1:in `initialize': Insecure operation - initialize (SecurityError)
+                  from -e:1
+</pre>
+<ul>
+<li>ファイルテスト演算子の使用、ファイルの更新時刻比較</li>
+<li>外部コマンド実行 (<a href="../method/-kernel/m/system.html">Kernel.#system</a>, <a href="../method/-kernel/m/exec.html">Kernel.#exec</a>, <a href="../method/-kernel/m/=60.html">Kernel.#`</a>, <a href="../method/-kernel/m/spawn.html">Kernel.#spawn</a> など)</li>
+<li><a href="../method/-kernel/m/eval.html">Kernel.#eval</a></li>
+<li>トップレベルへの <a href="../method/-kernel/m/load.html">Kernel.#load</a> (第二引数を指定してラップすれば実行可能)</li>
+<li><a href="../method/-kernel/m/require.html">Kernel.#require</a></li>
+<li><a href="../method/-kernel/m/trap.html">Kernel.#trap</a></li>
+</ul>
+<h3 >レベル 2</h3>
+<p>
+廃止されました。
+</p>
+<h3 >レベル 3</h3>
+<p>
+廃止されました。
+</p>
+<h3 id='level4'>レベル 4</h3>
+<p>
+廃止されました。
+</p>
+<h2 >セーフレベルに関するその他の詳細</h2>
+<ul>
+<li>requireは$SAFE = 0で実行される</li>
+<li>Level 1以上では起動時に以下の違いがある<ul>
+<li>環境変数 RUBYLIB を $: に加えない</li>
+<li>環境変数 RUBYOPT を処理しない</li>
+<li>標準入力からのプログラム読み込みを行わない
+(スクリプトがsetgid, setuidされている時も同様)</li>
+<li>以下のスイッチを使用できない
+(スクリプトがsetgid, setuidされている時も同様)</li>
+</ul>
+</li>
+</ul>
+<pre>
+          -s -S -e -r -i -I -x
+</pre>
+<ul>
+<li>setuid, setgid されたスクリプトは $SAFE = 1 以上で実行される。</li>
+<li><a href="../class/-proc.html">Proc</a> はその時点でのセーフレベルを記憶する。
+その <a href="../class/-proc.html">Proc</a> オブジェクトが call されると、記憶していたセーフレベルで実行される。</li>
+<li>汚染された文字列を第二引数に指定して <a href="../method/-kernel/m/trap.html">Kernel.#trap</a>/<a href="../method/-kernel/m/trace_var.html">Kernel.#trace_var</a> を
+実行するとその時点で例外 <a href="../class/-security-error.html">SecurityError</a> が発生する。</li>
+<li>実装の都合上 <a href="../class/-integer.html">Integer</a>, <a href="../class/-float.html">Float</a>, <a href="../class/-symbol.html">Symbol</a>, true,
+false, nil は汚染されない。</li>
+</ul>
+<h2 >使用例</h2>
+<p>
+$SAFE はスレッドローカルからグローバルになり、レベルを低く変更する事もできるようになったため、プログラムの一部だけを高いセーフレベルで実行するには、以下のように ensure でセーフレベルを戻す必要があります。
+</p>
+<pre>
+def safe(level)
+  result = nil
+  Thread.start do
+    $SAFE = level
+    result = yield
+  ensure
+    $SAFE = 0
+  end.join
+  result
+end
+
+lib = &quot;insecure_library&quot;.taint # 外部から受け取った文字列(仮)
+safe(1) { require lib }        # $SAFE が 1 なので例外
+require lib                    # 外側は影響を受けない
+</pre>
+<h2 >拡張ライブラリでの扱い</h2>
+<ul>
+<li>拡張ライブラリではオブジェクトの汚染状態を適切に伝播させる必要があります。</li>
+<li>グローバルな状態を変更する場合や外部とのやりとりの前にセキュリティレベルを
+チェックする必要があります。</li>
+</ul>
+<p>
+@see <a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-list/37407">[ruby-list:37407]</a>
+</p>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

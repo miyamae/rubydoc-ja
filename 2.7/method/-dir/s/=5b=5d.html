@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Dir.[] (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="ワイルドカードの展開を行い、
+パターンにマッチするファイル名を文字列の配列として返します。
+パターンにマッチするファイルがない場合は空の配列を返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-dir.html">Dirクラス</a>
+      </li>
+      <li>
+        [] 
+      </li>
+    </ol>
+  </nav>
+
+<h1>singleton method Dir.[]</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_--5B--5D"><code>self[*pattern, base: nil] -&gt; [String]</code><span class="permalink">[<a href="../../../method/-dir/s/=5b=5d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Dir.html#method-c-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>glob(pattern, flags = 0, base: nil) -&gt; [String]</code></dt>
+<dt class="method-heading"><code>glob(pattern, flags = 0, base: nil) {|file| ...} -&gt; nil</code></dt>
+<dd class="method-description">
+<p>
+ワイルドカードの展開を行い、パターンにマッチするファイル名を文字列の配列として返します。パターンにマッチするファイルがない場合は空の配列を返します。
+</p>
+<p>
+ブロックが与えられたときはワイルドカードにマッチしたファイルを引数にそのブロックを 1 つずつ評価して nil を返します
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+パターンを文字列か配列で指定します。配列を指定すると複数のパターンを指定できます。
+</dd>
+<dt class='method-param'>[PARAM] flags:</dt>
+<dd>
+<a href="../../../method/-file/s/fnmatch.html">File.fnmatch</a> に指定できるフラグと同様のフラグを指定できます。このフラグを指定することでマッチの挙動を変更することができます。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="no">Dir</span><span class="p">.</span><span class="nf">glob</span><span class="p">(</span><span class="s2">"</span><span class="s2">*</span><span class="s2">"</span><span class="p">)</span>                      <span class="c1">#=&gt; [&quot;bar&quot;, &quot;foo&quot;]
+</span><span class="no">Dir</span><span class="p">.</span><span class="nf">glob</span><span class="p">(</span><span class="s2">"</span><span class="s2">*</span><span class="s2">"</span>, <span class="no">File</span><span class="o">::</span><span class="no">FNM_DOTMATCH</span><span class="p">)</span>  <span class="c1">#=&gt; [&quot;.&quot;, &quot;..&quot;, &quot;bar&quot;, &quot;foo&quot;]
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] base:</dt>
+<dd>
+カレントディレクトリの代わりに相対パスの基準にするベースディレクトリを指定します。指定した場合、結果の頭にはベースディレクトリはつかないので、絶対パスが必要な場合はベースディレクトリを追加する必要があるでしょう。
+</dd>
+</dl>
+<p>
+ワイルドカードには以下のものがあります。これらはバックスラッシュによりエスケープすることができます。ダブルクォートの文字列中では 2
+重にエスケープする必要があることに注意してください。ワイルドカードはデフォルトではファイル名の先頭の &quot;.&quot; にマッチしません。
+</p>
+<dl>
+<dt>*</dt>
+<dd>
+<p>
+空文字列を含む任意の文字列と一致します。
+</p>
+</dd>
+<dt>?</dt>
+<dd>
+<p>
+任意の一文字と一致します。
+</p>
+</dd>
+<dt>[ ]</dt>
+<dd>
+<p>
+鈎括弧内のいずれかの文字と一致します。- でつながれた文字は範囲を表します。鈎括弧の中の最初の文字が
+^ である時には含まれない文字と一致します。
+^ の代わりに ksh や POSIX shell のように ! も同じ意味で使えます。
+</p>
+</dd>
+<dt>{ }</dt>
+<dd>
+<p>
+コンマで区切られた文字列の組合せに展開します。例えば、
+foo{a,b,c} は fooa, foob, fooc
+に展開されそれぞれに対してマッチ判定を行います。
+</p>
+<p>
+括弧は入れ子にすることができます。例えば、
+{foo,bar{foo,bar}} は foo, barfoo, barbar
+のそれぞれにマッチします。
+</p>
+</dd>
+<dt>**/</dt>
+<dd>
+<p>
+ワイルドカード */ の0回以上の繰り返しを意味し、ディレクトリを再帰的にたどってマッチを行います。例えば,
+foo/**/bar は foo/bar, foo/*/bar,
+foo/*/*/bar ... (以下無限に続く)に対してそれぞれマッチ判定を行います。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># 一般的な例
+</span><span class="nb">p</span> <span class="no">Dir</span><span class="p">.</span><span class="nf">glob</span><span class="p">(</span><span class="s2">"</span><span class="s2">*</span><span class="s2">"</span><span class="p">)</span>          <span class="c1">#=&gt; [&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;]
+</span><span class="nb">p</span> <span class="no">Dir</span><span class="p">.</span><span class="nf">glob</span><span class="p">(</span><span class="s2">"</span><span class="s2">./b*</span><span class="s2">"</span><span class="p">)</span>       <span class="c1">#=&gt; [&quot;./bar&quot;, &quot;./baz&quot;]      先頭に &quot;./&quot; が付いている。
+</span><span class="nb">p</span> <span class="no">Dir</span><span class="p">.</span><span class="nf">glob</span><span class="p">(</span><span class="s2">"</span><span class="s2">*/</span><span class="s2">"</span><span class="p">)</span>         <span class="c1">#=&gt; [&quot;foo/&quot;]                ディレクトリのみにマッチする。
+</span><span class="nb">p</span> <span class="no">Dir</span><span class="p">.</span><span class="nf">glob</span><span class="p">(</span><span class="s2">"</span><span class="s2">wrong_name</span><span class="s2">"</span><span class="p">)</span> <span class="c1">#=&gt; []                      マッチしないと空の配列を返す。
+</span>
+<span class="no">Dir</span><span class="p">.</span><span class="nf">glob</span><span class="p">(</span><span class="s2">"</span><span class="s2">b*</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>f<span class="o">|</span> <span class="nb">p</span> f <span class="p">}</span>
+
+<span class="c1">#=&gt; &quot;bar&quot;
+</span><span class="c1">#   &quot;baz&quot;
+</span>
+<span class="c1"># 複数のパターンを指定する例
+</span><span class="nb">p</span> <span class="no">Dir</span><span class="p">.</span><span class="nf">glob</span><span class="p">(</span><span class="p">[</span><span class="s2">"</span><span class="s2">f*</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">b*</span><span class="s2">"</span><span class="p">]</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;foo&quot;, &quot;bar&quot;]
+</span><span class="nb">p</span> <span class="no">Dir</span><span class="p">[</span><span class="s2">"</span><span class="s2">f*</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">b*</span><span class="s2">"</span><span class="p">]</span>        <span class="c1"># =&gt; [&quot;foo&quot;, &quot;bar&quot;]
+</span>
+<span class="c1"># ワイルドカードの例
+</span><span class="no">Dir</span><span class="p">.</span><span class="nf">glob</span><span class="p">(</span><span class="s2">"</span><span class="s2">*</span><span class="s2">"</span><span class="p">)</span>            <span class="c1">#=&gt; [&quot;foo&quot;, &quot;bar&quot;]
+</span><span class="no">Dir</span><span class="p">.</span><span class="nf">glob</span><span class="p">(</span><span class="s2">"</span><span class="s2">fo?</span><span class="s2">"</span><span class="p">)</span>          <span class="c1">#=&gt; [&quot;foo&quot;]
+</span><span class="no">Dir</span><span class="p">.</span><span class="nf">glob</span><span class="p">(</span><span class="s2">"</span><span class="s2">[^f]*</span><span class="s2">"</span><span class="p">)</span>        <span class="c1">#=&gt; [&quot;bar&quot;]
+</span><span class="no">Dir</span><span class="p">.</span><span class="nf">glob</span><span class="p">(</span><span class="s2">"</span><span class="s2">{b,f}*</span><span class="s2">"</span><span class="p">)</span>       <span class="c1">#=&gt; [&quot;bar&quot;, &quot;foo&quot;]
+</span>
+<span class="c1"># ベースディレクトリの例
+</span>rbfiles <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">"</span><span class="s2">**</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">*.rb</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">Dir</span><span class="p">.</span><span class="nf">glob</span><span class="p">(</span>rbfiles<span class="p">)</span>                   <span class="c1">#=&gt; [&quot;main.rb&quot;,
+</span>                                    <span class="c1">#    &quot;lib/song.rb&quot;,
+</span>                                    <span class="c1">#    &quot;lib/song/karaoke.rb&quot;]
+</span><span class="no">Dir</span><span class="p">.</span><span class="nf">glob</span><span class="p">(</span>rbfiles, <span class="ss">base:</span> <span class="s2">"</span><span class="s2">lib</span><span class="s2">"</span><span class="p">)</span>      <span class="c1">#=&gt; [&quot;song.rb&quot;,
+</span>                                    <span class="c1">#    &quot;song/karaoke.rb&quot;]
+</span></code></pre>
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

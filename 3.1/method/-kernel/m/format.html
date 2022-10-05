@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Kernel.#format (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="format 文字列を C 言語の sprintf と同じように解釈し、
+引数をフォーマットした文字列を返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-kernel.html">Kernelモジュール</a>
+      </li>
+      <li>
+        format 
+      </li>
+    </ol>
+  </nav>
+
+<h1>module function Kernel.#format</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_FORMAT"><code>sprintf(format, *arg) -&gt; String</code><span class="permalink">[<a href="../../../method/-kernel/m/format.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Kernel.html#method-c-format">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>format(format, *arg) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+format 文字列を C 言語の sprintf と同じように解釈し、引数をフォーマットした文字列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] format:</dt>
+<dd>
+フォーマット文字列です。
+</dd>
+<dt class='method-param'>[PARAM] arg:</dt>
+<dd>
+フォーマットされる引数です。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/printf.html">Kernel.#printf</a>,<a href="../../../method/-time/i/strftime.html">Time#strftime</a>,<a href="../../../method/-date/s/strptime.html">Date.strptime</a>
+</p>
+<h2 >sprintf フォーマット</h2>
+<p>
+Ruby の sprintf フォーマットは基本的に C 言語の <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/sprintf.html">sprintf(3)</a>
+のものと同じです。ただし、short や long などの C 特有の型に対する修飾子がないこと、2進数の指示子(%b, %B)が存在すること、sprintf のすべての方言をサポートしていないこと(%': 3桁区切り)などの違いがあります。
+</p>
+<p>
+Ruby には整数の大きさに上限がないので、%b, %B, %o, %x, %X
+に負の数を与えると (左側に無限に1が続くとみなせるので)
+..f のような表示をします。絶対値に符号を付けた形式で出力するためには %+x、% x のように指定します。
+</p>
+<p>
+以下は sprintf フォーマットの書式です。[] で囲まれた部分は省略可能であることを示しています。
+</p>
+<pre>
+%[nth$][フラグ][幅][.精度]指示子
+%[&lt;name&gt;][フラグ][幅][.精度]指示子
+</pre>
+<p>
+`%' 自身を出力するには `%%' とします。
+</p>
+<p>
+以下それぞれの要素に関して説明します。
+</p>
+<h2 >フラグ</h2>
+<p>
+フラグには #, +, ' '(スペース), -, 0 の5種類があります。
+</p>
+<dl>
+<dt>#</dt>
+<dd>
+<p>
+2進、8進、16進の指示子(b, B, o, x, X) ではそれぞれプレフィックスとして &quot;0b&quot;, &quot;0B&quot;, &quot;0&quot;, &quot;0x&quot;, &quot;0X&quot; を付加します。
+C 言語と同様引数が 0 の場合にはプレフィックスが付加されません。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#b</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span> <span class="c1">#=&gt; &quot;0b1010&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#B</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span> <span class="c1">#=&gt; &quot;0B1010&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#b</span><span class="s2">"</span>, <span class="mi">0</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;0&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#o</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span> <span class="c1">#=&gt; &quot;012&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#x</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span> <span class="c1">#=&gt; &quot;0xa&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#X</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span> <span class="c1">#=&gt; &quot;0XA&quot;
+</span></code></pre>
+<p>
+浮動小数点数 (f, e, E, g, G) に対しては必ず出力に&quot;.&quot;をつけます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%.0f</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span> <span class="c1">#=&gt; &quot;10&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#.0f</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span> <span class="c1">#=&gt; &quot;10.&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%.0e</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span> <span class="c1">#=&gt; &quot;1e+01&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#.0e</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span> <span class="c1">#=&gt; &quot;1.e+01&quot;
+</span></code></pre>
+<p>
+また g, G では上記に加えて末尾の余分な0が残ります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%.05g</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span> <span class="c1">#=&gt; &quot;10&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#.05g</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span> <span class="c1">#=&gt; &quot;10.000&quot;
+</span></code></pre>
+</dd>
+<dt>+</dt>
+<dd>
+<p>
+出力文字列を符号付きにします。特に正の数では`+'が付加されます。数値の指示子
+(d, i, b, B, o, x, X, u, f, e, E, g, G)
+に対してだけ意味を持ちます。また、特に b, B, o, x, X, u に対しては、負数に対して &quot;-&quot;
+を付加することを示します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%d</span><span class="s2">"</span>, <span class="mi">1</span><span class="p">)</span>   <span class="c1">#=&gt; &quot;1&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%+d</span><span class="s2">"</span>, <span class="mi">1</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;+1&quot;
+</span>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%x</span><span class="s2">"</span>, <span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;..f&quot;  # &quot;..&quot; は無限に f が続くことを表している
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%+x</span><span class="s2">"</span>, <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1">#=&gt; &quot;-1&quot;
+</span></code></pre>
+</dd>
+<dt>' '(スペース)</dt>
+<dd>
+<p>
+`+' と同じですが正の符号 `+' の代わりに空白を用います。数値の指示子
+(d, i, b, B, o, x, X, u, f, e, E, g, G)
+に対してだけ意味を持ちます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%d</span><span class="s2">"</span>, <span class="mi">1</span><span class="p">)</span>   <span class="c1">#=&gt; &quot;1&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%+d</span><span class="s2">"</span>, <span class="mi">1</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;+1&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">% d</span><span class="s2">"</span>, <span class="mi">1</span><span class="p">)</span>  <span class="c1">#=&gt; &quot; 1&quot;
+</span>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%x</span><span class="s2">"</span>, <span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;..f&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">% x</span><span class="s2">"</span>, <span class="mi">1</span><span class="p">)</span>  <span class="c1">#=&gt; &quot; 1&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">% x</span><span class="s2">"</span>, <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1">#=&gt; &quot;-1&quot;
+</span></code></pre>
+</dd>
+<dt>-</dt>
+<dd>
+<p>
+出力を左詰めにします。幅の指定がなければ意味がありません。
+</p>
+</dd>
+<dt>0</dt>
+<dd>
+<p>
+出力が右詰めの場合に余った部分に空白の代わりに &quot;0&quot; を詰めます。
+</p>
+<p>
+数値の指示子の一部(d, i, b, B, o, x, X, u, f, g, G)に対してだけ意味を持ちます(e, E には意味がない)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%010d</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span>   <span class="c1">#=&gt; &quot;0000000010&quot;
+</span></code></pre>
+<p>
+`#' と一緒に指定した場合の出力は以下のようになります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#010x</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;0x0000000a&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#010o</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;0000000012&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#010b</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;0b00001010&quot;
+</span></code></pre>
+<p>
+これは、以下と同じです。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#10.8x</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span> <span class="c1">#=&gt; &quot;0x0000000a&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#10.9o</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span> <span class="c1">#=&gt; &quot;0000000012&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#10.8b</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span> <span class="c1">#=&gt; &quot;0b00001010&quot;
+</span></code></pre>
+<p>
+通常は、以下のようになります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#10x</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span>   <span class="c1">#=&gt; &quot;       0xa&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#10o</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span>   <span class="c1">#=&gt; &quot;       012&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#10b</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span>   <span class="c1">#=&gt; &quot;    0b1010&quot;
+</span></code></pre>
+</dd>
+</dl>
+<h2 >幅</h2>
+<p>
+0以外の数字で始まる数字列は幅指定になります。幅は生成文字列の長さを示します。後述の精度の値によらずこの幅分だけの文字列が生成されます。
+</p>
+<p>
+幅の指定はフラグで付与される &quot; &quot;, &quot;+&quot;,
+&quot;-&quot;, &quot;0b&quot;, &quot;0B&quot;, &quot;0&quot;, &quot;0x&quot;, &quot;0X&quot; の長さも考慮されます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%+5d</span><span class="s2">"</span>, <span class="mi">11</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;  +11&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%+-5d</span><span class="s2">"</span>, <span class="mi">11</span><span class="p">)</span> <span class="c1">#=&gt; &quot;+11  &quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%+05d</span><span class="s2">"</span>, <span class="mi">11</span><span class="p">)</span> <span class="c1">#=&gt; &quot;+0011&quot;
+</span></code></pre>
+<p>
+幅は「最低限必要な幅」の指定になります。結果の文字列が指定した幅を超える場合は幅の指定は無効になります。
+</p>
+<p>
+幅として `*' を指定すると幅の値を引数から得ることになります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#05x</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span>    <span class="c1">#=&gt; &quot;0x00a&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#0*x</span><span class="s2">"</span>, <span class="mi">5</span>, <span class="mi">10</span><span class="p">)</span> <span class="c1">#=&gt; &quot;0x00a&quot;
+</span></code></pre>
+<h2 >精度</h2>
+<p>
+&quot;.&quot; の後に続く数字列は精度を表します(&quot;.&quot; のみの場合 &quot;.0&quot; と同じです)。精度は整数の指示子
+(d, i, b, B, o, x, X, u)
+に対しては、数値列部分の長さを意味します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%10.5d</span><span class="s2">"</span>, <span class="mi">1</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;     00001&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#10.5x</span><span class="s2">"</span>, <span class="mi">1</span><span class="p">)</span> <span class="c1">#=&gt; &quot;   0x00001&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%+10.5x</span><span class="s2">"</span>, <span class="mi">1</span><span class="p">)</span> <span class="c1">#=&gt; &quot;    +00001&quot;
+</span></code></pre>
+<p>
+浮動小数点数の指示子
+(f)
+に対しては小数部の桁数を意味します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%10.5f</span><span class="s2">"</span>, <span class="mi">1</span><span class="p">)</span>   <span class="c1">#=&gt; &quot;   1.00000&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%10.5f</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;  10.00000&quot;
+</span></code></pre>
+<p>
+浮動小数点数の指示子
+(e, E, g, G)
+に対しては有効桁数を意味します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%10.5e</span><span class="s2">"</span>, <span class="mi">1</span><span class="p">)</span>   <span class="c1">#=&gt; &quot;1.00000e+00&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%10.5e</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;1.00000e+01&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%10.5g</span><span class="s2">"</span>,  <span class="mi">10</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;        10&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#10.5G</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;    10.000&quot;
+</span></code></pre>
+<p>
+文字列の指示子(s, p)
+に対しては引数の文字列のうち指定した数を超える分を切り捨てます。幅と精度を同じ値にすれば、どのような引数に対してもその長さだけの出力を行うことになります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%10.2s</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;        fo&quot;
+</span>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%5.5s</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span><span class="p">)</span>     <span class="c1">#=&gt; &quot;  foo&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%5.5s</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">foobar</span><span class="s2">"</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;fooba&quot;
+</span></code></pre>
+<p>
+精度として `*' を指定すると精度の値を引数から得ることになります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%.5s</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">foobar</span><span class="s2">"</span><span class="p">)</span>    <span class="c1">#=&gt; &quot;fooba&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%.*s</span><span class="s2">"</span>, <span class="mi">5</span>, <span class="s2">"</span><span class="s2">foobar</span><span class="s2">"</span><span class="p">)</span> <span class="c1">#=&gt; &quot;fooba&quot;
+</span></code></pre>
+<h2 >指示子</h2>
+<p>
+指示子は引数の型の解釈を示します。指示子を省略することはできません。指示子には大きく分けて
+</p>
+<ul>
+<li>文字列を表す指示子: c, s, p</li>
+<li>整数を表す指示子: d, i, u, b, B, o, x, X,</li>
+<li>浮動小数点数を表す指示子: f, g, e, E, G</li>
+</ul>
+<p>
+があります
+</p>
+<dl>
+<dt>c</dt>
+<dd>
+<p>
+引数の数値(0〜255)を文字コードとみなして対応する文字を出力します。引数が数値以外のオブジェクトの場合 to_int メソッドによる変換を試みます。引数として範囲内の一文字の文字列も受けつけます。文字そのものを出力します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%c</span><span class="s2">"</span>, <span class="mi">97</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;a&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%c</span><span class="s2">"</span>, <span class="s1">'a'</span><span class="p">)</span> <span class="c1">#=&gt; &quot;a&quot;
+</span></code></pre>
+<p>
+フラグ `-' と幅 の指定だけが意味を持ちます。
+</p>
+</dd>
+<dt>s</dt>
+<dd>
+<p>
+文字列を出力します。
+</p>
+<p>
+引数が <a href="../../../class/-string.html">String</a> オブジェクトでなければ to_s メソッドにより文字列化したものを引数として扱います。
+</p>
+</dd>
+<dt>p</dt>
+<dd>
+<p>
+<a href="../../../method/-object/i/inspect.html">Object#inspect</a> の結果を出力します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%s</span><span class="s2">"</span>, <span class="sr">/e+/</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;(?-mix:e+)&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%p</span><span class="s2">"</span>, <span class="sr">/e+/</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;/e+/&quot;
+</span></code></pre>
+</dd>
+<dt>d</dt>
+<dt>i</dt>
+<dd>
+<p>
+引数の数値を10進表現の整数として出力します。
+</p>
+<p>
+引数が整数でなければ関数 <a href="../../../method/-kernel/m/-integer.html">Kernel.#Integer</a> と同じ規則で整数に変換されます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%d</span><span class="s2">"</span>, <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1">#=&gt; &quot;-1&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%d</span><span class="s2">"</span>, <span class="mf">3.1</span><span class="p">)</span> <span class="c1">#=&gt; &quot;3&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%d</span><span class="s2">"</span>, <span class="s1">'0b1010'</span><span class="p">)</span> <span class="c1">#=&gt; &quot;10&quot;
+</span></code></pre>
+</dd>
+<dt>u</dt>
+<dd>
+<p>
+引数の数値を符号なし整数とみなして10進表現の整数として出力します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%u</span><span class="s2">"</span>, <span class="s1">'0b1010'</span><span class="p">)</span> <span class="c1">#=&gt; &quot;10&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%u</span><span class="s2">"</span>, <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1">#=&gt; &quot;-1&quot;
+</span></code></pre>
+</dd>
+<dt>b</dt>
+<dt>B</dt>
+<dt>o</dt>
+<dt>x</dt>
+<dt>X</dt>
+<dd>
+<p>
+整数をそれぞれ2進、2進(大文字)、8進、16進、16進(大文字)表現の文字列で出力します。
+</p>
+<p>
+`#' フラグを指定すれば &quot;0b&quot;, &quot;0B&quot;, &quot;0&quot;, &quot;0x&quot;, &quot;0X&quot; を先頭に付加します。
+</p>
+<p>
+`+', ` ' フラグがない場合、負の数には &quot;..&quot; が先頭(`#' フラグがあれば
+&quot;0x&quot; などの後)に付加されます。これは最上位桁の文字が無限に続くことを意味し、2の補数表現で負の数を表しています。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#b</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span>    <span class="c1">#=&gt; &quot;0b1010&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#B</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span>    <span class="c1">#=&gt; &quot;0B1010&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#o</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span>    <span class="c1">#=&gt; &quot;012&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#x</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span>    <span class="c1">#=&gt; &quot;0xa&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#X</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span>    <span class="c1">#=&gt; &quot;0XA&quot;
+</span>
+<span class="c1"># 負の数に対して &quot;..&quot; が付加されます
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#b</span><span class="s2">"</span>, <span class="o">-</span><span class="mi">1</span><span class="p">)</span>    <span class="c1">#=&gt; &quot;0b..1&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#o</span><span class="s2">"</span>, <span class="o">-</span><span class="mi">1</span><span class="p">)</span>    <span class="c1">#=&gt; &quot;0..7&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%#x</span><span class="s2">"</span>, <span class="o">-</span><span class="mi">1</span><span class="p">)</span>    <span class="c1">#=&gt; &quot;0x..f&quot;
+</span>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%10x</span><span class="s2">"</span>, <span class="o">-</span><span class="mi">1</span><span class="p">)</span>   <span class="c1">#=&gt; &quot;       ..f&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%-10x</span><span class="s2">"</span>, <span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;..f       &quot;
+</span>
+<span class="c1"># ruby 1.9.1 以降では「精度」を指定した場合も、&quot;..&quot; は付加されます 
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%.10x</span><span class="s2">"</span>, <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1">#=&gt; &quot;..ffffffff&quot; 
+</span></code></pre>
+</dd>
+<dt>f</dt>
+<dt>e</dt>
+<dt>E</dt>
+<dt>g</dt>
+<dt>G</dt>
+<dt>a</dt>
+<dt>A</dt>
+<dd>
+<p>
+f は小数点表現(xxx.xxx)で数値を出力します。
+</p>
+<p>
+e は指数表現(x.xxxe+xx)で数値を出力します。
+</p>
+<p>
+g は 指数が -4 より小さいか精度以上の場合に e と同じ出力を、それ以外では f と同じ出力を行います。ただし、小数部の末尾の0は取り除かれます。
+</p>
+<p>
+a, A は指数表現の16進数(&quot;-h.hhh±pd&quot;) で数値を出力します。ただし、<a href="../../../method/-float/c/-i-n-f-i-n-i-t-y.html">Float::INFINITY</a>、<a href="../../../method/-float/c/-n-a-n.html">Float::NAN</a> はそれぞれ 'Inf'、'NaN' になります。詳しくは <a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-dev/40650">[ruby-dev:40650]</a> を参照してください。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%a</span><span class="s2">"</span>, <span class="o">-</span><span class="mf">0.0</span><span class="p">)</span>            <span class="c1"># =&gt; &quot;-0x0p+0&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%a</span><span class="s2">"</span>, <span class="mf">729.0</span><span class="o">/</span><span class="mi">10</span><span class="p">)</span>        <span class="c1"># =&gt; &quot;0x1.239999999999ap+6&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%a</span><span class="s2">"</span>, <span class="no">Float</span><span class="o">::</span><span class="no">INFINITY</span><span class="p">)</span> <span class="c1"># =&gt; &quot;Inf&quot;
+</span></code></pre>
+<p>
+大文字の指示子(E, G)は出力のアルファベットを大文字にします。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%f</span><span class="s2">"</span>, <span class="mf">1.0</span><span class="p">)</span> <span class="c1">#=&gt; &quot;1.000000&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%e</span><span class="s2">"</span>, <span class="mf">1.0</span><span class="p">)</span> <span class="c1">#=&gt; &quot;1.000000e+00&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%g</span><span class="s2">"</span>, <span class="mf">1.0</span><span class="p">)</span> <span class="c1">#=&gt; &quot;1&quot;
+</span>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%f</span><span class="s2">"</span>, <span class="mf">10.1</span><span class="p">)</span> <span class="c1">#=&gt; &quot;10.100000&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%e</span><span class="s2">"</span>, <span class="mf">10.1</span><span class="p">)</span> <span class="c1">#=&gt; &quot;1.010000e+01&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%g</span><span class="s2">"</span>, <span class="mf">10.1</span><span class="p">)</span> <span class="c1">#=&gt; &quot;10.1&quot;
+</span>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%g</span><span class="s2">"</span>, <span class="mi">10</span> <span class="o">**</span> <span class="mi">6</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;1e+06&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%g</span><span class="s2">"</span>, <span class="mi">10</span> <span class="o">**</span> <span class="o">-</span><span class="mi">5</span><span class="p">)</span> <span class="c1">#=&gt; &quot;1e-05&quot;
+</span></code></pre>
+<p>
+精度の省略値は 6 です。
+</p>
+<p>
+無限大、NaN(Not a Number) に対する出力は以下のとおりです。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%f</span><span class="s2">"</span>,  <span class="mf">1.0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;inf&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%f</span><span class="s2">"</span>, <span class="o">-</span><span class="mf">1.0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;-inf&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%f</span><span class="s2">"</span>,  <span class="mf">0.0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;nan&quot;
+</span>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%E</span><span class="s2">"</span>,  <span class="mf">1.0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;INF&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%E</span><span class="s2">"</span>, <span class="o">-</span><span class="mf">1.0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;-INF&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%E</span><span class="s2">"</span>,  <span class="mf">0.0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;NAN&quot;
+</span></code></pre>
+<p>
+f, e, E, g, G に関しては <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/sprintf.html">sprintf(3)</a> の結果を利用しています。従って出力結果は実際にはシステムに依存することになります。
+</p>
+</dd>
+</dl>
+<h2 >引数指定</h2>
+<p>
+利用頻度が低いので最後に説明します。
+</p>
+<dl>
+<dt>nth$</dt>
+<dd>
+<p>
+nth 番目の引数のフォーマットを行うことを示します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%d, %x, %o</span><span class="s2">"</span>, <span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">)</span> <span class="c1">#=&gt; &quot;1, 2, 3&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%3$d, %2$x, %1$o</span><span class="s2">"</span>, <span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">)</span> <span class="c1">#=&gt; &quot;3, 2, 1&quot;
+</span>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%1$d, %1$x, %1$o</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span> <span class="c1">#=&gt; &quot;10, a, 12&quot;
+</span></code></pre>
+<p>
+状況によってフォーマットを変えたいが引数の順序を変えたくない場合に使用します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">case</span> <span class="no">ENV</span><span class="p">[</span><span class="s1">'LC_TIME'</span><span class="p">]</span>
+<span class="k">when</span> <span class="sr">/^ja_JP/</span>
+  fmt <span class="o">=</span> <span class="s2">"</span><span class="s2">%1$d年%2$d月%3$d日</span><span class="s2">"</span>
+<span class="k">else</span>
+  fmt <span class="o">=</span> <span class="s2">"</span><span class="s2">%2$02d/%03$2d/%1$02d</span><span class="s2">"</span>
+<span class="k">end</span>
+
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span>fmt, <span class="mi">1</span>, <span class="mi">4</span>, <span class="mi">22</span><span class="p">)</span> <span class="c1">#=&gt; &quot;04/22/01&quot;
+</span></code></pre>
+<p>
+&quot;*&quot; の後に指定することで幅や精度を引数で指定することもできます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%5.2f</span><span class="s2">"</span>, <span class="mi">1</span><span class="p">)</span>              <span class="c1">#=&gt; &quot; 1.00&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%*.*f</span><span class="s2">"</span>, <span class="mi">5</span>, <span class="mi">2</span>, <span class="mi">1</span><span class="p">)</span>        <span class="c1">#=&gt; &quot; 1.00&quot;
+</span><span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%1$*2$.*3$f</span><span class="s2">"</span>, <span class="mi">1</span>, <span class="mi">5</span>, <span class="mi">2</span><span class="p">)</span>  <span class="c1">#=&gt; &quot; 1.00&quot;
+</span></code></pre>
+</dd>
+<dt>%&lt;name&gt;</dt>
+<dd>
+<p>
+Symbol のインスタンス name をキーとする Hash を引数にした場合、対応する値をフォーマットして参照します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s1">'%&lt;foo&gt;f : %&lt;bar&gt;+d'</span>, <span class="ss">foo:</span> <span class="mi">1</span>, <span class="ss">bar:</span> <span class="mi">2</span><span class="p">)</span> <span class="c1">#=&gt; &quot;1.000000 : +2&quot;
+</span></code></pre>
+</dd>
+<dt>%{name}</dt>
+<dd>
+<p>
+Symbol のインスタンス name をキーとする Hash を引数にした場合、対応する値をフォーマットせずに参照します。幅や精度を指定するために使用することができます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="nb">sprintf</span><span class="p">(</span><span class="s1">'%{foo}f : %{bar}+d'</span>, <span class="ss">foo:</span> <span class="mi">1</span>, <span class="ss">bar:</span> <span class="mi">2</span><span class="p">)</span> <span class="c1">#=&gt; &quot;1f : 2+d&quot;
+</span></code></pre>
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

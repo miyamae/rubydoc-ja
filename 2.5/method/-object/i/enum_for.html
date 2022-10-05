@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Object#enum_for (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="[[m:Enumerator.new]](self, method, *args) を返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-object.html">Objectクラス</a>
+      </li>
+      <li>
+        enum_for 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Object#enum_for</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_ENUM_FOR"><code>to_enum(method = :each, *args) -&gt; Enumerator</code><span class="permalink">[<a href="../../../method/-object/i/enum_for.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Object.html#method-i-enum_for">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>enum_for(method = :each, *args) -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>to_enum(method = :each, *args) {|*args| ... } -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>enum_for(method = :each, *args) {|*args| ... } -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+<a href="../../../method/-enumerator/s/new.html">Enumerator.new</a>(self, method, *args) を返します。
+</p>
+<p>
+ブロックを指定した場合は <a href="../../../method/-enumerator/i/size.html">Enumerator#size</a> がブロックの評価結果を返します。ブロックパラメータは引数 args です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] method:</dt>
+<dd>
+メソッド名の文字列かシンボルです。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+呼び出すメソッドに渡される引数です。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+str <span class="o">=</span> <span class="s2">"</span><span class="s2">xyz</span><span class="s2">"</span>
+
+enum <span class="o">=</span> str<span class="p">.</span><span class="nf">enum_for</span><span class="p">(</span><span class="ss">:each_byte</span><span class="p">)</span>
+<span class="nb">p</span><span class="p">(</span>a <span class="o">=</span> enum<span class="p">.</span><span class="nf">map</span><span class="p">{</span><span class="o">|</span>b<span class="o">|</span> <span class="s1">'%02x'</span> <span class="o">%</span> b <span class="p">}</span><span class="p">)</span> <span class="c1">#=&gt; [&quot;78&quot;, &quot;79&quot;, &quot;7a&quot;]
+</span>
+<span class="c1"># protects an array from being modified
+</span>a <span class="o">=</span> <span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span>
+<span class="nb">p</span><span class="p">(</span>a<span class="p">.</span><span class="nf">to_enum</span><span class="p">)</span> <span class="c1">#=&gt; #&lt;Enumerator: [1, 2, 3]:each&gt;
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例(ブロックを指定する場合)</span>
+<code>
+<span class="k">module</span> <span class="nn">Enumerable</span>
+  <span class="k">def</span> <span class="nf">repeat</span><span class="p">(</span>n<span class="p">)</span>
+    <span class="nb">raise</span> <span class="no">ArgumentError</span>, <span class="s2">"</span><span class="si">#{</span><span class="n">n</span><span class="si">}</span><span class="s2"> is negative!</span><span class="s2">"</span> <span class="k">if</span> n <span class="o">&lt;</span> <span class="mi">0</span>
+    <span class="k">unless</span> block_given?
+      <span class="c1"># __method__ はここでは :repeat
+</span>      <span class="k">return</span> to_enum<span class="p">(</span>__method__, n<span class="p">)</span> <span class="k">do</span>
+        <span class="c1"># size メソッドが nil でなければ size * n を返す。
+</span>        sz <span class="o">=</span> size
+        sz <span class="o">*</span> n <span class="k">if</span> sz
+      <span class="k">end</span>
+    <span class="k">end</span>
+    each <span class="k">do</span> <span class="o">|</span><span class="o">*</span>val<span class="o">|</span>
+      n<span class="p">.</span><span class="nf">times</span> <span class="p">{</span> <span class="k">yield</span> <span class="o">*</span>val <span class="p">}</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+%i[hello world<span class="s2">]</span><span class="p">.</span><span class="nf">repeat</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>w<span class="o">|</span> <span class="nb">puts</span> w <span class="p">}</span>
+<span class="c1"># =&gt; 'hello', 'hello', 'world', 'world'
+</span>enum <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">14</span><span class="p">)</span><span class="p">.</span><span class="nf">repeat</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="c1"># =&gt; #&lt;Enumerator: 1..14:repeat(3)&gt;
+</span>enum<span class="p">.</span><span class="nf">first</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="c1"># =&gt; [1, 1, 1, 2]
+</span>enum<span class="p">.</span><span class="nf">size</span> <span class="c1"># =&gt; 42
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../class/-enumerator.html">Enumerator</a>, <a href="../../../method/-enumerator/i/size.html">Enumerator#size</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Signal.#trap (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="指定された割り込み signal に対するハンドラとして
+command を登録します。
+指定したシグナルが捕捉された時には例外が発生せず、代わりに command が実行されます。
+ブロックを指定した場合にはブロックをハンドラとして登録します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-signal.html">Signalモジュール</a>
+      </li>
+      <li>
+        trap 
+      </li>
+    </ol>
+  </nav>
+
+<h1>module function Signal.#trap</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_TRAP"><code>trap(signal, command) -&gt; String | Proc | nil</code><span class="permalink">[<a href="../../../method/-signal/m/trap.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Signal.html#method-c-trap">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>trap(signal) { ... } -&gt; String | Proc | nil</code></dt>
+<dd class="method-description">
+<p>
+指定された割り込み signal に対するハンドラとして
+command を登録します。指定したシグナルが捕捉された時には例外が発生せず、代わりに command が実行されます。ブロックを指定した場合にはブロックをハンドラとして登録します。
+</p>
+<p>
+trap は前回の trap で設定したハンドラを返します。文字列を登録していた場合はそれを、ブロックを登録していたらそれを <a href="../../../class/-proc.html">Proc</a> オブジェクトに変換して返します。また何も登録されていないときも nil を返します。
+ruby の仕組みの外でシグナルハンドラが登録された場合
+(例えば拡張ライブラリが独自に sigaction を呼んだ場合など)
+も nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] signal:</dt>
+<dd>
+シグナル名を表す文字列か <a href="../../../class/-symbol.html">Symbol</a>、またはシグナル番号を指定します。さらに特別な値として 0 または &quot;EXIT&quot; が指定できます。これは「プログラムの終了時」を表します。
+</dd>
+<dt class='method-param'>[PARAM] command:</dt>
+<dd>
+シグナルハンドラとして Ruby プログラムを表す文字列か Proc オブジェクト、また次に挙げる文字列を指定します。nil、空文字列&quot;&quot;、&quot;SIG_IGN&quot; または&quot;IGNORE&quot; を指定した時は、可能ならばそのシグナルを無視します。
+&quot;SIG_DFL&quot; または &quot;DEFAULT&quot; を指定した時は、シグナルハンドラをデフォルトに戻します。
+&quot;EXIT&quot;を指定した時は、シグナルを受け取ると終了処理を行ったあとステータス 0 で終了します。文字列の代わりに <a href="../../../class/-symbol.html">Symbol</a> で指定することも出来ます。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+引数 signalに SEGV BUS ILL FPE VTALRM を指定した場合に発生します。また、システムに定義されていないシグナルを引数 signal に指定した場合に発生します。例えばネイティブな Windows システム (mswin32,
+mingw など) で動く ruby では INT ILL FPE SEGV
+TERM BREAK ABRT EXIT しか定義されていません。
+</dd>
+</dl>
+<p>
+いくつかのシグナルに対して、Ruby インタプリタは例外 <a href="../../../class/-interrupt.html">Interrupt</a> や
+<a href="../../../class/-signal-exception.html">SignalException</a> を発生させます。このようなシグナルは例外処理によって捕捉することもできます。
+</p>
+<p>
+例:
+</p>
+<pre>
+begin
+  Process.kill :QUIT, $$   # 自身にSIGQUITを送信
+rescue SignalException
+  puts &quot;rescue #$!&quot;
+end
+# =&gt; rescue SIGQUIT
+</pre>
+<p>
+例:
+</p>
+<pre>
+Signal.trap(:INT, &quot;p true&quot;)       # =&gt; &quot;DEFAULT&quot;
+Signal.trap(:INT) { p false }     # =&gt; &quot;p true&quot;
+Signal.trap(:INT, proc{ p nil })  # =&gt; #&lt;Proc:0x8e45ae0@-:2&gt;
+Signal.trap(:INT, &quot;SIG_IGN&quot;)      # =&gt; #&lt;Proc:0x8e45914@-:3&gt;
+Signal.trap(:INT, &quot;DEFAULT&quot;)      # =&gt; &quot;IGNORE&quot;
+Signal.trap(:INT, &quot;EXIT&quot;)         # =&gt; &quot;DEFAULT&quot;
+Signal.trap(:INT, nil)            # =&gt; &quot;EXIT&quot;
+</pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">Signal</span><span class="p">.</span><span class="nf">trap</span><span class="p">(</span><span class="mi">0</span>, <span class="nb">proc</span> <span class="p">{</span> <span class="nb">puts</span> <span class="s2">"</span><span class="s2">Terminating: </span><span class="si">#{</span><span class="vg">$$</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span><span class="p">)</span>
+<span class="no">Signal</span><span class="p">.</span><span class="nf">trap</span><span class="p">(</span><span class="s2">"</span><span class="s2">CLD</span><span class="s2">"</span><span class="p">)</span>  <span class="p">{</span> <span class="nb">puts</span> <span class="s2">"</span><span class="s2">Child died</span><span class="s2">"</span> <span class="p">}</span>
+<span class="nb">fork</span> <span class="o">&amp;&amp;</span> <span class="no">Process</span><span class="p">.</span><span class="nf">wait</span>
+
+<span class="c1"># =&gt; Terminating: 13939
+</span><span class="c1"># =&gt; Child died
+</span><span class="c1"># =&gt; Terminating: 13907
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../doc/spec=2fterminate.html">終了処理</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

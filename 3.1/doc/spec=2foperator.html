@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>演算子式 (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="* [[ref:assign]]
+  * [[ref:selfassign]]
+  * [[ref:multiassign]]
+  * [[ref:range]]
+  * [[ref:range_cond]]
+  * [[ref:and]]
+  * [[ref:or]]
+  * [[ref:not]]
+  * [[ref:cond]]">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      
+        <li>
+          <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+        </li>
+        <li>
+          演算子式
+        </li>
+      
+    </ol>
+  </nav>
+
+<h1>演算子式</h1>
+</header>
+
+<main>
+
+<ul>
+<li><a href="#assign">代入</a></li>
+<li><a href="#selfassign">自己代入</a></li>
+<li><a href="#multiassign">多重代入</a></li>
+<li><a href="#range">範囲式</a></li>
+<li><a href="#range_cond">条件式としての範囲式</a></li>
+<li><a href="#and">and</a></li>
+<li><a href="#or">or</a></li>
+<li><a href="#not">not</a></li>
+<li><a href="#cond">条件演算子</a></li>
+</ul>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="mi">1</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="mi">3</span><span class="o">/</span><span class="mi">4</span>
+</code></pre>
+<p>
+プログラミングの利便のために一部のメソッド呼び出しと制御構造は演算子形式をとります。Rubyには以下にあげる演算子があります。
+</p>
+<pre>
+高い   ::
+       []
+       +(単項)  !  ~
+       **
+       -(単項)
+       *  /  %
+       +  -
+       &lt;&lt; &gt;&gt;
+       &amp;
+       |  ^
+       &gt; &gt;=  &lt; &lt;=
+       &lt;=&gt; ==  === !=  =~  !~
+       &amp;&amp;
+       ||
+       ..  ...
+       ?:(条件演算子)
+       =(+=, -= ... )
+       not
+低い   and or
+</pre>
+<p>
+左の「高い」「低い」は演算子の優先順位です。例えば「&amp;&amp;」は「||」より優先順位が高いので、以下のように解釈されます。
+</p>
+<pre class="highlight ruby">
+<code>
+a <span class="o">&amp;&amp;</span> b <span class="o">||</span> c   <span class="c1">#=&gt; (a &amp;&amp; b) || c
+</span>a <span class="o">||</span> b <span class="o">&amp;&amp;</span> c   <span class="c1">#=&gt;  a || (b &amp;&amp; c)
+</span></code></pre>
+<p>
+ほとんどの演算子は特別な形式のメソッド呼び出しですが、一部のものは言語に組み込みで、再定義できません。
+</p>
+<dl>
+<dt>再定義できる演算子(メソッド)</dt>
+<dd>
+<p>
++@, -@ は単項演算子 +, - を表しメソッド定義などではこの記法を利用します。
+</p>
+<pre>
+    |  ^  &amp;  &lt;=&gt;  ==  ===  =~  &gt;   &gt;=  &lt;   &lt;=   &lt;&lt;  &gt;&gt;
+    +  -  *  /    %   **   ~   +@  -@  []  []=  ` ! != !~
+</pre>
+<p>
+これらの演算子式の定義方法については<a href="../doc/spec=2fdef.html#operator">クラス／メソッドの定義/演算子式の定義</a>を参照してください。
+</p>
+</dd>
+<dt>再定義できない演算子(制御構造)</dt>
+<dd>
+<p>
+演算子の組合せである自己代入演算子は再定義できません。
+</p>
+<pre>
+    =  ?:  ..  ...  not  &amp;&amp;  and  ||  or  ::
+</pre>
+</dd>
+</dl>
+<h2 id='assign'>代入</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+foo <span class="o">=</span> bar
+foo<span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> bar
+foo<span class="p">.</span><span class="nf">bar</span> <span class="o">=</span> baz
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+変数 '=' 式
+定数 '=' 式
+式`['expr..`]' '=' 式
+式`.'識別子 '=' 式
+</pre>
+<p>
+代入式は変数などに値を設定するために用いられます。代入はローカル変数や定数の宣言としても用いられます。代入式の左辺は以下のいずれかでなければなりません。
+</p>
+<dl>
+<dt>変数</dt>
+<dd>
+<pre>
+            変数 `=' 式
+</pre>
+<p>
+左辺値が変数の場合、式を評価した値が変数に代入されます。
+</p>
+</dd>
+<dt>配列参照</dt>
+<dd>
+<pre>
+            式1`[' 式2 ... `]' `=' 式n
+</pre>
+<p>
+式1を評価して得られるオブジェクトに対しての、式 2 から式 n までを引数とする []= メソッド呼び出しに変換されます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">C</span>
+  <span class="k">def</span> <span class="nf">initialize</span>
+    <span class="vi">@ary</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span>,<span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">5</span>,<span class="mi">6</span>,<span class="mi">7</span><span class="p">]</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="o">[]</span><span class="p">(</span><span class="nf">i</span><span class="p">)</span>
+    <span class="vi">@ary</span><span class="p">[</span>i <span class="o">*</span> <span class="mi">2</span><span class="p">]</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="o">[]=</span><span class="p">(</span> <span class="nf">i</span>, v <span class="p">)</span>
+    <span class="vi">@ary</span><span class="p">[</span>i <span class="o">*</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> v
+  <span class="k">end</span>
+<span class="k">end</span>
+c <span class="o">=</span> <span class="no">C</span><span class="p">.</span><span class="nf">new</span>
+<span class="nb">p</span> c<span class="p">[</span><span class="mi">3</span><span class="p">]</span>      <span class="c1"># c.[]( 3 )  に変換され、その結果は 6
+</span><span class="nb">p</span> c<span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># c.[]=(3,1) に変換され、その結果は 1
+</span></code></pre>
+</dd>
+<dt>属性参照</dt>
+<dd>
+<pre>
+            式1 `.' 識別子 `=' 式2
+</pre>
+<p>
+式 1 を評価して得られるオブジェクトに対して、識別子= というメソッドを、式 2 を引数にして呼び出します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">C</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+    <span class="vi">@foo</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">foo=</span><span class="p">(</span> v <span class="p">)</span>
+    <span class="vi">@foo</span> <span class="o">=</span> v
+  <span class="k">end</span>
+<span class="k">end</span>
+c <span class="o">=</span> <span class="no">C</span><span class="p">.</span><span class="nf">new</span>
+c<span class="p">.</span><span class="nf">foo</span> <span class="o">=</span> <span class="mi">5</span>   <span class="c1"># c.foo=( 5 ) のように変換される
+</span><span class="nb">p</span> c<span class="p">.</span><span class="nf">foo</span>     <span class="c1"># =&gt; 5
+</span></code></pre>
+<p>
+属性は <a href="../method/-module/i/attr.html">Module#attr</a> を使って同じように定義できます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">C</span>
+  attr <span class="ss">:foo</span>, <span class="k">true</span>
+<span class="k">end</span>
+c <span class="o">=</span> <span class="no">C</span><span class="p">.</span><span class="nf">new</span>
+c<span class="p">.</span><span class="nf">foo</span> <span class="o">=</span> <span class="mi">5</span>   <span class="c1"># c.foo=( 5 ) のように変換される
+</span><span class="nb">p</span> c<span class="p">.</span><span class="nf">foo</span>     <span class="c1"># =&gt; 5
+</span></code></pre>
+</dd>
+</dl>
+<h3 id='selfassign'>自己代入</h3>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+foo <span class="o">+=</span> <span class="mi">12</span>       <span class="c1"># foo = foo + 12
+</span>a <span class="o">||=</span> <span class="mi">1</span>         <span class="c1"># a が偽か未定義ならば1を代入。初期化時のイディオムの一種。
+</span></code></pre>
+<p>
+文法:
+</p>
+<pre>
+式1 op= 式2     # 式1は通常の代入の左辺のいずれか
+</pre>
+<p>
+op は以下のいずれかです。演算子と=の間にスペースを空けてはいけません。
+</p>
+<pre>
++, -, *, /, %, **, &amp;, |, ^, &lt;&lt;, &gt;&gt;, &amp;&amp;, ||
+</pre>
+<p>
+この形式の代入は
+</p>
+<pre>
+式1 = 式1 op 式2
+</pre>
+<p>
+と評価されます。ただし、op が &amp;&amp;, || の場合には、
+</p>
+<pre>
+式1 op (式1 = 式2)
+</pre>
+<p>
+と評価されます。この違いは属性参照のときに
+</p>
+<pre class="highlight ruby">
+<code>
+obj<span class="p">.</span><span class="nf">foo</span> <span class="o">||=</span> <span class="k">true</span>
+</code></pre>
+<p>
+が、
+</p>
+<pre class="highlight ruby">
+<code>
+obj<span class="p">.</span><span class="nf">foo</span> <span class="o">=</span> obj<span class="p">.</span><span class="nf">foo</span> <span class="o">||</span> <span class="k">true</span>
+</code></pre>
+<p>
+でなく
+</p>
+<pre class="highlight ruby">
+<code>
+obj<span class="p">.</span><span class="nf">foo</span> <span class="o">||</span> <span class="p">(</span>obj<span class="p">.</span><span class="nf">foo</span> <span class="o">=</span> <span class="k">true</span><span class="p">)</span>
+</code></pre>
+<p>
+と呼ばれることを示します。(obj.foo= は obj.foo の結果によって呼ばれないかも知れません)
+</p>
+<h3 id='multiassign'>多重代入</h3>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+foo, bar, baz <span class="o">=</span> <span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span>
+foo, <span class="o">=</span> list<span class="p">(</span><span class="p">)</span>
+foo, <span class="o">*</span>rest <span class="o">=</span> list2<span class="p">(</span><span class="p">)</span>
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+式 [`,' [式 `,' ... ] [`*' [式]]] = 式 [, 式 ... ][`*' 式]
+`*' [式] = 式 [, 式 ... ][`*' 式]
+</pre>
+<p>
+多重代入は複数の式または配列から同時に代入を行います。左辺の各式はそれぞれ代入可能でなければなりません。右辺の式が一つしか与えられなかった場合、式を評価した値は配列に変換されて、各要素が左辺のそれぞれの式に代入されます。左辺の要素の数よりも配列の要素の数の方が多い場合には、余った要素は無視されます。配列の要素が足りない場合には対応する要素の無い左辺には
+nil が代入されます。
+</p>
+<p>
+左辺の最後の式の直前に * がついていると、対応する左辺のない余った要素が配列として代入されます。余った要素が無い時には空の配列が代入されます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+foo, bar <span class="o">=</span> <span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span>       <span class="c1"># foo = 1; bar = 2
+</span>foo, bar <span class="o">=</span> <span class="mi">1</span>, <span class="mi">2</span>         <span class="c1"># foo = 1; bar = 2
+</span>foo, bar <span class="o">=</span> <span class="mi">1</span>            <span class="c1"># foo = 1; bar = nil
+</span>
+foo, bar, baz <span class="o">=</span> <span class="mi">1</span>, <span class="mi">2</span>    <span class="c1"># foo = 1; bar = 2; baz = nil
+</span>foo, bar <span class="o">=</span> <span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span>      <span class="c1"># foo = 1; bar = 2
+</span>foo      <span class="o">=</span> <span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span>      <span class="c1"># foo = [1, 2, 3]
+</span><span class="o">*</span>foo     <span class="o">=</span> <span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span>      <span class="c1"># foo = [1, 2, 3]
+</span>foo,<span class="o">*</span>bar <span class="o">=</span> <span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span>      <span class="c1"># foo = 1; bar = [2, 3]
+</span></code></pre>
+<p>
+多重代入は括弧により、ネストした配列の要素を代入することもできます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">(</span>foo, bar<span class="p">)</span>, baz <span class="o">=</span> <span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span>, <span class="mi">3</span>       <span class="c1"># foo = 1; bar = 2; baz = 3
+</span></code></pre>
+<p>
+特殊な形式の代入式も多重代入にすることができます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">C</span>
+  <span class="k">def</span> <span class="nf">foo=</span><span class="p">(</span> v <span class="p">)</span>
+    <span class="vi">@foo</span> <span class="o">=</span> v
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="o">[]=</span><span class="p">(</span><span class="nf">i</span>,v<span class="p">)</span>
+    <span class="vi">@bar</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">b</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">c</span><span class="s2">"</span><span class="p">]</span>
+    <span class="vi">@bar</span><span class="p">[</span>i<span class="p">]</span> <span class="o">=</span> v
+  <span class="k">end</span>
+<span class="k">end</span>
+
+obj <span class="o">=</span> <span class="no">C</span><span class="p">.</span><span class="nf">new</span>
+obj<span class="p">.</span><span class="nf">foo</span>, obj<span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>, <span class="mi">2</span>     <span class="c1"># @foo = 1; @bar = [&quot;a&quot;, &quot;b&quot;, 2]
+</span></code></pre>
+<p>
+左辺が `,' で終る場合や、`*' の直後の式を省略した場合にも余った要素は無視されます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+foo,<span class="o">*</span>    <span class="o">=</span> <span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span>      <span class="c1"># foo = 1
+</span>foo,     <span class="o">=</span> <span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span>      <span class="c1"># foo = 1
+</span><span class="o">*</span>        <span class="o">=</span> <span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span>
+</code></pre>
+<p>
+特に最後の単体の `*' はメソッド呼び出しにおいて引数を完全に無視したいときに使用できます。(メソッド呼び出しの引数の受け渡しは多重代入とほぼ同じルールが適用されます)
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="o">*</span><span class="p">)</span>
+<span class="k">end</span>
+foo<span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span><span class="p">)</span>
+</code></pre>
+<p>
+多重代入の値は配列に変換された右辺です。
+</p>
+<h2 id='range'>範囲式</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="mi">1</span> <span class="o">..</span> <span class="mi">20</span>
+<span class="sr">/first/</span>  <span class="o">...</span>  <span class="sr">/second/</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="p">)</span>
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+式1 `..' 式2
+式1 ` ... ' 式2
+式1 `..'
+式1 ` ... '
+</pre>
+<p>
+条件式以外の場所では式1から式2までの範囲オブジェクトを返します。範囲オブジェクトは<a href="../class/-range.html">Range</a>クラスのインスタンスです。 ... で生成された範囲オブジェクトは終端を含みません。
+</p>
+<p>
+終端を省略した Range は終端のない範囲を表現できます。
+(1..) は (1..nil) の構文糖です。
+(1...) とは exclude_end が違うため、オブジェクトとしては等しくありませんが、ary[1..] と ary[1...] のように通常の使い方では同じように扱えます。
+</p>
+<p>
+when 1.. のように書くと、行継続とみなされるため、終端なし
+Range にするにはかっこが必要になることがあるので、注意してください。
+</p>
+<h3 id='range_cond'>条件式としての範囲式</h3>
+<p>
+条件式として範囲式が用いられた場合には、状態を持つ sed や awk 由来の特殊な条件式として振る舞います。フリップフロップ (flip-flop) とも呼ばれます。
+</p>
+<p>
+「..」の場合:
+</p>
+<ol>
+<li>初期状態では式1だけを評価し、式1が真を返すまでは false を返します。</li>
+<li>式1が真を返すと true を返します。式2が真なら初期状態に戻ります。</li>
+<li>この後は式2だけを評価し、式2が真を返すまで true を返します。</li>
+<li>式2が真を返すと true を返したあと、初期状態に戻ります。</li>
+</ol>
+<p>
+「...」の場合:
+</p>
+<ol>
+<li>初期状態では式1だけを評価し、式1が真を返すまでは false を返します。</li>
+<li>式1が真を返すと true を返します。</li>
+<li>この後は式2だけを評価し、式2が真を返すまで true を返します。</li>
+<li>式2が真を返すと true を返したあと、初期状態に戻ります。</li>
+</ol>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># よくある使いかた
+</span>
+<span class="mi">5</span><span class="p">.</span><span class="nf">times</span><span class="p">{</span><span class="o">|</span>n<span class="o">|</span>
+  <span class="k">if</span> <span class="p">(</span>n<span class="o">==</span><span class="mi">2</span><span class="p">)</span><span class="o">..</span><span class="p">(</span>n<span class="o">==</span><span class="mi">3</span><span class="p">)</span>
+    <span class="nb">p</span> n
+  <span class="k">end</span>
+<span class="p">}</span>
+<span class="c1">#=&gt; 2
+</span><span class="c1">#   3
+</span>
+<span class="mi">5</span><span class="p">.</span><span class="nf">times</span><span class="p">{</span><span class="o">|</span>n<span class="o">|</span>
+  <span class="k">if</span> <span class="p">(</span>n<span class="o">==</span><span class="mi">2</span><span class="p">)</span><span class="o">...</span><span class="p">(</span>n<span class="o">==</span><span class="mi">3</span><span class="p">)</span>
+    <span class="nb">p</span> n
+  <span class="k">end</span>
+<span class="p">}</span>
+<span class="c1">#=&gt; 2
+</span><span class="c1">#   3
+</span>
+<span class="c1"># 「..」と「...」の違いを示すためだけの例
+</span>
+<span class="mi">5</span><span class="p">.</span><span class="nf">times</span><span class="p">{</span><span class="o">|</span>n<span class="o">|</span>
+  <span class="k">if</span> <span class="p">(</span>n<span class="o">==</span><span class="mi">2</span><span class="p">)</span><span class="o">..</span><span class="p">(</span>n<span class="o">==</span><span class="mi">2</span><span class="p">)</span>
+    <span class="nb">p</span> n
+  <span class="k">end</span>
+<span class="p">}</span>
+<span class="c1">#=&gt; 2
+</span>
+<span class="mi">5</span><span class="p">.</span><span class="nf">times</span><span class="p">{</span><span class="o">|</span>n<span class="o">|</span>
+  <span class="k">if</span> <span class="p">(</span>n<span class="o">==</span><span class="mi">2</span><span class="p">)</span><span class="o">...</span><span class="p">(</span>n<span class="o">==</span><span class="mi">2</span><span class="p">)</span>
+    <span class="nb">p</span> n
+  <span class="k">end</span>
+<span class="p">}</span>
+<span class="c1">#=&gt; 2
+</span><span class="c1">#   3
+</span><span class="c1">#   4
+</span></code></pre>
+<h2 id='and'>and</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">test</span> <span class="o">&amp;&amp;</span> set
+<span class="nb">test</span> <span class="k">and</span> set
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+式 `&amp;&amp;' 式
+式 `and' 式
+</pre>
+<p>
+左辺を評価し、結果が偽であった場合はその値(つまり nil
+か false) を返します。左辺の評価結果が真であった場合には右辺を評価しその結果を返します。
+and は同じ働きをする優先順位の低い演算子です。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span><span class="p">(</span><span class="k">nil</span> <span class="o">&amp;&amp;</span> <span class="k">false</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span><span class="nb">p</span><span class="p">(</span><span class="k">false</span> <span class="o">&amp;&amp;</span> <span class="k">nil</span><span class="p">)</span> <span class="c1"># =&gt; false
+</span><span class="nb">p</span><span class="p">(</span><span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># =&gt; 2
+</span></code></pre>
+<p>
+and を伴う式をメソッドの引数に渡す場合は二重に括弧が必要となります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span><span class="p">(</span><span class="k">true</span> <span class="o">&amp;&amp;</span> <span class="k">false</span><span class="p">)</span>    <span class="c1">#=&gt; false
+</span><span class="nb">p</span><span class="p">(</span><span class="p">(</span><span class="k">true</span> <span class="k">and</span> <span class="k">false</span><span class="p">)</span><span class="p">)</span> <span class="c1">#=&gt; false
+</span></code></pre>
+<h2 id='or'>or</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+demo <span class="o">||</span> die
+demo <span class="k">or</span> die
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+式 `||' 式
+式 or 式
+</pre>
+<p>
+左辺を評価し、結果が真であった場合にはその値を返します。左辺の評価結果が偽であった場合には右辺を評価しその評価結果を返します。
+or は同じ働きをする優先順位の低い演算子です。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span><span class="p">(</span><span class="mi">1</span> <span class="o">||</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># =&gt; 1
+</span><span class="nb">p</span><span class="p">(</span><span class="k">nil</span> <span class="o">||</span> <span class="k">false</span><span class="p">)</span> <span class="c1"># =&gt; false
+</span><span class="nb">p</span><span class="p">(</span><span class="k">false</span> <span class="o">||</span> <span class="k">nil</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span></code></pre>
+<p>
+or を伴う式をメソッドの引数に渡す場合は二重に括弧が必要となります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span><span class="p">(</span><span class="k">false</span> <span class="o">||</span> <span class="k">true</span><span class="p">)</span>    <span class="c1">#=&gt; true
+</span><span class="nb">p</span><span class="p">(</span><span class="p">(</span><span class="k">false</span> <span class="k">or</span> <span class="k">true</span><span class="p">)</span><span class="p">)</span> <span class="c1">#=&gt; true
+</span></code></pre>
+<h2 id='not'>not</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="o">!</span> me
+<span class="k">not</span> me
+i <span class="o">!=</span> you
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+`!' 式
+not 式
+</pre>
+<p>
+式の値が真である時偽を、偽である時真を返します。
+</p>
+<pre>
+式 `!=' 式
+</pre>
+<p>
+!(式 == 式)と同じ。
+</p>
+<pre>
+式 `!~' 式
+</pre>
+<p>
+!(式 =~ 式)と同じ。
+</p>
+<p>
+not を伴う式をメソッドの引数に渡す場合は二重に括弧が必要となります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span><span class="p">(</span><span class="o">!</span> <span class="k">false</span><span class="p">)</span>      <span class="c1">#=&gt; true
+</span><span class="nb">p</span><span class="p">(</span><span class="p">(</span><span class="k">not</span> <span class="k">false</span><span class="p">)</span><span class="p">)</span>  <span class="c1">#=&gt; true
+</span></code></pre>
+<h2 id='cond'>条件演算子</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+obj <span class="o">==</span> <span class="mi">1</span> <span class="o">?</span> foo <span class="o">:</span> bar
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+式1 ? 式2 : 式3
+</pre>
+<p>
+式1の結果によって式2または式3を返します。
+</p>
+<pre>
+if 式1 then 式2 else 式3 end
+</pre>
+<p>
+とまったく同じです。
+</p>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>DOSISH 対応 (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="ruby version 1.7 では、DOSISH対応(DOS/Windows のパス名の扱いに対する変
+更)が含まれています。(現在の)変更点を以下に示します。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      
+        <li>
+          <a href="../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+        </li>
+        <li>
+          DOSISH 対応
+        </li>
+      
+    </ol>
+  </nav>
+
+<h1>DOSISH 対応</h1>
+</header>
+
+<main>
+
+<p>
+ruby version 1.7 では、DOSISH対応(DOS/Windows のパス名の扱いに対する変更)が含まれています。(現在の)変更点を以下に示します。
+</p>
+<p>
+なお、これらの変更は <a href="../doc/platform=2fmswin32.html">mswin32</a> 版、<a href="../doc/platform=2fmingw32.html">mingw32</a>
+版の Ruby にのみあてはまります。
+</p>
+<p>
+とりあえずの目標として、
+</p>
+<ul>
+<li>\ も / と同様パスセパレータとして扱う</li>
+<li>マルチバイトパス名への対応(&quot;表&quot; など 2 byte 目が 0x5c(`\') である文字を正しく扱う)</li>
+<li>UNC 対応(これ自体は1.6にも入っている)</li>
+<li>ドライブレター対応</li>
+</ul>
+<p>
+への対応が挙げられていますが、ドライブレター対応などの微妙な部分については現在もruby-listなどで議論が継続されています。現時点では、Fileの各メソッドに対する\対応, マルチバイトパス名対応, UNC 対応が実装されています。<a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-dev/13817">[ruby-dev:13817]</a>, <a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-dev/14097">[ruby-dev:14097]</a>
+</p>
+<p>
+以下、各メソッドの挙動について...
+</p>
+<dl>
+<dt>File.dirname</dt>
+<dd>
+<p>
+パスセパレータとして従来の/に加えて\も認識するようになっています。これに合わせて、マルチバイトで記述されたパス名への対応も行われています。
+</p>
+<p>
+p File.dirname(&quot;C:\\foo\\bar&quot;)
+</p>
+<p>
+=&gt; ruby 1.6.4 (2001-06-04) [i586-mswin32]
+&quot;.&quot;
+</p>
+<p>
+=&gt; ruby 1.7.1 (2001-08-16) [i586-mswin32]
+&quot;C:\\foo&quot;
+</p>
+<p>
+p File.dirname(&quot;C:/foo&quot;)
+p File.dirname(&quot;C:\\foo&quot;)
+p File.dirname(&quot;C:foo&quot;)
+</p>
+<p>
+=&gt; ruby 1.6.4 (2001-06-04) [i586-mswin32]
+&quot;C:&quot;
+&quot;.&quot;
+&quot;.&quot;
+</p>
+<p>
+=&gt; ruby 1.7.1 (2001-08-16) [i586-mswin32]
+&quot;C:&quot;
+&quot;C:&quot;
+&quot;.&quot;
+</p>
+<p>
+=&gt; ruby 1.8.0 (2003-01-06) [i386-mswin32]
+&quot;C:/&quot;
+&quot;C:\\&quot;
+&quot;C:.&quot;
+</p>
+</dd>
+<dt>File.basename</dt>
+<dd>
+<p>
+パスセパレータとして従来の/に加えて\も認識するようになっています。これに合わせて、マルチバイトで記述されたパス名への対応も行われています。
+</p>
+<p>
+p File.basename(&quot;C:\\foo\\bar&quot;)
+</p>
+<p>
+=&gt; ruby 1.6.4 (2001-06-04) [i586-mswin32]
+&quot;C:\\foo\\bar&quot;
+</p>
+<p>
+=&gt; ruby 1.7.1 (2001-08-16) [i586-mswin32]
+&quot;bar&quot;
+</p>
+</dd>
+<dt>File.split</dt>
+<dd>
+<p>
+File.dirname と File.basename が変更されているので、File.split もそれに準じた結果を返します。
+</p>
+</dd>
+<dt>File.expand_path</dt>
+<dd>
+<p>
+ドライブレター対応に関して、下記のような案が提示されています。
+</p>
+<p>
+Dir.chdir(&quot;D:/&quot;)
+p File.expand_path(&quot;C:foo&quot;, &quot;C:/bar&quot;)
+p File.expand_path(&quot;D:foo&quot;, &quot;C:/bar&quot;)
+</p>
+<p>
+=&gt; ruby 1.6.4 (2001-06-04) [i586-mswin32]
+&quot;C:/bar/C:foo&quot;
+&quot;C:/bar/D:foo&quot;
+</p>
+<p>
+=&gt; ruby 1.8.0 (2003-01-06) [i386-mswin32]
+&quot;C:/bar/foo&quot;
+&quot;D:/foo&quot;
+</p>
+<p>
+=&gt; 新井案 <a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-list/30970">[ruby-list:30970]</a>
+&quot;C:/bar/foo&quot;
+(なんらかの例外)
+</p>
+</dd>
+<dt>File.join</dt>
+<dd>
+<p>
+ドライブレター対応に関して、下記のような案が提示されています。
+</p>
+<p>
+p File.join(&quot;c:&quot;, &quot;foo&quot;)
+p File.join(&quot;c:/&quot;, &quot;foo&quot;)
+p File.join(&quot;c:.&quot;, &quot;foo&quot;)
+p File.join(&quot;c:&quot;, &quot;/foo&quot;)
+</p>
+<p>
+=&gt; ruby 1.6.4 (2001-06-04) [i586-mswin32]
+&quot;c:/foo&quot;
+&quot;c://foo&quot;
+&quot;c:./foo&quot;
+&quot;c://foo&quot;
+</p>
+<p>
+=&gt; ruby 1.8.0 (2003-01-06) [i386-mswin32]
+&quot;c:/foo&quot;
+&quot;c:/foo&quot;
+&quot;c:./foo&quot;
+&quot;c://foo&quot;
+</p>
+<p>
+=&gt; 新井案 <a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-list/31185">[ruby-list:31185]</a>
+&quot;c:./foo&quot;
+&quot;c:/foo&quot;
+&quot;c:./foo&quot;
+&quot;c:./foo&quot;
+</p>
+</dd>
+<dt>File.fnmatch</dt>
+<dt>Dir.glob</dt>
+<dt>Dir[]</dt>
+<dd>
+</dd>
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

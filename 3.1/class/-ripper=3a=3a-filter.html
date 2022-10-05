@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class Ripper::Filter (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="イベントドリブンスタイルで Ruby プログラムを加工するためのクラスです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/ripper=2ffilter.html">ripper/filterライブラリ</a>
+      </li>
+      <li>
+        Ripper::Filterクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class Ripper::Filter</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+      <li>
+        Ripper::Filter
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+イベントドリブンスタイルで Ruby プログラムを加工するためのクラスです。
+</p>
+<p>
+このクラスを継承して、必要なイベントに対応するメソッドを定義して使用します。
+</p>
+<h2 >使用例</h2>
+<pre>
+require 'ripper'
+require 'cgi'
+
+class Ruby2HTML &lt; Ripper::Filter
+  def on_default(event, tok, f)
+    f &lt;&lt; CGI.escapeHTML(tok)
+  end
+
+  def on_comment(tok, f)
+    f &lt;&lt; %Q[&lt;span class=&quot;comment&quot;&gt;#{CGI.escapeHTML(tok)}&lt;/span&gt;]
+  end
+
+  def on_tstring_beg(tok, f)
+    f &lt;&lt; %Q[&lt;span class=&quot;string&quot;&gt;#{CGI.escapeHTML(tok)}]
+  end
+
+  def on_tstring_end(tok, f)
+    f &lt;&lt; %Q[#{CGI.escapeHTML(tok)}&lt;/span&gt;]
+  end
+end
+
+Ruby2HTML.new(ARGF).parse('')
+</pre>
+<p>
+Ruby プログラムを解析して、<a href="../method/-ripper/c/-s-c-a-n-n-e-r_-e-v-e-n-t-s.html">Ripper::SCANNER_EVENTS</a> にあるスキャナイベントを実行します。イベントはプログラムに書いた順番で実行されます。
+</p>
+<p>
+上記の例では、parse メソッドに渡した空文字列を初期値として、イベントハンドラが ARGF で渡された Ruby プログラムを HTML にして返します。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_NEW">new</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_COLUMN">column</a></li>
+
+<li><a href="#I_FILENAME">filename</a></li>
+
+<li><a href="#I_LINENO">lineno</a></li>
+
+<li><a href="#I_PARSE">parse</a></li>
+
+</ul>
+</dd>
+
+<dt>privateメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_ON_-X-X-X">on_XXX</a></li>
+
+<li><a href="#I_ON_DEFAULT">on_default</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(src, filename = '-', lineno = 1) -&gt; Ripper::Filter</code><span class="permalink">[<a href="../method/-ripper=3a=3a-filter/s/new.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Ripper/Filter.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Ripper::Filter オブジェクトを作成します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] src:</dt>
+<dd>
+Ruby プログラムを文字列か IO オブジェクトで指定します。
+</dd>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+src のファイル名を文字列で指定します。省略すると &quot;-&quot; になります。
+</dd>
+<dt class='method-param'>[PARAM] lineno:</dt>
+<dd>
+src の開始行番号を指定します。省略すると 1 になります。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_COLUMN"><code>column -&gt; Integer | nil</code><span class="permalink">[<a href="../method/-ripper=3a=3a-filter/i/column.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Ripper/Filter.html#method-i-column">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在のトークンの桁番号を 0 から始まる数値で返します。
+</p>
+<p>
+このメソッドはイベントハンドラの中でのみ意味のある値を返します。イベントハンドラの中で self.column を実行してください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FILENAME"><code>filename -&gt; String</code><span class="permalink">[<a href="../method/-ripper=3a=3a-filter/i/filename.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Ripper/Filter.html#method-i-filename">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Ruby プログラムのファイル名を文字列で返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LINENO"><code>lineno -&gt; Integer | nil</code><span class="permalink">[<a href="../method/-ripper=3a=3a-filter/i/lineno.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Ripper/Filter.html#method-i-lineno">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在のトークンの行番号を 1 から始まる数値で返します。
+</p>
+<p>
+このメソッドはイベントハンドラの中でのみ意味のある値を返します。イベントハンドラの中で self.lineno を実行してください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PARSE"><code>parse(init = nil) -&gt; object</code><span class="permalink">[<a href="../method/-ripper=3a=3a-filter/i/parse.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Ripper/Filter.html#method-i-parse">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身の持つ Ruby プログラムの解析を開始します。各種イベントハンドラで処理を行った結果を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] init:</dt>
+<dd>
+任意の値を指定できます。この値がイベントハンドラに渡されていきます。
+</dd>
+</dl>
+<p>
+引数 init を初期値としてイベントハンドラに渡されていきます。各種イベントハンドラの戻り値は次のイベントハンドラに渡されます。
+<a href="../method/-enumerable/i/inject.html">Enumerable#inject</a> のように、最終的な結果を戻り値として返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-ripper=3a=3a-filter/i/on_default.html">Ripper::Filter#on_default</a>, <a href="../method/-ripper=3a=3a-filter/i/on_-x-x-x.html">Ripper::Filter#on_XXX</a>
+</p>
+</dd>
+
+
+</dl>
+
+<h2>privateメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_ON_-X-X-X"><code>on_XXX(token, data) -&gt; object</code><span class="permalink">[<a href="../method/-ripper=3a=3a-filter/i/on_-x-x-x.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Ripper/Filter.html#method-i-on_XXX">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+各種スキャナイベントを実行します。
+</p>
+<p>
+実際には on_XXX というメソッドは存在しません。「XXX」の部分を
+<a href="../method/-ripper/c/-s-c-a-n-n-e-r_-e-v-e-n-t-s.html">Ripper::SCANNER_EVENTS</a> にあるスキャナイベントに読み替えてください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] token:</dt>
+<dd>
+現在のトークンが指定されます。
+</dd>
+<dt class='method-param'>[PARAM] data:</dt>
+<dd>
+前のイベントハンドラの戻り値です。最初のイベントの場合は
+<a href="../method/-ripper=3a=3a-filter/i/parse.html">Ripper::Filter#parse</a> の引数になります。
+</dd>
+</dl>
+<p>
+オーバライドしなかった場合は on_default が実行されます。
+</p>
+<p>
+このメソッドの戻り値は次のイベントハンドラの data 引数に渡されます。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-ripper=3a=3a-filter/i/parse.html">Ripper::Filter#parse</a>, <a href="../method/-ripper=3a=3a-filter/i/on_default.html">Ripper::Filter#on_default</a>, <a href="../method/-ripper/c/-s-c-a-n-n-e-r_-e-v-e-n-t-s.html">Ripper::SCANNER_EVENTS</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ON_DEFAULT"><code>on_default(event, token, data) -&gt; object</code><span class="permalink">[<a href="../method/-ripper=3a=3a-filter/i/on_default.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Ripper/Filter.html#method-i-on_default">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+イベントハンドラが未定義のイベントが実行された場合に実行されるイベントハンドラです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] event:</dt>
+<dd>
+実行されたイベントを :on_XXX 形式のシンボルで指定されます。
+</dd>
+<dt class='method-param'>[PARAM] token:</dt>
+<dd>
+現在のトークンが指定されます。
+</dd>
+<dt class='method-param'>[PARAM] data:</dt>
+<dd>
+前のイベントハンドラの戻り値です。最初のイベントの場合は
+<a href="../method/-ripper=3a=3a-filter/i/parse.html">Ripper::Filter#parse</a> の引数になります。
+</dd>
+</dl>
+<p>
+このメソッドの戻り値は次のイベントハンドラの data 引数に渡されます。
+on_default をオーバライドしなかった場合は data 引数をそのまま返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-ripper=3a=3a-filter/i/parse.html">Ripper::Filter#parse</a>, <a href="../method/-ripper=3a=3a-filter/i/on_-x-x-x.html">Ripper::Filter#on_XXX</a>
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

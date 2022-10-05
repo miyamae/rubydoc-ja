@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>TSort#each_strongly_connected_component_from (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="node から到達可能な強連結成分についてのイテレータです。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/tsort.html">tsortライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-t-sort.html">TSortモジュール</a>
+      </li>
+      <li>
+        each_strongly_connected_component_from 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method TSort#each_strongly_connected_component_from</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_EACH_STRONGLY_CONNECTED_COMPONENT_FROM"><code>each_strongly_connected_component_from(node, id_map={}, stack=[]) {|nodes| ...} -&gt; ()</code><span class="permalink">[<a href="../../../method/-t-sort/i/each_strongly_connected_component_from.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/TSort.html#method-i-each_strongly_connected_component_from">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_strongly_connected_component_from(node, id_map={}, stack=[]) -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+node から到達可能な強連結成分についてのイテレータです。
+</p>
+<p>
+返す値は規定されていません。
+</p>
+<p>
+each_strongly_connected_component_from は
+tsort_each_node を呼びません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] node:</dt>
+<dd>
+ノードを指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例 到達可能なノードを表示する</span>
+<code>
+<span class="nb">require</span> <span class="s1">'tsort'</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Hash</span>
+  include <span class="no">TSort</span>
+  <span class="k">alias</span> tsort_each_node each_key
+  <span class="k">def</span> <span class="nf">tsort_each_child</span><span class="p">(</span>node, <span class="o">&amp;</span>block<span class="p">)</span>
+    fetch<span class="p">(</span>node<span class="p">)</span><span class="p">.</span><span class="nf">each</span><span class="p">(</span><span class="o">&amp;</span>block<span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+non_sort <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="o">=&gt;</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>, <span class="mi">2</span><span class="o">=&gt;</span><span class="p">[</span><span class="mi">3</span>, <span class="mi">4</span><span class="p">]</span>, <span class="mi">3</span><span class="o">=&gt;</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>, <span class="mi">4</span><span class="o">=&gt;</span><span class="p">[</span><span class="p">]</span><span class="p">}</span>
+
+non_sort<span class="p">.</span><span class="nf">each_strongly_connected_component</span><span class="p">{</span><span class="o">|</span>nodes<span class="o">|</span>
+  <span class="nb">p</span> nodes
+  nodes<span class="p">.</span><span class="nf">each</span> <span class="p">{</span><span class="o">|</span>node<span class="o">|</span>
+    non_sort<span class="p">.</span><span class="nf">each_strongly_connected_component_from</span><span class="p">(</span>node<span class="p">)</span><span class="p">{</span><span class="o">|</span>ns<span class="o">|</span>
+      <span class="nb">printf</span><span class="p">(</span><span class="s2">"</span><span class="s2">%s -&gt; %s\n</span><span class="s2">"</span>, node, ns<span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">"</span><span class="s2">,</span><span class="s2">"</span><span class="p">)</span><span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">#出力
+</span><span class="c1">#=&gt; [4]
+</span><span class="c1">#=&gt; 4 -&gt; 4
+</span><span class="c1">#=&gt; [2, 3]
+</span><span class="c1">#=&gt; 2 -&gt; 4
+</span><span class="c1">#=&gt; 2 -&gt; 2,3
+</span><span class="c1">#=&gt; 3 -&gt; 4
+</span><span class="c1">#=&gt; 3 -&gt; 3,2
+</span><span class="c1">#=&gt; [1]
+</span><span class="c1">#=&gt; 1 -&gt; 4
+</span><span class="c1">#=&gt; 1 -&gt; 2,3
+</span><span class="c1">#=&gt; 1 -&gt; 1
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-t-sort/s/each_strongly_connected_component_from.html">TSort.each_strongly_connected_component_from</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

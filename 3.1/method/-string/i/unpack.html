@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>String#unpack (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="[[m:Array#pack]] で生成された文字列を
+テンプレート文字列 template にしたがってアンパックし、
+それらの要素を含む配列を返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-string.html">Stringクラス</a>
+      </li>
+      <li>
+        unpack 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method String#unpack</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_UNPACK"><code>unpack(template) -&gt; Array</code><span class="permalink">[<a href="../../../method/-string/i/unpack.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/String.html#method-i-unpack">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../../../method/-array/i/pack.html">Array#pack</a> で生成された文字列をテンプレート文字列 template にしたがってアンパックし、それらの要素を含む配列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] template:</dt>
+<dd>
+pack テンプレート文字列
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+オブジェクトの配列
+</dd>
+</dl>
+<p>
+以下にあげるものは、<a href="../../../method/-array/i/pack.html">Array#pack</a>、<a href="../../../method/-string/i/unpack.html">String#unpack</a>、<a href="../../../method/-string/i/unpack1.html">String#unpack1</a>
+のテンプレート文字の一覧です。テンプレート文字は後に「長さ」を表す数字を続けることができます。「長さ」の代わりに`*'とすることで「残り全て」を表すこともできます。
+</p>
+<p>
+長さの意味はテンプレート文字により異なりますが大抵、
+</p>
+<pre>
+&quot;iiii&quot;
+</pre>
+<p>
+のように連続するテンプレート文字は
+</p>
+<pre>
+&quot;i4&quot;
+</pre>
+<p>
+と書き換えることができます。
+</p>
+<p>
+テンプレート文字列中の空白類は無視されます。また、`#' から改行あるいはテンプレート文字列の最後まではコメントとみなされ無視されます。
+</p>
+<h2 >整数のテンプレート文字のシステム依存性</h2>
+<p>
+各テンプレート文字の説明の中で、
+short や long はシステムによらずそれぞれ 2, 4バイトサイズの数値(32ビットマシンで一般的なshort, longのサイズ)を意味しています。s, S, l, L に対しては直後に _ または ! を &quot;s_&quot; あるいは &quot;s!&quot; のように続けることでシステム依存の short, long のサイズにすることもできます。
+</p>
+<p>
+i, I (int)のサイズは常にシステム依存であり、n, N, v, V
+のサイズは常にシステム依存ではない(!をつけられない)ことに注意してください。
+</p>
+<p>
+つまり、<a href="../../../method/-i-o/i/ioctl.html">IO#ioctl</a> などで C の構造体を渡すときのように、システム依存のサイズとエンディアンに合わせる必要があるときには
+s!, S!, i!, I!, l!, L!, q!, Q!, j!, J! を用います。また、ネットワークプロトコルやファイルフォーマットのように、システムに依存しないデータを扱うときには
+n, N, v, V を用います。
+</p>
+<p>
+強制的にエンディアンを指定したいときは、リトルエンディアンなら &lt; を、ビッグエンディアンなら &gt;
+を後ろにつけます。! と組み合わせることも可能です。
+</p>
+<p>
+まとめると以下のようになります。
+</p>
+<dl>
+<dt>エンディアン非依存、整数サイズ非依存 (ネットワークプロトコルなどに適切)</dt>
+<dd>
+<pre>
+  n: big endian unsigned 16bit
+  N: big endian unsigned 32bit
+  v: little endian unsigned 16bit
+  V: little endian unsigned 32bit
+</pre>
+</dd>
+<dt>エンディアン依存、整数サイズ依存 (C の構造体などに適切)</dt>
+<dd>
+<pre>
+  s!: signed short
+  S!: unsigned short
+  i,i!: signed int
+  I,I!: unsigned int
+  l!: signed long
+  L!: unsigned long
+  q!: signed long long
+  Q!: unsigned long long
+  j,j!: intptr_t
+  J,J!: uintptr_t
+</pre>
+</dd>
+<dt>エンディアン依存、整数サイズ非依存 (C99 の stdint.h にある厳密な幅を持つ整数型に適切)</dt>
+<dd>
+<pre>
+  s: int16_t
+  S: uint16_t
+  l: int32_t
+  L: uint32_t
+  q: int64_t
+  Q: uint64_t
+</pre>
+</dd>
+<dt>エンディアンの強制指定(バイナリ解析などに適切)</dt>
+<dd>
+<pre>
+  S&gt;:  big endian unsigned 16bit(nと同じ)
+  s&gt;:  big endian int16_t
+  s!&gt;: big endian signed short
+  l&lt;:  little endian int32_t
+  l!&lt;: little endian signed long
+</pre>
+</dd>
+</dl>
+<h2 >各テンプレート文字の説明</h2>
+<p>
+説明中、<a href="../../../method/-array/i/pack.html">Array#pack</a> と <a href="../../../method/-string/i/unpack.html">String#unpack</a> で違いのあるものは `/' で区切って「Array#pack の説明 / String#unpack の説明」としています。
+</p>
+<dl>
+<dt>a</dt>
+<dd>
+<p>
+ASCII文字列(ヌル文字を詰める/後続するヌル文字やスペースを残す)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;a&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">a*</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;abc&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">a4</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;abc\x00&quot;
+</span>
+<span class="s2">"</span><span class="s2">abc\0</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">a4</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;abc\x00&quot;]
+</span><span class="s2">"</span><span class="s2">abc </span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">a4</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; [&quot;abc &quot;]
+</span></code></pre>
+</dd>
+<dt>A</dt>
+<dd>
+<p>
+ASCII文字列(スペースを詰める/後続するヌル文字やスペースを削除)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">A</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;a&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">A*</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;abc&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">A4</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;abc &quot;
+</span>
+<span class="s2">"</span><span class="s2">abc </span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">A4</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; [&quot;abc&quot;]
+</span><span class="s2">"</span><span class="s2">abc\0</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">A4</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;abc&quot;]
+</span></code></pre>
+</dd>
+<dt>Z</dt>
+<dd>
+<p>
+ヌル終端文字列(長さが`*'の場合も含め、ヌル文字を詰める/後続するヌル文字を削除)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">Z</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;a&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">Z*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;abc\x00&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">Z5</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;abc\x00\x00&quot;
+</span>
+<span class="s2">"</span><span class="s2">abc\0</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">Z4</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;abc&quot;]
+</span><span class="s2">"</span><span class="s2">abc </span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">Z4</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; [&quot;abc &quot;]
+</span></code></pre>
+</dd>
+<dt>b</dt>
+<dd>
+<p>
+ビットストリング(各バイトごとに下位ビットから上位ビット)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\xFF\x00</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">b*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;1111111100000000&quot;]
+</span><span class="s2">"</span><span class="s2">\x01\x02</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">b*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;1000000001000000&quot;]
+</span><span class="s2">"</span><span class="s2">\x01\x02</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">b3</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;100&quot;]
+</span>
+
+<span class="p">[</span><span class="s2">"</span><span class="s2">1000000001000000</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">b*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\x02&quot;
+</span></code></pre>
+</dd>
+<dt>B</dt>
+<dd>
+<p>
+ビットストリング(各バイトごとに上位ビットから下位ビット)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\xFF\x00</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; [&quot;1111111100000000&quot;]
+</span><span class="s2">"</span><span class="s2">\x01\x02</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; [&quot;0000000100000010&quot;]
+</span><span class="s2">"</span><span class="s2">\x01\x02</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B9</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; [&quot;000000010&quot;]
+</span><span class="s2">"</span><span class="s2">\x01\x02</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B15</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;000000010000001&quot;]
+</span>
+<span class="p">[</span><span class="s2">"</span><span class="s2">0000000100000010</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x01\x02&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">0000000100000010</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B0</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">0000000100000010</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B1</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x00&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">0000000100000010</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B7</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x00&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">0000000100000010</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B8</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x01&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">0000000100000010</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B9</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x01\x00&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">0000000100000010</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B14</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\x00&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">0000000100000010</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B15</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\x02&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">0000000100000010</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B16</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\x02&quot;
+</span></code></pre>
+</dd>
+<dt>h</dt>
+<dd>
+<p>
+16進文字列(下位ニブルが先)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\xFE</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">h*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;10ef&quot;]
+</span><span class="s2">"</span><span class="s2">\x01\xFE</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">h3</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;10e&quot;]
+</span>
+<span class="p">[</span><span class="s2">"</span><span class="s2">10ef</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">h*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\xFE&quot;
+</span></code></pre>
+</dd>
+<dt>H</dt>
+<dd>
+<p>
+16進文字列(上位ニブルが先)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\xFE</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">H*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;01fe&quot;]
+</span><span class="s2">"</span><span class="s2">\x01\xFE</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">H3</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;01f&quot;]
+</span><span class="s2">"</span><span class="s2">~</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">H2</span><span class="s2">"</span><span class="p">)</span>        <span class="c1"># =&gt; [&quot;7e&quot;]
+</span>
+<span class="p">[</span><span class="s2">"</span><span class="s2">01fe</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">H*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\xFE&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">7e</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">H2</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;~&quot;
+</span></code></pre>
+</dd>
+<dt>c</dt>
+<dd>
+<p>
+char (8bit 符号つき整数)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\xFE</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">c*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [1, -2]
+</span>
+<span class="p">[</span><span class="mi">1</span>, <span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">c*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x01\xFE&quot;
+</span><span class="p">[</span><span class="mi">1</span>, <span class="mi">254</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">c*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\xFE&quot;
+</span></code></pre>
+</dd>
+<dt>C</dt>
+<dd>
+<p>
+unsigned char (8bit 符号なし整数)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\xFE</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">C*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [1, 254]
+</span>
+<span class="p">[</span><span class="mi">1</span>, <span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">C*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x01\xFE&quot;
+</span><span class="p">[</span><span class="mi">1</span>, <span class="mi">254</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">C*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\xFE&quot;
+</span></code></pre>
+</dd>
+<dt>s</dt>
+<dd>
+<p>
+short (16bit 符号つき整数, エンディアンに依存)
+(s! は 16bit でなく、short のサイズに依存)
+</p>
+<p>
+リトルエンディアン (x86_64):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\x02\xFE\xFD</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">s*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [513, -514]
+</span>
+<span class="p">[</span><span class="mi">513</span>, <span class="mi">65022</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">s*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\x02\xFE\xFD&quot;
+</span><span class="p">[</span><span class="mi">513</span>, <span class="o">-</span><span class="mi">514</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">s*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x01\x02\xFE\xFD&quot;
+</span></code></pre>
+<p>
+ビッグエンディアン (SPARC64):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\x02\xFE\xFD</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">s*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [258, -259]
+</span>
+<span class="p">[</span><span class="mi">258</span>, <span class="mi">65277</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">s*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\x02\xFE\xFD&quot;
+</span><span class="p">[</span><span class="mi">258</span>, <span class="o">-</span><span class="mi">259</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">s*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x01\x02\xFE\xFD&quot;
+</span></code></pre>
+</dd>
+<dt>S</dt>
+<dd>
+<p>
+unsigned short (16bit 符号なし整数, エンディアンに依存)
+(S! は 16bit でなく、short のサイズに依存)
+</p>
+<p>
+リトルエンディアン (x86_64):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\x02\xFE\xFD</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">S*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [513, 65022]
+</span>
+<span class="p">[</span><span class="mi">513</span>, <span class="mi">65022</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">s*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\x02\xFE\xFD&quot;
+</span><span class="p">[</span><span class="mi">513</span>, <span class="o">-</span><span class="mi">514</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">s*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x01\x02\xFE\xFD&quot;
+</span></code></pre>
+<p>
+ビッグエンディアン (SPARC64):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\x02\xFE\xFD</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">S*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [258, 65277]
+</span>
+<span class="p">[</span><span class="mi">258</span>, <span class="mi">65277</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">S*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\x02\xFE\xFD&quot;
+</span><span class="p">[</span><span class="mi">258</span>, <span class="o">-</span><span class="mi">259</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">S*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x01\x02\xFE\xFD&quot;
+</span></code></pre>
+</dd>
+<dt>i</dt>
+<dd>
+<p>
+int (符号つき整数, エンディアンと int のサイズに依存)
+</p>
+<p>
+リトルエンディアン (x86_64), 32bit int:
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\x02\x03\x04\xFF\xFE\xFD\xFC</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">i*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [67305985, -50462977]
+</span>
+<span class="p">[</span><span class="mi">67305985</span>, <span class="mi">4244504319</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">i*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\x02\x03\x04\xFF\xFE\xFD\xFC&quot;
+</span><span class="p">[</span><span class="mi">67305985</span>, <span class="o">-</span><span class="mi">50462977</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">i*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x01\x02\x03\x04\xFF\xFE\xFD\xFC&quot;
+</span></code></pre>
+<p>
+ビッグエンディアン (SPARC64), 32bit int:
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\x02\x03\x04\xFF\xFE\xFD\xFC</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">i*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [16909060, -66052]
+</span>
+<span class="p">[</span><span class="mi">16909060</span>, <span class="mi">4294901244</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">i*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\x02\x03\x04\xFF\xFE\xFD\xFC&quot;
+</span><span class="p">[</span><span class="mi">16909060</span>, <span class="o">-</span><span class="mi">66052</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">i*</span><span class="s2">"</span><span class="p">)</span>     <span class="c1"># =&gt; &quot;\x01\x02\x03\x04\xFF\xFE\xFD\xFC&quot;
+</span></code></pre>
+</dd>
+<dt>I</dt>
+<dd>
+<p>
+unsigned int (符号なし整数, エンディアンと int のサイズに依存)
+</p>
+<p>
+リトルエンディアン (x86_64), 32bit int:
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\x02\x03\x04\xFF\xFE\xFD\xFC</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">I*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [67305985, 4244504319]
+</span>
+<span class="p">[</span><span class="mi">67305985</span>, <span class="mi">4244504319</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">I*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\x02\x03\x04\xFF\xFE\xFD\xFC&quot;
+</span><span class="p">[</span><span class="mi">67305985</span>, <span class="o">-</span><span class="mi">50462977</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">I*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x01\x02\x03\x04\xFF\xFE\xFD\xFC&quot;
+</span></code></pre>
+<p>
+ビッグエンディアン (SPARC64), 32bit int:
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\x02\x03\x04\xFF\xFE\xFD\xFC</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">I*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [16909060, 4294901244]
+</span>
+<span class="p">[</span><span class="mi">16909060</span>, <span class="mi">4294901244</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">I*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\x02\x03\x04\xFF\xFE\xFD\xFC&quot;
+</span><span class="p">[</span><span class="mi">16909060</span>, <span class="o">-</span><span class="mi">66052</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">I*</span><span class="s2">"</span><span class="p">)</span>     <span class="c1"># =&gt; &quot;\x01\x02\x03\x04\xFF\xFE\xFD\xFC&quot;
+</span></code></pre>
+</dd>
+<dt>l</dt>
+<dd>
+<p>
+long (32bit 符号つき整数, エンディアンに依存)
+(l! は 32bit でなく、long のサイズに依存)
+</p>
+<p>
+リトルエンディアン (x86_64), 32bit long:
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\x02\x03\x04\xFF\xFE\xFD\xFC</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">l*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [67305985, -50462977]
+</span>
+<span class="p">[</span><span class="mi">67305985</span>, <span class="mi">4244504319</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">l*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\x02\x03\x04\xFF\xFE\xFD\xFC&quot;
+</span><span class="p">[</span><span class="mi">67305985</span>, <span class="o">-</span><span class="mi">50462977</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">l*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x01\x02\x03\x04\xFF\xFE\xFD\xFC&quot;
+</span></code></pre>
+<p>
+ビッグエンディアン (SPARC64), 32bit long:
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\x02\x03\x04\xFF\xFE\xFD\xFC</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">l*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [16909060, -66052]
+</span>
+<span class="p">[</span><span class="mi">16909060</span>, <span class="mi">4294901244</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">l*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\x02\x03\x04\xFF\xFE\xFD\xFC&quot;
+</span><span class="p">[</span><span class="mi">16909060</span>, <span class="o">-</span><span class="mi">66052</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">l*</span><span class="s2">"</span><span class="p">)</span>     <span class="c1"># =&gt; &quot;\x01\x02\x03\x04\xFF\xFE\xFD\xFC&quot;
+</span></code></pre>
+</dd>
+<dt>L</dt>
+<dd>
+<p>
+unsigned long (32bit 符号なし整数, エンディアンに依存)
+(L! は 32bit でなく、long のサイズに依存)
+</p>
+<p>
+リトルエンディアン (x86_64), 32bit long:
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\x02\x03\x04\xFF\xFE\xFD\xFC</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">L*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [67305985, 4244504319]
+</span>
+<span class="p">[</span><span class="mi">67305985</span>, <span class="mi">4244504319</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">L*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\x02\x03\x04\xFF\xFE\xFD\xFC&quot;
+</span><span class="p">[</span><span class="mi">67305985</span>, <span class="o">-</span><span class="mi">50462977</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">L*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x01\x02\x03\x04\xFF\xFE\xFD\xFC&quot;
+</span></code></pre>
+<p>
+ビッグエンディアン (SPARC64), 32bit long:
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\x02\x03\x04\xFF\xFE\xFD\xFC</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">L*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [16909060, 4294901244]
+</span>
+<span class="p">[</span><span class="mi">16909060</span>, <span class="mi">4294901244</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">L*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x01\x02\x03\x04\xFF\xFE\xFD\xFC&quot;
+</span><span class="p">[</span><span class="mi">16909060</span>, <span class="o">-</span><span class="mi">66052</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">L*</span><span class="s2">"</span><span class="p">)</span>     <span class="c1"># =&gt; &quot;\x01\x02\x03\x04\xFF\xFE\xFD\xFC&quot;
+</span></code></pre>
+</dd>
+<dt>q</dt>
+<dd>
+<p>
+64bit 符号付き整数 (エンディアンに依存)
+(q! は 64bit でなく、long long のサイズに依存)
+</p>
+<p>
+リトルエンディアン (x86_64):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\x02\x03\x04\x05\x06\x07\x08\xFF\xFE\xFD\xFC\xFB\xFA\xF9\xF8</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">q*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [578437695752307201, -506097522914230529]
+</span>
+<span class="p">[</span><span class="mi">578437695752307201</span>, <span class="o">-</span><span class="mi">506097522914230529</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">q*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;\x01\x02\x03\x04\x05\x06\a\b\xFF\xFE\xFD\xFC\xFB\xFA\xF9\xF8&quot;
+</span><span class="p">[</span><span class="mi">578437695752307201</span>, <span class="mi">17940646550795321087</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">q*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;\x01\x02\x03\x04\x05\x06\a\b\xFF\xFE\xFD\xFC\xFB\xFA\xF9\xF8&quot;
+</span></code></pre>
+<p>
+ビッグエンディアン (SPARC64):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\x02\x03\x04\x05\x06\x07\x08\xFF\xFE\xFD\xFC\xFB\xFA\xF9\xF8</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">q*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [72623859790382856, -283686952306184]
+</span>
+<span class="p">[</span><span class="mi">72623859790382856</span>, <span class="o">-</span><span class="mi">283686952306184</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">q*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;\x01\x02\x03\x04\x05\x06\a\b\xFF\xFE\xFD\xFC\xFB\xFA\xF9\xF8&quot;
+</span><span class="p">[</span><span class="mi">72623859790382856</span>, <span class="mi">18446460386757245432</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">q*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;\x01\x02\x03\x04\x05\x06\a\b\xFF\xFE\xFD\xFC\xFB\xFA\xF9\xF8&quot;
+</span></code></pre>
+</dd>
+<dt>Q</dt>
+<dd>
+<p>
+64bit 符号なし整数 (エンディアンに依存)
+(Q! は 64bit でなく、long long のサイズに依存)
+</p>
+<p>
+リトルエンディアン (x86_64):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\x02\x03\x04\x05\x06\x07\x08\xFF\xFE\xFD\xFC\xFB\xFA\xF9\xF8</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">Q*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [578437695752307201, 17940646550795321087]
+</span>
+<span class="p">[</span><span class="mi">578437695752307201</span>, <span class="mi">17940646550795321087</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">Q*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;\x01\x02\x03\x04\x05\x06\a\b\xFF\xFE\xFD\xFC\xFB\xFA\xF9\xF8&quot;
+</span><span class="p">[</span><span class="mi">578437695752307201</span>, <span class="o">-</span><span class="mi">506097522914230529</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">Q*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;\x01\x02\x03\x04\x05\x06\a\b\xFF\xFE\xFD\xFC\xFB\xFA\xF9\xF8&quot;
+</span></code></pre>
+<p>
+ビッグエンディアン (SPARC64):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">\x01\x02\x03\x04\x05\x06\x07\x08\xFF\xFE\xFD\xFC\xFB\xFA\xF9\xF8</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">Q*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [72623859790382856, 18446460386757245432]
+</span>
+<span class="p">[</span><span class="mi">72623859790382856</span>, <span class="mi">18446460386757245432</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">Q*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;\x01\x02\x03\x04\x05\x06\a\b\xFF\xFE\xFD\xFC\xFB\xFA\xF9\xF8&quot;
+</span><span class="p">[</span><span class="mi">72623859790382856</span>, <span class="o">-</span><span class="mi">283686952306184</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">Q*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;\x01\x02\x03\x04\x05\x06\a\b\xFF\xFE\xFD\xFC\xFB\xFA\xF9\xF8&quot;
+</span></code></pre>
+</dd>
+<dt>m</dt>
+<dd>
+<p>
+base64された文字列。60 オクテットごと(と最後)に改行コードが付加されます。
+</p>
+<p>
+Base64は、3オクテット(8bits * 3 = 24bits)のバイナリコードをASCII文字のうちの65文字 ([A-Za-z0-9+/]の64文字とpaddingのための'=')だけを使用して
+4オクテット(6bits * 4 = 24bits)の印字可能文字列に変換するエンコーディング法です。<a class="external" href="https://tools.ietf.org/html/rfc2045">[RFC2045]</a>, <a class="external" href="https://tools.ietf.org/html/rfc4648">[RFC4648]</a> で定義されています。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="s2">"</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m</span><span class="s2">"</span><span class="p">)</span>             <span class="c1"># =&gt; &quot;&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">\0</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m</span><span class="s2">"</span><span class="p">)</span>           <span class="c1"># =&gt; &quot;AA==\n&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">\0\0</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m</span><span class="s2">"</span><span class="p">)</span>         <span class="c1"># =&gt; &quot;AAA=\n&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">\0\0\0</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m</span><span class="s2">"</span><span class="p">)</span>       <span class="c1"># =&gt; &quot;AAAA\n&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">\xFF</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m</span><span class="s2">"</span><span class="p">)</span>         <span class="c1"># =&gt; &quot;/w==\n&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">\xFF\xFF</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m</span><span class="s2">"</span><span class="p">)</span>     <span class="c1"># =&gt; &quot;//8=\n&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">\xFF\xFF\xFF</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;////\n&quot;
+</span>
+<span class="p">[</span><span class="s2">"</span><span class="s2">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXpBQkNERUZHSElKS0xNTk9QUVJT\nVFVWV1hZWg==\n&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">abcdefghijklmnopqrstuvwxyz</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m3</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;YWJj\nZGVm\nZ2hp\namts\nbW5v\ncHFy\nc3R1\ndnd4\neXo=\n&quot;
+</span>
+<span class="s2">"</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m</span><span class="s2">"</span><span class="p">)</span>       <span class="c1"># =&gt; [&quot;&quot;]
+</span><span class="s2">"</span><span class="s2">AA==\n</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;\x00&quot;]
+</span><span class="s2">"</span><span class="s2">AA==</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; [&quot;\x00&quot;]
+</span>
+<span class="s2">"</span><span class="s2">YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXpBQkNERUZHSElKS0xNTk9QUVJT\nVFVWV1hZWg==\n</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;]
+</span><span class="s2">"</span><span class="s2">YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXpBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWg==\n</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;]
+</span></code></pre>
+<p>
+m0 は <a class="external" href="https://tools.ietf.org/html/rfc4648">[RFC4648]</a> 対応
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="s2">"</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m0</span><span class="s2">"</span><span class="p">)</span>             <span class="c1"># =&gt; &quot;&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">\0</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m0</span><span class="s2">"</span><span class="p">)</span>           <span class="c1"># =&gt; &quot;AA==&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">\0\0</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m0</span><span class="s2">"</span><span class="p">)</span>         <span class="c1"># =&gt; &quot;AAA=&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">\0\0\0</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m0</span><span class="s2">"</span><span class="p">)</span>       <span class="c1"># =&gt; &quot;AAAA&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">\xFF</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m0</span><span class="s2">"</span><span class="p">)</span>         <span class="c1"># =&gt; &quot;/w==&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">\xFF\xFF</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m0</span><span class="s2">"</span><span class="p">)</span>     <span class="c1"># =&gt; &quot;//8=&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">\xFF\xFF\xFF</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m0</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;////&quot;
+</span>
+<span class="p">[</span><span class="s2">"</span><span class="s2">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m0</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXpBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWg==&quot;
+</span>
+<span class="s2">"</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m0</span><span class="s2">"</span><span class="p">)</span>       <span class="c1"># =&gt; [&quot;&quot;]
+</span><span class="s2">"</span><span class="s2">AA==\n</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m0</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; ArgumentError (invalid base64)
+</span><span class="s2">"</span><span class="s2">AA==</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m0</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; [&quot;\x00&quot;]
+</span>
+<span class="s2">"</span><span class="s2">YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXpBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWg==</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">m0</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;]
+</span></code></pre>
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../library/base64.html">base64</a>
+</p>
+<dl>
+<dt>M</dt>
+<dd>
+<p>
+quoted-printable encoding された文字列
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="s2">"</span><span class="s2">a b c\td \ne</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">M</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;a b c\td =\n\ne=\n&quot;
+</span>
+<span class="s2">"</span><span class="s2">a b c\td =\n\ne=\n</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">M</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;a b c\td \ne&quot;]
+</span></code></pre>
+</dd>
+<dt>n</dt>
+<dd>
+<p>
+ネットワークバイトオーダー(ビッグエンディアン)のunsigned short (16bit 符号なし整数)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mi">0</span>,<span class="mi">1</span>,<span class="o">-</span><span class="mi">1</span>,<span class="mi">32767</span>,<span class="o">-</span><span class="mi">32768</span>,<span class="mi">65535</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">n*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;\x00\x00\x00\x01\xFF\xFF\x7F\xFF\x80\x00\xFF\xFF&quot;
+</span>
+<span class="s2">"</span><span class="s2">\x00\x00\x00\x01\xFF\xFF\x7F\xFF\x80\x00\xFF\xFF</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">n*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [0, 1, 65535, 32767, 32768, 65535]
+</span></code></pre>
+</dd>
+<dt>N</dt>
+<dd>
+<p>
+ネットワークバイトオーダー(ビッグエンディアン)のunsigned long (32bit 符号なし整数)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mi">0</span>,<span class="mi">1</span>,<span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">N*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x00\x00\x00\x00\x00\x00\x00\x01\xFF\xFF\xFF\xFF&quot;
+</span>
+<span class="s2">"</span><span class="s2">\x00\x00\x00\x00\x00\x00\x00\x01\xFF\xFF\xFF\xFF</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">N*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [0, 1, 4294967295]
+</span></code></pre>
+</dd>
+<dt>v</dt>
+<dd>
+<p>
+&quot;VAX&quot;バイトオーダー(リトルエンディアン)のunsigned short (16bit 符号なし整数)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mi">0</span>,<span class="mi">1</span>,<span class="o">-</span><span class="mi">1</span>,<span class="mi">32767</span>,<span class="o">-</span><span class="mi">32768</span>,<span class="mi">65535</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">v*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;\x00\x00\x01\x00\xFF\xFF\xFF\x7F\x00\x80\xFF\xFF&quot;
+</span>
+<span class="s2">"</span><span class="s2">\x00\x00\x01\x00\xFF\xFF\xFF\x7F\x00\x80\xFF\xFF</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">v*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [0, 1, 65535, 32767, 32768, 65535]
+</span></code></pre>
+</dd>
+<dt>V</dt>
+<dd>
+<p>
+&quot;VAX&quot;バイトオーダー(リトルエンディアン)のunsigned long (32bit 符号なし整数)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mi">0</span>,<span class="mi">1</span>,<span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">V*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x00\x00\x00\x00\x01\x00\x00\x00\xFF\xFF\xFF\xFF&quot;
+</span>
+
+<span class="s2">"</span><span class="s2">\x00\x00\x00\x00\x01\x00\x00\x00\xFF\xFF\xFF\xFF</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">V*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [0, 1, 4294967295]
+</span></code></pre>
+</dd>
+<dt>f</dt>
+<dd>
+<p>
+単精度浮動小数点数(機種依存)
+</p>
+<p>
+x86_64 (IEEE754 単精度 リトルエンディアン):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mf">1.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">f</span><span class="s2">"</span><span class="p">)</span>      <span class="c1"># =&gt; &quot;\x00\x00\x80?&quot;
+</span><span class="p">[</span><span class="mf">0.0</span><span class="o">/</span><span class="mf">0.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">f</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x00\x00\xC0\x7F&quot;      # NaN
+</span><span class="p">[</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">0.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">f</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x00\x00\x80\x7F&quot;      # +Infinity
+</span><span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">0.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">f</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x00\x00\x80\xFF&quot;      # -Infinity
+</span></code></pre>
+<p>
+SPARC64 (IEEE754 単精度 ビッグエンディアン):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mf">1.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">f</span><span class="s2">"</span><span class="p">)</span>      <span class="c1"># =&gt; &quot;?\x80\x00\x00&quot;
+</span><span class="p">[</span><span class="mf">0.0</span><span class="o">/</span><span class="mf">0.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">f</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x7F\xC0\x00\x00&quot;      # NaN
+</span><span class="p">[</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">0.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">f</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x7F\x80\x00\x00&quot;      # +Infinity
+</span><span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">0.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">f</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\xFF\x80\x00\x00&quot;      # -Infinity
+</span></code></pre>
+<p>
+VAX (NetBSD 3.0) (非IEEE754):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mf">1.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">f</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x80@\x00\x00&quot;
+</span></code></pre>
+</dd>
+<dt>d</dt>
+<dd>
+<p>
+倍精度浮動小数点数(機種依存)
+</p>
+<p>
+x86_64 (IEEE754 倍精度 リトルエンディアン):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mf">1.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">d</span><span class="s2">"</span><span class="p">)</span>      <span class="c1"># =&gt; &quot;\x00\x00\x00\x00\x00\x00\xF0?&quot;
+</span><span class="p">[</span><span class="mf">0.0</span><span class="o">/</span><span class="mf">0.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">d</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x00\x00\x00\x00\x00\x00\xF8\x7F&quot;      # NaN
+</span><span class="p">[</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">0.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">d</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x00\x00\x00\x00\x00\x00\xF0\x7F&quot;      # +Infinity
+</span><span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">0.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">d</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x00\x00\x00\x00\x00\x00\xF0\xFF&quot;      # -Infinity
+</span></code></pre>
+<p>
+SPARC64 (IEEE754 倍精度 ビッグエンディアン):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mf">1.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">d</span><span class="s2">"</span><span class="p">)</span>      <span class="c1"># =&gt; &quot;?\xF0\x00\x00\x00\x00\x00\x00&quot;
+</span><span class="p">[</span><span class="mf">0.0</span><span class="o">/</span><span class="mf">0.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">d</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x7F\xF8\x00\x00\x00\x00\x00\x00&quot;      # NaN
+</span><span class="p">[</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">0.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">d</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\x7F\xF0\x00\x00\x00\x00\x00\x00&quot;      # +Infinity
+</span><span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">0.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">d</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\xFF\xF0\x00\x00\x00\x00\x00\x00&quot;      # -Infinity
+</span></code></pre>
+<p>
+VAX (NetBSD 3.0) (非IEEE754):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mf">1.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">d</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x80@\x00\x00\x00\x00\x00\x00&quot;
+</span></code></pre>
+</dd>
+<dt>e</dt>
+<dd>
+<p>
+リトルエンディアンの単精度浮動小数点数(機種依存)
+</p>
+<p>
+x86_64 (IEEE754):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mf">1.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">e</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x00\x00\x80?&quot;
+</span></code></pre>
+<p>
+SPARC64 (IEEE754):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mf">1.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">e</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x00\x00\x80?&quot;
+</span></code></pre>
+</dd>
+<dt>E</dt>
+<dd>
+<p>
+リトルエンディアンの倍精度浮動小数点数(機種依存)
+</p>
+<p>
+x86_64 (IEEE754):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mf">1.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">E</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x00\x00\x00\x00\x00\x00\xF0?&quot;
+</span></code></pre>
+<p>
+SPARC64 (IEEE754):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mf">1.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">E</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x00\x00\x00\x00\x00\x00\xF0?&quot;
+</span></code></pre>
+</dd>
+<dt>g</dt>
+<dd>
+<p>
+ビッグエンディアンの単精度浮動小数点数(機種依存)
+</p>
+<p>
+x86_64 (IEEE754):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mf">1.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">g</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;?\x80\x00\x00&quot;
+</span></code></pre>
+<p>
+SPARC64 (IEEE754):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mf">1.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">g</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;?\x80\x00\x00&quot;
+</span></code></pre>
+<p>
+IEEE754準拠な環境の場合、以下のようにして符号、指数部、仮数部を取り出せます。
+</p>
+<pre class="highlight ruby">
+<code>
+s <span class="o">=</span> <span class="p">[</span>v<span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">g</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B*</span><span class="s2">"</span><span class="p">)</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="p">[</span><span class="mi">0</span>,<span class="mi">1</span><span class="p">]</span>      <span class="c1"># 符号
+</span>e <span class="o">=</span> <span class="p">[</span>v<span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">g</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B*</span><span class="s2">"</span><span class="p">)</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="p">[</span><span class="mi">1</span>,<span class="mi">8</span><span class="p">]</span>      <span class="c1"># 指数部
+</span>f <span class="o">=</span> <span class="p">[</span>v<span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">g</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B*</span><span class="s2">"</span><span class="p">)</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="p">[</span><span class="mi">9</span>,<span class="mi">23</span><span class="p">]</span>     <span class="c1"># 仮数部
+</span></code></pre>
+<p>
+そして、s, e, f の意味は以下の通りです。
+</p>
+<pre class="highlight ruby">
+<code>
+sgn <span class="o">=</span> s <span class="o">==</span> <span class="s2">"</span><span class="s2">0</span><span class="s2">"</span> <span class="o">?</span> <span class="mf">+1.0</span> <span class="o">:</span> <span class="o">-</span><span class="mf">1.0</span>
+exp <span class="o">=</span> <span class="no">Integer</span><span class="p">(</span><span class="s2">"</span><span class="s2">0b</span><span class="s2">"</span> <span class="o">+</span> e<span class="p">)</span>
+fra <span class="o">=</span> <span class="no">Integer</span><span class="p">(</span><span class="s2">"</span><span class="s2">0b</span><span class="s2">"</span> <span class="o">+</span> f<span class="p">)</span>
+<span class="k">if</span> exp <span class="o">==</span> <span class="mi">0</span>
+  <span class="k">if</span> fra <span class="o">==</span> <span class="mi">0</span>
+    sgn <span class="o">*</span> <span class="mi">0</span>                     <span class="c1"># ±0 (positive/negative zero)
+</span>  <span class="k">else</span>
+    sgn <span class="o">*</span> fra <span class="o">*</span> <span class="mi">2</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">126</span><span class="o">-</span><span class="mi">23</span><span class="p">)</span>    <span class="c1"># 非正規化数 (denormalized number)
+</span>  <span class="k">end</span>
+<span class="k">elsif</span> exp <span class="o">==</span> <span class="mi">255</span>
+  <span class="k">if</span> fra <span class="o">==</span> <span class="mi">0</span>
+    sgn <span class="o">*</span> <span class="no">Inf</span>                   <span class="c1"># ±∞ (positive/negative infinity)
+</span>  <span class="k">else</span>
+    <span class="no">NaN</span>                         <span class="c1"># 非数 (not a number)
+</span>  <span class="k">end</span>
+<span class="k">else</span>
+  fra <span class="o">+=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">23</span>                <span class="c1"># ゲタ
+</span>  sgn <span class="o">*</span> fra <span class="o">*</span> <span class="mi">2</span><span class="o">**</span><span class="p">(</span>exp<span class="o">-</span><span class="mi">127</span><span class="o">-</span><span class="mi">23</span><span class="p">)</span>   <span class="c1"># 正規化数 (normalized number)
+</span><span class="k">end</span>
+</code></pre>
+</dd>
+<dt>G</dt>
+<dd>
+<p>
+ビッグエンディアンの倍精度浮動小数点数(機種依存)
+</p>
+<p>
+x86_64 (IEEE754):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mf">1.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">G</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;?\xF0\x00\x00\x00\x00\x00\x00&quot;
+</span></code></pre>
+<p>
+SPARC64 (IEEE754):
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mf">1.0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">G</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;?\xF0\x00\x00\x00\x00\x00\x00&quot;
+</span></code></pre>
+<p>
+IEEE754準拠な環境の場合、以下のようにして符号、指数部、仮数部を取り出せます。
+</p>
+<pre class="highlight ruby">
+<code>
+s <span class="o">=</span> <span class="p">[</span>v<span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">G</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B*</span><span class="s2">"</span><span class="p">)</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="p">[</span><span class="mi">0</span>,<span class="mi">1</span><span class="p">]</span>    <span class="c1"># 符号
+</span>e <span class="o">=</span> <span class="p">[</span>v<span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">G</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B*</span><span class="s2">"</span><span class="p">)</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="p">[</span><span class="mi">1</span>,<span class="mi">11</span><span class="p">]</span>   <span class="c1"># 指数部
+</span>f <span class="o">=</span> <span class="p">[</span>v<span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">G</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B*</span><span class="s2">"</span><span class="p">)</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="p">[</span><span class="mi">12</span>,<span class="mi">52</span><span class="p">]</span>  <span class="c1"># 仮数部
+</span></code></pre>
+<p>
+そして、s, e, f の意味は以下の通りです。
+</p>
+<pre class="highlight ruby">
+<code>
+sgn <span class="o">=</span> s <span class="o">==</span> <span class="s2">"</span><span class="s2">0</span><span class="s2">"</span> <span class="o">?</span> <span class="mf">+1.0</span> <span class="o">:</span> <span class="o">-</span><span class="mf">1.0</span>
+exp <span class="o">=</span> <span class="no">Integer</span><span class="p">(</span><span class="s2">"</span><span class="s2">0b</span><span class="s2">"</span> <span class="o">+</span> e<span class="p">)</span>
+fra <span class="o">=</span> <span class="no">Integer</span><span class="p">(</span><span class="s2">"</span><span class="s2">0b</span><span class="s2">"</span> <span class="o">+</span> f<span class="p">)</span>
+<span class="k">if</span> exp <span class="o">==</span> <span class="mi">0</span>
+  <span class="k">if</span> fra <span class="o">==</span> <span class="mi">0</span>
+    sgn <span class="o">*</span> <span class="mi">0</span>                     <span class="c1"># ±0 (positive/negative zero)
+</span>  <span class="k">else</span>
+    sgn <span class="o">*</span> fra <span class="o">*</span> <span class="mi">2</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">1022</span><span class="o">-</span><span class="mi">52</span><span class="p">)</span>   <span class="c1"># 非正規化数 (denormalized number)
+</span>  <span class="k">end</span>
+<span class="k">elsif</span> exp <span class="o">==</span> <span class="mi">2047</span>
+  <span class="k">if</span> fra <span class="o">==</span> <span class="mi">0</span>
+    sgn <span class="o">*</span> <span class="no">Inf</span>                   <span class="c1"># ±∞ (positive/negative infinity)
+</span>  <span class="k">else</span>
+    <span class="no">NaN</span>                         <span class="c1"># 非数 (not a number)
+</span>  <span class="k">end</span>
+<span class="k">else</span>
+  fra <span class="o">+=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">52</span>                <span class="c1"># ゲタ
+</span>  sgn <span class="o">*</span> fra <span class="o">*</span> <span class="mi">2</span><span class="o">**</span><span class="p">(</span>exp<span class="o">-</span><span class="mi">1023</span><span class="o">-</span><span class="mi">52</span><span class="p">)</span>  <span class="c1"># 正規化数 (normalized number)
+</span><span class="k">end</span>
+</code></pre>
+</dd>
+<dt>p</dt>
+<dd>
+<p>
+ヌル終端の文字列へのポインタ
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="s2">"</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">p</span><span class="s2">"</span><span class="p">)</span>             <span class="c1"># =&gt; &quot;\x980\xBEf\x1CV\x00\x00&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">b</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">c</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">p3</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x98\xE5\x9ER\xD2U\x00\x00p\xE5\x9ER\xD2U\x00\x00H\xE5\x9ER\xD2U\x00\x00&quot;
+</span><span class="p">[</span><span class="k">nil</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">p</span><span class="s2">"</span><span class="p">)</span>            <span class="c1"># =&gt; &quot;\x00\x00\x00\x00\x00\x00\x00\x00&quot;
+</span></code></pre>
+</dd>
+<dt>P</dt>
+<dd>
+<p>
+構造体(固定長文字列)へのポインタ
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="k">nil</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">P</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;\x00\x00\x00\x00\x00\x00\x00\x00&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">P3</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\xA0\xEE\er\x84U\x00\x00&quot;
+</span>
+<span class="p">[</span><span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">P4</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; ArgumentError: too short buffer for P(3 for 4)
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">P</span><span class="s2">"</span><span class="p">)</span>     <span class="c1"># =&gt; ArgumentError: too short buffer for P(0 for 1)
+</span></code></pre>
+</dd>
+<dt>u</dt>
+<dd>
+<p>
+uuencodeされた文字列
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="s2">"</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">u</span><span class="s2">"</span><span class="p">)</span>           <span class="c1"># =&gt; &quot;&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">u</span><span class="s2">"</span><span class="p">)</span>          <span class="c1"># =&gt; &quot;!80``\n&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">u</span><span class="s2">"</span><span class="p">)</span>        <span class="c1"># =&gt; &quot;#86)C\n&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">abcd</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">u</span><span class="s2">"</span><span class="p">)</span>       <span class="c1"># =&gt; &quot;$86)C9```\n&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span><span class="o">*</span><span class="mi">45</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">u</span><span class="s2">"</span><span class="p">)</span>       <span class="c1"># =&gt; &quot;M86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A\n&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span><span class="o">*</span><span class="mi">46</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">u</span><span class="s2">"</span><span class="p">)</span>       <span class="c1"># =&gt; &quot;M86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A86%A\n!80``\n&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">abcdefghi</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">u6</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;&amp;86)C9&amp;5F\n#9VAI\n&quot;
+</span></code></pre>
+</dd>
+<dt>U</dt>
+<dd>
+<p>
+UTF-8
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">U</span><span class="s2">"</span><span class="p">)</span>                               <span class="c1"># =&gt; &quot;\u0000&quot;
+</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">U</span><span class="s2">"</span><span class="p">)</span>                               <span class="c1"># =&gt; &quot;\u0001&quot;
+</span><span class="p">[</span><span class="mi">0x7f</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">U</span><span class="s2">"</span><span class="p">)</span>                            <span class="c1"># =&gt; &quot;\u007F&quot;
+</span><span class="p">[</span><span class="mi">0x80</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">U</span><span class="s2">"</span><span class="p">)</span>                            <span class="c1"># =&gt; &quot;\u0080&quot;
+</span><span class="p">[</span><span class="mi">0x7fffffff</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">U</span><span class="s2">"</span><span class="p">)</span>                      <span class="c1"># =&gt; &quot;\xFD\xBF\xBF\xBF\xBF\xBF&quot;
+</span><span class="p">[</span><span class="mi">0x80000000</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">U</span><span class="s2">"</span><span class="p">)</span>                      <span class="c1"># =&gt; RangeError: pack(U): value out of range
+</span><span class="p">[</span><span class="mi">0</span>,<span class="mi">256</span>,<span class="mi">65536</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">U3</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">b</span>                  <span class="c1"># =&gt; &quot;\x00\xC4\x80\xF0\x90\x80\x80&quot;
+</span>
+<span class="s2">"</span><span class="s2">\x00\xC4\x80\xF0\x90\x80\x80</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">U3</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [0, 256, 65536]
+</span><span class="s2">"</span><span class="s2">\x00\xC4\x80\xF0\x90\x80\x80</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">U</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; [0]
+</span><span class="s2">"</span><span class="s2">\x00\xC4\x80\xF0\x90\x80\x80</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">U*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [0, 256, 65536]
+</span></code></pre>
+</dd>
+<dt>w</dt>
+<dd>
+<p>
+BER圧縮整数
+</p>
+<p>
+1バイトあたり7ビットを使用して必要最小限のバイト数で任意サイズの
+0以上の整数を表す数値表現。各バイトの最上位ビットはデータの最後を除いて必ず1が立っている(つまり最上位ビットはどこまでデータがあるかを示している)。
+</p>
+<p>
+ISO/IEC 8825-1:1995 : Information technology−ASN.1 encoding rules : Specification of Basic Encoding Rules(BER) に定められる整数の符号化方法。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span>             <span class="c1"># =&gt; &quot;\x00&quot;
+</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span>             <span class="c1"># =&gt; &quot;\x01&quot;
+</span><span class="p">[</span><span class="mi">127</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span>           <span class="c1"># =&gt; &quot;\x7F&quot;
+</span><span class="p">[</span><span class="mi">128</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span>           <span class="c1"># =&gt; &quot;\x81\x00&quot;
+</span><span class="p">[</span><span class="mi">0x3fff</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span>        <span class="c1"># =&gt; &quot;\xFF\x7F&quot;
+</span><span class="p">[</span><span class="mi">0x4000</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span>        <span class="c1"># =&gt; &quot;\x81\x80\x00&quot;
+</span><span class="p">[</span><span class="mi">0x3fffffff</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;\x83\xFF\xFF\xFF\x7F&quot;
+</span><span class="p">[</span><span class="mi">0x40000000</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;\x84\x80\x80\x80\x00&quot;
+</span><span class="p">[</span><span class="mi">0xffffffff</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;\x8F\xFF\xFF\xFF\x7F&quot;
+</span><span class="p">[</span><span class="mi">0x100000000</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;\x90\x80\x80\x80\x00&quot;
+</span>
+<span class="s2">"</span><span class="s2">\x00</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span>              <span class="c1"># =&gt; [0]
+</span><span class="s2">"</span><span class="s2">\x00\x81\x00\x01</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">w*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [0, 128, 1]
+</span></code></pre>
+<p>
+なお、BER圧縮整数でエンコードした結果は大小関係を保存しない。たとえば、[0x3fff].pack(&quot;w&quot;) &gt; [0x4000].pack(&quot;w&quot;) である。
+</p>
+</dd>
+<dt>x</dt>
+<dd>
+<p>
+ヌルバイト（pack）／1バイト読み飛ばし（unpack）
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mi">97</span>, <span class="mi">98</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">CxC</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;a\x00b&quot;
+</span><span class="p">[</span><span class="mi">97</span>, <span class="mi">98</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">Cx3C</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;a\x00\x00\x00b&quot;
+</span>
+<span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">CxC</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; [97, 99]
+</span><span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">Cx3C</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; ArgumentError: x outside of string
+</span></code></pre>
+</dd>
+<dt>X</dt>
+<dd>
+<p>
+1バイト後退
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mi">97</span>, <span class="mi">98</span>, <span class="mi">99</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">CCXC</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;ac&quot;
+</span>
+<span class="s2">"</span><span class="s2">abcdef</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x*XC</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [102]
+</span></code></pre>
+</dd>
+<dt>@</dt>
+<dd>
+<p>
+絶対位置への移動
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mi">97</span>, <span class="mi">98</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">C @3 C</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;a\x00\x00b&quot;
+</span>
+<span class="s2">"</span><span class="s2">abcd</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">C @3 C</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [97, 100]
+</span></code></pre>
+</dd>
+<dt>j</dt>
+<dd>
+</dd>
+</dl>
+<p>
+intptr_t (ポインタの幅の符号つき整数, エンディアンに依存)
+</p>
+<dl>
+<dt>J</dt>
+<dd>
+</dd>
+</dl>
+<p>
+uintptr_t (ポインタの幅の符号なし整数, エンディアンに依存)
+</p>
+<h2 >使用例</h2>
+<p>
+以下、pack/unpack の使用例の一部です。
+</p>
+<p>
+pack を使用しなくても同じことができる場合はその例も載せています。
+pack は暗号になりやすい面があることを考慮し、pack を使いたくない人に別解を示すためです。
+</p>
+<dl>
+<dt>数値(文字コード)の配列を文字列に変換する例</dt>
+<dd>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mi">82</span>, <span class="mi">117</span>, <span class="mi">98</span>, <span class="mi">121</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">cccc</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;Ruby&quot;
+</span><span class="p">[</span><span class="mi">82</span>, <span class="mi">117</span>, <span class="mi">98</span>, <span class="mi">121</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">c4</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;Ruby&quot;
+</span><span class="p">[</span><span class="mi">82</span>, <span class="mi">117</span>, <span class="mi">98</span>, <span class="mi">121</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">c*</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;Ruby&quot;
+</span>
+s <span class="o">=</span> <span class="s2">"</span><span class="s2">"</span>
+<span class="p">[</span><span class="mi">82</span>, <span class="mi">117</span>, <span class="mi">98</span>, <span class="mi">121</span><span class="p">]</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span><span class="o">|</span>c<span class="o">|</span> s <span class="o">&lt;&lt;</span> c<span class="p">}</span>
+s    <span class="c1"># =&gt; &quot;Ruby&quot;
+</span>
+<span class="p">[</span><span class="mi">82</span>, <span class="mi">117</span>, <span class="mi">98</span>, <span class="mi">121</span><span class="p">]</span><span class="p">.</span><span class="nf">collect</span> <span class="p">{</span><span class="o">|</span>c<span class="o">|</span> <span class="nb">sprintf</span> <span class="s2">"</span><span class="s2">%c</span><span class="s2">"</span>, c<span class="p">}</span><span class="p">.</span><span class="nf">join</span>   <span class="c1"># =&gt; &quot;Ruby&quot;
+</span>
+<span class="p">[</span><span class="mi">82</span>, <span class="mi">117</span>, <span class="mi">98</span>, <span class="mi">121</span><span class="p">]</span><span class="p">.</span><span class="nf">inject</span><span class="p">(</span><span class="s2">"</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>s, c<span class="o">|</span> s <span class="o">&lt;&lt;</span> c<span class="p">}</span>    <span class="c1"># =&gt; &quot;Ruby&quot;
+</span></code></pre>
+</dd>
+<dt>文字列を数値(文字コード)の配列に変換する例</dt>
+<dd>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">Ruby</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s1">'C*'</span><span class="p">)</span>    <span class="c1"># =&gt; [82, 117, 98, 121]
+</span>
+a <span class="o">=</span> <span class="p">[</span><span class="p">]</span>
+<span class="s2">"</span><span class="s2">Ruby</span><span class="s2">"</span><span class="p">.</span><span class="nf">each_byte</span> <span class="p">{</span><span class="o">|</span>c<span class="o">|</span> a <span class="o">&lt;&lt;</span> c<span class="p">}</span>
+a    <span class="c1"># =&gt; [82, 117, 98, 121]
+</span></code></pre>
+</dd>
+<dt>&quot;x&quot; でヌルバイトを埋めることができる</dt>
+<dd>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mi">82</span>, <span class="mi">117</span>, <span class="mi">98</span>, <span class="mi">121</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">ccxxcc</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;Ru\x00\x00by&quot;
+</span></code></pre>
+</dd>
+<dt>&quot;x&quot; で文字を読み飛ばす事が出来る</dt>
+<dd>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">Ru\x00\x00by</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s1">'ccxxcc'</span><span class="p">)</span>    <span class="c1"># =&gt; [82, 117, 98, 121]
+</span></code></pre>
+</dd>
+<dt>Hexダンプを数値の配列に変換する例</dt>
+<dd>
+<pre class="highlight ruby">
+<code>
+<span class="s2">"</span><span class="s2">61 62 63 64 65 66</span><span class="s2">"</span><span class="p">.</span><span class="nf">delete</span><span class="p">(</span><span class="s1">' '</span><span class="p">)</span><span class="p">.</span><span class="nf">lines</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s1">'H*'</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s1">'C*'</span><span class="p">)</span>
+<span class="c1"># =&gt; [97, 98, 99, 100, 101, 102]
+</span>
+<span class="s2">"</span><span class="s2">61 62 63 64 65 66</span><span class="s2">"</span><span class="p">.</span><span class="nf">split</span><span class="p">.</span><span class="nf">collect</span> <span class="p">{</span><span class="o">|</span>c<span class="o">|</span> c<span class="p">.</span><span class="nf">hex</span><span class="p">}</span>
+<span class="c1"># =&gt; [97, 98, 99, 100, 101, 102]
+</span></code></pre>
+</dd>
+<dt>バイナリと16進数のpackでは長さ指定は生成されるバイト数ではなく、ビットやニブルの個数を表す</dt>
+<dd>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mi">0b01010010</span>, <span class="mi">0b01110101</span>, <span class="mi">0b01100010</span>, <span class="mi">0b01111001</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">C4</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;Ruby&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">01010010011101010110001001111001</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">B32</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># 8 bits * 4
+</span><span class="c1"># =&gt; &quot;Ruby&quot;
+</span>
+<span class="p">[</span><span class="mi">0x52</span>, <span class="mi">0x75</span>, <span class="mi">0x62</span>, <span class="mi">0x79</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">C4</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;Ruby&quot;
+</span><span class="p">[</span><span class="s2">"</span><span class="s2">52756279</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">H8</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># 2 nybbles * 4
+</span><span class="c1"># =&gt; &quot;Ruby&quot;
+</span></code></pre>
+</dd>
+<dt>テンプレート文字'a'の長さ指定は1つの文字列だけに適用される</dt>
+<dd>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="s2">"</span><span class="s2">RUBY</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">u</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">b</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">y</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">a4</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;RUBY&quot;
+</span>
+<span class="p">[</span><span class="s2">"</span><span class="s2">RUBY</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">u</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">b</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">y</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">aaaa</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;Ruby&quot;
+</span>
+<span class="p">[</span><span class="s2">"</span><span class="s2">RUBY</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">u</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">b</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">y</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">a*aaa</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;RUBYuby&quot;
+</span></code></pre>
+</dd>
+<dt>テンプレート文字&quot;a&quot;は、長さが足りない分をヌル文字で補う</dt>
+<dd>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="s2">"</span><span class="s2">Ruby</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">a8</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;Ruby\x00\x00\x00\x00&quot;
+</span></code></pre>
+</dd>
+<dt>リトルエンディアンとビッグエンディアン</dt>
+<dd>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">s2</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;\x01\x00\002\x00&quot; # リトルエンディアンのシステムでの出力
+</span><span class="c1"># =&gt; &quot;\x00\x01\x00\002&quot; # ビッグエンディアンのシステムでの出力
+</span>
+<span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">n2</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;\x00\x01\x00\002&quot; # システムによらずビッグエンディアン
+</span>
+<span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">v2</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;\x01\x00\002\x00&quot; # システムによらずリトルエンディアン
+</span></code></pre>
+</dd>
+<dt>ネットワークバイトオーダの signed long</dt>
+<dd>
+<pre class="highlight ruby">
+<code>
+s <span class="o">=</span> <span class="s2">"</span><span class="s2">\xFF\xFF\xFF\xFE</span><span class="s2">"</span>
+n <span class="o">=</span> s<span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">N</span><span class="s2">"</span><span class="p">)</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">if</span> n<span class="p">[</span><span class="mi">31</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+  n <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="p">(</span>n <span class="o">^</span> <span class="mi">0xffff_ffff</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="k">end</span>
+n <span class="c1"># =&gt; -2
+</span></code></pre>
+</dd>
+<dt>ネットワークバイトオーダの signed long(その2)</dt>
+<dd>
+<pre class="highlight ruby">
+<code>
+s <span class="o">=</span> <span class="s2">"</span><span class="s2">\xFF\xFF\xFF\xFE</span><span class="s2">"</span>
+n <span class="o">=</span> s<span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">N</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">l</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">l</span><span class="s2">"</span><span class="p">)</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+n <span class="c1"># =&gt; -2
+</span></code></pre>
+</dd>
+<dt>IPアドレス</dt>
+<dd>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'socket'</span>
+official_hostname, alias_hostnames, address_family, <span class="o">*</span>address_list <span class="o">=</span> <span class="no">Socket</span><span class="p">.</span><span class="nf">gethostbyname</span><span class="p">(</span><span class="s2">"</span><span class="s2">localhost</span><span class="s2">"</span><span class="p">)</span>
+address_list<span class="p">.</span><span class="nf">find</span> <span class="p">{</span><span class="o">|</span>address<span class="o">|</span> address<span class="p">.</span><span class="nf">size</span> <span class="o">==</span> <span class="mi">4</span> <span class="p">}</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">C4</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">"</span><span class="s2">.</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;127.0.0.1&quot;
+</span>
+<span class="s2">"</span><span class="s2">127.0.0.1</span><span class="s2">"</span><span class="p">.</span><span class="nf">split</span><span class="p">(</span><span class="s2">"</span><span class="s2">.</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">collect</span> <span class="p">{</span><span class="o">|</span>c<span class="o">|</span> c<span class="p">.</span><span class="nf">to_i</span><span class="p">}</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">C4</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;\x7F\x00\x00\x01&quot;
+</span></code></pre>
+</dd>
+<dt>sockaddr_in 構造体</dt>
+<dd>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'socket'</span>
+<span class="p">[</span><span class="no">Socket</span><span class="o">::</span><span class="no">AF_INET</span>,
+ <span class="no">Socket</span><span class="p">.</span><span class="nf">getservbyname</span><span class="p">(</span><span class="s1">'echo'</span><span class="p">)</span>,
+ <span class="mi">127</span>, <span class="mi">0</span>, <span class="mi">0</span>, <span class="mi">1</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">s n C4 x8</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;\x02\x00\x00\a\x7F\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00&quot;
+</span></code></pre>
+<p>
+pack/unpack を使う代わりに
+<a href="../../../method/-socket/s/pack_sockaddr_in.html">Socket.pack_sockaddr_in</a>,
+<a href="../../../method/-socket/s/unpack_sockaddr_in.html">Socket.unpack_sockaddr_in</a> メソッドがあります。
+</p>
+</dd>
+<dt>'\0'終端文字列のアドレス</dt>
+<dd>
+<p>
+テンプレート文字 &quot;p&quot; や &quot;P&quot; は、C 言語レベルのインタフェースのためにあります(例えば <a href="../../../method/-i-o/i/ioctl.html">IO#ioctl</a>)。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">p</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;xp\xC2\x85\vV\x00\x00&quot;
+</span></code></pre>
+<p>
+結果の文字列はゴミに見えますが、実際は文字列&quot;foo\0&quot;を指すアドレス(のバイナリ表現)です。以下のようにすれば見慣れた表記で見ることが出来ます
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">printf</span> <span class="s2">"</span><span class="s2">%#014x\n</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">xp\xC2\x85\vV\x00\x00</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">J</span><span class="s2">"</span><span class="p">)</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># =&gt; 0x560b85c27078
+</span></code></pre>
+<p>
+アドレスが指す先のオブジェクト(この例で &quot;foo\0&quot;) は、pack の結果が GC されるまではGCされないことが保証されています。
+</p>
+<p>
+unpack(&quot;p&quot;), unpack(&quot;P&quot;) は、pack の結果からしか unpack できません。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">p</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">p</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;foo&quot;]
+</span><span class="s2">"</span><span class="s2">xp\xC2\x85\vV\x00\x00</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">p</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; ArgumentError: no associated pointer
+</span></code></pre>
+<p>
+&quot;p&quot; や &quot;P&quot; は、nil を特別に扱い NULL
+ポインタとして解釈します。(以下は、64bitマシンで一般的な結果)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="k">nil</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">p</span><span class="s2">"</span><span class="p">)</span>        <span class="c1"># =&gt; &quot;\x00\x00\x00\x00\x00\x00\x00\x00&quot;
+</span><span class="s2">"</span><span class="s2">\x00\x00\x00\x00\x00\x00\x00\x00</span><span class="s2">"</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">p</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [nil]
+</span></code></pre>
+</dd>
+<dt>構造体のアドレス</dt>
+<dd>
+<p>
+例えば、
+</p>
+<pre>
+      struct {
+        int   a;
+        short b;
+        long  c;
+      } v = {1,2,3};
+</pre>
+<p>
+を表す文字列は
+</p>
+<pre class="highlight ruby">
+<code>
+v <span class="o">=</span> <span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">i!s!l!</span><span class="s2">"</span><span class="p">)</span>
+</code></pre>
+<p>
+です。(byte alignment の問題から実際は適当な padding が必要になるかもしれません)
+</p>
+<p>
+この構造体を指すアドレスは
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span>v<span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">P</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;\xC0\xCC2L\fV\x00\x00&quot;
+</span></code></pre>
+<p>
+で得られます。
+</p>
+</dd>
+<dt>UTF-8からUCS-2への変換 (サロゲートを処理していないので UTF-16 とはいえない)</dt>
+<dd>
+<p>
+リトルエンディアン:
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">(</span><span class="s2">"</span><span class="s2">Comments</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">U*</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">v*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;C\x00o\x00m\x00m\x00e\x00n\x00t\x00s\x00&quot;
+</span></code></pre>
+<p>
+ビッグエンディアン:
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="p">(</span><span class="s2">"</span><span class="s2">Comments</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">U*</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">n*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;\x00C\x00o\x00m\x00m\x00e\x00n\x00t\x00s&quot;
+</span></code></pre>
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-string/i/unpack1.html">String#unpack1</a>, <a href="../../../method/-array/i/pack.html">Array#pack</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

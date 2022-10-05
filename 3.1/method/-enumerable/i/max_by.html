@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Enumerable#max_by (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="各要素を順番にブロックに渡して実行し、
+その評価結果を &lt;=&gt; で比較して、
+最大であった値に対応する元の要素、もしくは最大の n 要素が降順で入った配列を返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-enumerable.html">Enumerableモジュール</a>
+      </li>
+      <li>
+        max_by 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Enumerable#max_by</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_MAX_BY"><code>max_by -&gt; Enumerator</code><span class="permalink">[<a href="../../../method/-enumerable/i/max_by.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Enumerable.html#method-i-max_by">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>max_by(n) -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>max_by {|item| ... } -&gt; object | nil</code></dt>
+<dt class="method-heading"><code>max_by(n) {|item| ... } -&gt; Array</code></dt>
+<dd class="method-description">
+<p>
+各要素を順番にブロックに渡して実行し、その評価結果を &lt;=&gt; で比較して、最大であった値に対応する元の要素、もしくは最大の n 要素が降順で入った配列を返します。
+</p>
+<p>
+引数を指定しない形式では要素が存在しなければ nil を返します。引数を指定する形式では、空の配列を返します。該当する要素が複数存在する場合、どの要素を返すかは不定です。
+</p>
+<p>
+<a href="../../../method/-enumerable/i/max.html">Enumerable#max</a> と <a href="../../../method/-enumerable/i/max_by.html">Enumerable#max_by</a> の違いは <a href="../../../method/-enumerable/i/sort.html">Enumerable#sort</a> と <a href="../../../method/-enumerable/i/sort_by.html">Enumerable#sort_by</a> の違いと同じです。
+</p>
+<p>
+ブロックを省略した場合は <a href="../../../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] n:</dt>
+<dd>
+取得する要素数。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+a <span class="o">=</span> <span class="sx">%w(albatross dog horse)</span>
+a<span class="p">.</span><span class="nf">max_by</span>                    <span class="c1"># =&gt; #&lt;Enumerator: [&quot;albatross&quot;, &quot;dog&quot;, &quot;horse&quot;]:max_by&gt;
+</span>a<span class="p">.</span><span class="nf">max_by</span> <span class="p">{</span> <span class="o">|</span>x<span class="o">|</span> x<span class="p">.</span><span class="nf">length</span> <span class="p">}</span>   <span class="c1"># =&gt; &quot;albatross&quot;
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+a <span class="o">=</span> <span class="sx">%w[albatross dog horse]</span>
+a<span class="p">.</span><span class="nf">max_by</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>                 <span class="c1"># =&gt; #&lt;Enumerator: [&quot;albatross&quot;, &quot;dog&quot;, &quot;horse&quot;]:max_by(2)&gt;
+</span>a<span class="p">.</span><span class="nf">max_by</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>x<span class="o">|</span> x<span class="p">.</span><span class="nf">length</span> <span class="p">}</span> <span class="c1"># =&gt; [&quot;albatross&quot;, &quot;horse&quot;]
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例: enum.max_by（n）は、重み付きランダムサンプリングを実装するために使用できます。次の実装例は、Enumerable#wsampleを使用します。</span>
+<code>
+<span class="k">module</span> <span class="nn">Enumerable</span>
+  <span class="c1"># weighted random sampling.
+</span>  <span class="c1">#
+</span>  <span class="c1"># Pavlos S. Efraimidis, Paul G. Spirakis
+</span>  <span class="c1"># Weighted random sampling with a reservoir
+</span>  <span class="c1"># Information Processing Letters
+</span>  <span class="c1"># Volume 97, Issue 5 (16 March 2006)
+</span>  <span class="k">def</span> <span class="nf">wsample</span><span class="p">(</span>n<span class="p">)</span>
+    <span class="nc">self</span><span class="p">.</span><span class="nf">max_by</span><span class="p">(</span>n<span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">rand</span> <span class="o">**</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="k">yield</span><span class="p">(</span>v<span class="p">)</span><span class="p">)</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+e <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="o">..</span><span class="mi">20</span><span class="p">)</span><span class="p">.</span><span class="nf">to_a</span><span class="o">*</span><span class="mi">10000</span>
+a <span class="o">=</span> e<span class="p">.</span><span class="nf">wsample</span><span class="p">(</span><span class="mi">20000</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>x<span class="o">|</span>
+  <span class="no">Math</span><span class="p">.</span><span class="nf">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span>x<span class="o">/</span><span class="mf">5.0</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># normal distribution
+</span><span class="p">}</span>
+<span class="c1"># a is 20000 samples from e.
+</span><span class="nb">p</span> a<span class="p">.</span><span class="nf">length</span> <span class="c1">#=&gt; 20000
+</span>h <span class="o">=</span> a<span class="p">.</span><span class="nf">group_by</span> <span class="p">{</span><span class="o">|</span>x<span class="o">|</span> x <span class="p">}</span>
+<span class="o">-</span><span class="mi">10</span><span class="p">.</span><span class="nf">upto</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>x<span class="o">|</span> <span class="nb">puts</span> <span class="s2">"</span><span class="s2">*</span><span class="s2">"</span> <span class="o">*</span> <span class="p">(</span>h<span class="p">[</span>x<span class="p">]</span><span class="p">.</span><span class="nf">length</span><span class="o">/</span><span class="mf">30.0</span><span class="p">)</span><span class="p">.</span><span class="nf">to_i</span> <span class="k">if</span> h<span class="p">[</span>x<span class="p">]</span> <span class="p">}</span>
+<span class="c1">#=&gt; *
+</span><span class="c1">#   ***
+</span><span class="c1">#   ******
+</span><span class="c1">#   ***********
+</span><span class="c1">#   ******************
+</span><span class="c1">#   *****************************
+</span><span class="c1">#   *****************************************
+</span><span class="c1">#   ****************************************************
+</span><span class="c1">#   ***************************************************************
+</span><span class="c1">#   ********************************************************************
+</span><span class="c1">#   ***********************************************************************
+</span><span class="c1">#   ***********************************************************************
+</span><span class="c1">#   **************************************************************
+</span><span class="c1">#   ****************************************************
+</span><span class="c1">#   ***************************************
+</span><span class="c1">#   ***************************
+</span><span class="c1">#   ******************
+</span><span class="c1">#   ***********
+</span><span class="c1">#   *******
+</span><span class="c1">#   ***
+</span><span class="c1">#   *
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-enumerable/i/sort_by.html">Enumerable#sort_by</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

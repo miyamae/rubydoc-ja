@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>CSV.filter (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="このメソッドは CSV データに対して Unix のツール群のようなフィルタを構築
+するのに便利です。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/csv.html">csvライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-c-s-v.html">CSVクラス</a>
+      </li>
+      <li>
+        filter 
+      </li>
+    </ol>
+  </nav>
+
+<h1>singleton method CSV.filter</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_FILTER"><code>filter(options = Hash.new) {|row| ... }</code><span class="permalink">[<a href="../../../method/-c-s-v/s/filter.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/CSV.html#method-c-filter">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>filter(input, options = Hash.new) {|row| ... }</code></dt>
+<dt class="method-heading"><code>filter(input, output, options = Hash.new) {|row| ... }</code></dt>
+<dd class="method-description">
+<p>
+このメソッドは CSV データに対して Unix のツール群のようなフィルタを構築するのに便利です。
+</p>
+<p>
+与えられたブロックに一行ずつ渡されます。ブロックに渡された行は必要であれば変更することができます。ブロックの評価後に行を全て output に書き込みます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] input:</dt>
+<dd>
+<a href="../../../class/-string.html">String</a> か <a href="../../../class/-i-o.html">IO</a> のインスタンスを指定します。デフォルトは <a href="../../../class/-a-r-g-f.html">ARGF</a> です。
+</dd>
+<dt class='method-param'>[PARAM] output:</dt>
+<dd>
+<a href="../../../class/-string.html">String</a> か <a href="../../../class/-i-o.html">IO</a> のインスタンスを指定します。デフォルトは <a href="../../../method/-kernel/v/stdout.html">$stdout</a> です。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+&quot;:in_&quot;, &quot;:input_&quot; で始まるキーは input にだけ適用されます。
+&quot;:out_&quot;, &quot;:output_&quot; で始まるキーは output にだけ適用されます。それ以外のキーは両方に適用されます。
+&quot;:output_row_sep&quot; のデフォルト値は <a href="../../../method/-kernel/v/=2f.html">$/</a> です。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例: input, output は初期値</span>
+<code>
+<span class="c1"># $ echo &quot;header1,header2\nrow1_1,row1_2&quot; &gt; in.csv; ruby test.rb in.csv
+</span>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+
+options <span class="o">=</span> <span class="p">{</span> <span class="ss">headers:</span> <span class="k">true</span>, <span class="ss">return_headers:</span> <span class="k">true</span>, <span class="ss">write_headers:</span> <span class="k">true</span> <span class="p">}</span>
+
+<span class="no">CSV</span><span class="p">.</span><span class="nf">filter</span><span class="p">(</span>options<span class="p">)</span> <span class="k">do</span> <span class="o">|</span>row<span class="o">|</span>
+  <span class="k">if</span> row<span class="p">.</span><span class="nf">header_row?</span>
+    row <span class="o">&lt;&lt;</span> <span class="s2">"</span><span class="s2">header3</span><span class="s2">"</span>
+    <span class="k">next</span>
+  <span class="k">end</span>
+  row <span class="o">&lt;&lt;</span> <span class="s2">"</span><span class="s2">row1_3</span><span class="s2">"</span>
+<span class="k">end</span>
+
+<span class="c1"># =&gt; header1,header2,header3
+</span><span class="c1"># row1_1,row1_2,row1_3
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例: input, output を指定する</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">csv</span><span class="s2">"</span>
+content <span class="o">=</span> <span class="no">&lt;&lt;EOS</span>
+<span class="sh">id,first name,last name,age
+1,taro,tanaka,20
+2,jiro,suzuki,18
+3,ami,sato,19
+4,yumi,adachi,21
+</span><span class="no">EOS
+</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s1">'test.csv'</span>,content<span class="p">)</span>
+options <span class="o">=</span> <span class="p">{</span> <span class="ss">headers:</span> <span class="k">true</span>, <span class="ss">return_headers:</span> <span class="k">true</span>, <span class="ss">write_headers:</span> <span class="k">true</span> <span class="p">}</span>
+
+<span class="no">CSV</span><span class="p">.</span><span class="nf">filter</span><span class="p">(</span><span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">test.csv</span><span class="s2">"</span><span class="p">)</span>, <span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">out.csv</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span>, options<span class="p">)</span> <span class="k">do</span> <span class="o">|</span>row<span class="o">|</span>
+  <span class="k">if</span> row<span class="p">.</span><span class="nf">header_row?</span>
+    row <span class="o">&lt;&lt;</span> <span class="s2">"</span><span class="s2">full name</span><span class="s2">"</span>
+    <span class="k">next</span>
+  <span class="k">end</span>
+  row <span class="o">&lt;&lt;</span> row<span class="p">[</span><span class="s2">"</span><span class="s2">first name</span><span class="s2">"</span><span class="p">]</span> <span class="o">+</span> <span class="s2">"</span><span class="s2"> </span><span class="s2">"</span> <span class="o">+</span> row<span class="p">[</span><span class="s2">"</span><span class="s2">last name</span><span class="s2">"</span><span class="p">]</span>
+<span class="k">end</span>
+
+<span class="c1"># out.csv の内容
+</span><span class="c1"># =&gt; id,first name,last name,age,full name
+</span><span class="c1">#    1,taro,tanaka,20,taro tanaka
+</span><span class="c1">#    2,jiro,suzuki,18,jiro suzuki
+</span><span class="c1">#    3,ami,sato,19,ami sato
+</span><span class="c1">#    4,yumi,adachi,21,yumi adachi
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-c-s-v/s/new.html">CSV.new</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

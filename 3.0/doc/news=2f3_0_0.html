@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>NEWS for Ruby 3.0.0 (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="このドキュメントは前回リリース以降のバグ修正を除くユーザーに影響のある機能の変更のリストです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      
+        <li>
+          <a href="../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+        </li>
+        <li>
+          NEWS for Ruby 3.0.0
+        </li>
+      
+    </ol>
+  </nav>
+
+<h1>NEWS for Ruby 3.0.0</h1>
+</header>
+
+<main>
+
+<p>
+このドキュメントは前回リリース以降のバグ修正を除くユーザーに影響のある機能の変更のリストです。
+</p>
+<p>
+それぞれのエントリーは参照情報があるため短いです。十分な情報と共に書かれた全ての変更のリストはリンク先を参照してください。
+</p>
+<h1 >言語仕様の変更</h1>
+<ul>
+<li>Keyword arguments are now separated from positional arguments.
+Code that resulted in deprecation warnings in Ruby 2.7 will now
+result in ArgumentError or different behavior. <a class="external" href="https://bugs.ruby-lang.org/issues/14183">[feature#14183]</a></li>
+<li>Procs accepting a single rest argument and keywords are no longer
+subject to autosplatting.  This now matches the behavior of Procs
+accepting a single rest argument and no keywords.
+<a class="external" href="https://bugs.ruby-lang.org/issues/16166">[feature#16166]</a></li>
+</ul>
+<pre class="highlight ruby">
+<code>
+pr <span class="o">=</span> <span class="nb">proc</span><span class="p">{</span><span class="o">|</span><span class="o">*</span>a, <span class="o">**</span>kw<span class="o">|</span> <span class="p">[</span>a, kw<span class="p">]</span><span class="p">}</span>
+
+pr<span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="p">)</span>
+<span class="c1"># 2.7 =&gt; [[1], {}]
+</span><span class="c1"># 3.0 =&gt; [[[1]], {}]
+</span>
+pr<span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="p">[</span><span class="mi">1</span>, <span class="p">{</span><span class="ss">a:</span> <span class="mi">1</span><span class="p">}</span><span class="p">]</span><span class="p">)</span>
+<span class="c1"># 2.7 =&gt; [[1], {:a=&gt;1}] # and deprecation warning
+</span><span class="c1"># 3.0 =&gt; [[[1, {:a=&gt;1}]], {}]
+</span></code></pre>
+<ul>
+<li>Arguments forwarding (`...`) now supports leading arguments.
+<a class="external" href="https://bugs.ruby-lang.org/issues/16378">[feature#16378]</a></li>
+</ul>
+<pre>
+def method_missing(meth, ...)
+  send(:&quot;do_#{meth}&quot;, ...)
+end
+</pre>
+<ul>
+<li>Pattern matching (`case/in`) is no longer experimental. <a class="external" href="https://bugs.ruby-lang.org/issues/17260">[feature#17260]</a></li>
+<li>One-line pattern matching is redesigned.  [EXPERIMENTAL]<ul>
+<li>`=&gt;` is added. It can be used like a rightward assignment.
+<a class="external" href="https://bugs.ruby-lang.org/issues/17260">[feature#17260]</a></li>
+</ul>
+</li>
+<li>`in` is changed to return `true` or `false`. <a class="external" href="https://bugs.ruby-lang.org/issues/17371">[feature#17371]</a></li>
+</ul>
+<pre>
+0 =&gt; a
+p a #=&gt; 0
+
+{b: 0, c: 1} =&gt; {b:}
+p b #=&gt; 0
+</pre>
+<pre>
+# version 3.0
+0 in 1 #=&gt; false
+
+# version 2.7
+0 in 1 #=&gt; raise NoMatchingPatternError
+</pre>
+<ul>
+<li>Find-pattern is added.  [EXPERIMENTAL]
+<a class="external" href="https://bugs.ruby-lang.org/issues/16828">[feature#16828]</a></li>
+</ul>
+<pre>
+case [&quot;a&quot;, 1, &quot;b&quot;, &quot;c&quot;, 2, &quot;d&quot;, &quot;e&quot;, &quot;f&quot;, 3]
+in [*pre, String =&gt; x, String =&gt; y, *post]
+  p pre  #=&gt; [&quot;a&quot;, 1]
+  p x    #=&gt; &quot;b&quot;
+  p y    #=&gt; &quot;c&quot;
+  p post #=&gt; [2, &quot;d&quot;, &quot;e&quot;, &quot;f&quot;, 3]
+end
+</pre>
+<ul>
+<li>Endless method definition is added.  [EXPERIMENTAL]
+<a class="external" href="https://bugs.ruby-lang.org/issues/16746">[feature#16746]</a></li>
+</ul>
+<pre>
+def square(x) = x * x
+</pre>
+<ul>
+<li>Interpolated String literals are no longer frozen when
+`# frozen-string-literal: true` is used. <a class="external" href="https://bugs.ruby-lang.org/issues/17104">[feature#17104]</a></li>
+<li>Magic comment `shareable_constant_value` added to freeze constants.
+See {Magic Comments}[rdoc-ref:doc/syntax/comments.rdoc@Magic+Comments] for more details.
+<a class="external" href="https://bugs.ruby-lang.org/issues/17273">[feature#17273]</a></li>
+<li>A {static analysis}[rdoc-label:label-Static+analysis] foundation is
+introduced.<ul>
+<li>{RBS}[rdoc-label:label-RBS] is introduced. It is a type definition
+language for Ruby programs.</li>
+<li>{TypeProf}[rdoc-label:label-TypeProf] is experimentally bundled. It is a
+type analysis tool for Ruby programs.</li>
+</ul>
+</li>
+<li>Deprecation warnings are no longer shown by default (since Ruby 2.7.2).
+Turn them on with `-W:deprecated` (or with `-w` to show other warnings too).
+<a class="external" href="https://bugs.ruby-lang.org/issues/16345">[feature#16345]</a></li>
+<li>`$SAFE` and `$KCODE` are now normal global variables with no special behavior.
+C-API methods related to `$SAFE` have been removed.
+<a class="external" href="https://bugs.ruby-lang.org/issues/16131">[feature#16131]</a> <a class="external" href="https://bugs.ruby-lang.org/issues/17136">[feature#17136]</a></li>
+<li>yield in singleton class definitions in methods is now a SyntaxError
+instead of a warning. yield in a class definition outside of a method
+is now a SyntaxError instead of a LocalJumpError.  <a class="external" href="https://bugs.ruby-lang.org/issues/15575">[feature#15575]</a></li>
+<li>When a class variable is overtaken by the same definition in an
+ancestor class/module, a RuntimeError is now raised (previously,
+it only issued a warning in verbose mode).  Additionally, accessing a
+class variable from the toplevel scope is now a RuntimeError.
+<a class="external" href="https://bugs.ruby-lang.org/issues/14541">[bug#14541]</a></li>
+<li>Assigning to a numbered parameter is now a SyntaxError instead of
+a warning.</li>
+</ul>
+<h1 >Command line options</h1>
+<h2 >`--help` option</h2>
+<p>
+When the environment variable `RUBY_PAGER` or `PAGER` is present and has
+a non-empty value, and the standard input and output are tty, the `--help`
+option shows the help message via the pager designated by the value.
+<a class="external" href="https://bugs.ruby-lang.org/issues/16754">[feature#16754]</a>
+</p>
+<h2 >`--backtrace-limit` option</h2>
+<p>
+The `--backtrace-limit` option limits the maximum length of a backtrace.
+<a class="external" href="https://bugs.ruby-lang.org/issues/8661">[feature#8661]</a>
+</p>
+<h1 >Core classes updates</h1>
+<p>
+Outstanding ones only.
+</p>
+<ul>
+<li>Array<ul>
+<li>The following methods now return Array instances instead of subclass instances when called on subclass instances: <a class="external" href="https://bugs.ruby-lang.org/issues/6087">[bug#6087]</a><ul>
+<li>Array#drop</li>
+<li>Array#drop_while</li>
+<li>Array#flatten</li>
+<li>Array#slice!</li>
+<li>Array#slice / Array#[]</li>
+<li>Array#take</li>
+<li>Array#take_while</li>
+<li>Array#uniq</li>
+<li>Array#*</li>
+</ul>
+</li>
+<li>Can be sliced with Enumerator::ArithmeticSequence</li>
+</ul>
+</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+dirty_data <span class="o">=</span> <span class="p">[</span><span class="s1">'--'</span>, <span class="s1">'data1'</span>, <span class="s1">'--'</span>, <span class="s1">'data2'</span>, <span class="s1">'--'</span>, <span class="s1">'data3'</span><span class="p">]</span>
+dirty_data<span class="p">[</span><span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="p">)</span><span class="p">.</span><span class="nf">step</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="p">]</span> <span class="c1"># take each second element
+</span><span class="c1"># =&gt; [&quot;data1&quot;, &quot;data2&quot;, &quot;data3&quot;]
+</span></code></pre>
+<ul>
+<li>Binding<ul>
+<li>Binding#eval when called with one argument will use `&quot;(eval)&quot;` for `__FILE__` and `1` for `__LINE__` in the evaluated code. <a class="external" href="https://bugs.ruby-lang.org/issues/4352">[bug#4352]</a> <a class="external" href="https://bugs.ruby-lang.org/issues/17419">[bug#17419]</a></li>
+</ul>
+</li>
+<li>ConditionVariable<ul>
+<li>ConditionVariable#wait may now invoke the `block`/`unblock` scheduler hooks in a non-blocking context. <a class="external" href="https://bugs.ruby-lang.org/issues/16786">[feature#16786]</a></li>
+</ul>
+</li>
+<li>Dir<ul>
+<li>Dir.glob and Dir.[] now sort the results by default, and accept the `sort:` keyword option.  <a class="external" href="https://bugs.ruby-lang.org/issues/8709">[feature#8709]</a></li>
+</ul>
+</li>
+<li>ENV<ul>
+<li>ENV.except has been added, which returns a hash excluding the given keys and their values.  <a class="external" href="https://bugs.ruby-lang.org/issues/15822">[feature#15822]</a></li>
+<li>Windows: Read ENV names and values as UTF-8 encoded Strings <a class="external" href="https://bugs.ruby-lang.org/issues/12650">[feature#12650]</a></li>
+</ul>
+</li>
+<li>Encoding<ul>
+<li>Added new encoding IBM720.  <a class="external" href="https://bugs.ruby-lang.org/issues/16233">[feature#16233]</a></li>
+<li>Changed default for Encoding.default_external to UTF-8 on Windows <a class="external" href="https://bugs.ruby-lang.org/issues/16604">[feature#16604]</a></li>
+</ul>
+</li>
+<li>Fiber<ul>
+<li>Fiber.new(blocking: true/false) allows you to create non-blocking execution contexts. <a class="external" href="https://bugs.ruby-lang.org/issues/16786">[feature#16786]</a></li>
+<li>Fiber#blocking? tells whether the fiber is non-blocking. <a class="external" href="https://bugs.ruby-lang.org/issues/16786">[feature#16786]</a></li>
+<li>Fiber#backtrace and Fiber#backtrace_locations provide per-fiber backtrace. <a class="external" href="https://bugs.ruby-lang.org/issues/16815">[feature#16815]</a></li>
+<li>The limitation of Fiber#transfer is relaxed. <a class="external" href="https://bugs.ruby-lang.org/issues/17221">[bug#17221]</a></li>
+</ul>
+</li>
+<li>GC<ul>
+<li>GC.auto_compact= and GC.auto_compact have been added to control when compaction runs.  Setting `auto_compact=` to `true` will cause compaction to occur during major collections.  At the moment, compaction adds significant overhead to major collections, so please test first!  <a class="external" href="https://bugs.ruby-lang.org/issues/17176">[feature#17176]</a></li>
+</ul>
+</li>
+<li>Hash<ul>
+<li>Hash#transform_keys and Hash#transform_keys! now accept a hash that maps keys to new keys.  <a class="external" href="https://bugs.ruby-lang.org/issues/16274">[feature#16274]</a></li>
+<li>Hash#except has been added, which returns a hash excluding the given keys and their values.  <a class="external" href="https://bugs.ruby-lang.org/issues/15822">[feature#15822]</a></li>
+</ul>
+</li>
+<li>IO<ul>
+<li>IO#nonblock? now defaults to `true`. <a class="external" href="https://bugs.ruby-lang.org/issues/16786">[feature#16786]</a></li>
+<li>IO#wait_readable, IO#wait_writable, IO#read, IO#write and other related methods (e.g. IO#puts, IO#gets) may invoke the scheduler hook `#io_wait(io, events, timeout)` in a non-blocking execution context. <a class="external" href="https://bugs.ruby-lang.org/issues/16786">[feature#16786]</a></li>
+</ul>
+</li>
+<li>Kernel<ul>
+<li>Kernel#clone when called with the `freeze: false` keyword will call `#initialize_clone` with the `freeze: false` keyword. <a class="external" href="https://bugs.ruby-lang.org/issues/14266">[bug#14266]</a></li>
+<li>Kernel#clone when called with the `freeze: true` keyword will call `#initialize_clone` with the `freeze: true` keyword, and will return a frozen copy even if the receiver is unfrozen. <a class="external" href="https://bugs.ruby-lang.org/issues/16175">[feature#16175]</a></li>
+<li>Kernel#eval when called with two arguments will use `&quot;(eval)&quot;` for `__FILE__` and `1` for `__LINE__` in the evaluated code. <a class="external" href="https://bugs.ruby-lang.org/issues/4352">[bug#4352]</a></li>
+<li>Kernel#lambda now warns if called without a literal block. <a class="external" href="https://bugs.ruby-lang.org/issues/15973">[feature#15973]</a></li>
+<li>Kernel.sleep invokes the scheduler hook `#kernel_sleep(...)` in a non-blocking execution context. <a class="external" href="https://bugs.ruby-lang.org/issues/16786">[feature#16786]</a></li>
+</ul>
+</li>
+<li>Module<ul>
+<li>Module#include and Module#prepend now affect classes and modules that have already included or prepended the receiver, mirroring the behavior if the arguments were included in the receiver before the other modules and classes included or prepended the receiver. <a class="external" href="https://bugs.ruby-lang.org/issues/9573">[feature#9573]</a></li>
+<li>Module#public, Module#protected, Module#private, Module#public_class_method, Module#private_class_method, toplevel &quot;private&quot; and &quot;public&quot; methods now accept single array argument with a list of method names. <a class="external" href="https://bugs.ruby-lang.org/issues/17314">[feature#17314]</a></li>
+<li>Module#attr_accessor, Module#attr_reader, Module#attr_writer and Module#attr methods now return an array of defined method names as symbols. <a class="external" href="https://bugs.ruby-lang.org/issues/17314">[feature#17314]</a></li>
+<li>Module#alias_method now returns the defined alias as a symbol. <a class="external" href="https://bugs.ruby-lang.org/issues/17314">[feature#17314]</a></li>
+</ul>
+</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> ;<span class="nn"></span><span class="o"></span><span class="nc">C</span> <span class="k">end</span>
+<span class="k">module</span> ;<span class="nn">M1</span> <span class="k">end</span>
+<span class="k">module</span> ;<span class="nn">M2</span> <span class="k">end</span>
+<span class="no">C</span><span class="p">.</span><span class="nf">include</span> <span class="no">M1</span>
+<span class="no">M1</span><span class="p">.</span><span class="nf">include</span> <span class="no">M2</span>
+<span class="nb">p</span> <span class="no">C</span><span class="p">.</span><span class="nf">ancestors</span> <span class="c1">#=&gt; [C, M1, M2, Object, Kernel, BasicObject]
+</span></code></pre>
+<ul>
+<li>Mutex<ul>
+<li>`Mutex` is now acquired per-`Fiber` instead of per-`Thread`. This change should be compatible for essentially all usages and avoids blocking when using a scheduler. <a class="external" href="https://bugs.ruby-lang.org/issues/16792">[feature#16792]</a></li>
+</ul>
+</li>
+<li>Proc<ul>
+<li>Proc#== and Proc#eql? are now defined and will return true for separate Proc instances if the procs were created from the same block. <a class="external" href="https://bugs.ruby-lang.org/issues/14267">[feature#14267]</a></li>
+</ul>
+</li>
+<li>Queue / SizedQueue<ul>
+<li>Queue#pop, SizedQueue#push and related methods may now invoke the `block`/`unblock` scheduler hooks in a non-blocking context. <a class="external" href="https://bugs.ruby-lang.org/issues/16786">[feature#16786]</a></li>
+</ul>
+</li>
+<li>Ractor<ul>
+<li>New class added to enable parallel execution. See rdoc-ref:ractor.md for more details.</li>
+</ul>
+</li>
+<li>Random<ul>
+<li>`Random::DEFAULT` now refers to the `Random` class instead of being a `Random` instance, so it can work with `Ractor`. <a class="external" href="https://bugs.ruby-lang.org/issues/17322">[feature#17322]</a></li>
+<li>`Random::DEFAULT` is deprecated since its value is now confusing and it is no longer global, use `Kernel.rand`/`Random.rand` directly, or create a `Random` instance with `Random.new` instead. <a class="external" href="https://bugs.ruby-lang.org/issues/17351">[feature#17351]</a></li>
+</ul>
+</li>
+<li>String<ul>
+<li>The following methods now return or yield String instances instead of subclass instances when called on subclass instances: <a class="external" href="https://bugs.ruby-lang.org/issues/10845">[bug#10845]</a><ul>
+<li>String#*</li>
+<li>String#capitalize</li>
+<li>String#center</li>
+<li>String#chomp</li>
+<li>String#chop</li>
+<li>String#delete</li>
+<li>String#delete_prefix</li>
+<li>String#delete_suffix</li>
+<li>String#downcase</li>
+<li>String#dump</li>
+<li>String#each_char</li>
+<li>String#each_grapheme_cluster</li>
+<li>String#each_line</li>
+<li>String#gsub</li>
+<li>String#ljust</li>
+<li>String#lstrip</li>
+<li>String#partition</li>
+<li>String#reverse</li>
+<li>String#rjust</li>
+<li>String#rpartition</li>
+<li>String#rstrip</li>
+<li>String#scrub</li>
+<li>String#slice!</li>
+<li>String#slice / String#[]</li>
+<li>String#split</li>
+<li>String#squeeze</li>
+<li>String#strip</li>
+<li>String#sub</li>
+<li>String#succ / String#next</li>
+<li>String#swapcase</li>
+<li>String#tr</li>
+<li>String#tr_s</li>
+<li>String#upcase</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Symbol<ul>
+<li>Symbol#to_proc now returns a lambda Proc.  <a class="external" href="https://bugs.ruby-lang.org/issues/16260">[feature#16260]</a></li>
+<li>Symbol#name has been added, which returns the name of the symbol if it is named.  The returned string is frozen.  <a class="external" href="https://bugs.ruby-lang.org/issues/16150">[feature#16150]</a></li>
+</ul>
+</li>
+<li>Fiber<ul>
+<li>Introduce Fiber.set_scheduler for intercepting blocking operations and Fiber.scheduler for accessing the current scheduler. See rdoc-ref:fiber.md for more details about what operations are supported and how to implement the scheduler hooks. <a class="external" href="https://bugs.ruby-lang.org/issues/16786">[feature#16786]</a></li>
+<li>Fiber.blocking? tells whether the current execution context is blocking. <a class="external" href="https://bugs.ruby-lang.org/issues/16786">[feature#16786]</a></li>
+<li>Thread#join invokes the scheduler hooks `block`/`unblock` in a non-blocking execution context. <a class="external" href="https://bugs.ruby-lang.org/issues/16786">[feature#16786]</a></li>
+</ul>
+</li>
+<li>Thread<ul>
+<li>Thread.ignore_deadlock accessor has been added for disabling the default deadlock detection, allowing the use of signal handlers to break deadlock. <a class="external" href="https://bugs.ruby-lang.org/issues/13768">[bug#13768]</a></li>
+</ul>
+</li>
+<li>Warning<ul>
+<li>Warning#warn now supports a category keyword argument. <a class="external" href="https://bugs.ruby-lang.org/issues/17122">[feature#17122]</a></li>
+</ul>
+</li>
+</ul>
+<h1 >Stdlib updates</h1>
+<p>
+Outstanding ones only.
+</p>
+<ul>
+<li>BigDecimal<ul>
+<li>Update to BigDecimal 3.0.0</li>
+<li>This version is Ractor compatible.</li>
+</ul>
+</li>
+<li>Bundler<ul>
+<li>Update to Bundler 2.2.3</li>
+</ul>
+</li>
+<li>CGI<ul>
+<li>Update to 0.2.0</li>
+<li>This version is Ractor compatible.</li>
+</ul>
+</li>
+<li>CSV<ul>
+<li>Update to CSV 3.1.9</li>
+</ul>
+</li>
+<li>Date<ul>
+<li>Update to Date 3.1.1</li>
+<li>This version is Ractor compatible.</li>
+</ul>
+</li>
+<li>Digest<ul>
+<li>Update to Digest 3.0.0</li>
+<li>This version is Ractor compatible.</li>
+</ul>
+</li>
+<li>Etc<ul>
+<li>Update to Etc 1.2.0</li>
+<li>This version is Ractor compatible.</li>
+</ul>
+</li>
+<li>Fiddle<ul>
+<li>Update to Fiddle 1.0.5</li>
+</ul>
+</li>
+<li>IRB<ul>
+<li>Update to IRB 1.2.6</li>
+</ul>
+</li>
+<li>JSON<ul>
+<li>Update to JSON 2.5.0</li>
+<li>This version is Ractor compatible.</li>
+</ul>
+</li>
+<li>Set<ul>
+<li>Update to set 1.0.0</li>
+<li>SortedSet has been removed for dependency and performance reasons.</li>
+<li>Set#join is added as a shorthand for `.to_a.join`.</li>
+<li>Set#&lt;=&gt; is added.</li>
+</ul>
+</li>
+<li>Socket<ul>
+<li>Add :connect_timeout to TCPSocket.new <a class="external" href="https://bugs.ruby-lang.org/issues/17187">[feature#17187]</a></li>
+</ul>
+</li>
+<li>Net::HTTP<ul>
+<li>Net::HTTP#verify_hostname= and Net::HTTP#verify_hostname have been added to skip hostname verification.  <a class="external" href="https://bugs.ruby-lang.org/issues/16555">[feature#16555]</a></li>
+<li>Net::HTTP.get, Net::HTTP.get_response, and Net::HTTP.get_print can take the request headers as a Hash in the second argument when the first argument is a URI.  <a class="external" href="https://bugs.ruby-lang.org/issues/16686">[feature#16686]</a></li>
+</ul>
+</li>
+<li>Net::SMTP<ul>
+<li>Add SNI support.</li>
+<li>Net::SMTP.start arguments are keyword arguments.</li>
+<li>TLS should not check the host name by default.</li>
+</ul>
+</li>
+<li>OpenStruct<ul>
+<li>Initialization is no longer lazy. <a class="external" href="https://bugs.ruby-lang.org/issues/12136">[bug#12136]</a></li>
+<li>Builtin methods can now be overridden safely. <a class="external" href="https://bugs.ruby-lang.org/issues/15409">[bug#15409]</a></li>
+<li>Implementation uses only methods ending with `!`.</li>
+<li>Ractor compatible.</li>
+<li>Improved support for YAML. <a class="external" href="https://bugs.ruby-lang.org/issues/8382">[bug#8382]</a></li>
+<li>Use officially discouraged. Read OpenStruct@Caveats section.</li>
+</ul>
+</li>
+<li>Pathname<ul>
+<li>Ractor compatible.</li>
+</ul>
+</li>
+<li>Psych<ul>
+<li>Update to Psych 3.3.0</li>
+<li>This version is Ractor compatible.</li>
+</ul>
+</li>
+<li>Reline<ul>
+<li>Update to Reline 0.1.5</li>
+</ul>
+</li>
+<li>RubyGems<ul>
+<li>Update to RubyGems 3.2.3</li>
+</ul>
+</li>
+<li>StringIO<ul>
+<li>Update to StringIO 3.0.0</li>
+<li>This version is Ractor compatible.</li>
+</ul>
+</li>
+<li>StringScanner<ul>
+<li>Update to StringScanner 3.0.0</li>
+<li>This version is Ractor compatible.</li>
+</ul>
+</li>
+</ul>
+<h1 >Compatibility issues</h1>
+<p>
+Excluding feature bug fixes.
+</p>
+<ul>
+<li>Regexp literals and all Range objects are frozen. <a class="external" href="https://bugs.ruby-lang.org/issues/8948">[feature#8948]</a> <a class="external" href="https://bugs.ruby-lang.org/issues/16377">[feature#16377]</a> <a class="external" href="https://bugs.ruby-lang.org/issues/15504">[feature#15504]</a></li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/foo/</span><span class="p">.</span><span class="nf">frozen?</span> <span class="c1">#=&gt; true
+</span><span class="p">(</span><span class="mi">42</span><span class="o">...</span><span class="p">)</span><span class="p">.</span><span class="nf">frozen?</span> <span class="c1"># =&gt; true
+</span></code></pre>
+<ul>
+<li>EXPERIMENTAL: Hash#each consistently yields a 2-element array. <a class="external" href="https://bugs.ruby-lang.org/issues/12706">[bug#12706]</a><ul>
+<li>Now `{ a: 1 }.each(&amp;-&gt;(k, v) { })` raises an ArgumentError due to lambda's arity check.</li>
+</ul>
+</li>
+<li>When writing to STDOUT redirected to a closed pipe, no broken pipe error message will be shown now.  <a class="external" href="https://bugs.ruby-lang.org/issues/14413">[feature#14413]</a></li>
+<li>`TRUE`/`FALSE`/`NIL` constants are no longer defined.</li>
+<li>Integer#zero? overrides Numeric#zero? for optimization.  <a class="external" href="https://bugs.ruby-lang.org/issues/16961">[misc#16961]</a></li>
+<li>Enumerable#grep and Enumerable#grep_v when passed a Regexp and no block no longer modify Regexp.last_match. <a class="external" href="https://bugs.ruby-lang.org/issues/17030">[bug#17030]</a></li>
+<li>Requiring 'open-uri' no longer redefines `Kernel#open`. Call `URI.open` directly or `use URI#open` instead. <a class="external" href="https://bugs.ruby-lang.org/issues/15893">[misc#15893]</a></li>
+<li>SortedSet has been removed for dependency and performance reasons.</li>
+</ul>
+<h1 >Stdlib compatibility issues</h1>
+<ul>
+<li>Default gems<ul>
+<li>The following libraries are promoted to default gems from stdlib.<ul>
+<li>English</li>
+<li>abbrev</li>
+<li>base64</li>
+<li>drb</li>
+<li>debug</li>
+<li>erb</li>
+<li>find</li>
+<li>net-ftp</li>
+<li>net-http</li>
+<li>net-imap</li>
+<li>net-protocol</li>
+<li>open-uri</li>
+<li>optparse</li>
+<li>pp</li>
+<li>prettyprint</li>
+<li>resolv-replace</li>
+<li>resolv</li>
+<li>rinda</li>
+<li>set</li>
+<li>securerandom</li>
+<li>shellwords</li>
+<li>tempfile</li>
+<li>tmpdir</li>
+<li>time</li>
+<li>tsort</li>
+<li>un</li>
+<li>weakref</li>
+</ul>
+</li>
+<li>The following extensions are promoted to default gems from stdlib.<ul>
+<li>digest</li>
+<li>io-nonblock</li>
+<li>io-wait</li>
+<li>nkf</li>
+<li>pathname</li>
+<li>syslog</li>
+<li>win32ole</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Bundled gems<ul>
+<li>net-telnet and xmlrpc have been removed from the bundled gems. If you are interested in maintaining them, please comment on your plan to https://github.com/ruby/xmlrpc or https://github.com/ruby/net-telnet.</li>
+</ul>
+</li>
+<li>SDBM has been removed from the Ruby standard library. <a class="external" href="https://bugs.ruby-lang.org/issues/8446">[bug#8446]</a><ul>
+<li>The issues of sdbm will be handled at https://github.com/ruby/sdbm</li>
+</ul>
+</li>
+<li>WEBrick has been removed from the Ruby standard library. <a class="external" href="https://bugs.ruby-lang.org/issues/17303">[feature#17303]</a><ul>
+<li>The issues of WEBrick will be handled at https://github.com/ruby/webrick</li>
+</ul>
+</li>
+</ul>
+<h1 >C API updates</h1>
+<ul>
+<li>C API functions related to `$SAFE` have been removed. <a class="external" href="https://bugs.ruby-lang.org/issues/16131">[feature#16131]</a></li>
+<li>C API header file `ruby/ruby.h` was split. <a class="external" href="https://github.com/ruby/ruby/pull/2991">https://github.com/ruby/ruby/pull/2991</a> This should have no impact on extension libraries, but users might experience slow compilations.</li>
+<li>Memory view interface [EXPERIMENTAL]<ul>
+<li>The memory view interface is a C-API set to exchange a raw memory area, such as a numeric array or a bitmap image, between extension libraries. The extension libraries can share also the metadata of the memory area that consists of the shape, the element format, and so on. Using these kinds of metadata, the extension libraries can share even a multidimensional array appropriately. This feature is designed by referring to Python's buffer protocol. <a class="external" href="https://bugs.ruby-lang.org/issues/13767">[feature#13767]</a> <a class="external" href="https://bugs.ruby-lang.org/issues/14722">[feature#14722]</a></li>
+</ul>
+</li>
+<li>Ractor related C APIs are introduced (experimental) in &quot;include/ruby/ractor.h&quot;.</li>
+</ul>
+<h1 >Implementation improvements</h1>
+<ul>
+<li>New method cache mechanism for Ractor. <a class="external" href="https://bugs.ruby-lang.org/issues/16614">[feature#16614]</a><ul>
+<li>Inline method caches pointed from ISeq can be accessed by multiple Ractors in parallel and synchronization is needed even for method caches. However, such synchronization can be overhead so introducing new inline method cache mechanisms, (1) Disposable inline method cache (2) per-Class method cache and (3) new invalidation mechanism. (1) can avoid per-method call synchronization because it only uses atomic operations. See the ticket for more details.</li>
+</ul>
+</li>
+<li>The number of hashes allocated when using a keyword splat in a method call has been reduced to a maximum of 1, and passing a keyword splat to a method that accepts specific keywords does not allocate a hash.</li>
+<li>`super` is optimized when the same type of method is called in the previous call if it's not refinements or an attr reader or writer.</li>
+</ul>
+<h2 >JIT</h2>
+<ul>
+<li>Performance improvements of JIT-ed code<ul>
+<li>Microarchitectural optimizations<ul>
+<li>Native functions shared by multiple methods are deduplicated on JIT compaction.</li>
+<li>Decrease code size of hot paths by some optimizations and partitioning cold paths.</li>
+</ul>
+</li>
+<li>Instance variables<ul>
+<li>Eliminate some redundant checks.</li>
+<li>Skip checking a class and a object multiple times in a method when possible.</li>
+<li>Optimize accesses in some core classes like Hash and their subclasses.</li>
+</ul>
+</li>
+<li>Method inlining support for some C methods<ul>
+<li>`Kernel`: `#class`, `#frozen?`</li>
+<li>`Integer`: `#-@`, `#~`, `#abs`, `#bit_length`, `#even?`, `#integer?`, `#magnitude`, `#odd?`, `#ord`, `#to_i`, `#to_int`, `#zero?`</li>
+<li>`Struct`: reader methods for 10th or later members</li>
+</ul>
+</li>
+<li>Constant references are inlined.</li>
+<li>Always generate appropriate code for `==`, `nil?`, and `!` calls depending on a receiver class.</li>
+<li>Reduce the number of PC accesses on branches and method returns.</li>
+<li>Optimize C method calls a little.</li>
+</ul>
+</li>
+<li>Compilation process improvements<ul>
+<li>It does not keep temporary files in /tmp anymore.</li>
+<li>Throttle GC and compaction of JIT-ed code.</li>
+<li>Avoid GC-ing JIT-ed code when not necessary.</li>
+<li>GC-ing JIT-ed code is executed in a background thread.</li>
+<li>Reduce the number of locks between Ruby and JIT threads.</li>
+</ul>
+</li>
+</ul>
+<h1 >Static analysis</h1>
+<h2 >RBS</h2>
+<ul>
+<li>RBS is a new language for type definition of Ruby programs. It allows writing types of classes and modules with advanced types including union types, overloading, generics, and _interface types_ for duck typing.</li>
+<li>Ruby ships with type definitions for core/stdlib classes.</li>
+<li>`rbs` gem is bundled to load and process RBS files.</li>
+</ul>
+<h2 >TypeProf</h2>
+<ul>
+<li>TypeProf is a type analysis tool for Ruby code based on abstract interpretation.<ul>
+<li>It reads non-annotated Ruby code, tries inferring its type signature, and prints the analysis result in RBS format.</li>
+<li>Though it supports only a subset of the Ruby language yet, we will continuously improve the coverage of language features, analysis performance, and usability.</li>
+</ul>
+</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># test.rb
+</span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>x<span class="p">)</span>
+  <span class="k">if</span> x <span class="o">&gt;</span> <span class="mi">10</span>
+    x<span class="p">.</span><span class="nf">to_s</span>
+  <span class="k">else</span>
+    <span class="k">nil</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+foo<span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+</code></pre>
+<pre>
+$ typeprof test.rb
+# Classes
+class Object
+  def foo : (Integer) -&gt; String?
+end
+</pre>
+<h1 >Miscellaneous changes</h1>
+<ul>
+<li>Methods using `ruby2_keywords` will no longer keep empty keyword splats, those are now removed just as they are for methods not using `ruby2_keywords`.</li>
+<li>When an exception is caught in the default handler, the error message and backtrace are printed in order from the innermost. <a class="external" href="https://bugs.ruby-lang.org/issues/8661">[feature#8661]</a></li>
+<li>Accessing an uninitialized instance variable no longer emits a warning in verbose mode. <a class="external" href="https://bugs.ruby-lang.org/issues/17055">[feature#17055]</a></li>
+</ul>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

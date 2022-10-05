@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>WIN32OLE#ole_free (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="selfが参照するCOMオブジェクトを解放します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/win32ole.html">win32oleライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-w-i-n32-o-l-e.html">WIN32OLEクラス</a>
+      </li>
+      <li>
+        ole_free 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method WIN32OLE#ole_free</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_OLE_FREE"><code>ole_free -&gt; ()</code><span class="permalink">[<a href="../../../method/-w-i-n32-o-l-e/i/ole_free.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/WIN32OLE.html#method-i-ole_free">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+selfが参照するCOMオブジェクトを解放します。
+</p>
+<p>
+selfが参照するCOMオブジェクトのIUnknown::Releaseを呼び出すことで、COMオブジェクトを開放します。ole_freeを呼び出した後は、このオブジェクトに対する操作は行えません。
+</p>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+excel.ole_free  # オブジェクトの解放
+excel.Quit      #=&gt; RuntimeError (failed to get Dispatch Interface)
+</pre>
+<p>
+通常は利用されなくなったWIN32OLEオブジェクトはGCのタイミングで自動的に解放されるため、当メソッドを呼び出す必要はありません。Officeのような外部プロセスサーバ呼び出し時に、スクリプト終了後もサーバが解放されない場合に強制的にサーバを終了するために当メソッドを利用できます。ただし、現実には途中で生成される子オブジェクトからの逆参照などがあるため、
+WIN32OLEがIUnknown::Releaseを呼び出してもオブジェクトが解放されるとは限りません。
+</p>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+workbook = excel.Workbooks.Open('workbook.xls')
+workbook.Close(:SaveChanges =&gt; false)
+workbook.ole_free
+excel.ole_free
+# この時点でExcel.EXEは終了しない
+</pre>
+<p>
+上の例では、excel.Workbooks.Openの行で、excel.Workbooksオブジェクトが生成されています。しかし、後続の処理で該当オブジェクトが解放されていないため、Workbooksオブジェクトによって参照されているexcelオブジェクトは解放されません。それに対して下の例では正しく解放されます。
+</p>
+<pre>
+excel = WIN32OLE.new('Excel.Application')
+books = excel.Workbooks
+workbook = books.Open('workbook.xls')
+books.ole_free
+workbook.Close(:SaveChanges =&gt; false)
+workbook.ole_free
+excel.ole_free
+</pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

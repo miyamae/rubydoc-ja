@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class Monitor (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="スレッドの同期機構としてのモニター機能を提供するクラスです。
+また同じスレッドから何度も lock できる Mutex としての機能も提供します。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/monitor.html">monitorライブラリ</a>
+      </li>
+      <li>
+        Monitorクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class Monitor</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-monitor-mixin.html">MonitorMixin</a>
+        </li>
+        
+      
+      <li>
+        Monitor
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+スレッドの同期機構としてのモニター機能を提供するクラスです。また同じスレッドから何度も lock できる Mutex としての機能も提供します。
+</p>
+<p>
+<a href="../class/-monitor-mixin.html">MonitorMixin</a> を include し、いくつかの別名を定義したクラスです。
+</p>
+<h2 >例</h2>
+<pre class="highlight ruby">
+<span class="caption">消費者、生産者問題の例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'monitor'</span>
+
+buf <span class="o">=</span> <span class="p">[</span><span class="p">]</span>
+mon <span class="o">=</span> <span class="no">Monitor</span><span class="p">.</span><span class="nf">new</span>
+empty_cond <span class="o">=</span> mon<span class="p">.</span><span class="nf">new_cond</span>
+
+<span class="c1"># consumer
+</span><span class="no">Thread</span><span class="p">.</span><span class="nf">start</span> <span class="k">do</span>
+  <span class="nb">loop</span> <span class="k">do</span>
+    mon<span class="p">.</span><span class="nf">synchronize</span> <span class="k">do</span>
+      empty_cond<span class="p">.</span><span class="nf">wait_while</span> <span class="p">{</span> buf<span class="p">.</span><span class="nf">empty?</span> <span class="p">}</span>
+      <span class="nb">print</span> buf<span class="p">.</span><span class="nf">shift</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># producer
+</span><span class="k">while</span> line <span class="o">=</span> <span class="no">ARGF</span><span class="p">.</span><span class="nf">gets</span>
+  mon<span class="p">.</span><span class="nf">synchronize</span> <span class="k">do</span>
+    buf<span class="p">.</span><span class="nf">push</span><span class="p">(</span>line<span class="p">)</span>
+    empty_cond<span class="p">.</span><span class="nf">signal</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+2回ロックしてもデッドロックにならない例です。
+</p>
+<pre class="highlight ruby">
+<span class="caption">デッドロックにならない例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'monitor'</span>
+mon <span class="o">=</span> <span class="no">Monitor</span><span class="p">.</span><span class="nf">new</span>
+mon<span class="p">.</span><span class="nf">synchronize</span> <span class="p">{</span>
+  mon<span class="p">.</span><span class="nf">synchronize</span> <span class="p">{</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+<p>
+<a href="../class/-thread=3a=3a-mutex.html">Thread::Mutex</a> ではデッドロックになります。
+</p>
+<pre class="highlight ruby">
+<span class="caption">Mutex でデッドロックになる例</span>
+<code>
+mx <span class="o">=</span> <span class="no">Mutex</span><span class="p">.</span><span class="nf">new</span>
+mx<span class="p">.</span><span class="nf">synchronize</span> <span class="p">{</span>
+  mx<span class="p">.</span><span class="nf">synchronize</span> <span class="p">{</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="c1"># =&gt; deadlock; recursive locking (ThreadError)
+</span></code></pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_NEW">new</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_ENTER">enter</a></li>
+
+<li><a href="#I_EXIT">exit</a></li>
+
+<li><a href="#I_TRY_ENTER">try_enter</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+  <h2>継承しているメソッド</h2>
+<dl>
+  
+<dt>MonitorMixinから継承しているメソッド</dt>
+<dd>
+  <ul class="class-toc">
+    
+      <li><a href="../method/-monitor-mixin/i/mon_enter.html">mon_enter</a></li>
+      
+    
+      <li><a href="../method/-monitor-mixin/i/mon_exit.html">mon_exit</a></li>
+      
+    
+      <li><a href="../method/-monitor-mixin/i/mon_locked=3f.html">mon_locked?</a></li>
+      
+    
+      <li><a href="../method/-monitor-mixin/i/mon_owned=3f.html">mon_owned?</a></li>
+      
+    
+      <li><a href="../method/-monitor-mixin/i/mon_synchronize.html">mon_synchronize</a></li>
+      
+    
+      <li><a href="../method/-monitor-mixin/i/mon_try_enter.html">mon_try_enter</a></li>
+      
+    
+      <li><a href="../method/-monitor-mixin/i/new_cond.html">new_cond</a></li>
+      
+    
+      <li><a href="../method/-monitor-mixin/i/mon_synchronize.html">synchronize</a></li>
+      
+    
+      <li><a href="../method/-monitor-mixin/i/mon_try_enter.html">try_mon_enter</a></li>
+      
+    
+  </ul>
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new -&gt; Monitor</code><span class="permalink">[<a href="../method/-monitor/s/new.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Monitor.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+新しい Monitor オブジェクトを生成します。
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_ENTER"><code>enter -&gt; ()</code><span class="permalink">[<a href="../method/-monitor/i/enter.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Monitor.html#method-i-enter">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-monitor-mixin/i/mon_enter.html">MonitorMixin#mon_enter</a> の別名です。
+</p>
+<p>
+<a href="../method/-thread=3a=3a-mutex/i/lock.html">Thread::Mutex#lock</a> に相当します。
+Thread::Mutex#lock と違うのは現在のモニターの所有者が現在実行されているスレッドである場合、何度でもロックできる点です。ロックした回数だけ <a href="../method/-monitor/i/exit.html">Monitor#exit</a> を呼ばなければモニターは解放されません。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'monitor'</span>
+mon <span class="o">=</span> <span class="no">Monitor</span><span class="p">.</span><span class="nf">new</span>
+mon<span class="p">.</span><span class="nf">enter</span>
+mon<span class="p">.</span><span class="nf">enter</span>
+</code></pre>
+<p>
+Thread::Mutex#lock ではデッドロックが起きます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">Mutex でデッドロックする例</span>
+<code>
+m <span class="o">=</span> <span class="no">Mutex</span><span class="p">.</span><span class="nf">new</span>
+m<span class="p">.</span><span class="nf">lock</span>
+m<span class="p">.</span><span class="nf">lock</span> <span class="c1"># =&gt; deadlock; recursive locking (ThreadError)
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_EXIT"><code>exit -&gt; ()</code><span class="permalink">[<a href="../method/-monitor/i/exit.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Monitor.html#method-i-exit">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-monitor-mixin/i/mon_exit.html">MonitorMixin#mon_exit</a> の別名です。
+</p>
+<p>
+enter でロックした回数だけ exit を呼ばなければモニターは解放されません。
+</p>
+<p>
+モニターが解放されればモニターのロック待ちになっていたスレッドが一つ実行を再開します。
+</p>
+<dl>
+<dt>[EXCEPTION] ThreadError:</dt>
+<dd>
+ロックを持っていないスレッドが呼びだした場合に発生します
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'monitor'</span>
+mon <span class="o">=</span> <span class="no">Monitor</span><span class="p">.</span><span class="nf">new</span>
+mon<span class="p">.</span><span class="nf">enter</span>
+mon<span class="p">.</span><span class="nf">enter</span>
+mon<span class="p">.</span><span class="nf">exit</span>
+mon<span class="p">.</span><span class="nf">exit</span>
+mon<span class="p">.</span><span class="nf">exit</span> <span class="c1"># =&gt; current thread not owner (ThreadError)
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TRY_ENTER"><code>try_enter -&gt; bool</code><span class="permalink">[<a href="../method/-monitor/i/try_enter.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Monitor.html#method-i-try_enter">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-monitor-mixin/i/mon_try_enter.html">MonitorMixin#mon_try_enter</a> の別名です。
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

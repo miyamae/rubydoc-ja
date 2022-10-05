@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>クラス／メソッドの定義 (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="* クラス／メソッドの定義:
+    * [[ref:class]]
+    * [[ref:singleton_class]]
+    * [[ref:module]]
+    * [[ref:method]]
+    * [[ref:operator]]
+    * [[ref:nest_method]]
+    * [[ref:eval_method]]
+    * [[ref:singleton_method]]
+    * [[ref:class_method]]
+    * [[ref:limit]]
+  * 定義に関する操作:
+    * [[ref:alias]]
+    * [[ref:undef]]
+    * [[ref:defined]]">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      
+        <li>
+          <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+        </li>
+        <li>
+          クラス／メソッドの定義
+        </li>
+      
+    </ol>
+  </nav>
+
+<h1>クラス／メソッドの定義</h1>
+</header>
+
+<main>
+
+<ul>
+<li>クラス／メソッドの定義:<ul>
+<li><a href="#class">クラス定義</a></li>
+<li><a href="#singleton_class">特異クラス定義</a></li>
+<li><a href="#module">モジュール定義</a></li>
+<li><a href="#method">メソッド定義</a></li>
+<li><a href="#operator">演算子式の定義</a></li>
+<li><a href="#nest_method">メソッド定義のネスト</a></li>
+<li><a href="#eval_method">メソッドの評価</a></li>
+<li><a href="#singleton_method">特異メソッド定義</a></li>
+<li><a href="#class_method">クラスメソッドの定義</a></li>
+<li><a href="#limit">呼び出し制限</a></li>
+</ul>
+</li>
+<li>定義に関する操作:<ul>
+<li><a href="#alias">alias</a></li>
+<li><a href="#undef">undef</a></li>
+<li><a href="#defined">defined?</a></li>
+</ul>
+</li>
+</ul>
+<h2 id='class'>クラス定義</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span> <span class="o">&lt;</span> <span class="no">Super</span>
+  <span class="k">def</span> <span class="nf">test</span>
+    <span class="c1"># ...
+</span>  <span class="k">end</span>
+  <span class="c1"># ...
+</span><span class="k">end</span>
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+class 識別子 [`&lt;' superclass ]
+  式..
+end
+</pre>
+<p>
+文法:
+</p>
+<pre>
+class 識別子 [`&lt;' superclass ]
+  式..
+[rescue [error_type,..] [=&gt; evar] [then]
+  式..]..
+[else
+  式..]
+[ensure
+  式..]
+end
+</pre>
+<p>
+クラスを定義します。クラス名はアルファベットの大文字で始まる識別子です。
+</p>
+<p>
+rescue/ensure 節を指定し、例外処理ができます。例外処理については<a href="../doc/spec=2fcontrol.html#begin">制御構造/begin</a>参照。
+</p>
+<p>
+クラス定義は、識別子で指定した定数へのクラスの代入になります
+(Ruby では、クラスもオブジェクトの一つで <a href="../class/-class.html">Class</a>クラスのインスタンスです)。
+</p>
+<p>
+クラスが既に定義されているとき、さらに同じクラス名でクラス定義を書くとクラスの定義の追加になります。ただし、元のクラスと異なるスーパークラスを指定すると TypeError が発生します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span> <span class="o">&lt;</span> <span class="no">Array</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># 定義を追加(スーパークラス Array を明示的に指定しても同じ)
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">bar</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># 間違ったスーパークラスを指定するとエラー
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span> <span class="o">&lt;</span> <span class="no">String</span>
+<span class="k">end</span>
+<span class="c1"># =&gt; superclass mismatch for class Foo (TypeError)
+</span></code></pre>
+<p>
+クラス定義式の中は self がそのクラスであることと、
+<a href="#limit">呼び出し制限</a>のデフォルトが異なること以外にトップレベルとの違いはありません。クラス定義式中には任意の式を書くことができクラス定義の際に実行されます。
+</p>
+<p>
+クラス定義はネスト(入れ子)にして定義できます。以下の例で入れ子の外側のクラス Foo と内側のクラス Bar の間には、定数 Bar が Foo の中の定数
+Foo::Bar であること以外、継承関係などの機能的な関連はまったくありません。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+クラス Foo が既に定義されていれば、以下の書き方もできます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nn">Foo</span><span class="o">::</span><span class="nc">Bar</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+クラスのネストは、意味的に関連するクラスを外側のクラス／モジュールでひとまとまりにしたり、包含関係を表すために使用されます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># 関連するクラスを Net というカテゴリにまとめる
+</span><span class="c1"># このような場合は外側は普通モジュールが利用される
+</span><span class="c1"># (Net のインスタンスがない。Net を include できるなどのため)
+</span><span class="k">module</span> <span class="nn">Net</span>
+  <span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">HTTP</span>
+  <span class="k">end</span>
+  <span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">FTP</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+obj <span class="o">=</span> <span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="p">.</span><span class="nf">new</span>
+
+<span class="c1"># あるいは
+</span>
+include <span class="no">Net</span>
+obj <span class="o">=</span> <span class="no">HTTP</span><span class="p">.</span><span class="nf">new</span>
+
+<span class="c1"># 以下のような使い方は組み込みのクラスにも見られる
+</span><span class="c1"># 利用者は File::Constants を include することで、
+</span><span class="c1"># File::RDONLY などと書かずに直接 RDONLY と書くことができる。
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">File</span>
+  <span class="k">module</span> <span class="nn">Constants</span>
+    <span class="no">RDONLY</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="no">WRONLY</span> <span class="o">=</span> <span class="mi">1</span>
+  <span class="k">end</span>
+  include <span class="no">Constants</span>
+<span class="k">end</span>
+
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>, <span class="no">File</span><span class="o">::</span><span class="no">RDONLY</span><span class="p">)</span>
+
+<span class="c1"># あるいは
+</span>
+include <span class="no">File</span><span class="o">::</span><span class="no">Constants</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>, <span class="no">RDONLY</span><span class="p">)</span>
+
+<span class="c1"># 上記はあくまでも例である。実際の File.open ではより簡便な
+</span><span class="c1"># File.open(&quot;foo&quot;, &quot;r&quot;) という形式が使われる
+</span></code></pre>
+<p>
+クラス定義式は、最後に評価した式の結果を返します。最後に評価した式が値を返さない場合は nil を返します。
+</p>
+<h2 id='singleton_class'>特異クラス定義</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+obj <span class="o">=</span> <span class="no">Object</span><span class="p">.</span><span class="nf">new</span> <span class="c1"># obj = nil でも可
+</span><span class="k">class</span> <span class="o">&lt;&lt;</span> obj
+  <span class="k">def</span> <span class="nf">test</span>
+    <span class="c1"># ...
+</span>  <span class="k">end</span>
+  <span class="c1"># ...
+</span><span class="k">end</span>
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+class `&lt;&lt;' expr
+  式..
+end
+</pre>
+<p>
+文法:
+</p>
+<pre>
+class `&lt;&lt;' expr
+  式..
+[rescue [error_type,..] [=&gt; evar] [then]
+  式..]..
+[else
+  式..]
+[ensure
+  式..]
+end
+</pre>
+<p>
+クラス定義と同じ構文で特定のオブジェクトにメソッドやインスタンス変数を定義/追加します。この構文の内部で定義したメソッドや定数は指定したオブジェクトに対してだけ有効になります。
+Object#clone で生成したオブジェクトには引き継がれますが，
+Object#dup で生成したオブジェクトには引き継がれません．
+</p>
+<p>
+rescue/ensure 節を指定し、例外処理ができます。例外処理については<a href="../doc/spec=2fcontrol.html#begin">制御構造/begin</a>参照。
+</p>
+<p>
+特異クラス定義式は、最後に評価した式の結果を返します。最後に評価した式が値を返さない場合は nil を返します。
+</p>
+<h2 id='module'>モジュール定義</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">module</span> <span class="nn">Foo</span>
+  <span class="k">def</span> <span class="nf">test</span>
+    <span class="c1"># ...
+</span>  <span class="k">end</span>
+    <span class="c1"># ...
+</span><span class="k">end</span>
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+module 識別子
+  式..
+end
+</pre>
+<p>
+文法:
+</p>
+<pre>
+module 識別子
+  式..
+[rescue [error_type,..] [=&gt; evar] [then]
+  式..]..
+[else
+  式..]
+[ensure
+  式..]
+end
+</pre>
+<p>
+モジュールを定義します。モジュール名はアルファベットの大文字で始まる識別子です。
+</p>
+<p>
+rescue/ensure 節を指定し、例外処理ができます。例外処理については<a href="../doc/spec=2fcontrol.html#begin">制御構造/begin</a>参照。
+</p>
+<p>
+モジュール定義は、識別子で指定した定数へのモジュールの代入になります。
+Ruby では、モジュールもオブジェクトの一つで <a href="../class/-module.html">Module</a> クラスのインスタンスです。モジュールが既に定義されいるとき、さらに同じモジュール名でモジュール定義を書くとモジュールの定義の追加になります。
+</p>
+<p>
+モジュール定義式は、最後に評価した式の結果を返します。最後に評価した式が値を返さない場合は nil を返します。
+</p>
+<h2 id='method'>メソッド定義</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">fact</span><span class="p">(</span>n<span class="p">)</span>
+  <span class="k">if</span> n <span class="o">==</span> <span class="mi">1</span> <span class="k">then</span>
+    <span class="mi">1</span>
+  <span class="k">else</span>
+    n <span class="o">*</span> fact<span class="p">(</span>n<span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+def メソッド名 ['(' [arg0 ['=' default0]] ... [',' '*' rest_args [, post ...]] [',' key1: [val1]] ... [',' '**'kwrest] [',' '&amp;' block_arg]`)']
+  式.. (body)
+[rescue [error_type,..] [=&gt; evar] [then]
+  式..]..
+[else
+  式..]
+[ensure
+  式..]
+end
+</pre>
+<p>
+この定義のある場所にメソッドを定義します。すなわち、クラス/モジュール定義中ならばそのクラス/モジュールのメソッドを定義します。トップレベルならばどこからでも呼べるメソッドを定義します。このようなメソッドは結果として他の言語における「関数」のように使えます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">hello</span>    <span class="c1"># 引数のないメソッド。
+</span>  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">Hello, world!</span><span class="s2">"</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>a, b<span class="p">)</span>    <span class="c1"># 引数のあるメソッド。括弧を省いてdef foo a, bとも
+</span>  a <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> b
+<span class="k">end</span>
+</code></pre>
+<p>
+メソッド名としては通常の識別子の他に、再定義可能な演算子(例: ==, +, -
+など <a href="../doc/spec=2foperator.html">演算子式</a> を参照)も指定できます(<a href="#operator">演算子式の定義</a>参照)。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Vector2D</span>
+  <span class="nb">attr_accessor</span> <span class="ss">:x</span>, <span class="ss">:y</span>   <span class="c1"># インスタンス変数@x, @yに対応するゲッタとセッタを定義
+</span>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span>x, y<span class="p">)</span>   <span class="c1"># コンストラクタ
+</span>    <span class="vi">@x</span> <span class="o">=</span> x; <span class="vi">@y</span> <span class="o">=</span> y   <span class="c1"># @がつくのがインスタンス変数（メンバ変数）
+</span>  <span class="k">end</span>
+  <span class="k">def</span> <span class="o">==</span><span class="p">(</span><span class="nf">other_vec</span><span class="p">)</span>   <span class="c1"># いわゆる演算子オーバーライド
+</span>    other_vec<span class="p">.</span><span class="nf">x</span> <span class="o">==</span> <span class="vi">@x</span> <span class="o">&amp;&amp;</span> other_vec<span class="p">.</span><span class="nf">y</span> <span class="o">==</span> <span class="vi">@y</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="o">+</span><span class="p">(</span><span class="nf">other_vec</span><span class="p">)</span>
+    <span class="no">Vector2D</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>other_vec<span class="p">.</span><span class="nf">x</span> <span class="o">+</span> <span class="vi">@x</span>, other_vec<span class="p">.</span><span class="nf">y</span> <span class="o">+</span> <span class="vi">@y</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="c1"># ...
+</span><span class="k">end</span>
+vec0 <span class="o">=</span> <span class="no">Vector2D</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">10</span>, <span class="mi">20</span><span class="p">)</span>; vec1 <span class="o">=</span> <span class="no">Vector2D</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">20</span>, <span class="mi">30</span><span class="p">)</span>
+<span class="nb">p</span> vec0 <span class="o">+</span> vec1 <span class="o">==</span> <span class="no">Vector2D</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">30</span>, <span class="mi">50</span><span class="p">)</span> <span class="c1">#=&gt; true
+</span></code></pre>
+<p>
+仮引数にデフォルト式が与えられた場合、メソッド呼び出しで実引数を省略したときのデフォルト値になります。ただし実引数との対応を取るため、i番目の引数にデフォルト値を指定したならば、
+i+1番目以降でも全てデフォルト値を指定するか、可変長引数を利用しなければなりません（詳細は後述）。デフォルト式の評価は呼び出し時にメソッド定義内のコンテキストで行われます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>x, y <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>    <span class="c1"># 2番目の引数yにデフォルト値を指定
+</span>  <span class="mi">10</span> <span class="o">*</span> x <span class="o">+</span> y
+<span class="k">end</span>
+<span class="nb">p</span> foo<span class="p">(</span><span class="mi">1</span>, <span class="mi">5</span><span class="p">)</span>  <span class="c1">#=&gt; 15
+</span><span class="nb">p</span> foo<span class="p">(</span><span class="mi">3</span><span class="p">)</span>     <span class="c1">#=&gt; 31
+</span><span class="nb">p</span> foo        <span class="c1">#=&gt; ArgumentError (wrong number of arguments)
+</span>
+<span class="vg">$gvar</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="k">def</span> <span class="nf">bar</span><span class="p">(</span>x, y <span class="o">=</span> <span class="vg">$gvar</span><span class="p">)</span>  <span class="c1"># 確かに定義時には$gvar == 3だが
+</span>  <span class="mi">10</span> <span class="o">*</span> x <span class="o">+</span> y
+<span class="k">end</span>
+<span class="vg">$gvar</span> <span class="o">=</span> <span class="mi">7</span>
+<span class="c1"># 呼び出し時の$gvarの値が使われる
+</span><span class="nb">p</span> bar<span class="p">(</span><span class="mi">5</span><span class="p">)</span>   <span class="c1">#=&gt; 57 (!= 53)
+</span></code></pre>
+<p>
+仮引数の直前に * がある場合には残りの実引数
+(後述の post 引数を除く)
+はみな配列とし てこの引数に格納されます。可変長引数、rest 引数などと呼ばれる機能です。このような引数は 1 つしか作れません。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>x, <span class="o">*</span>xs<span class="p">)</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="si">#{</span><span class="n">x</span><span class="si">}</span><span class="s2"> : </span><span class="si">#{</span><span class="n">xs</span><span class="p">.</span><span class="nf">inspect</span><span class="si">}</span><span class="s2">"</span>   <span class="c1"># Object#inspect は p のような詳細な内部表示
+</span><span class="k">end</span>
+foo<span class="p">(</span><span class="mi">1</span><span class="p">)</span>        <span class="c1">#=&gt; 1 : []
+</span>foo<span class="p">(</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">)</span>     <span class="c1">#=&gt; 1 : [2]
+</span>foo<span class="p">(</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">)</span>  <span class="c1">#=&gt; 1 : [2, 3]
+</span>
+<span class="k">def</span> <span class="nf">bar</span><span class="p">(</span>x, <span class="o">*</span><span class="p">)</span> <span class="c1"># 残りの引数を単に無視したいとき
+</span>  <span class="nb">puts</span> <span class="s2">"</span><span class="si">#{</span><span class="n">x</span><span class="si">}</span><span class="s2">"</span>   
+<span class="k">end</span>
+bar<span class="p">(</span><span class="mi">1</span><span class="p">)</span>        <span class="c1">#=&gt; 1 
+</span>bar<span class="p">(</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">)</span>     <span class="c1">#=&gt; 1
+</span>bar<span class="p">(</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">)</span>  <span class="c1">#=&gt; 1
+</span></code></pre>
+<p>
+Ruby 1.9 以降では可変長引数よりも後にまだ通常の引数を置くことができます。
+</p>
+<p>
+最後の仮引数の直前に &amp; があるとこのメソッドに与えられているブロックが手続きオブジェクト(<a href="../class/-proc.html">Proc</a>)としてこの引数に格納されます。これは、イテレータを定義する方法の一つです。イテレータを定義する代表的な方法は
+yield を呼び出すことです。他に <a href="../method/-proc/s/new.html">Proc.new</a>/<a href="../method/-kernel/m/proc.html">Kernel.#proc</a> を使う方法などもあります。ブロックが与えられなかった場合のブロック引数の値はnilです。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>cnt, <span class="o">&amp;</span>block_arg<span class="p">)</span>
+  cnt<span class="p">.</span><span class="nf">times</span> <span class="p">{</span> block_arg<span class="p">.</span><span class="nf">call</span> <span class="p">}</span> <span class="c1"># ブロックに収まったProcオブジェクトはcallで実行
+</span><span class="k">end</span>
+foo<span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="p">{</span> <span class="nb">print</span> <span class="s2">"</span><span class="s2">Ruby! </span><span class="s2">"</span> <span class="p">}</span> <span class="c1">#=&gt; Ruby! Ruby! Ruby!
+</span></code></pre>
+<p>
+メソッド定義において、仮引数はその種類毎に以下の順序でしか指定することはできません。いずれも省略することは可能です。
+</p>
+<ul>
+<li>デフォルト式のない引数(複数指定可)</li>
+<li>デフォルト式のある引数(複数指定可)</li>
+<li>* を伴う引数(1つだけ指定可)</li>
+<li>デフォルト式のない引数(複数指定可)</li>
+<li>キーワード引数(複数指定可)</li>
+<li>** を伴う引数(1つだけ指定可)</li>
+<li>&amp; を伴う引数(1つだけ指定可)</li>
+</ul>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># すべて持つ(極端な例なのでおすすめしない)
+</span><span class="k">def</span> <span class="nf">f</span><span class="p">(</span>a, b, c, m <span class="o">=</span> <span class="mi">1</span>, n <span class="o">=</span> <span class="mi">1</span>, <span class="o">*</span>rest, x, y, z, <span class="ss">k:</span> <span class="mi">1</span>, <span class="o">**</span>kwrest, <span class="o">&amp;</span>blk<span class="p">)</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">a: %p</span><span class="s2">"</span> <span class="o">%</span> a
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">b: %p</span><span class="s2">"</span> <span class="o">%</span> b
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">c: %p</span><span class="s2">"</span> <span class="o">%</span> c
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">m: %p</span><span class="s2">"</span> <span class="o">%</span> m
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">n: %p</span><span class="s2">"</span> <span class="o">%</span> n
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">rest: %p</span><span class="s2">"</span> <span class="o">%</span> rest
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">x: %p</span><span class="s2">"</span> <span class="o">%</span> x
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">y: %p</span><span class="s2">"</span> <span class="o">%</span> y
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">z: %p</span><span class="s2">"</span> <span class="o">%</span> z
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">k: %p</span><span class="s2">"</span> <span class="o">%</span> k
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">kwrest: %p</span><span class="s2">"</span> <span class="o">%</span> kwrest
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">blk: %p</span><span class="s2">"</span> <span class="o">%</span> blk
+<span class="k">end</span>
+
+f<span class="p">(</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">b</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">c</span><span class="s2">"</span>, <span class="mi">2</span>, <span class="mi">3</span>, <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">baz</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">x</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">y</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">z</span><span class="s2">"</span>, <span class="ss">k:</span> <span class="mi">42</span>, <span class="ss">u:</span> <span class="s2">"</span><span class="s2">unknown</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span>
+  <span class="c1">#=&gt; a: &quot;a&quot;
+</span>  <span class="c1">#   b: &quot;b&quot;
+</span>  <span class="c1">#   c: &quot;c&quot;
+</span>  <span class="c1">#   m: 2
+</span>  <span class="c1">#   n: 3
+</span>  <span class="c1">#   rest: &quot;foo&quot;
+</span>  <span class="c1">#   x: &quot;x&quot;
+</span>  <span class="c1">#   y: &quot;y&quot;
+</span>  <span class="c1">#   z: &quot;z&quot;
+</span>  <span class="c1">#   k: 42
+</span>  <span class="c1">#   kwrest: {:u=&gt;&quot;unknown&quot;}
+</span>  <span class="c1">#   blk: #&lt;Proc:0x007f7e7d8dd6c0@-:16&gt;
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例: イテレータの定義</span>
+<code>
+<span class="c1"># yield を使う
+</span><span class="k">def</span> <span class="nf">foo</span>
+  <span class="c1"># block_given? は、メソッドがブロックを渡されて
+</span>  <span class="c1"># 呼ばれたかどうかを判定する組み込み関数
+</span>  <span class="k">if</span> block_given?
+    <span class="k">yield</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># Proc.new を使う
+</span><span class="k">def</span> <span class="nf">bar</span>
+  <span class="k">if</span> block_given?
+    <span class="no">Proc</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">)</span>    <span class="c1"># proc.call(1,2) でも同じ(proc は組み込み関数)
+</span>  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># 応用: 引数として Proc オブジェクトとブロックの
+</span><span class="c1"># 両方を受け付けるイテレータを定義する例
+</span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>block <span class="o">=</span> <span class="no">Proc</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span>
+  block<span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">)</span>
+<span class="k">end</span>
+foo<span class="p">(</span><span class="nb">proc</span> <span class="p">{</span><span class="o">|</span>a,b<span class="o">|</span> <span class="nb">p</span> <span class="p">[</span>a,b<span class="p">]</span><span class="p">}</span><span class="p">)</span>
+foo <span class="p">{</span><span class="o">|</span>a,b<span class="o">|</span> <span class="nb">p</span> <span class="p">[</span>a,b<span class="p">]</span><span class="p">}</span>
+
+<span class="c1"># ブロック引数を使う
+</span><span class="k">def</span> <span class="nf">baz</span><span class="p">(</span><span class="o">&amp;</span>block<span class="p">)</span>
+  <span class="k">if</span> block
+    block<span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+またメソッド実行時の例外を捕捉するために begin 式と同様のrescue, else, ensure 節を指定できます。例外処理については<a href="../doc/spec=2fcontrol.html#begin">制御構造/begin</a>参照。
+</p>
+<p>
+メソッド定義式は、メソッド名を <a href="../class/-symbol.html">Symbol</a> にしたオブジェクトを返します。
+</p>
+<p>
+@see <a class="external" href="https://magazine.rubyist.net/articles/0041/0041-200Special-kwarg.html">https://magazine.rubyist.net/articles/0041/0041-200Special-kwarg.html</a>
+</p>
+<h3 id='operator'>演算子式の定義</h3>
+<p>
+<a href="../doc/spec=2foperator.html">演算子式</a>において、「再定義可能な演算子」に分類された演算子の実装はメソッドなので、定義することが可能です。
+</p>
+<p>
+これらの演算子式を定義する例を以下に挙げます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># 二項演算子
+</span><span class="k">def</span> <span class="o">+</span><span class="p">(</span><span class="nf">other</span><span class="p">)</span>; <span class="k">end</span>                <span class="c1"># obj + other
+</span><span class="k">def</span> <span class="o">-</span><span class="p">(</span><span class="nf">other</span><span class="p">)</span>; <span class="k">end</span>                <span class="c1"># obj - other
+</span>
+<span class="c1"># 単項プラス/マイナス
+</span><span class="k">def</span> <span class="o">+@</span>; <span class="k">end</span>                      <span class="c1"># +obj
+</span><span class="k">def</span> <span class="o">-@</span>; <span class="k">end</span>                      <span class="c1"># -obj
+</span>
+<span class="c1"># 要素代入
+</span><span class="k">def</span> <span class="nf">foo=</span><span class="p">(</span><span class="nf">value</span><span class="p">)</span>; <span class="k">end</span>             <span class="c1"># obj.foo = value
+</span>
+<span class="c1"># [] と []=
+</span><span class="k">def</span> <span class="o">[]</span><span class="p">(</span><span class="nf">key</span><span class="p">)</span>; <span class="k">end</span>                 <span class="c1"># obj[key]
+</span><span class="k">def</span> <span class="o">[]=</span><span class="p">(</span><span class="nf">key</span>, <span class="nf">value</span><span class="p">)</span>; <span class="k">end</span>         <span class="c1"># obj[key] = value
+</span><span class="k">def</span> <span class="o">[]=</span><span class="p">(</span><span class="nf">key</span>, key2, value<span class="p">)</span>; <span class="k">end</span>   <span class="c1"># obj[key, key2] = value
+</span>
+<span class="c1"># バッククォート記法
+</span><span class="k">def</span> <span class="sb">`</span><span class="p">(</span><span class="nf">arg</span><span class="p">)</span>; <span class="k">end</span>                  <span class="c1"># `arg` または %x(arg)
+</span></code></pre>
+<p>
+バッククォート記法の実装はメソッドなのでこのように再定義が可能です。普通はこのメソッドを再定義するべきではありませんが、まれにOS(シェル)のコマンド実行の挙動に不具合がある場合などに利用できます。
+</p>
+<h3 id='nest_method'>メソッド定義のネスト</h3>
+<p>
+ネスト可能です。ネストされた定義式は、それを定義したメソッドが実行された時に定義されます。このことを除けば、普通のメソッド定義式と同じです。以下の例を参照してください。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+    <span class="k">def</span> <span class="nf">bar</span>
+      <span class="nb">p</span> <span class="ss">:bar</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">method_added</span><span class="p">(</span><span class="nf">name</span><span class="p">)</span>
+    <span class="nb">puts</span> <span class="s2">"</span><span class="s2">method \&quot;</span><span class="si">#{</span><span class="n">name</span><span class="si">}</span><span class="s2">\&quot; was added</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+obj <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span>
+obj<span class="p">.</span><span class="nf">bar</span> <span class="k">rescue</span> <span class="k">nil</span> <span class="c1"># =&gt; undefined method `bar' for #&lt;Foo:0x4019eda4&gt;
+</span>obj<span class="p">.</span><span class="nf">foo</span>            <span class="c1"># =&gt; method &quot;bar&quot; was added
+</span>obj<span class="p">.</span><span class="nf">foo</span>            <span class="c1"># =&gt; warning: method redefined; discarding old bar
+</span><span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">bar</span>        <span class="c1"># =&gt; :bar  (他のインスタンスでも定義済み)
+</span></code></pre>
+<h3 id='eval_method'>メソッドの評価</h3>
+<p>
+メソッドが呼び出されると、以下の順で式が評価されます。
+</p>
+<ul>
+<li>指定されていれば引数のデフォルト式</li>
+<li>メソッドの本体 body</li>
+<li>指定されていれば例外の発生の有無によりメソッド定義式の rescue
+節または else 節</li>
+<li>指定されていれば ensure 節</li>
+</ul>
+<p>
+引数のデフォルト式も含め、すべてそのメソッドのコンテキストで評価されます。
+</p>
+<p>
+メソッドの戻り値は return に渡した値です。return が呼び出されなかった場合は、
+body の最後の式の値を返します。
+body の最後の式が値を返さない式の場合は nil を返します。
+</p>
+<p>
+またメソッドは定義する前に呼び出すことはできません。例えば
+</p>
+<pre class="highlight ruby">
+<code>
+foo          <span class="c1"># &lt;- foo は未定義
+</span><span class="k">def</span> <span class="nf">foo</span>
+  <span class="nb">print</span> <span class="s2">"</span><span class="s2">foo\n</span><span class="s2">"</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+は未定義メソッドの呼び出しで例外 <a href="../class/-name-error.html">NameError</a> を発生させます。
+</p>
+<h2 id='singleton_method'>特異メソッド定義</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">.</span><span class="nf">test</span>
+  <span class="nb">print</span> <span class="s2">"</span><span class="s2">this is foo\n</span><span class="s2">"</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+def 式 `.' 識別子 [`(' [引数 [`=' default]] ... [`,' `*' 引数 ]`)']
+  式..
+[rescue [error_type,..] [=&gt; evar] [then]
+  式..]..
+[else
+  式..]
+[ensure
+  式..]
+end
+</pre>
+<p>
+特異メソッドとはクラスではなくある特定のオブジェクトに固有のメソッドです。特異メソッドの定義はネストできます。
+</p>
+<p>
+クラスの特異メソッドはそのサブクラスにも継承されます。言い替えればクラスの特異メソッドは他のオブジェクト指向システムにおけるクラスメソッドの働きをすることになります。
+</p>
+<p>
+特異メソッド定義式は、メソッド名を <a href="../class/-symbol.html">Symbol</a> にしたオブジェクトを返します。
+</p>
+<h2 id='class_method'>クラスメソッドの定義</h2>
+<p>
+Ruby におけるクラスメソッドとはクラスの特異メソッドのことです。Ruby では、クラスもオブジェクトなので、普通のオブジェクトと同様に特異メソッドを定義できます。
+</p>
+<p>
+したがって、何らかの方法でクラスオブジェクトにメソッドを定義すれば、それがクラスメソッドとなります。具体的には以下のようにして定義することが出来ます(モジュールも同様です)。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># 特異メソッド方式。
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Hoge</span>
+  <span class="k">def</span> <span class="no">Hoge</span><span class="p">.</span><span class="nf">foo</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># クラス定義の外でも良い
+</span><span class="k">def</span> <span class="no">Hoge</span><span class="p">.</span><span class="nf">bar</span>
+<span class="k">end</span>
+
+<span class="c1"># 以下のようにすればクラス名が変わってもメソッド部の変更が不要
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Hoge</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="p">.</span><span class="nf">baz</span>
+    <span class="s1">'To infinity and beyond!'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># 特異クラス方式。複数のメソッドを一度に定義するとき向き
+</span><span class="k">class</span> <span class="o">&lt;&lt;</span> <span class="no">Hoge</span>
+  <span class="k">def</span> <span class="nf">bar</span>
+    <span class="s1">'bar'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># モジュールをクラスに extend すれば、モジュールのインスタンス
+</span><span class="c1"># メソッドがクラスメソッドになる
+</span><span class="k">module</span> <span class="nn">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Hoge</span>
+  <span class="nf">extend</span> <span class="no">Foo</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+extend については、<a href="../method/-object/i/extend.html">Object#extend</a> を参照してください。
+</p>
+<h2 id='limit'>呼び出し制限</h2>
+<p>
+メソッドは public、private、protected の三通りの呼び出し制限を持ちます。
+</p>
+<ul>
+<li>public に設定されたメソッドは制限なしに呼び出せます。</li>
+<li>private に設定されたメソッドは関数形式でしか呼び出せません。
+ただし self.foo のように self. と書かれている場合は呼び出すことができます。</li>
+<li>protected に設定されたメソッドは、そのメソッドを持つオブジェクトが
+selfであるコンテキスト(メソッド定義式やinstance_eval)でのみ呼び出せ
+ます。</li>
+</ul>
+<pre class="highlight ruby">
+<span class="caption">例: protected の可視性</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+   <span class="nb">p</span> <span class="nb">caller</span><span class="p">.</span><span class="nf">last</span>
+  <span class="k">end</span>
+  protected <span class="ss">:foo</span>
+<span class="k">end</span>
+
+obj <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span>
+
+<span class="c1"># そのままでは呼べない
+</span>obj<span class="p">.</span><span class="nf">foo</span> <span class="k">rescue</span> <span class="k">nil</span>    <span class="c1"># =&gt; -:11 - protected method `foo' called for #&lt;Foo:0x401a1860&gt; (NameError)
+</span>
+<span class="c1"># クラス定義内でも呼べない
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">foo</span> <span class="k">rescue</span> <span class="k">nil</span> <span class="c1"># =&gt; -:15 - protected method `foo' called for #&lt;Foo:0x4019eea8&gt;
+</span>  <span class="c1"># メソッド定義式内で呼べる
+</span>  <span class="k">def</span> <span class="nf">bar</span>
+    <span class="nc">self</span><span class="p">.</span><span class="nf">foo</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">bar</span>             <span class="c1"># =&gt; [&quot;-:21&quot;]
+</span>
+<span class="c1"># 特異メソッド定義式内でも呼べる
+</span><span class="k">def</span> <span class="nf">obj</span><span class="p">.</span><span class="nf">bar</span>
+  <span class="nc">self</span><span class="p">.</span><span class="nf">foo</span> <span class="k">rescue</span> <span class="k">nil</span>
+<span class="k">end</span>
+obj<span class="p">.</span><span class="nf">bar</span>                 <span class="c1"># =&gt; [&quot;-:27&quot;]
+</span></code></pre>
+<p>
+デフォルトでは def 式がクラス定義の外(トップレベル)にあれば private、クラス定義の中にあれば public に定義します。これは <a href="../method/-module/i/public.html">Module#public</a>、<a href="../method/-module/i/private.html">Module#private</a>、
+<a href="../method/-module/i/protected.html">Module#protected</a> を用いて変更できます。ただし <a href="../method/-object/i/initialize.html">Object#initialize</a> という名前のメソッドと
+<a href="../method/-object/i/initialize_copy.html">Object#initialize_copy</a> という名前のメソッドは定義する場所に関係なく常に private になります。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">foo</span>           <span class="c1"># デフォルトは private
+</span><span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">C</span>
+  <span class="k">def</span> <span class="nf">bar</span>         <span class="c1"># デフォルトは public
+</span>  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">ok</span>          <span class="c1"># デフォルトは public
+</span>  <span class="k">end</span>
+  private <span class="ss">:ok</span>     <span class="c1"># …だが、ここで private に変わる
+</span>
+  <span class="k">def</span> <span class="nf">initialize</span>  <span class="c1"># initialize は private
+</span>  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+private と protected は同じ目的(そのメソッドを隠し外から呼べないようにする)で使用されますが、以下のような例では、private
+は使えず、protected を利用する必要があります。正確には、private には関数を定義する目的があるが、呼び出し制限の目的でも(ここに挙げた制限があるにもかかわらず)
+protected よりは private が使われることの方が多いようです。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">_val</span>
+    <span class="s1">'val'</span>
+  <span class="k">end</span>
+  protected <span class="ss">:_val</span>
+
+  <span class="k">def</span> <span class="nf">op</span><span class="p">(</span>other<span class="p">)</span>
+
+    <span class="c1"># other も Foo のインスタンスを想定
+</span>    <span class="c1"># _val が private だと関数形式でしか呼べないため
+</span>    <span class="c1"># このように利用できない
+</span>
+    <span class="nc">self</span><span class="p">.</span><span class="nf">_val</span> <span class="o">+</span> other<span class="p">.</span><span class="nf">_val</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<h2 >定義に関する操作</h2>
+<h3 id='alias'>alias</h3>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">alias</span> foo bar
+<span class="k">alias</span> <span class="ss">:foo</span> <span class="ss">:bar</span>
+<span class="k">alias</span> <span class="vg">$MATCH</span> <span class="vg">$&amp;</span>
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+alias 新メソッド名 旧メソッド名
+alias 新グローバル変数名 旧グローバル変数名
+</pre>
+<p>
+メソッドあるいはグローバル変数に別名をつけます。メソッド名には識別子そのものか <a href="../doc/spec=2fliteral.html#symbol">リテラル/シンボル</a> を指定します(obj.method のような式を書くことはできません)。alias の引数はメソッド呼び出し等の一切の評価は行われません。
+</p>
+<p>
+メソッドの定義内で別名を付けるには<a href="../class/-module.html">Module</a>クラスのメソッド
+<a href="../method/-module/i/alias_method.html">Module#alias_method</a> を利用して下さい。
+</p>
+<p>
+別名を付けられたメソッドは、その時点でのメソッド定義を引き継ぎ、元のメソッドが再定義されても、再定義前の古いメソッドと同じ働きをします。あるメソッドの動作を変え、再定義するメソッドで元のメソッドの結果を利用したいときなどに利用されます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># メソッド foo を定義
+</span><span class="k">def</span> <span class="nf">foo</span>
+  <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>
+<span class="k">end</span>
+
+<span class="c1"># 別名を設定(メソッド定義の待避)
+</span><span class="k">alias</span> <span class="ss">:_orig_foo</span> <span class="ss">:foo</span>
+
+<span class="c1"># foo を再定義(元の定義を利用)
+</span><span class="k">def</span> <span class="nf">foo</span>
+  _orig_foo <span class="o">*</span> <span class="mi">2</span>
+<span class="k">end</span>
+
+<span class="nb">p</span> foo  <span class="c1"># =&gt; &quot;foofoo&quot;
+</span></code></pre>
+<p>
+グローバル変数の alias を設定するとまったく同じ変数が定義されます。このことは一方の変数への代入は他方の変数にも反映されるようになることを意味します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># 特殊な変数のエイリアスは一方の変更が他方に反映される
+</span><span class="vg">$_</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="k">alias</span> <span class="vg">$foo</span> <span class="vg">$_</span>
+<span class="vg">$_</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="nb">p</span> <span class="p">[</span><span class="vg">$foo</span>, <span class="vg">$_</span><span class="p">]</span>   <span class="c1"># =&gt; [2, 2]
+</span>
+<span class="vg">$bar</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="k">alias</span> <span class="vg">$foo</span> <span class="vg">$bar</span>
+<span class="vg">$bar</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="nb">p</span> <span class="p">[</span><span class="vg">$foo</span>, <span class="vg">$bar</span><span class="p">]</span> <span class="c1"># =&gt; [4, 4]
+</span></code></pre>
+<p>
+ただし、正規表現の部分文字列に対応する変数 $1,$2, ... には別名を付けることができません。また、インタプリタに対して重要な意味のあるグローバル変数
+(<a href="../doc/spec=2fvariables.html#builtin_variable">変数と定数</a> を参照)を再定義すると動作に支障を来す場合があります。
+</p>
+<p>
+alias 式は nil を返します。
+</p>
+<h3 id='undef'>undef</h3>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">undef</span> bar
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+undef メソッド名[, メソッド名[, ...]]
+</pre>
+<p>
+メソッドの定義を取り消します。メソッド名には識別子そのものか <a href="../doc/spec=2fliteral.html#symbol">リテラル/シンボル</a> を指定します(obj.method のような式を書くことはできません)。
+undef の引数はメソッド呼び出し等の一切の評価は行われません。
+</p>
+<p>
+メソッドの定義内で定義を取り消すには<a href="../class/-module.html">Module</a>クラスのメソッド <a href="../method/-module/i/undef_method.html">Module#undef_method</a> を利用して下さい。
+</p>
+<p>
+undef のより正確な動作は、メソッド名とメソッド定義との関係を取り除き、そのメソッド名を特殊な定義と関連づけます。この状態のメソッドの呼び出しはたとえスーパークラスに同名のメソッドがあっても例外 <a href="../class/-name-error.html">NameError</a> を発生させます。
+(一方、メソッド <a href="../method/-module/i/remove_method.html">Module#remove_method</a> は、関係を取り除くだけです。この違いは重要です)。
+</p>
+<p>
+alias による別名定義と undef による定義取り消しによってクラスのインタフェースをスーパークラスと独立に変更することができます。ただし、メソッドが self にメッセージを送っている場合もあるので、よく注意しないと既存のメソッドが動作しなくなる可能性があります。
+</p>
+<p>
+undef 式は nil を返します。
+</p>
+<h3 id='defined'>defined?</h3>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">defined?</span> <span class="nb">print</span>
+<span class="k">defined?</span> <span class="no">File</span><span class="p">.</span><span class="nf">print</span>
+<span class="k">defined?</span><span class="p">(</span>foobar<span class="p">)</span>
+<span class="k">defined?</span><span class="p">(</span><span class="vg">$foobar</span><span class="p">)</span>
+<span class="k">defined?</span><span class="p">(</span><span class="vi">@foobar</span><span class="p">)</span>
+<span class="k">defined?</span><span class="p">(</span><span class="no">Foobar</span><span class="p">)</span>
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+defined? 式
+</pre>
+<p>
+式が定義されていなければ、偽を返します。定義されていれば式の種別を表す文字列を返します。
+</p>
+<p>
+定義されていないメソッド、undef されたメソッド、<a href="../method/-module/i/remove_method.html">Module#remove_method</a>
+により削除されたメソッドのいずれに対しても defined? は偽を返します。
+</p>
+<p>
+特別な用法として以下があります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">defined?</span> <span class="k">yield</span>
+</code></pre>
+<p>
+yield の呼び出しが可能なら真(文字列 &quot;yield&quot;)を返します。
+<a href="../method/-kernel/m/block_given=3f.html">Kernel.#block_given?</a> と同様にメソッドがブロック付きで呼ばれたかを判断する方法になります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">defined?</span> <span class="k">super</span>
+</code></pre>
+<p>
+super の実行が可能なら真(文字列 &quot;super&quot;)を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">defined?</span> a <span class="o">=</span> <span class="mi">1</span>
+<span class="nb">p</span> a <span class="c1"># =&gt; nil
+</span></code></pre>
+<p>
+&quot;assignment&quot; を返します。実際に代入は行いませんがローカル変数は定義されます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/(.)/</span> <span class="o">=~</span> <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>
+<span class="k">defined?</span> <span class="vg">$&amp;</span>  <span class="c1"># =&gt; &quot;global-variable&quot;
+</span><span class="k">defined?</span> <span class="vg">$1</span>  <span class="c1"># =&gt; &quot;global-variable&quot;
+</span><span class="k">defined?</span> <span class="vg">$2</span>  <span class="c1"># =&gt; nil
+</span></code></pre>
+<p>
+$&amp;, $1, $2, などは直前のマッチの結果値が設定された場合だけ真を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">def</span> <span class="no">Foo</span><span class="p">(</span><span class="nf">a</span>,b<span class="p">)</span>
+<span class="k">end</span>
+<span class="nb">p</span> <span class="k">defined?</span> <span class="no">Foo</span>       <span class="c1"># =&gt; nil
+</span><span class="nb">p</span> <span class="k">defined?</span> <span class="no">Foo</span><span class="p">(</span><span class="p">)</span>     <span class="c1"># =&gt; &quot;method&quot;
+</span><span class="no">Foo</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="nb">p</span> <span class="k">defined?</span> <span class="no">Foo</span>       <span class="c1"># =&gt; &quot;constant&quot;
+</span></code></pre>
+<p>
+大文字で始まるメソッド名に対しては () を明示しなければ定数の判定を行ってしまいます。
+</p>
+<p>
+以下は、defined? が返す値の一覧です。
+</p>
+<ul>
+<li>&quot;super&quot;</li>
+<li>&quot;method&quot;</li>
+<li>&quot;yield&quot;</li>
+<li>&quot;self&quot;</li>
+<li>&quot;nil&quot;</li>
+<li>&quot;true&quot;</li>
+<li>&quot;false&quot;</li>
+<li>&quot;assignment&quot;</li>
+<li>&quot;local-variable&quot;</li>
+<li>&quot;local-variable(in-block)&quot;</li>
+<li>&quot;global-variable&quot;</li>
+<li>&quot;instance-variable&quot;</li>
+<li>&quot;constant&quot;</li>
+<li>&quot;class variable&quot;</li>
+<li>&quot;expression&quot;</li>
+</ul>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

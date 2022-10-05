@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Psych.safe_load (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="安全に YAML フォーマットの文書を読み込み Ruby のオブジェクトを生成して返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/psych.html">psychライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-psych.html">Psychモジュール</a>
+      </li>
+      <li>
+        safe_load 
+      </li>
+    </ol>
+  </nav>
+
+<h1>singleton method Psych.safe_load</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_SAFE_LOAD"><code>safe_load(yaml, permitted_classes: [], permitted_symbols: [], aliases: false, filename: nil, fallback: nil, symbolize_names: false, freeze: false) -&gt; object</code><span class="permalink">[<a href="../../../method/-psych/s/safe_load.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Psych.html#method-c-safe_load">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>safe_load(yaml, legacy_permitted_classes=[], legacy_permitted_symbols=[], legacy_aliases=false, legacy_filename=nil) -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+安全に YAML フォーマットの文書を読み込み Ruby のオブジェクトを生成して返します。
+</p>
+<p>
+デフォルトでは以下のクラスのオブジェクトしか変換しません。
+</p>
+<ul>
+<li>TrueClass</li>
+<li>FalseClass</li>
+<li>NilClass</li>
+<li>Numeric</li>
+<li>String</li>
+<li>Array</li>
+<li>Hash</li>
+</ul>
+<p>
+再帰的なデータ構造はデフォルトでは許可されていません。
+</p>
+<p>
+任意のクラスを許可するにはキーワード引数 permitted_classes を指定すると、そのクラスが追加されます。例えば Date クラスを許可するには以下のように書いてください:
+</p>
+<pre class="highlight ruby">
+<span class="caption">permitted_classes: に Date を渡した例</span>
+<code>
+<span class="no">Psych</span><span class="p">.</span><span class="nf">safe_load</span><span class="p">(</span>yaml, <span class="ss">permitted_classes:</span> <span class="p">[</span><span class="no">Date</span><span class="p">]</span><span class="p">)</span>
+</code></pre>
+<p>
+すると上のクラス一覧に加えて Date クラスが読み込まれます。
+</p>
+<p>
+エイリアスはキーワード引数 aliases を指定することで明示的に許可できます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">aliases: true の例</span>
+<code>
+x <span class="o">=</span> <span class="p">[</span><span class="p">]</span>
+x <span class="o">&lt;&lt;</span> x
+yaml <span class="o">=</span> <span class="no">Psych</span><span class="p">.</span><span class="nf">dump</span> x
+<span class="no">Psych</span><span class="p">.</span><span class="nf">safe_load</span> yaml                <span class="c1"># =&gt; 例外発生
+</span><span class="no">Psych</span><span class="p">.</span><span class="nf">safe_load</span> yaml, <span class="ss">aliases:</span> <span class="k">true</span> <span class="c1"># =&gt; エイリアスが読み込まれる
+</span></code></pre>
+<p>
+yaml に許可されていないクラスが含まれていた場合は、
+Psych::DisallowedClass 例外が発生します。
+</p>
+<p>
+yaml がエイリアスを含んでいてキーワード引数 aliases が false の時、
+Psych::BadAlias 例外が発生します。
+</p>
+<p>
+filename はパース中に発生した例外のメッセージに用います。
+</p>
+<p>
+キーワード引数 symbolize_names に true を指定した場合はハッシュのキーを <a href="../../../class/-symbol.html">Symbol</a> に変換して返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">symbolize_names: true の例</span>
+<code>
+<span class="no">Psych</span><span class="p">.</span><span class="nf">safe_load</span><span class="p">(</span><span class="s2">"</span><span class="s2">---\n foo: bar</span><span class="s2">"</span><span class="p">)</span>                         <span class="c1"># =&gt; {&quot;foo&quot;=&gt;&quot;bar&quot;}
+</span><span class="no">Psych</span><span class="p">.</span><span class="nf">safe_load</span><span class="p">(</span><span class="s2">"</span><span class="s2">---\n foo: bar</span><span class="s2">"</span>, <span class="ss">symbolize_names:</span> <span class="k">true</span><span class="p">)</span>  <span class="c1"># =&gt; {:foo=&gt;&quot;bar&quot;}
+</span></code></pre>
+<p>
+キーワード引数 freeze に true を指定した場合は再帰的に
+<a href="../../../method/-object/i/freeze.html">Object#freeze</a> したオブジェクトを返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">freeze: true の例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">psych</span><span class="s2">"</span>
+
+data <span class="o">=</span> <span class="no">&lt;&lt;~EOS</span>
+<span class="sh">aaa:
+  bbb: [hoge]
+</span><span class="no">EOS
+</span>
+yaml <span class="o">=</span> <span class="no">Psych</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span>data, <span class="ss">freeze:</span> <span class="k">true</span><span class="p">)</span>
+<span class="nb">p</span> yaml
+<span class="c1"># =&gt; {&quot;aaa&quot;=&gt;{&quot;bbb&quot;=&gt;[&quot;hoge&quot;]}}
+</span><span class="nb">p</span> yaml<span class="p">.</span><span class="nf">frozen?</span>                        <span class="c1"># = true
+</span><span class="nb">p</span> yaml<span class="p">[</span><span class="s2">"</span><span class="s2">aaa</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">frozen?</span>                 <span class="c1"># = true
+</span><span class="nb">p</span> yaml<span class="p">[</span><span class="s2">"</span><span class="s2">aaa</span><span class="s2">"</span><span class="p">]</span><span class="p">[</span><span class="s2">"</span><span class="s2">bbb</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">frozen?</span>          <span class="c1"># = true
+</span><span class="nb">p</span> yaml<span class="p">[</span><span class="s2">"</span><span class="s2">aaa</span><span class="s2">"</span><span class="p">]</span><span class="p">[</span><span class="s2">"</span><span class="s2">bbb</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">first</span><span class="p">.</span><span class="nf">frozen?</span>    <span class="c1"># = true
+</span></code></pre>
+<p>
+また legacy_permitted_classes などのオプション引数は非推奨な引数となっています。
+<a href="../../../method/-kernel/v/=2dw.html">$-w</a> が true の時にオプション引数を渡すと警告が出力されます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">オプション引数を使用した例</span>
+<code>
+<span class="c1"># warning: Passing permitted_classes with the 2nd argument of Psych.safe_load is deprecated. Use keyword argument like Psych.safe_load(yaml, permitted_classes: ...) instead.
+</span><span class="no">Psych</span><span class="p">.</span><span class="nf">safe_load</span><span class="p">(</span><span class="s2">"</span><span class="s2">"</span>, <span class="p">[</span><span class="no">Date</span><span class="p">]</span><span class="p">)</span>
+</code></pre>
+<dl>
+<dt class='method-param'>[PARAM] io:</dt>
+<dd>
+YAMLフォーマットの文書の読み込み先のIOオブジェクト。
+</dd>
+<dt class='method-param'>[PARAM] permitted_classes:</dt>
+<dd>
+追加で読み込みを許可するクラスの配列。
+</dd>
+<dt class='method-param'>[PARAM] permitted_symbols:</dt>
+<dd>
+引数 permitted_classesに <a href="../../../class/-symbol.html">Symbol</a> を含む場合に読み込みを許可する <a href="../../../class/-symbol.html">Symbol</a> の配列。省略した場合は全ての <a href="../../../class/-symbol.html">Symbol</a> を許可します。
+</dd>
+<dt class='method-param'>[PARAM] aliases:</dt>
+<dd>
+エイリアスの読み込みを許可するかどうか。
+</dd>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+<a href="../../../class/-psych=3a=3a-syntax-error.html">Psych::SyntaxError</a> 発生時にファイル名として表示する文字列。
+</dd>
+<dt class='method-param'>[PARAM] fallback:</dt>
+<dd>
+引数 yaml に空のYAMLを指定した場合の戻り値を指定します。デフォルトは nil です。
+</dd>
+<dt class='method-param'>[PARAM] symbolize_names:</dt>
+<dd>
+ハッシュ(YAMLの仕様では正確にはマッピング)のキーを <a href="../../../class/-symbol.html">Symbol</a> に変換するかどうかを指定します。
+true を指定した場合は変換します。デフォルトでは文字列に変換されます。
+</dd>
+<dt class='method-param'>[PARAM] freeze:</dt>
+<dd>
+true を指定すると再帰的に freeze されたオブジェクトを返します。デフォルトは false です。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

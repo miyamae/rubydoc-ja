@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>IO.popen (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="サブプロセスを実行し、そのプロセスの標準入出力
+との間にパイプラインを確立します。生成したパイプを [[c:IO]] オブジェクトとして返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-i-o.html">IOクラス</a>
+      </li>
+      <li>
+        popen 
+      </li>
+    </ol>
+  </nav>
+
+<h1>singleton method IO.popen</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_POPEN"><code>popen(env = {}, command, mode = &quot;r&quot;, opt={}) -&gt; IO</code><span class="permalink">[<a href="../../../method/-i-o/s/popen.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/IO.html#method-c-popen">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>popen(env = {}, command, mode = &quot;r&quot;, opt={}) {|f| ... } -&gt; object</code></dt>
+<dt class="method-heading"><code>popen([env = {}, cmdname, *args, execopt={}], mode = &quot;r&quot;, opt={}) -&gt; IO</code></dt>
+<dt class="method-heading"><code>popen([env = {}, cmdname, *args, execopt={}], mode = &quot;r&quot;, opt={}) {|f| ... } -&gt; object</code></dt>
+<dt class="method-heading"><code>popen([env = {}, [cmdname, arg0], *args, execopt={}], mode = &quot;r&quot;, opt={}) -&gt; IO</code></dt>
+<dt class="method-heading"><code>popen([env = {}, [cmdname, arg0], *args, execopt={}], mode = &quot;r&quot;, opt={}) {|f| ... } -&gt; object</code></dt>
+<dt class="method-heading"><code>popen(env = {}, [cmdname, *args, execopt={}], mode = &quot;r&quot;, opt={}) -&gt; IO</code></dt>
+<dt class="method-heading"><code>popen(env = {}, [cmdname, *args, execopt={}], mode = &quot;r&quot;, opt={}) {|f| ... } -&gt; object</code></dt>
+<dt class="method-heading"><code>popen(env = {}, [[cmdname, arg0], *args, execopt={}], mode = &quot;r&quot;, opt={}) -&gt; IO</code></dt>
+<dt class="method-heading"><code>popen(env = {}, [[cmdname, arg0], *args, execopt={}], mode = &quot;r&quot;, opt={}) {|f| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+サブプロセスを実行し、そのプロセスの標準入出力との間にパイプラインを確立します。生成したパイプを <a href="../../../class/-i-o.html">IO</a> オブジェクトとして返します。
+</p>
+<pre>
+p io = IO.popen(&quot;cat&quot;, &quot;r+&quot;)  # =&gt; #&lt;IO:fd 4&gt;
+io.puts &quot;foo&quot;
+io.close_write
+p io.gets                     # =&gt; &quot;foo\n&quot;
+</pre>
+<p>
+サブプロセスを指定する方法は2通りあります。文字列を指定する場合と配列を指定する場合です。文字列の場合は、シェルを経由して子プロセスを実行し、配列の場合は、シェルを経由せずに子プロセスを実行します。
+</p>
+<p>
+シェルを経由しない場合(上のシグネチャで cmdname を含む場合)には *args
+がサブプロセスの引数として使われます。この場合には *args はシェルでのワイルドカード展開などはなされません。
+</p>
+<p>
+配列内に配列を指定することで、arg0(みせかけのプログラム名)を指定することができます。
+</p>
+<p>
+ブロックが与えられた場合は生成した IO オブジェクトを引数にブロックを実行し、ブロックの実行結果を返します。ブロックの実行後、生成したパイプは自動的にクローズされます。
+</p>
+<pre>
+p IO.popen(&quot;cat&quot;, &quot;r+&quot;) {|io|
+  io.puts &quot;foo&quot;
+  io.close_write
+  io.gets
+}
+# =&gt; &quot;foo\n&quot;
+</pre>
+<p>
+opt でプロセス起動のためのオプションや、パイプ IO オブジェクトの属性(エンコーディングや読み書き能力)を指定することができます。プロセス起動のためのオプションは <a href="../../../method/-kernel/m/spawn.html">Kernel.#spawn</a> と、パイプオブジェクトの属性の指定のオプションは <a href="../../../method/-i-o/s/new.html">IO.new</a> と共通です。つまり、 :external_encoding や :unsetenv_others が指定できます。オプションの詳しい意味は <a href="../../../method/-kernel/m/spawn.html">Kernel.#spawn</a> や <a href="../../../method/-i-o/s/new.html">IO.new</a> を参照してください。
+</p>
+<pre>
+# nkfプロセスから得られる文字列を EUC-JP と指定する
+# IO.new などと共通のオプションが指定できる
+IO.popen(&quot;nkf -e filename&quot;, external_encoding: &quot;EUC-JP&quot;){|nkf_io|
+  nkf_io.read
+}
+</pre>
+<p>
+これに加えて、プロセス起動のためのオプションを execopt で指定することもできます。
+execopt ではエンコーディングなどは指定できません。
+</p>
+<pre>
+# 標準エラー出力を子プロセス側で標準出力にリダイレクトする
+# 標準エラー出力と標準出力がマージされる
+# Kernel.#spawn と共通のオプション
+IO.popen([&quot;ls&quot;, &quot;/&quot;, :err=&gt;[:child, :out]]) {|ls_io|
+  ls_result_with_error = ls_io.read
+}
+
+# 上と同じ、配列の外側でもオプションが指定できる
+IO.popen([&quot;ls&quot;, &quot;/&quot;], :err=&gt;[:child, :out]) {|ls_io|
+  ls_result_with_error = ls_io.read
+}
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+環境変数を { 変数名 =&gt; 内容 } という形式の <a href="../../../class/-hash.html">Hash</a> で渡します。
+</dd>
+<dt class='method-param'>[PARAM] command:</dt>
+<dd>
+コマンド名を文字列で指定します。シェルを経由して実行されます。
+</dd>
+<dt class='method-param'>[PARAM] cmdname:</dt>
+<dd>
+コマンド名を文字列で指定します
+</dd>
+<dt class='method-param'>[PARAM] arg0:</dt>
+<dd>
+みせかけのコマンド名を指定します
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+コマンドのパラメータを文字列で指定します
+</dd>
+<dt class='method-param'>[PARAM] execopt:</dt>
+<dd>
+プロセス実行に関するオプションを Hash で指定します。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+オープンする IO ポートのモードを指定します。mode の詳細は <a href="../../../method/-kernel/m/open.html">Kernel.#open</a> 参照して下さい。
+</dd>
+<dt class='method-param'>[PARAM] opt:</dt>
+<dd>
+プロセス実行やパイプのIOのエンコーディングなどを設定するオプションを指定します
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+パイプ、あるいは子プロセスの生成に失敗した場合に発生します。
+</dd>
+</dl>
+</dd>
+<dt class="method-heading" id="S_POPEN"><code>popen(&quot;-&quot;, mode = &quot;r&quot;, opt={}) -&gt; IO</code><span class="permalink">[<a href="../../../method/-i-o/s/popen.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/IO.html#method-c-popen">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>popen(&quot;-&quot;, mode = &quot;r&quot;, opt={}) {|io| ... } -&gt; object</code></dt>
+<dt class="method-heading"><code>popen(env, &quot;-&quot;, mode = &quot;r&quot;, opt={}) -&gt; IO</code></dt>
+<dt class="method-heading"><code>popen(env, &quot;-&quot;, mode = &quot;r&quot;, opt={}) {|io| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+第一引数に文字列 &quot;-&quot; が指定された時、<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fork.html">fork(2)</a> を行い子プロセスの標準入出力との間にパイプラインを確立します。親プロセスでは IO オブジェクトを返し、子プロセスでは
+nil を返します。
+</p>
+<pre>
+io = IO.popen(&quot;-&quot;, &quot;r+&quot;)
+if io  # parent
+  io.puts &quot;foo&quot;
+  p io.gets                   # =&gt; &quot;child output: foo\n&quot;
+  io.close
+else   # child
+  s = gets
+  print &quot;child output: &quot; + s
+  exit
+end
+</pre>
+<p>
+ブロックを与えられた場合、親プロセスでは生成した IO オブジェクトを引数にブロックを実行し、その結果を返します。ブロックの実行後、生成したパイプは自動的にクローズされます。子プロセスでは nil を引数にブロックを実行し終了します。
+</p>
+<pre>
+p IO.popen(&quot;-&quot;, &quot;r+&quot;) {|io|
+  if io   # parent
+    io.puts &quot;foo&quot;
+    io.gets
+  else    # child
+    s = gets
+    puts &quot;child output: &quot; + s
+  end
+}
+# =&gt; &quot;child output: foo\n&quot;
+</pre>
+<p>
+opt ではエンコーディングの設定やプロセス起動のためのオプションが指定できます。
+<a href="../../../method/-i-o/s/new.html">IO.new</a> や <a href="../../../method/-kernel/m/spawn.html">Kernel.#spawn</a> で指定できるものと共通なので詳しくはそちらを見てください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+環境変数を { 変数名 =&gt; 内容 } という形式の <a href="../../../class/-hash.html">Hash</a> で渡します。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+オープンする IO ポートのモードを指定します。mode の詳細は <a href="../../../method/-kernel/m/open.html">Kernel.#open</a> 参照して下さい。
+</dd>
+<dt class='method-param'>[PARAM] opt:</dt>
+<dd>
+エンコーディングなどを設定するオプション引数(see <a href="../../../method/-i-o/s/new.html">IO.new</a>)
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+パイプ、あるいは子プロセスの生成に失敗した場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

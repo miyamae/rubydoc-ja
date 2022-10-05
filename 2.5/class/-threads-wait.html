@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class ThreadsWait (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="複数スレッドの終了を待つ機能を提供します。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/thwait.html">thwaitライブラリ</a>
+      </li>
+      <li>
+        ThreadsWaitクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class ThreadsWait</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+      <li>
+        ThreadsWait
+      </li>
+    </ol>
+  </nav>
+
+
+
+<p>
+  extend: <a href="../class/-exception2-message-mapper.html">Exception2MessageMapper</a>
+</p>
+
+
+
+<p>
+  aliases: ThWait
+</p>
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+複数スレッドの終了を待つ機能を提供します。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_ALL_WAITS">all_waits</a></li>
+
+<li><a href="#S_NEW">new</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_ALL_WAITS">all_waits</a></li>
+
+<li><a href="#I_EMPTY--3F">empty?</a></li>
+
+<li><a href="#I_FINISHED--3F">finished?</a></li>
+
+<li><a href="#I_JOIN">join</a></li>
+
+<li><a href="#I_JOIN_NOWAIT">join_nowait</a></li>
+
+<li><a href="#I_NEXT_WAIT">next_wait</a></li>
+
+<li><a href="#I_THREADS">threads</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_ALL_WAITS"><code>all_waits(*threads) -&gt; ()</code><span class="permalink">[<a href="../method/-threads-wait/s/all_waits.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/ThreadsWait.html#method-c-all_waits">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>all_waits(*threads) {|thread| ...} -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+指定されたスレッドすべてが終了するまで待ちます。ブロックが与えられた場合、スレッド終了時にブロックを評価します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] threads:</dt>
+<dd>
+終了するまでまつスレッドを一つもしくは複数指定します。
+</dd>
+</dl>
+<pre>
+require 'thwait'
+
+threads = []
+5.times {|i|
+  threads &lt;&lt; Thread.new { sleep 1; p Thread.current }
+}
+ThreadsWait.all_waits(*threads) {|th| printf(&quot;end %s\n&quot;, th.inspect) }
+
+# 出力例
+#=&gt; #&lt;Thread:0x21584 run&gt;
+#=&gt; #&lt;Thread:0x21610 run&gt;
+#=&gt; #&lt;Thread:0x2169c run&gt;
+#=&gt; #&lt;Thread:0x21728 run&gt;
+#=&gt; #&lt;Thread:0x214f8 run&gt;
+#=&gt; end #&lt;Thread:0x21584 dead&gt;
+#=&gt; end #&lt;Thread:0x21610 dead&gt;
+#=&gt; end #&lt;Thread:0x2169c dead&gt;
+#=&gt; end #&lt;Thread:0x21728 dead&gt;
+#=&gt; end #&lt;Thread:0x214f8 dead&gt;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_NEW"><code>new(*threads) -&gt; ThreadsWait</code><span class="permalink">[<a href="../method/-threads-wait/s/new.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/ThreadsWait.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+指定されたスレッドの終了をまつための、スレッド同期オブジェクトをつくります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] threads:</dt>
+<dd>
+終了を待つスレッドを一つもしくは複数指定します。
+</dd>
+</dl>
+<p>
+使用例
+</p>
+<pre>
+require 'thwait'
+
+threads = []
+5.times {|i|
+  threads &lt;&lt; Thread.new { sleep 1; p Thread.current }
+}
+
+thall = ThreadsWait.new(*threads)
+thall.all_waits{|th|
+  printf(&quot;end %s\n&quot;, th.inspect)
+}
+
+# 出力例
+#=&gt; #&lt;Thread:0x214bc run&gt;
+#=&gt; #&lt;Thread:0x21548 run&gt;
+#=&gt; #&lt;Thread:0x215d4 run&gt;
+#=&gt; #&lt;Thread:0x21660 run&gt;
+#=&gt; #&lt;Thread:0x21430 run&gt;
+#=&gt; end #&lt;Thread:0x214bc dead&gt;
+#=&gt; end #&lt;Thread:0x21548 dead&gt;
+#=&gt; end #&lt;Thread:0x215d4 dead&gt;
+#=&gt; end #&lt;Thread:0x21660 dead&gt;
+#=&gt; end #&lt;Thread:0x21430 dead&gt;
+</pre>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_ALL_WAITS"><code>all_waits -&gt; ()</code><span class="permalink">[<a href="../method/-threads-wait/i/all_waits.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/ThreadsWait.html#method-i-all_waits">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+指定されたスレッドすべてが終了するまで待ちます。ブロックが与えられた場合、スレッド終了時にブロックを評価します。
+</p>
+<p>
+使用例
+</p>
+<pre>
+require 'thwait'
+
+threads = []
+5.times {|i|
+  threads &lt;&lt; Thread.new { sleep 1; p Thread.current }
+}
+
+thall = ThreadsWait.new(*threads)
+thall.all_waits{|th|
+  printf(&quot;end %s\n&quot;, th.inspect)
+}
+
+# 出力例
+#=&gt; #&lt;Thread:0x214bc run&gt;
+#=&gt; #&lt;Thread:0x21548 run&gt;
+#=&gt; #&lt;Thread:0x215d4 run&gt;
+#=&gt; #&lt;Thread:0x21660 run&gt;
+#=&gt; #&lt;Thread:0x21430 run&gt;
+#=&gt; end #&lt;Thread:0x214bc dead&gt;
+#=&gt; end #&lt;Thread:0x21548 dead&gt;
+#=&gt; end #&lt;Thread:0x215d4 dead&gt;
+#=&gt; end #&lt;Thread:0x21660 dead&gt;
+#=&gt; end #&lt;Thread:0x21430 dead&gt;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_EMPTY--3F"><code>empty? -&gt; bool</code><span class="permalink">[<a href="../method/-threads-wait/i/empty=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/ThreadsWait.html#method-i-empty-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+同期されるスレッドが存在するならば true をかえします。
+</p>
+<p>
+使用例
+</p>
+<pre>
+require 'thwait'
+
+threads = []
+3.times {|i|
+  threads &lt;&lt; Thread.new { sleep 1; p Thread.current }
+}
+
+thall = ThreadsWait.new
+p thall.threads.empty? #=&gt; true
+thall.join(*threads)
+p thall.threads.empty? #=&gt; false
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_FINISHED--3F"><code>finished? -&gt; bool</code><span class="permalink">[<a href="../method/-threads-wait/i/finished=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/ThreadsWait.html#method-i-finished-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+すでに終了したスレッドが存在すれば true を返します。
+</p>
+<p>
+使用例
+</p>
+<pre>
+require 'thwait'
+
+threads = []
+3.times {|i|
+  threads &lt;&lt; Thread.new { sleep 1; p Thread.current }
+}
+
+thall = ThreadsWait.new(*threads)
+p thall.finished? #=&gt; false
+sleep 3
+p thall.finished? #=&gt; true
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_JOIN"><code>join(*threads) -&gt; ()</code><span class="permalink">[<a href="../method/-threads-wait/i/join.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/ThreadsWait.html#method-i-join">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+終了を待つスレッドの対象として、threads で指定されたスレッドを指定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] threads:</dt>
+<dd>
+複数スレッドの終了を待つスレッドに指定されたthreadsを加えます。
+</dd>
+</dl>
+<pre>
+require 'thwait'
+
+threads = []
+5.times {|i|
+  threads &lt;&lt; Thread.new { sleep 1; p Thread.current }
+}
+
+thall = ThreadsWait.new
+p thall.threads #=&gt; []
+thall.join(*threads)
+p thall.threads
+#=&gt; [#&lt;Thread:0x216ec dead&gt;, #&lt;Thread:0x21660 dead&gt;, #&lt;Thread:0x215d4 dead&gt;, #&lt;Thread:0x214bc dead&gt;]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_JOIN_NOWAIT"><code>join_nowait(*threads) -&gt; ()</code><span class="permalink">[<a href="../method/-threads-wait/i/join_nowait.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/ThreadsWait.html#method-i-join_nowait">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+終了を待つスレッドの対象として、threads で指定されたスレッドを指定します。しかし、実際には終了をまちません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] threads:</dt>
+<dd>
+複数スレッドの終了を待つスレッドに指定されたthreadsを加えます。
+</dd>
+</dl>
+<pre>
+require 'thwait'
+
+threads = []
+5.times {|i|
+  threads &lt;&lt; Thread.new { sleep 1; p Thread.current }
+}
+
+thall = ThreadsWait.new
+p thall.threads #=&gt; []
+thall.join_nowait(*threads)
+p thall.threads #=&gt; [#&lt;Thread:0x21638 sleep&gt;, #&lt;Thread:0x215ac sleep&gt;, #&lt;Thread:0x21520 sleep&gt;, #&lt;Thread:0x21494 sleep&gt;, #&lt;Thread:0x21408 sleep&gt;]
+# 実際には終了を待っていない。sleep している。
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_NEXT_WAIT"><code>next_wait(nonblock = nil) -&gt; Thread</code><span class="permalink">[<a href="../method/-threads-wait/i/next_wait.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/ThreadsWait.html#method-i-next_wait">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+指定したスレッドのどれかが終了するまで待ちます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] nonblock:</dt>
+<dd>
+true を与えると、キューが空の時、例外 <a href="../class/-threads-wait=3a=3a-err-no-finished-thread.html">ThreadsWait::ErrNoFinishedThread</a> が発生します。
+</dd>
+<dt>[EXCEPTION] ErrNoWaitingThread:</dt>
+<dd>
+終了をまつスレッドが存在しない時、発生します。
+</dd>
+<dt>[EXCEPTION] ErrNoFinishedThread:</dt>
+<dd>
+nonblock がtrue でかつ、キューが空の時、発生します。
+</dd>
+</dl>
+<pre>
+#使用例
+require 'thwait'
+
+threads = []
+2.times {|i|
+  threads &lt;&lt; Thread.new { sleep i }
+}
+
+thall = ThreadsWait.new
+thall.join_nowait(*threads)
+until thall.empty?
+  th = thall.next_wait
+  p th
+end
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-queue/i/pop.html">Queue#pop</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_THREADS"><code>threads -&gt; Array</code><span class="permalink">[<a href="../method/-threads-wait/i/threads.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/ThreadsWait.html#method-i-threads">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+同期されるスレッドの一覧を配列で返します。
+</p>
+<p>
+使用例
+</p>
+<pre>
+require 'thwait'
+
+threads = []
+3.times {|i|
+  threads &lt;&lt; Thread.new { sleep 1; p Thread.current }
+}
+
+thall = ThreadsWait.new(*threads)
+p thall.threads
+#=&gt; [#&lt;Thread:0x21750 sleep&gt;, #&lt;Thread:0x216c4 sleep&gt;, #&lt;Thread:0x21638 sleep&gt;]
+</pre>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Kernel.#fork (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="[[man:fork(2)]] システムコールを使ってプロセスの複製を作
+ります。親プロセスでは子プロセスのプロセスIDを、子プロセスでは
+nil を返します。ブロックを指定して呼び出した場合には、生成し
+た子プロセスでブロックを評価します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-kernel.html">Kernelモジュール</a>
+      </li>
+      <li>
+        fork 
+      </li>
+    </ol>
+  </nav>
+
+<h1>module function Kernel.#fork</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_FORK"><code>fork -&gt; Integer | nil</code><span class="permalink">[<a href="../../../method/-kernel/m/fork.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Kernel.html#method-c-fork">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>fork { ... } -&gt; Integer | nil</code></dt>
+<dd class="method-description">
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fork.html">fork(2)</a> システムコールを使ってプロセスの複製を作ります。親プロセスでは子プロセスのプロセスIDを、子プロセスでは
+nil を返します。ブロックを指定して呼び出した場合には、生成した子プロセスでブロックを評価します。
+</p>
+<p>
+fork 前に STDOUT と STDERR を <a href="../../../method/-i-o/i/flush.html">IO#flush</a> します。
+</p>
+<dl>
+<dt>[EXCEPTION] NotImplementedError:</dt>
+<dd>
+実行環境がこのメソッドに対応していないとき発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">ブロックを指定しなかった場合</span>
+<code>
+<span class="k">if</span> child_pid <span class="o">=</span> <span class="nb">fork</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">parent process. pid: </span><span class="si">#{</span><span class="no">Process</span><span class="p">.</span><span class="nf">pid</span><span class="si">}</span><span class="s2">, child pid: </span><span class="si">#{</span><span class="n">child_pid</span><span class="si">}</span><span class="s2">"</span>
+  <span class="c1"># =&gt; parent process. pid: 81060, child pid: 81329
+</span>
+  <span class="c1"># 親プロセスでの処理
+</span>  <span class="c1"># ...
+</span>
+  <span class="c1"># 子プロセスの終了を待って終了。
+</span>  <span class="no">Process</span><span class="p">.</span><span class="nf">waitpid</span><span class="p">(</span>child_pid<span class="p">)</span>
+<span class="k">else</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">child process. pid: </span><span class="si">#{</span><span class="no">Process</span><span class="p">.</span><span class="nf">pid</span><span class="si">}</span><span class="s2">"</span>
+  <span class="c1"># =&gt; child process. pid: 81329
+</span>
+  <span class="c1"># 子プロセスでの処理
+</span>  <span class="nb">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+<pre class="highlight ruby">
+<span class="caption">ブロックを指定した場合</span>
+<code>
+child_pid <span class="o">=</span> <span class="nb">fork</span> <span class="k">do</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">child process. pid: </span><span class="si">#{</span><span class="no">Process</span><span class="p">.</span><span class="nf">pid</span><span class="si">}</span><span class="s2">"</span>
+  <span class="c1"># =&gt; child process. pid: 79602
+</span>
+  <span class="c1"># 子プロセスでの処理
+</span>  <span class="nb">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="nb">puts</span> <span class="s2">"</span><span class="s2">parent process. pid: </span><span class="si">#{</span><span class="no">Process</span><span class="p">.</span><span class="nf">pid</span><span class="si">}</span><span class="s2">, child pid: </span><span class="si">#{</span><span class="n">child_pid</span><span class="si">}</span><span class="s2">"</span>
+<span class="c1"># =&gt; parent process. pid: 79055, child pid: 79602
+</span>
+<span class="c1"># 親プロセスでの処理
+</span><span class="c1"># ...
+</span>
+<span class="c1"># 子プロセスの終了を待って終了。
+</span><span class="no">Process</span><span class="p">.</span><span class="nf">waitpid</span><span class="p">(</span>child_pid<span class="p">)</span>
+</code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-i-o/s/popen.html">IO.popen</a>,<a href="../../../method/-i-o/s/pipe.html">IO.pipe</a>,<a href="../../../method/-kernel/m/at_exit.html">Kernel.#at_exit</a>,<a href="../../../method/-kernel/m/exit=21.html">Kernel.#exit!</a>, <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fork.html">fork(2)</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

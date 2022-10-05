@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>WIN32OLE_EVENT#handler= (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="イベントハンドラをメソッドとして持つオブジェクトをイベントハンドラとし
+て登録します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/win32ole.html">win32oleライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-w-i-n32-o-l-e_-e-v-e-n-t.html">WIN32OLE_EVENTクラス</a>
+      </li>
+      <li>
+        handler= 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method WIN32OLE_EVENT#handler=</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_HANDLER--3D"><code>handler=(obj) -&gt; ()</code><span class="permalink">[<a href="../../../method/-w-i-n32-o-l-e_-e-v-e-n-t/i/handler=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/WIN32OLE_EVENT.html#method-i-handler-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+イベント処理を実行するオブジェクトを登録します。
+</p>
+<p>
+イベントハンドラをメソッドとして持つオブジェクトをイベントハンドラとして登録します。
+</p>
+<p>
+イベントハンドラはイベント名に「on」を前置します。もし、イベントに対応するonメソッドが実装されていなければmethod_missingが呼ばれます。イベント名は大文字小文字を区別するため、正確な記述が必要です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+イベントに対応するメソッドを持つオブジェクト。イベント受信を解除するにはnilを指定します。
+</dd>
+</dl>
+<pre>
+class IeHandler
+  def initialize
+    @completed = false
+  end
+  attr_reader :completed
+  def onDocumentComplete(disp, uri)
+    disp.document.getElementsByTagName('a').each do |e|
+      puts &quot;#{e.innerHTML}=#{e.href}&quot;
+    end
+    @completed = true
+  end
+  def method_missing(id, *args)
+    puts &quot;event=#{id.to_s}, args=#{args.inspect}&quot;
+  end
+end
+
+ie = WIN32OLE.new('InternetExplorer.Application.1')
+event = WIN32OLE_EVENT.new(ie, 'DWebBrowserEvents2')
+event.handler = IeHandler.new
+ie.Navigate2 'http://www.ruby-lang.org/ja/'
+loop do
+  break if event.handler.completed
+  WIN32OLE_EVENT.message_loop
+end
+ie.Quit
+</pre>
+<p>
+<a href="../../../method/-w-i-n32-o-l-e_-e-v-e-n-t/i/on_event.html">WIN32OLE_EVENT#on_event</a>などの呼び出しでブロックが登録されている場合、そちらが優先されます。
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class Regexp (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="正規表現のクラス。正規表現のリテラルはスラッシュで囲んだ形式
+で記述します。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        Regexpクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class Regexp</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+      <li>
+        Regexp
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+正規表現のクラス。正規表現のリテラルはスラッシュで囲んだ形式で記述します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/^this is regexp/</span>
+</code></pre>
+<p>
+Regexp.new(string) を使って正規表現オブジェクトを動的に生成することもできます。
+</p>
+<pre class="highlight ruby">
+<code>
+str <span class="o">=</span> <span class="s2">"</span><span class="s2">this is regexp</span><span class="s2">"</span>
+rp1 <span class="o">=</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">^this is regexp</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">p</span> rp1 <span class="o">=~</span> str           <span class="c1"># =&gt; 0
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">last_match</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># =&gt; &quot;this is regexp&quot;
+</span></code></pre>
+<p>
+Ruby 3.0.0 から正規表現リテラルは freeze されるようになりました。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="sr">/abc/</span><span class="p">.</span><span class="nf">frozen?</span>
+<span class="c1"># =&gt; true
+</span><span class="nb">p</span> <span class="sr">/a<span class="si">#{</span><span class="mi">42</span><span class="si">}</span>bc/</span><span class="p">.</span><span class="nf">frozen?</span>
+<span class="c1"># =&gt; true
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s1">'abc'</span><span class="p">)</span><span class="p">.</span><span class="nf">frozen?</span>
+<span class="c1"># =&gt; false
+</span></code></pre>
+<p>
+<a href="../doc/spec=2fregexp.html">正規表現</a> や <a href="../doc/spec=2fliteral.html#regexp">リテラル/正規表現リテラル</a> も参照してください。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_COMPILE">compile</a></li>
+
+<li><a href="#S_ESCAPE">escape</a></li>
+
+<li><a href="#S_LAST_MATCH">last_match</a></li>
+
+<li><a href="#S_COMPILE">new</a></li>
+
+<li><a href="#S_ESCAPE">quote</a></li>
+
+<li><a href="#S_TRY_CONVERT">try_convert</a></li>
+
+<li><a href="#S_UNION">union</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_--3D--3D">==</a></li>
+
+<li><a href="#I_--3D--3D--3D">===</a></li>
+
+<li><a href="#I_--3D--7E">=~</a></li>
+
+<li><a href="#I_--7E">~</a></li>
+
+<li><a href="#I_CASEFOLD--3F">casefold?</a></li>
+
+<li><a href="#I_ENCODING">encoding</a></li>
+
+<li><a href="#I_--3D--3D">eql?</a></li>
+
+<li><a href="#I_FIXED_ENCODING--3F">fixed_encoding?</a></li>
+
+<li><a href="#I_HASH">hash</a></li>
+
+<li><a href="#I_INSPECT">inspect</a></li>
+
+<li><a href="#I_MATCH">match</a></li>
+
+<li><a href="#I_MATCH--3F">match?</a></li>
+
+<li><a href="#I_NAMED_CAPTURES">named_captures</a></li>
+
+<li><a href="#I_NAMES">names</a></li>
+
+<li><a href="#I_OPTIONS">options</a></li>
+
+<li><a href="#I_SOURCE">source</a></li>
+
+<li><a href="#I_TO_S">to_s</a></li>
+
+</ul>
+</dd>
+
+<dt>定数</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#C_-E-X-T-E-N-D-E-D">EXTENDED</a></li>
+
+<li><a href="#C_-F-I-X-E-D-E-N-C-O-D-I-N-G">FIXEDENCODING</a></li>
+
+<li><a href="#C_-I-G-N-O-R-E-C-A-S-E">IGNORECASE</a></li>
+
+<li><a href="#C_-M-U-L-T-I-L-I-N-E">MULTILINE</a></li>
+
+<li><a href="#C_-N-O-E-N-C-O-D-I-N-G">NOENCODING</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_COMPILE"><code>compile(string, option = nil, code = nil) -&gt; Regexp</code><span class="permalink">[<a href="../method/-regexp/s/compile.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-c-compile">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>new(string, option = nil, code = nil) -&gt; Regexp</code></dt>
+<dd class="method-description">
+<p>
+文字列 string をコンパイルして正規表現オブジェクトを生成して返します。
+</p>
+<p>
+第一引数が正規表現であれば第一引数を複製して返します。第二、第三引数は警告の上無視されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+正規表現を文字列として与えます。
+</dd>
+<dt class='method-param'>[PARAM] option:</dt>
+<dd>
+<a href="../method/-regexp/c/-i-g-n-o-r-e-c-a-s-e.html">Regexp::IGNORECASE</a>, <a href="../method/-regexp/c/-m-u-l-t-i-l-i-n-e.html">Regexp::MULTILINE</a>,
+<a href="../method/-regexp/c/-e-x-t-e-n-d-e-d.html">Regexp::EXTENDED</a>
+の論理和を指定します。
+<a href="../class/-integer.html">Integer</a> 以外であれば真偽値の指定として見なされ、真(nil, false 以外)であれば
+<a href="../method/-regexp/c/-i-g-n-o-r-e-c-a-s-e.html">Regexp::IGNORECASE</a> の指定と同じになります。
+</dd>
+<dt class='method-param'>[PARAM] code:</dt>
+<dd>
+&quot;n&quot;, &quot;N&quot; が与えられた時には、生成された正規表現のエンコーディングは ASCII-8BIT になります。それ以外の指定は警告を出力します。
+</dd>
+<dt>[EXCEPTION] RegexpError:</dt>
+<dd>
+正規表現のコンパイルに失敗した場合発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+str <span class="o">=</span> <span class="s2">"</span><span class="s2">This is Regexp</span><span class="s2">"</span>
+t1 <span class="o">=</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">compile</span><span class="p">(</span><span class="s2">"</span><span class="s2">this is regexp</span><span class="s2">"</span>, <span class="no">Regexp</span><span class="o">::</span><span class="no">IGNORECASE</span><span class="p">)</span>
+t1<span class="p">.</span><span class="nf">match</span><span class="p">(</span>str<span class="p">)</span>
+<span class="nb">p</span> <span class="vg">$~</span> <span class="c1"># =&gt; &quot;This is Regexp&quot;
+</span>
+t2 <span class="o">=</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">compile</span><span class="p">(</span><span class="s1">'
+this         # ここは使用されない
+\ is
+\ regexp     # ここも使用されない
+'</span>, <span class="no">Regexp</span><span class="o">::</span><span class="no">EXTENDED</span> <span class="o">|</span> <span class="no">Regexp</span><span class="o">::</span><span class="no">IGNORECASE</span><span class="p">)</span>
+t2<span class="p">.</span><span class="nf">match</span><span class="p">(</span>str<span class="p">)</span>
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">last_match</span> <span class="c1"># =&gt; &quot;This is Regexp&quot;
+</span>
+str <span class="o">=</span> <span class="s2">"</span><span class="s2">ふるいけや\nかわずとびこむ\nみずのおと</span><span class="s2">"</span>
+t2 <span class="o">=</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">compile</span><span class="p">(</span><span class="s2">"</span><span class="s2">ふる.*?と</span><span class="s2">"</span>, <span class="no">Regexp</span><span class="o">::</span><span class="no">MULTILINE</span><span class="p">)</span>
+<span class="nb">p</span> t2<span class="p">.</span><span class="nf">match</span><span class="p">(</span>str<span class="p">)</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># =&gt; &quot;ふるいけや\nかわずと&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_ESCAPE"><code>escape(string) -&gt; String</code><span class="permalink">[<a href="../method/-regexp/s/escape.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-c-escape">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>quote(string) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+string の中で正規表現において特別な意味を持つ文字の直前にエスケープ文字(バックスラッシュ)を挿入した文字列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+正規表現において特別な意味をもつ文字をもつ文字列を指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+rp <span class="o">=</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">escape</span><span class="p">(</span><span class="s2">"</span><span class="s2">$bc^</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">p</span> rp <span class="c1"># =&gt; &quot;\\$bc\\^&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_LAST_MATCH"><code>last_match -&gt; MatchData</code><span class="permalink">[<a href="../method/-regexp/s/last_match.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-c-last_match">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+カレントスコープで最後に行った正規表現マッチの <a href="../class/-match-data.html">MatchData</a> オブジェクトを返します。このメソッドの呼び出しは <a href="../method/-kernel/v/=7e.html">$~</a>
+の参照と同じです。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="sr">/(.)(.)/</span> <span class="o">=~</span> <span class="s2">"</span><span class="s2">ab</span><span class="s2">"</span>
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">last_match</span>      <span class="c1"># =&gt; #&lt;MatchData:0x4599e58&gt;
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">last_match</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>   <span class="c1"># =&gt; &quot;ab&quot;
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">last_match</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>   <span class="c1"># =&gt; &quot;a&quot;
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">last_match</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>   <span class="c1"># =&gt; &quot;b&quot;
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">last_match</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>   <span class="c1"># =&gt; nil
+</span></code></pre>
+</dd>
+<dt class="method-heading" id="S_LAST_MATCH"><code>last_match(nth) -&gt; String | nil</code><span class="permalink">[<a href="../method/-regexp/s/last_match.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-c-last_match">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+整数 nth が 0 の場合、マッチした文字列を返します
+(<a href="../method/-kernel/v/=26.html">$&amp;</a>)。それ以外では、nth 番目の括弧にマッチした部分文字列を返します(<a href="../method/-kernel/v/1.html">$1</a>,<a href="../method/-kernel/v/2.html">$2</a>,...)。対応する括弧がない場合やマッチしなかった場合には nil を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="sr">/(.)(.)/</span> <span class="o">=~</span> <span class="s2">"</span><span class="s2">ab</span><span class="s2">"</span>
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">last_match</span>      <span class="c1"># =&gt; #&lt;MatchData:0x4599e58&gt;
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">last_match</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;ab&quot;
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">last_match</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;a&quot;
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">last_match</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;b&quot;
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">last_match</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>   <span class="c1"># =&gt; nil
+</span></code></pre>
+<p>
+正規表現全体がマッチしなかった場合、引数なしの
+Regexp.last_match はnil を返すため、
+last_match[1] の形式では例外 <a href="../class/-no-method-error.html">NoMethodError</a> が発生します。対して、last_match(1) は nil を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+str <span class="o">=</span> <span class="s2">"</span><span class="s2">This is Regexp</span><span class="s2">"</span>
+<span class="sr">/That is Regexp/</span> <span class="o">=~</span> str
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">last_match</span> <span class="c1"># =&gt; nil
+</span><span class="k">begin</span>
+  <span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">last_match</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># 例外が発生する
+</span><span class="k">rescue</span> 
+  <span class="nb">puts</span> <span class="vg">$!</span> <span class="c1"># =&gt; undefined method `[]' for nil:NilClass
+</span><span class="k">end</span>
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">last_match</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] nth:</dt>
+<dd>
+整数を指定します。整数 nth が 0 の場合、マッチした文字列を返します。それ以外では、nth 番目の括弧にマッチした部分文字列を返します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_TRY_CONVERT"><code>try_convert(obj) -&gt; Regexp | nil</code><span class="permalink">[<a href="../method/-regexp/s/try_convert.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-c-try_convert">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+obj を to_regexp メソッドで Regexp オブジェクトに変換しようと試みます。
+</p>
+<p>
+変換に成功した場合はそれを返し、失敗時には nil を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">Regexp</span><span class="p">.</span><span class="nf">try_convert</span><span class="p">(</span><span class="sr">/re/</span><span class="p">)</span>      <span class="c1"># =&gt; /re/
+</span><span class="no">Regexp</span><span class="p">.</span><span class="nf">try_convert</span><span class="p">(</span><span class="s2">"</span><span class="s2">re</span><span class="s2">"</span><span class="p">)</span>      <span class="c1"># =&gt; nil
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_UNION"><code>union(*pattern) -&gt; Regexp</code><span class="permalink">[<a href="../method/-regexp/s/union.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-c-union">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数として与えた pattern を選択 | で連結し、Regexp として返します。結果の Regexp は与えた pattern のどれかにマッチする場合にマッチするものになります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="sr">/a/</span>, <span class="sr">/b/</span>, <span class="sr">/c/</span><span class="p">)</span> <span class="c1"># =&gt; /(?-mix:a)|(?-mix:b)|(?-mix:c)/
+</span></code></pre>
+<p>
+引数を一つだけ与える場合は、<a href="../class/-array.html">Array</a> を与えても Regexp を生成します。つまり、以下のように書くことができます。
+</p>
+<pre class="highlight ruby">
+<code>
+arr <span class="o">=</span> <span class="p">[</span><span class="sr">/a/</span>, <span class="sr">/b/</span>, <span class="sr">/c/</span><span class="p">]</span>
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span>arr<span class="p">)</span>  <span class="c1"># =&gt; /(?-mix:a)|(?-mix:b)|(?-mix:c)/
+</span><span class="c1"># 1.8.7 より前は、以下のように書く必要があった
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="o">*</span>arr<span class="p">)</span> <span class="c1"># =&gt; /(?-mix:a)|(?-mix:b)|(?-mix:c)/
+</span></code></pre>
+<p>
+pattern は Regexp または String で与えます。
+String で与えた場合、それ自身と等しい文字列にマッチするものと解釈され、エスケープされて結果の Regexp に組み込まれます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">?</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">b</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; /a|\?|b/
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="sr">/a/</span>, <span class="s2">"</span><span class="s2">*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; /(?-mix:a)|\*/
+</span></code></pre>
+<p>
+引数をひとつも与えなかった場合、決してマッチしない Regexp を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="p">)</span> <span class="c1"># =&gt; /(?!)/
+</span></code></pre>
+<p>
+結果の Regexp が対応する文字コードは引数として与えた Regexp が扱う文字コードに一致します。固定コードに対してコンパイルされている Regexp を複数与える場合、それらのコードは一致していなければなりません。異なる固定コードに対してコンパイルされている Regexp が存在する場合、
+<a href="../class/-argument-error.html">ArgumentError</a> が発生します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="sr">/a/e</span>, <span class="sr">/b/e</span><span class="p">)</span> <span class="c1"># =&gt; /(?-mix:a)|(?-mix:b)/e
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="sr">/a/e</span>, <span class="sr">/b/s</span><span class="p">)</span> <span class="c1"># =&gt; ArgumentError
+</span></code></pre>
+<p>
+コードが固定されている Regexp とコードが固定されていない Regexp を混ぜた場合、結果の Regexp は固定されているコードに対応するものになります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="sr">/a/e</span>, <span class="sr">/b/</span><span class="p">)</span> <span class="c1"># =&gt; /(?-mix:a)|(?-mix:b)/e
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+| で連結したい正規表現を指定します
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># オプションは合成されない
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="sr">/foo/i</span>, <span class="sr">/bar/x</span>, <span class="sr">/hoge/m</span><span class="p">)</span> <span class="c1"># =&gt; /(?i-mx:foo)|(?x-mi:bar)|(?m-ix:hoge)/
+</span>
+<span class="c1"># 文字列そのものにマッチする
+</span>rep1 <span class="o">=</span> <span class="p">[</span> <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">hoge</span><span class="s2">"</span><span class="p">]</span> 
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="o">*</span>rep1<span class="p">)</span> <span class="c1"># =&gt; /foo|bar|hoge/
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span>rep1<span class="p">)</span>  <span class="c1"># =&gt; /foo|bar|hoge/
+</span>
+<span class="c1"># 下記の場合オプションがつくのは最初だけ
+</span>rep2 <span class="o">=</span> <span class="p">[</span> <span class="sr">/foo/x</span>, <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">hoge</span><span class="s2">"</span><span class="p">]</span> 
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="o">*</span>rep2<span class="p">)</span> <span class="c1"># =&gt; /(?x-mi:foo)|bar|hoge/
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span>rep2<span class="p">)</span>  <span class="c1"># =&gt; /(?x-mi:foo)|bar|hoge/
+</span></code></pre>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--3D--3D"><code>self == other -&gt; bool</code><span class="permalink">[<a href="../method/-regexp/i/=3d=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-i-3D-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>eql?(other) -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+otherが同じパターン、オプション、文字コードの正規表現であったらtrueを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+正規表現を指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="sr">/^eee$/</span>   <span class="o">==</span> <span class="sr">/~eee$/x</span>   <span class="c1"># =&gt; false
+</span><span class="nb">p</span> <span class="sr">/^eee$/</span>   <span class="o">==</span> <span class="sr">/~eee$/i</span>   <span class="c1"># =&gt; false
+</span><span class="nb">p</span> <span class="sr">/^eee$/e</span>  <span class="o">==</span> <span class="sr">/~eee$/u</span>   <span class="c1"># =&gt; false
+</span><span class="nb">p</span> <span class="sr">/^eee$/</span> <span class="o">==</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">^eee$</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; true
+</span><span class="nb">p</span> <span class="sr">/^eee$/</span><span class="p">.</span><span class="nf">eql?</span><span class="p">(</span><span class="sr">/^eee$/</span><span class="p">)</span>          <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--3D--3D--3D"><code>self === string -&gt; bool</code><span class="permalink">[<a href="../method/-regexp/i/=3d=3d=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-i-3D-3D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列 string との正規表現マッチを行います。マッチした場合は真を返します。
+</p>
+<p>
+string が文字列でもシンボルでもない場合には false を返します。
+</p>
+<p>
+このメソッドは主にcase文での比較に用いられます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+マッチ対象文字列
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+a <span class="o">=</span> <span class="s2">"</span><span class="s2">HELLO</span><span class="s2">"</span>
+<span class="k">case</span> a
+<span class="k">when</span> <span class="sr">/\A[a-z]*\z/</span>; <span class="nb">puts</span> <span class="s2">"</span><span class="s2">Lower case</span><span class="s2">"</span>
+<span class="k">when</span> <span class="sr">/\A[A-Z]*\z/</span>; <span class="nb">puts</span> <span class="s2">"</span><span class="s2">Upper case</span><span class="s2">"</span>
+<span class="k">else</span>;              <span class="nb">puts</span> <span class="s2">"</span><span class="s2">Mixed case</span><span class="s2">"</span>
+<span class="k">end</span>
+<span class="c1"># =&gt; Upper case
+</span>
+<span class="sr">/\A[a-z]*\z/</span> <span class="o">===</span> <span class="s2">"</span><span class="s2">HELLO</span><span class="s2">"</span> <span class="c1"># =&gt; false
+</span><span class="sr">/\A[A-Z]*\z/</span> <span class="o">===</span> <span class="s2">"</span><span class="s2">HELLO</span><span class="s2">"</span> <span class="c1"># =&gt; true
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-enumerable/i/grep.html">Enumerable#grep</a>, <a href="../method/-object/i/=3d=3d=3d.html">Object#===</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_--3D--7E"><code>self =~ string -&gt; Integer | nil</code><span class="permalink">[<a href="../method/-regexp/i/=3d=7e.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-i-3D-7E">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列 string との正規表現マッチを行います。マッチした場合、マッチした位置のインデックスを返します(先頭は0)。マッチしなかった場合、あるいは string が nil の場合には nil を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="sr">/foo/</span> <span class="o">=~</span> <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>  <span class="c1"># =&gt; 0
+</span><span class="nb">p</span> <span class="sr">/foo/</span> <span class="o">=~</span> <span class="s2">"</span><span class="s2">afoo</span><span class="s2">"</span> <span class="c1"># =&gt; 1
+</span><span class="nb">p</span> <span class="sr">/foo/</span> <span class="o">=~</span> <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span>  <span class="c1"># =&gt; nil
+</span></code></pre>
+<p>
+組み込み変数 <a href="../method/-kernel/v/=7e.html">$~</a> もしくは <a href="../method/-regexp/s/last_match.html">Regexp.last_match</a> にマッチに関する情報 <a href="../class/-match-data.html">MatchData</a> が設定されます。
+</p>
+<p>
+文字列のかわりに<a href="../class/-symbol.html">Symbol</a>をマッチさせることができます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+マッチ対象文字列
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+string が nil でも <a href="../class/-string.html">String</a> オブジェクトでも <a href="../class/-symbol.html">Symbol</a> でもない場合発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="sr">/foo/</span> <span class="o">=~</span> <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>        <span class="c1"># =&gt; 0
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">last_match</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;foo&quot;
+</span><span class="nb">p</span> <span class="sr">/foo/</span> <span class="o">=~</span> <span class="s2">"</span><span class="s2">afoo</span><span class="s2">"</span>       <span class="c1"># =&gt; 1
+</span><span class="nb">p</span> <span class="vg">$~</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>                 <span class="c1"># =&gt; &quot;foo&quot;
+</span><span class="nb">p</span> <span class="sr">/foo/</span> <span class="o">=~</span> <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span>        <span class="c1"># =&gt; nil
+</span>
+<span class="k">unless</span> <span class="sr">/foo/</span> <span class="o">===</span> <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">not match </span><span class="s2">"</span> <span class="c1"># =&gt; not match
+</span><span class="k">end</span>
+
+str <span class="o">=</span> <span class="p">[</span><span class="p">]</span>
+<span class="k">begin</span>
+  <span class="sr">/ugo/</span> <span class="o">=~</span> str
+<span class="k">rescue</span> <span class="no">TypeError</span>
+  <span class="nb">printf</span> <span class="s2">"</span><span class="s2">! %s\t%s\n</span><span class="s2">"</span>, <span class="vg">$!</span>, <span class="vg">$@</span> <span class="c1"># =&gt; ! can't convert Array into String       r5.rb:15
+</span><span class="k">end</span>
+</code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CASEFOLD--3F"><code>casefold? -&gt; bool</code><span class="permalink">[<a href="../method/-regexp/i/casefold=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-i-casefold-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+正規表現が大文字小文字の判定をしないようにコンパイルされている時、真を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+reg <span class="o">=</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobar</span><span class="s2">"</span>, <span class="no">Regexp</span><span class="o">::</span><span class="no">IGNORECASE</span><span class="p">)</span>
+<span class="nb">p</span> reg<span class="p">.</span><span class="nf">casefold?</span> <span class="c1"># =&gt; true
+</span>
+reg <span class="o">=</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">hogehoge</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">p</span> reg<span class="p">.</span><span class="nf">casefold?</span> <span class="c1"># =&gt; false
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ENCODING"><code>encoding -&gt; Encoding</code><span class="permalink">[<a href="../method/-regexp/i/encoding.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-i-encoding">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+正規表現オブジェクトのエンコーディングを表す <a href="../class/-encoding.html">Encoding</a> オブジェクトを返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../doc/spec=2fregexp.html#encoding">正規表現/エンコーディング</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FIXED_ENCODING--3F"><code>fixed_encoding? -&gt; bool</code><span class="permalink">[<a href="../method/-regexp/i/fixed_encoding=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-i-fixed_encoding-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+正規表現が任意の ASCII 互換エンコーディングとマッチ可能な時に false を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># -*- coding:utf-8 -*-
+</span>
+r <span class="o">=</span> <span class="sr">/a/</span>
+r<span class="p">.</span><span class="nf">fixed_encoding?</span>                               <span class="c1"># =&gt; false
+</span>r<span class="p">.</span><span class="nf">encoding</span>                                      <span class="c1"># =&gt; #&lt;Encoding:US-ASCII&gt;
+</span>r <span class="o">=~</span> <span class="s2">"</span><span class="s2">\u{6666} a</span><span class="s2">"</span>                               <span class="c1"># =&gt; 2
+</span>r <span class="o">=~</span> <span class="s2">"</span><span class="s2">\xa1\xa2 a</span><span class="s2">"</span><span class="p">.</span><span class="nf">force_encoding</span><span class="p">(</span><span class="s2">"</span><span class="s2">euc-jp</span><span class="s2">"</span><span class="p">)</span>      <span class="c1"># =&gt; 2
+</span>r <span class="o">=~</span> <span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">.</span><span class="nf">force_encoding</span><span class="p">(</span><span class="s2">"</span><span class="s2">euc-jp</span><span class="s2">"</span><span class="p">)</span>             <span class="c1"># =&gt; 0
+</span>
+r <span class="o">=</span> <span class="sr">/a/u</span>
+r<span class="p">.</span><span class="nf">fixed_encoding?</span>                               <span class="c1"># =&gt; true
+</span>r<span class="p">.</span><span class="nf">encoding</span>                                      <span class="c1"># =&gt; #&lt;Encoding:UTF-8&gt;
+</span>r <span class="o">=~</span> <span class="s2">"</span><span class="s2">\u{6666} a</span><span class="s2">"</span>                               <span class="c1"># =&gt; 2
+</span><span class="k">begin</span>
+  r <span class="o">=~</span> <span class="s2">"</span><span class="s2">\xa1\xa2</span><span class="s2">"</span><span class="p">.</span><span class="nf">force_encoding</span><span class="p">(</span><span class="s2">"</span><span class="s2">euc-jp</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">rescue</span> <span class="o">=&gt;</span> e
+  e<span class="p">.</span><span class="nf">class</span>                                       <span class="c1"># =&gt; Encoding::CompatibilityError
+</span><span class="k">end</span>
+r <span class="o">=~</span> <span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">.</span><span class="nf">force_encoding</span><span class="p">(</span><span class="s2">"</span><span class="s2">euc-jp</span><span class="s2">"</span><span class="p">)</span>             <span class="c1"># =&gt; 0
+</span>
+r <span class="o">=</span> <span class="sr">/\u{6666}/</span>
+r<span class="p">.</span><span class="nf">fixed_encoding?</span>                               <span class="c1"># =&gt; true
+</span>r<span class="p">.</span><span class="nf">encoding</span>                                      <span class="c1"># =&gt; #&lt;Encoding:UTF-8&gt;
+</span>r <span class="o">=~</span> <span class="s2">"</span><span class="s2">\u{6666} a</span><span class="s2">"</span>                               <span class="c1"># =&gt; 0
+</span><span class="k">begin</span>
+  r <span class="o">=~</span> <span class="s2">"</span><span class="s2">\xa1\xa2</span><span class="s2">"</span><span class="p">.</span><span class="nf">force_encoding</span><span class="p">(</span><span class="s2">"</span><span class="s2">euc-jp</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">rescue</span> <span class="o">=&gt;</span> e
+  e<span class="p">.</span><span class="nf">class</span>                                       <span class="c1"># =&gt; Encoding::CompatibilityError
+</span><span class="k">end</span>
+r <span class="o">=~</span> <span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">.</span><span class="nf">force_encoding</span><span class="p">(</span><span class="s2">"</span><span class="s2">euc-jp</span><span class="s2">"</span><span class="p">)</span>             <span class="c1"># =&gt; nil
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_HASH"><code>hash -&gt; Integer</code><span class="permalink">[<a href="../method/-regexp/i/hash.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-i-hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+正規表現のオプションやテキストに基づいたハッシュ値を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="sr">/abc/i</span><span class="p">.</span><span class="nf">hash</span> <span class="c1"># =&gt; 4893115
+</span><span class="nb">p</span> <span class="sr">/abc/</span><span class="p">.</span><span class="nf">hash</span>  <span class="c1"># =&gt; 4856055
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-regexp/i/inspect.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-i-inspect">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-regexp/i/to_s.html">Regexp#to_s</a> より自然な文字列を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="sr">/^ugou.*?/i</span><span class="p">.</span><span class="nf">to_s</span>    <span class="c1"># =&gt; &quot;(?i-mx:^ugou.*?)&quot;
+</span><span class="nb">p</span> <span class="sr">/^ugou.*?/i</span><span class="p">.</span><span class="nf">inspect</span> <span class="c1"># =&gt; &quot;/^ugou.*?/i&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-regexp/i/to_s.html">Regexp#to_s</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_MATCH"><code>match(str, pos = 0) -&gt; MatchData | nil</code><span class="permalink">[<a href="../method/-regexp/i/match.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-i-match">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>match(str, pos = 0) {|m| ... } -&gt; object | nil</code></dt>
+<dd class="method-description">
+<p>
+指定された文字列 str に対して位置 pos から自身が表す正規表現によるマッチングを行います。マッチした場合には結果を MatchData オブジェクトで返します。マッチしなかった場合 nil を返します。
+</p>
+<p>
+省略可能な第二引数 pos を指定すると、マッチの開始位置を pos から行うよう制御できます(pos のデフォルト値は 0)。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span><span class="p">(</span><span class="sr">/(.).(.)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobar</span><span class="s2">"</span>, <span class="mi">3</span><span class="p">)</span><span class="p">.</span><span class="nf">captures</span><span class="p">)</span>   <span class="c1"># =&gt; [&quot;b&quot;, &quot;r&quot;]
+</span><span class="nb">p</span><span class="p">(</span><span class="sr">/(.).(.)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobar</span><span class="s2">"</span>, <span class="o">-</span><span class="mi">3</span><span class="p">)</span><span class="p">.</span><span class="nf">captures</span><span class="p">)</span>  <span class="c1"># =&gt; [&quot;b&quot;, &quot;r&quot;]
+</span></code></pre>
+<p>
+pos を指定しても <a href="../method/-match-data/i/offset.html">MatchData#offset</a> 等の結果には影響しません。つまり、
+</p>
+<pre class="highlight ruby">
+<code>
+re<span class="p">.</span><span class="nf">match</span><span class="p">(</span>str<span class="p">[</span>pos<span class="o">..</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="p">)</span>
+</code></pre>
+<p>
+と
+</p>
+<pre class="highlight ruby">
+<code>
+re<span class="p">.</span><span class="nf">match</span><span class="p">(</span>str, pos<span class="p">)</span>
+</code></pre>
+<p>
+は異なります。
+</p>
+<p>
+ブロックを渡すと、マッチした場合に限り MatchData オブジェクトがブロック引数に渡されて実行されます。マッチした場合はブロックの値を返し、マッチしなかった場合は nil を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+results <span class="o">=</span> <span class="p">[</span><span class="p">]</span>
+<span class="sr">/((.)\2)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>m<span class="o">|</span> results <span class="o">&lt;&lt;</span> m<span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">}</span> <span class="c1"># =&gt; [&quot;oo&quot;] 
+</span><span class="sr">/((.)\2)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>m<span class="o">|</span> results <span class="o">&lt;&lt;</span> m<span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">}</span> <span class="c1"># =&gt; nil
+</span>results <span class="c1"># =&gt; [&quot;oo&quot;]
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+文字列を指定します。str との正規表現マッチを行います。
+</dd>
+<dt class='method-param'>[PARAM] pos:</dt>
+<dd>
+整数を指定します。マッチの開始位置を pos から行うよう制御できます(pos のデフォルト値は 0)。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+reg <span class="o">=</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="k">if</span> reg<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobar</span><span class="s2">"</span><span class="p">)</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">match</span><span class="s2">"</span>
+<span class="k">end</span>
+<span class="c1"># =&gt; match
+</span>
+<span class="nb">p</span> reg<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobar</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;MatchData:0x29403fc&gt;
+</span><span class="nb">p</span> reg<span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># =&gt; nil
+</span>
+<span class="nb">p</span> <span class="sr">/(foo)(bar)(baz)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobarbaz</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">to_a</span><span class="p">.</span><span class="nf">values_at</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;]
+</span></code></pre>
+<h3 >便利な使いかた</h3>
+<p>
+正規表現にマッチした部分文字列だけが必要な場合に、
+</p>
+<pre class="highlight ruby">
+<code>
+bar <span class="o">=</span> <span class="sr">/foo(.*)baz/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobarbaz</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">to_a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+foo, bar, baz <span class="o">=</span> <span class="sr">/(foo)(bar)(baz)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobarbaz</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">to_a</span><span class="p">.</span><span class="nf">values_at</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span><span class="p">)</span>
+</code></pre>
+<p>
+のように使用できます。(to_a は、マッチに失敗した場合を考慮しています。)
+</p>
+<p>
+多重代入の規則では右辺が配列でない一つのオブジェクトで to_a
+メソッドを持つ場合、右辺に * を付けることで to_a の結果を利用できます。つまり、上記は以下のように書くことができます。(ここでの
+`_' は、<a href="../method/-kernel/v/=26.html">$&amp;</a> を捨てるために適当に選んだ変数名)
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+_, foo, bar, baz <span class="o">=</span> <span class="o">*</span><span class="sr">/(foo)(bar)(baz)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobarbaz</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">p</span> <span class="p">[</span>foo, bar, baz<span class="p">]</span>
+
+<span class="c1"># =&gt; [&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;]
+</span></code></pre>
+<p>
+このような用途に <a href="../method/-match-data/i/captures.html">MatchData#captures</a> が使えると考えるかも知れませんが、captures では、マッチに失敗した場合、
+nil.captures を呼び出そうとして例外 <a href="../class/-no-method-error.html">NoMethodError</a> が発生してしまいます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+foo, bar, baz <span class="o">=</span> <span class="sr">/(foo)(bar)(baz)/</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="s2">"</span><span class="s2">foobar</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">captures</span>
+
+<span class="c1"># =&gt; -:1: undefined method `captures' for nil:NilClass (NoMethodError)
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-regexp/i/match=3f.html">Regexp#match?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_MATCH--3F"><code>match?(str, pos = 0) -&gt; bool</code><span class="permalink">[<a href="../method/-regexp/i/match=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-i-match-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+指定された文字列 str に対して 位置 pos から自身が表す正規表現によるマッチングを行います。マッチした場合 true を返し、マッチしない場合には false を返します。また、<a href="../method/-kernel/v/=7e.html">$~</a> などパターンマッチに関する組み込み変数の値は変更されません。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="sr">/R.../</span><span class="p">.</span><span class="nf">match?</span><span class="p">(</span><span class="s2">"</span><span class="s2">Ruby</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># =&gt; true
+</span><span class="sr">/R.../</span><span class="p">.</span><span class="nf">match?</span><span class="p">(</span><span class="s2">"</span><span class="s2">Ruby</span><span class="s2">"</span>, <span class="mi">1</span><span class="p">)</span> <span class="c1"># =&gt; false
+</span><span class="sr">/P.../</span><span class="p">.</span><span class="nf">match?</span><span class="p">(</span><span class="s2">"</span><span class="s2">Ruby</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># =&gt; false
+</span><span class="vg">$&amp;</span>                       <span class="c1"># =&gt; nil
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-regexp/i/match.html">Regexp#match</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_NAMED_CAPTURES"><code>named_captures -&gt; { String =&gt; [Integer] }</code><span class="permalink">[<a href="../method/-regexp/i/named_captures.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-i-named_captures">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+正規表現に含まれる名前付きキャプチャ(named capture)の情報を
+<a href="../class/-hash.html">Hash</a> で返します。
+</p>
+<p>
+Hash のキーは名前付きキャプチャの名前で、値はその名前に関連付けられたキャプチャの index のリストを返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="sr">/(?&lt;foo&gt;.)(?&lt;bar&gt;.)/</span><span class="p">.</span><span class="nf">named_captures</span>
+<span class="c1"># =&gt; {&quot;foo&quot;=&gt;[1], &quot;bar&quot;=&gt;[2]}
+</span>
+<span class="sr">/(?&lt;foo&gt;.)(?&lt;foo&gt;.)/</span><span class="p">.</span><span class="nf">named_captures</span>
+<span class="c1"># =&gt; {&quot;foo&quot;=&gt;[1, 2]}
+</span>
+<span class="c1"># 名前付きキャプチャを持たないときは空の Hash を返します。
+</span><span class="sr">/(.)(.)/</span><span class="p">.</span><span class="nf">named_captures</span>
+<span class="c1"># =&gt; {}
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_NAMES"><code>names -&gt; [String]</code><span class="permalink">[<a href="../method/-regexp/i/names.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-i-names">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+正規表現に含まれる名前付きキャプチャ(named capture)の名前を文字列の配列で返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="sr">/(?&lt;foo&gt;.)(?&lt;bar&gt;.)(?&lt;baz&gt;.)/</span><span class="p">.</span><span class="nf">names</span>
+
+<span class="c1"># =&gt; [&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;]
+</span>   <span class="sr">/(?&lt;foo&gt;.)(?&lt;foo&gt;.)/</span><span class="p">.</span><span class="nf">names</span>
+<span class="c1"># =&gt; [&quot;foo&quot;]
+</span>
+<span class="sr">/(.)(.)/</span><span class="p">.</span><span class="nf">names</span>
+<span class="c1"># =&gt; []
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_OPTIONS"><code>options -&gt; Integer</code><span class="permalink">[<a href="../method/-regexp/i/options.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-i-options">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+正規表現の生成時に指定されたオプションを返します。戻り値は、
+<a href="../method/-regexp/c/-e-x-t-e-n-d-e-d.html">Regexp::EXTENDED</a>, <a href="../method/-regexp/c/-i-g-n-o-r-e-c-a-s-e.html">Regexp::IGNORECASE</a>,
+<a href="../method/-regexp/c/-m-u-l-t-i-l-i-n-e.html">Regexp::MULTILINE</a>,
+<a href="../method/-regexp/c/-f-i-x-e-d-e-n-c-o-d-i-n-g.html">Regexp::FIXEDENCODING</a>,
+<a href="../method/-regexp/c/-n-o-e-n-c-o-d-i-n-g.html">Regexp::NOENCODING</a>,
+の論理和です。
+</p>
+<p>
+これで得られるオプションには生成時に指定したもの以外のオプションを含んでいる場合があります。これらのビットは内部的に用いられているもので、<a href="../method/-regexp/s/new.html">Regexp.new</a> にこれらを渡しても無視されます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="no">Regexp</span><span class="o">::</span><span class="no">IGNORECASE</span> <span class="c1"># =&gt; 1
+</span><span class="nb">p</span> <span class="sr">//i</span><span class="p">.</span><span class="nf">options</span>        <span class="c1"># =&gt; 1
+</span>
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>, <span class="no">Regexp</span><span class="o">::</span><span class="no">IGNORECASE</span> <span class="p">)</span><span class="p">.</span><span class="nf">options</span> <span class="c1"># =&gt; 1
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>, <span class="no">Regexp</span><span class="o">::</span><span class="no">EXTENDED</span><span class="p">)</span><span class="p">.</span><span class="nf">options</span>    <span class="c1"># =&gt; 2
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>, <span class="no">Regexp</span><span class="o">::</span><span class="no">IGNORECASE</span> <span class="o">|</span> <span class="no">Regexp</span><span class="o">::</span><span class="no">EXTENDED</span><span class="p">)</span><span class="p">.</span><span class="nf">options</span> <span class="c1"># =&gt; 3
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>, <span class="no">Regexp</span><span class="o">::</span><span class="no">MULTILINE</span><span class="p">)</span><span class="p">.</span><span class="nf">options</span> <span class="c1"># =&gt; 4
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>, <span class="no">Regexp</span><span class="o">::</span><span class="no">IGNORECASE</span> <span class="o">|</span> <span class="no">Regexp</span><span class="o">::</span><span class="no">MULTILINE</span> <span class="p">)</span><span class="p">.</span><span class="nf">options</span> <span class="c1"># =&gt; 5
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>, <span class="no">Regexp</span><span class="o">::</span><span class="no">MULTILINE</span> <span class="o">|</span> <span class="no">Regexp</span><span class="o">::</span><span class="no">EXTENDED</span><span class="p">)</span><span class="p">.</span><span class="nf">options</span> <span class="c1"># =&gt;6
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>, <span class="no">Regexp</span><span class="o">::</span><span class="no">IGNORECASE</span> <span class="o">|</span> <span class="no">Regexp</span><span class="o">::</span><span class="no">MULTILINE</span> <span class="o">|</span> <span class="no">Regexp</span><span class="o">::</span><span class="no">EXTENDED</span><span class="p">)</span><span class="p">.</span><span class="nf">options</span> <span class="c1"># =&gt; 7
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SOURCE"><code>source -&gt; String</code><span class="permalink">[<a href="../method/-regexp/i/source.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-i-source">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+その正規表現のもととなった文字列表現を生成して返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+re <span class="o">=</span> <span class="sr">/foo|bar|baz/i</span>
+<span class="nb">p</span> re<span class="p">.</span><span class="nf">source</span>     <span class="c1"># =&gt; &quot;foo|bar|baz&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_S"><code>to_s -&gt; String</code><span class="permalink">[<a href="../method/-regexp/i/to_s.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-i-to_s">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+正規表現の文字列表現を生成して返します。返される文字列は他の正規表現に埋め込んでもその意味が保持されるようになっています。
+</p>
+<pre class="highlight ruby">
+<code>
+re <span class="o">=</span> <span class="sr">/foo|bar|baz/i</span>
+<span class="nb">p</span> re<span class="p">.</span><span class="nf">to_s</span>       <span class="c1"># =&gt; &quot;(?i-mx:foo|bar|baz)&quot;
+</span><span class="nb">p</span> <span class="sr">/<span class="si">#{</span><span class="n">re</span><span class="si">}</span>+/o</span>     <span class="c1"># =&gt; /(?i-mx:foo|bar|baz)+/
+</span></code></pre>
+<p>
+ただし、後方参照を含む正規表現は意図通りにはならない場合があります。この場合は名前付きキャプチャを使用すると影響を受けにくくなります。
+</p>
+<pre class="highlight ruby">
+<code>
+re <span class="o">=</span> <span class="sr">/(foo|bar)\1/</span>      <span class="c1"># \1 は、foo か bar
+</span><span class="nb">p</span> <span class="sr">/(baz)<span class="si">#{</span><span class="n">re</span><span class="si">}</span>/</span>          <span class="c1"># \1 は、baz
+</span>
+<span class="c1"># =&gt; /(baz)(?-mix:(foo|bar)\1)/
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">使用例</span>
+<code>
+re <span class="o">=</span> <span class="sr">/foo|bar|baz/i</span>
+<span class="nb">p</span> re<span class="p">.</span><span class="nf">to_s</span>       <span class="c1"># =&gt; &quot;(?i-mx:foo|bar|baz)&quot;
+</span><span class="nb">p</span> <span class="sr">/<span class="si">#{</span><span class="n">re</span><span class="si">}</span>+/o</span>     <span class="c1"># =&gt; /(?i-mx:foo|bar|baz)+/
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-regexp/i/inspect.html">Regexp#inspect</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_--7E"><code>~ self -&gt; Integer | nil</code><span class="permalink">[<a href="../method/-regexp/i/=7e.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-i-7E">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+変数 <a href="../method/-kernel/v/_.html">$_</a> の値との間でのマッチをとります。
+</p>
+<p>
+ちょうど以下と同じ意味です。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nc">self</span> <span class="o">=~</span> <span class="vg">$_</span>
+</code></pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="vg">$_</span> <span class="o">=</span> <span class="s2">"</span><span class="s2">hogehoge</span><span class="s2">"</span>
+
+<span class="k">if</span>  <span class="sr">/foo/</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">match</span><span class="s2">"</span>
+<span class="k">else</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">no match</span><span class="s2">"</span>
+<span class="k">end</span>
+<span class="c1"># =&gt; no match
+</span><span class="c1"># ただし、警告がでる。warning: regex literal in condition
+</span>
+reg <span class="o">=</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">compile</span><span class="p">(</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="o">~</span> reg
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">match</span><span class="s2">"</span> 
+<span class="k">else</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">no match</span><span class="s2">"</span> 
+<span class="k">end</span>
+<span class="c1"># =&gt; no match
+</span>
+<span class="k">if</span> reg
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">match</span><span class="s2">"</span> 
+<span class="k">else</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">no match</span><span class="s2">"</span>
+<span class="k">end</span>
+<span class="c1"># =&gt; match
+</span><span class="c1"># reg は nil でも false でも無いので常にtrue
+</span></code></pre>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-E-X-T-E-N-D-E-D"><code>EXTENDED -&gt; Integer</code><span class="permalink">[<a href="../method/-regexp/c/-e-x-t-e-n-d-e-d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-c-EXTENDED">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+バックスラッシュでエスケープされていない空白と # から改行までを無視します。正規表現リテラルの //x オプションと同じです。(空白を入れる場合は\でエスケープして\ (&lt;-空白)と指定します)
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-F-I-X-E-D-E-N-C-O-D-I-N-G"><code>FIXEDENCODING -&gt; Integer</code><span class="permalink">[<a href="../method/-regexp/c/-f-i-x-e-d-e-n-c-o-d-i-n-g.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-c-FIXEDENCODING">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+正規表現が特定のエンコーディングの文字列にしかマッチしないことを意味します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-regexp/i/fixed_encoding=3f.html">Regexp#fixed_encoding?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-I-G-N-O-R-E-C-A-S-E"><code>IGNORECASE -&gt; Integer</code><span class="permalink">[<a href="../method/-regexp/c/-i-g-n-o-r-e-c-a-s-e.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-c-IGNORECASE">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字の大小の違いを無視します。正規表現リテラルの //i オプションと同じです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-M-U-L-T-I-L-I-N-E"><code>MULTILINE -&gt; Integer</code><span class="permalink">[<a href="../method/-regexp/c/-m-u-l-t-i-l-i-n-e.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-c-MULTILINE">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+複数行モード。正規表現 &quot;.&quot; が改行にマッチするようになります。正規表現リテラルの //m オプションと同じです。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-N-O-E-N-C-O-D-I-N-G"><code>NOENCODING -&gt; Integer</code><span class="permalink">[<a href="../method/-regexp/c/-n-o-e-n-c-o-d-i-n-g.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-c-NOENCODING">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+正規表現のマッチ時に文字列のエンコーディングを無視し、バイト列としてマッチすることを意味します。
+</p>
+<p>
+正規表現リテラルの n オプションに対応します。
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

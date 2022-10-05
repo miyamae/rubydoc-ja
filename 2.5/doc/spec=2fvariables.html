@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>変数と定数 (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="* [[ref:local]]
+  * [[ref:instance]]
+  * [[ref:class]]
+  * [[ref:class_var_scope]]
+  * [[ref:global]]
+  * [[ref:pseudo]]
+  * [[ref:const]]
+  * [[ref:prio]]">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      
+        <li>
+          <a href="../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+        </li>
+        <li>
+          変数と定数
+        </li>
+      
+    </ol>
+  </nav>
+
+<h1>変数と定数</h1>
+</header>
+
+<main>
+
+<ul>
+<li><a href="#local">ローカル変数</a></li>
+<li><a href="#instance">インスタンス変数</a></li>
+<li><a href="#class">クラス変数</a></li>
+<li><a href="#class_var_scope">クラス変数のスコープ</a></li>
+<li><a href="#global">グローバル変数</a></li>
+<li><a href="#pseudo">擬似変数</a></li>
+<li><a href="#const">定数</a></li>
+<li><a href="#prio">定数参照の優先順位</a></li>
+</ul>
+<p>
+Ruby の変数と定数の種別は変数名の最初の一文字によって、ローカル変数、インスタンス変数、クラス変数、グローバル変数、定数のいずれかに区別されます。通常の変数の二文字目以降は英数字または
+_ですが、組み込み変数の一部には「`$'+1文字の記号」という変数があります(<a href="#builtin">組み込み変数</a>を参照)。変数名の長さにはメモリのサイズ以外の制限はありません。
+</p>
+<h2 id='local'>ローカル変数</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+foobar
+</code></pre>
+<p>
+小文字または`_'で始まる識別子はローカル変数またはメソッド呼び出しです。ローカル変数スコープ(クラス、モジュール、メソッド定義の本体)における小文字で始まる識別子への最初の代入はそのスコープに属するローカル変数の宣言になります。宣言されていない識別子の参照は引数の無いメソッド呼び出しとみなされます。
+</p>
+<p>
+ローカル変数のスコープは、宣言した位置からその変数が宣言されたブロック、メソッド定義、またはクラス/モジュール定義の終りまでです。寿命もそのブロックの終りまで(トップレベルのローカル変数はプログラムの終了まで)ですが、例外としてブロックが手続きオブジェクト化された場合は、そのオブジェクトが消滅するまで存在します。同じスコープを参照する手続きオブジェクト間ではローカル変数は共有されます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># (A) の部分はスコープに入らない
+</span><span class="mi">2</span><span class="p">.</span><span class="nf">times</span> <span class="p">{</span>
+  <span class="nb">p</span> <span class="k">defined?</span><span class="p">(</span>v<span class="p">)</span>    <span class="c1"># (A)
+</span>  v <span class="o">=</span> <span class="mi">1</span>            <span class="c1"># ここ(宣言開始)から
+</span>  <span class="nb">p</span> v              <span class="c1"># ここ(ブロックの終り)までが v のスコープ
+</span><span class="p">}</span>
+
+<span class="c1"># =&gt; nil
+</span><span class="c1">#    1
+</span><span class="c1">#    nil           &lt;- これが nil であることに注意
+</span><span class="c1">#    1
+</span></code></pre>
+<p>
+宣言は、たとえ実行されなくても宣言とみなされます。
+</p>
+<pre class="highlight ruby">
+<code>
+v <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="k">false</span> <span class="c1"># 代入は行われないが宣言は有効
+</span><span class="nb">p</span> <span class="k">defined?</span><span class="p">(</span>v<span class="p">)</span>  <span class="c1"># =&gt; &quot;local-variable&quot;
+</span><span class="nb">p</span> v            <span class="c1"># =&gt; nil
+</span></code></pre>
+<h2 id='instance'>インスタンス変数</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="vi">@foobar</span>
+</code></pre>
+<p>
+`@'で始まる変数はインスタンス変数であり、特定のオブジェクトに所属しています。インスタンス変数はそのクラスまたはサブクラスのメソッドから参照できます。初期化されていないインスタンス変数を参照した時の値はnilです。
+</p>
+<h2 id='class'>クラス変数</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="vc">@@foo</span> <span class="o">=</span> <span class="mi">1</span>
+  <span class="k">def</span> <span class="nf">bar</span>
+    <span class="nb">puts</span> <span class="vc">@@foo</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+@@で始まる変数はクラス変数です。クラス変数はクラス定義の中で定義され、クラスの特異メソッド、インスタンスメソッドなどから参照／代入ができます。
+</p>
+<p>
+クラス変数と定数の違いは以下の通りです。
+</p>
+<ul>
+<li>再代入可能(定数は警告を出す)</li>
+<li>クラスの外から直接参照できない(継承されたクラスからは参照／代入可能)</li>
+</ul>
+<p>
+クラス変数はクラス自身のインスタンス変数とは以下の点で異なります。
+</p>
+<ul>
+<li>サブクラスから参照／代入が可能</li>
+<li>インスタンスメソッドから参照／代入が可能</li>
+</ul>
+<p>
+クラス変数は、そのクラスやサブクラス、それらのインスタンスで共有されるグローバル変数であるとみなすことができます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="vc">@@foo</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span> <span class="o">&lt;</span> <span class="no">Foo</span>
+  <span class="nb">p</span> <span class="vc">@@foo</span> <span class="o">+=</span> <span class="mi">1</span>          <span class="c1"># =&gt; 2
+</span><span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Baz</span> <span class="o">&lt;</span> <span class="no">Bar</span>
+  <span class="nb">p</span> <span class="vc">@@foo</span> <span class="o">+=</span> <span class="mi">1</span>          <span class="c1"># =&gt; 3
+</span><span class="k">end</span>
+</code></pre>
+<p>
+モジュールで定義されたクラス変数(モジュール変数)は、そのモジュールをインクルードしたクラス間でも共有されます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">module</span> <span class="nn">Foo</span>
+  <span class="vc">@@foo</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span>
+  include <span class="no">Foo</span>
+  <span class="nb">p</span> <span class="vc">@@foo</span> <span class="o">+=</span> <span class="mi">1</span>          <span class="c1"># =&gt; 2
+</span><span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Baz</span>
+  include <span class="no">Foo</span>
+  <span class="nb">p</span> <span class="vc">@@foo</span> <span class="o">+=</span> <span class="mi">1</span>          <span class="c1"># =&gt; 3
+</span><span class="k">end</span>
+</code></pre>
+<p>
+親クラスに、子クラスで既に定義されている同名のクラス変数を追加した場合には、子クラスのクラス変数が上書きされます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span> <span class="o">&lt;</span> <span class="no">Foo</span>
+  <span class="vc">@@v</span> <span class="o">=</span> <span class="ss">:bar</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="vc">@@v</span> <span class="o">=</span> <span class="ss">:foo</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span>
+  <span class="nb">p</span> <span class="vc">@@v</span>       <span class="c1">#=&gt; :foo
+</span><span class="k">end</span>
+</code></pre>
+<h3 id='class_var_scope'>クラス変数のスコープ</h3>
+<p>
+クラス変数は、その場所を囲むもっとも内側の(特異クラスでない) class 式または module 式のボディをスコープとして持ちます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="vc">@@a</span> <span class="o">=</span> <span class="ss">:a</span>
+
+  <span class="k">class</span> <span class="o">&lt;&lt;</span> <span class="no">Foo</span>
+    <span class="nb">p</span> <span class="vc">@@a</span>       <span class="c1">#=&gt; :a
+</span>  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">a1</span>
+    <span class="nf">p</span> <span class="vc">@@a</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="no">Foo</span><span class="p">.</span><span class="nf">a1</span>          <span class="c1">#=&gt; :a
+</span>
+<span class="k">def</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">a2</span>
+  <span class="nf">p</span> <span class="vc">@@a</span>
+<span class="k">end</span>
+<span class="no">Foo</span><span class="p">.</span><span class="nf">a2</span>          <span class="c1">#=&gt; NameError になります。
+</span>
+<span class="k">class</span> <span class="o">&lt;&lt;</span> <span class="no">Foo</span>
+  <span class="nb">p</span> <span class="vc">@@a</span>         <span class="c1">#=&gt; NameError になります。
+</span><span class="k">end</span>
+</code></pre>
+<h2 id='global'>グローバル変数</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="vg">$foobar</span>
+<span class="vg">$/</span>
+</code></pre>
+<p>
+`$'で始まる変数はグローバル変数で、プログラムのどこからでも参照できます(その分、利用には注意が必要です)。グローバル変数には宣言は必要ありません。初期化されていないグローバル変数を参照した時の値はnilです。
+</p>
+<h3 id='builtin'>組み込み変数</h3>
+<p>
+グローバル変数には Ruby 処理系によって特殊な意味を与えられているものがあります。これらを組み込み変数と呼びます。
+</p>
+<p>
+詳細は <a href="../class/-kernel.html">Kernel</a> の特殊変数を参照してください。
+</p>
+<h3 >識別子と分類</h3>
+<p>
+組み込み変数の一部は、通常の変数としては使用できない特殊な名前を持っています。
+</p>
+<p>
+例えば、 $' や $&amp;  あるいは $1, $2, $3 がそうです。このように 「'$' + 特殊文字一文字」、または「'$' + 10進数字」という名前を持つ変数を特殊変数と呼びます。
+</p>
+<p>
+また、 $-F や $-I のような変数もあります。これらは Ruby の起動オプションと -F や -I などと対応しており、オプション変数と呼ばれます。
+</p>
+<h3 >スコープ</h3>
+<p>
+組み込み変数は文法解析上はグローバル変数として扱われます。しかし、実際のスコープは必ずしもグローバルとは限りません。
+</p>
+<p>
+組み込み変数には次の種類のスコープがありえます。
+</p>
+<dl>
+<dt>グローバルスコープ</dt>
+<dd>
+<p>
+通常のグローバル変数と同じ大域的なスコープを持ちます。
+</p>
+</dd>
+<dt>ローカルスコープ</dt>
+<dd>
+<p>
+通常のローカル変数と同じスコープを持ちます。つまり、 class 式本体やメソッド本体で行われた代入はその外側には影響しません。プログラム内のすべての場所において代入を行わずともアクセスできることを除いて、通常のローカル変数と同じです。
+</p>
+</dd>
+<dt>スレッドローカルスコープ</dt>
+<dd>
+<p>
+スレッドごとの値を持ちます。他のスレッドで異なる値が割り当てられても影響しません。
+</p>
+</dd>
+</dl>
+<p>
+また、一部の変数は読み取り専用です。ユーザープログラムから変更することができません。代入しようとすると実行時に例外を生じます。
+</p>
+<h2 id='pseudo'>擬似変数</h2>
+<p>
+通常の変数以外に擬似変数と呼ばれる特殊な変数があります。
+</p>
+<dl>
+<dt>self</dt>
+<dd>
+<p>
+現在のメソッドの実行主体。
+</p>
+</dd>
+<dt>nil</dt>
+<dd>
+<p>
+<a href="../class/-nil-class.html">NilClass</a>クラスの唯一のインスタンス。
+<a href="../method/-object/i/frozen=3f.html">Object#frozen?</a> は true を返します。
+</p>
+</dd>
+<dt>true</dt>
+<dd>
+<p>
+<a href="../class/-true-class.html">TrueClass</a>クラスの唯一のインスタンス。真の代表値。
+<a href="../method/-object/i/frozen=3f.html">Object#frozen?</a> は true を返します。
+</p>
+</dd>
+<dt>false</dt>
+<dd>
+<p>
+<a href="../class/-false-class.html">FalseClass</a>クラスの唯一のインスタンス。nilとfalseは偽を表します。
+<a href="../method/-object/i/frozen=3f.html">Object#frozen?</a> は true を返します。
+</p>
+</dd>
+<dt>__FILE__</dt>
+<dd>
+<p>
+現在のソースファイル名
+</p>
+<p>
+フルパスとは限らないため、フルパスが必要な場合は
+File.expand_path(__FILE__) とする必要があります。
+</p>
+</dd>
+<dt>__LINE__</dt>
+<dd>
+<p>
+現在のソースファイル中の行番号
+</p>
+</dd>
+<dt>__ENCODING__</dt>
+<dd>
+<p>
+現在のソースファイルのスクリプトエンコーディング
+</p>
+</dd>
+</dl>
+<p>
+擬似変数の値を変更することはできません。擬似変数へ代入すると文法エラーになります。
+</p>
+<h2 id='const'>定数</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">FOOBAR</span>
+</code></pre>
+<p>
+アルファベット大文字 ([A-Z]) で始まる識別子は定数です。定数の定義 (と初期化) は代入によって行われますが、メソッドの中では定義できません。一度定義された定数に再び代入を行おうとすると警告メッセージが出ます。定義されていない定数にアクセスすると例外 <a href="../class/-name-error.html">NameError</a> が発生します。
+</p>
+<p>
+定数はその定数が定義されたクラス/モジュール定義の中(メソッド本体やネストしたクラス/モジュール定義中を含みます)、クラスを継承しているクラス、モジュールをインクルードしているクラスまたはモジュールから参照することができます。クラス定義の外(トップレベル)で定義された定数は <a href="../class/-object.html">Object</a> に所属することになります。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="no">FOO</span> <span class="o">=</span> <span class="s1">'FOO'</span>       <span class="c1"># クラス Foo の定数 FOO を定義(Foo::FOO)
+</span><span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span> <span class="o">&lt;</span> <span class="no">Foo</span>
+  <span class="no">BAR</span> <span class="o">=</span> <span class="s1">'BAR'</span>       <span class="c1"># クラス Bar の定数 BAR を定義(Bar::BAR)
+</span>
+  <span class="c1"># 親クラスの定数は直接参照できる
+</span>  <span class="nb">p</span> <span class="no">FOO</span>             <span class="c1"># =&gt; &quot;FOO&quot;
+</span>  <span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Baz</span>
+
+    <span class="c1"># ネストしたクラスはクラスの継承関係上は無関係であるがネス
+</span>    <span class="c1"># トの外側の定数も直接参照できる
+</span>    <span class="nb">p</span> <span class="no">BAR</span>           <span class="c1"># =&gt; &quot;BAR&quot;
+</span>  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+またクラス定義式はクラスオブジェクトの生成を行うと同時に、名前がクラス名である定数にクラスオブジェクトを代入する動作をします。クラス名を参照することは文法上は定数を参照していることになります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">C</span>
+<span class="k">end</span>
+<span class="nb">p</span> <span class="no">C</span>    <span class="c1"># =&gt; C
+</span></code></pre>
+<p>
+あるクラスまたはモジュールで定義された定数を外部から参照するためには`::'演算子を用います。またObjectクラスで定義されている定数(トップレベルの定数と言う)を確実に参照するためには左辺無しの`::'演算子が使えます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">module</span> <span class="nn">M</span>
+  <span class="no">I</span> <span class="o">=</span> <span class="mi">35</span>
+  <span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">C</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="nb">p</span> <span class="no">M</span><span class="o">::</span><span class="no">I</span>   <span class="c1">#=&gt; 35
+</span><span class="nb">p</span> <span class="no">M</span><span class="o">::</span><span class="no">C</span>   <span class="c1">#=&gt; M::C
+</span><span class="nb">p</span> <span class="o">::</span><span class="no">M</span>    <span class="c1">#=&gt; M
+</span>
+<span class="no">M</span><span class="o">::</span><span class="no">NewConst</span> <span class="o">=</span> <span class="mi">777</span>   <span class="c1"># =&gt; 777
+</span></code></pre>
+<h3 id='prio'>定数参照の優先順位</h3>
+<p>
+親クラスとネストの外側のクラスで同名の定数が定義されているとネストの外側の定数の方を先に参照します。つまり、定数参照時の定数の探索順序は、最初にネスト関係を外側に向かって探索し、次に継承関係を上位に向かって探索します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="no">CONST</span> <span class="o">=</span> <span class="s1">'Foo'</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span>
+  <span class="no">CONST</span> <span class="o">=</span> <span class="s1">'Bar'</span>
+
+  <span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Baz</span> <span class="o">&lt;</span> <span class="no">Foo</span>
+    <span class="nb">p</span> <span class="no">CONST</span>             <span class="c1"># =&gt; &quot;Bar&quot;      外側の定数
+</span>    <span class="c1"># この場合、親クラスの定数は明示的に指定しなければ見えない
+</span>    <span class="nb">p</span> <span class="no">Foo</span><span class="o">::</span><span class="no">CONST</span>        <span class="c1"># =&gt; &quot;Foo&quot;
+</span>  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+トップレベルの定数定義はネストの外側とはみなされません。したがってトップレベルの定数は、継承関係を探索した結果で参照されるので優先順位は低いと言えます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="no">CONST</span> <span class="o">=</span> <span class="s1">'Foo'</span>
+<span class="k">end</span>
+
+<span class="no">CONST</span> <span class="o">=</span> <span class="s1">'Object'</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span> <span class="o">&lt;</span> <span class="no">Foo</span>
+  <span class="nb">p</span> <span class="no">CONST</span>               <span class="c1"># =&gt; &quot;Foo&quot;
+</span><span class="k">end</span>
+
+<span class="c1"># 以下のように明示的にネストしていれば規則通り Object の定数
+</span><span class="c1"># (ネストの外側)が先に探索される
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Object</span>
+  <span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span> <span class="o">&lt;</span> <span class="no">Foo</span>
+    <span class="nb">p</span> <span class="no">CONST</span>             <span class="c1"># =&gt; &quot;Object&quot;
+</span>  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+上位のクラス(クラスの継承関係上、およびネストの関係上の上位クラス)の定数と同名の定数(下の例で CONST) に代入を行うと、上位の定数への代入ではなく、そのクラスの定数の定義になります。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="no">CONST</span> <span class="o">=</span> <span class="s1">'Foo'</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span> <span class="o">&lt;</span> <span class="no">Foo</span>
+  <span class="nb">p</span> <span class="no">CONST</span>               <span class="c1"># =&gt; &quot;Foo&quot;
+</span>  <span class="no">CONST</span> <span class="o">=</span> <span class="s1">'Bar'</span>         <span class="c1"># Bar の定数 CONST を*定義*
+</span>  <span class="nb">p</span> <span class="no">CONST</span>               <span class="c1"># =&gt; &quot;Bar&quot;  (Foo::CONST は隠蔽される)
+</span>  <span class="nb">p</span> <span class="no">Foo</span><span class="o">::</span><span class="no">CONST</span>          <span class="c1"># =&gt; &quot;Foo&quot;  (:: 演算子で明示すれば見える)
+</span><span class="k">end</span>
+</code></pre>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

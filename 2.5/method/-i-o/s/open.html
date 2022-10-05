@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>IO.for_fd (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="オープン済みのファイルディスクリプタ fd に対する新しい
+IO オブジェクトを生成して返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-i-o.html">IOクラス</a>
+      </li>
+      <li>
+        for_fd 
+      </li>
+    </ol>
+  </nav>
+
+<h1>singleton method IO.for_fd</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_FOR_FD"><code>new(fd, mode = &quot;r&quot;, opt={}) -&gt; IO</code><span class="permalink">[<a href="../../../method/-i-o/s/for_fd.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/IO.html#method-c-for_fd">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>for_fd(fd, mode = &quot;r&quot;, opt={}) -&gt; IO</code></dt>
+<dt class="method-heading"><code>open(fd, mode = &quot;r&quot;, opt={}) -&gt; IO</code></dt>
+<dt class="method-heading"><code>open(fd, mode = &quot;r&quot; opt={}) {|io| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+オープン済みのファイルディスクリプタ fd に対する新しい
+IO オブジェクトを生成して返します。
+</p>
+<p>
+IO.open にブロックが与えられた場合、IO オブジェクトを生成しそれを引数としてブロックを実行します。ブロックの終了とともに fd はクローズされます。ブロックの結果を返します。
+IO.new, IO.for_fd はブロックを受け付けません。
+</p>
+<h2 >オプション引数</h2>
+<p>
+このメソッドは以下のオプションを利用できます。
+</p>
+<ul>
+<li>:mode mode引数と同じ意味です</li>
+<li>:external_encoding 外部エンコーディング。&quot;-&quot; はデフォルト外部エンコーディングの
+別名です。</li>
+<li>:internal_encoding 内部エンコーディング。&quot;-&quot; はデフォルト内部エンコーディングの
+別名です。nilなら変換しません。</li>
+<li>:encoding &quot;extenc:intenc&quot; の形で外部/内部エンコーディングを指定します。</li>
+<li>:textmode 真を渡すと mode の &quot;t&quot; と同じ意味になります。</li>
+<li>:binmode 真を渡すと mode の &quot;b&quot; と同じ意味になります。</li>
+<li>:autoclose 偽を渡すと close時/GCでのファイナライザ呼出時に fd を close しません。</li>
+</ul>
+<p>
+また、<a href="../../../method/-string/i/encode.html">String#encode</a> で説明されている :invalid =&gt; :replace などの変換オプションも指定することができます。外部エンコーディングから内部エンコーディングへの変換をするときに用いられます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] fd:</dt>
+<dd>
+ファイルディスクリプタである整数を指定します。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+<a href="../../../method/-kernel/m/open.html">Kernel.#open</a> と同じ形式で IO のモードを指定します。<a href="../../../method/-file=3a=3a-constants/c/-r-d-o-n-l-y.html">File::Constants::RDONLY</a> などの定数(数値)でモードを指定できます。詳細は組み込み関数 <a href="../../../method/-kernel/m/open.html">Kernel.#open</a> を参照してください。
+mode は省略可能で、省略時のデフォルトのモードは、
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fcntl.html">fcntl(2)</a> で F_GETFL フラグが利用できる環境では第一引数で指定した fd のモードを引き継ぎ、利用できない環境では &quot;r&quot; になります。
+</dd>
+<dt class='method-param'>[PARAM] opt:</dt>
+<dd>
+オプション引数
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+IO オブジェクトの生成に失敗した場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例:IO.new による読み込みモードでのファイルオープン</span>
+<code>
+io <span class="o">=</span> <span class="no">IO</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">IO</span><span class="p">.</span><span class="nf">sysopen</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span><span class="p">)</span>
+io<span class="p">.</span><span class="nf">class</span> <span class="c1"># =&gt; IO
+</span>io<span class="p">.</span><span class="nf">close</span>
+</code></pre>
+<pre class="highlight ruby">
+<span class="caption">例:IO.for_fd による読み込み・バイナリモードでのファイルオープン</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">binwrite</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">\xBF\xAA\x16\x04.\b\xCB\x12\xACoeQ\xFDv2\xCF9+\x81\x18</span><span class="s2">"</span><span class="p">)</span>
+io <span class="o">=</span> <span class="no">IO</span><span class="p">.</span><span class="nf">for_fd</span><span class="p">(</span><span class="no">IO</span><span class="p">.</span><span class="nf">sysopen</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span>, <span class="s2">"</span><span class="s2">r</span><span class="s2">"</span>, <span class="p">{</span> <span class="ss">binmode:</span> <span class="k">true</span> <span class="p">}</span><span class="p">)</span>
+io<span class="p">.</span><span class="nf">class</span> <span class="c1"># =&gt; IO
+</span>io<span class="p">.</span><span class="nf">binmode?</span> <span class="c1"># =&gt; true
+</span>io<span class="p">.</span><span class="nf">close</span>
+</code></pre>
+<pre class="highlight ruby">
+<span class="caption">例:IO.open によるファイルオープン</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="no">IO</span><span class="p">.</span><span class="nf">sysopen</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>io<span class="o">|</span> <span class="nb">p</span> io<span class="p">.</span><span class="nf">class</span> <span class="p">}</span> <span class="c1"># =&gt; IO
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

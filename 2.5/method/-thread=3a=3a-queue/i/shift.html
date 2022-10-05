@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Thread::Queue#deq (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="キューからひとつ値を取り出します。キューが空の時、呼出元のスレッドは停止します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-thread=3a=3a-queue.html">Thread::Queueクラス</a>
+      </li>
+      <li>
+        deq 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Thread::Queue#deq</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_DEQ"><code>pop(non_block = false) -&gt; object</code><span class="permalink">[<a href="../../../method/-thread=3a=3a-queue/i/deq.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Thread/Queue.html#method-i-deq">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>shift(non_block = false) -&gt; object</code></dt>
+<dt class="method-heading"><code>deq(non_block = false) -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+キューからひとつ値を取り出します。キューが空の時、呼出元のスレッドは停止します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] non_block:</dt>
+<dd>
+true を与えると、キューが空の時に例外 <a href="../../../class/-thread-error.html">ThreadError</a> が発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'thread'</span>
+
+q <span class="o">=</span> <span class="no">Queue</span><span class="p">.</span><span class="nf">new</span>
+
+th1 <span class="o">=</span> <span class="no">Thread</span><span class="p">.</span><span class="nf">start</span> <span class="k">do</span>
+  <span class="k">while</span> resource <span class="o">=</span> q<span class="p">.</span><span class="nf">pop</span>
+    <span class="nb">puts</span> resource
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="p">[</span><span class="ss">:resource1</span>, <span class="ss">:resource2</span>, <span class="ss">:resource3</span>, <span class="k">nil</span><span class="p">]</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span> <span class="o">|</span>r<span class="o">|</span>
+  q<span class="p">.</span><span class="nf">push</span><span class="p">(</span>r<span class="p">)</span>
+<span class="p">}</span>
+
+th1<span class="p">.</span><span class="nf">join</span>
+</code></pre>
+<pre class="highlight ruby">
+<span class="caption">例: nonblock = true</span>
+<code>
+<span class="nb">require</span> <span class="s1">'thread'</span>
+
+q <span class="o">=</span> <span class="no">Queue</span><span class="p">.</span><span class="nf">new</span>
+
+th1 <span class="o">=</span> <span class="no">Thread</span><span class="p">.</span><span class="nf">start</span> <span class="k">do</span>
+  <span class="k">while</span> resource <span class="o">=</span> q<span class="p">.</span><span class="nf">pop</span>
+    <span class="nb">puts</span> resource
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="p">[</span><span class="ss">:resource1</span>, <span class="ss">:resource2</span>, <span class="ss">:resource3</span>, <span class="k">nil</span><span class="p">]</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span> <span class="o">|</span>r<span class="o">|</span>
+  q<span class="p">.</span><span class="nf">push</span><span class="p">(</span>r<span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">begin</span>
+  th1<span class="p">.</span><span class="nf">join</span>
+  q<span class="p">.</span><span class="nf">pop</span><span class="p">(</span><span class="k">true</span><span class="p">)</span>
+<span class="k">rescue</span> <span class="o">=&gt;</span> e
+  <span class="nb">p</span> e
+<span class="k">end</span>
+
+<span class="c1"># =&gt; resource1
+</span><span class="c1"># resource2
+</span><span class="c1"># resource3
+</span><span class="c1"># =&gt; #&lt;ThreadError: queue empty&gt;
+</span><span class="c1"># =&gt; &quot;queue empty&quot;
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

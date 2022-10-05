@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Coverage.result (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="対象ファイル名をキー、測定結果を値したハッシュを返します。
+測定結果の詳細は、[[lib:coverage]] ライブラリ を参照してください。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/coverage.html">coverageライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-coverage.html">Coverageクラス</a>
+      </li>
+      <li>
+        result 
+      </li>
+    </ol>
+  </nav>
+
+<h1>singleton method Coverage.result</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_RESULT"><code>result(stop: true, clear: true) -&gt; Hash</code><span class="permalink">[<a href="../../../method/-coverage/s/result.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Coverage.html#method-c-result">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+対象ファイル名をキー、測定結果を値したハッシュを返します。測定結果の詳細は、<a href="../../../library/coverage.html">coverage</a> ライブラリ を参照してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] stop:</dt>
+<dd>
+true であれば、カバレッジの測定を終了します。
+</dd>
+<dt class='method-param'>[PARAM] clear:</dt>
+<dd>
+true であれば、測定記録をクリアします。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+測定結果を表すハッシュ
+</dd>
+<dt>[EXCEPTION] RuntimeError:</dt>
+<dd>
+<a href="../../../method/-coverage/s/start.html">Coverage.start</a> を実行する前に実行された場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">bool.rb</span>
+<code>
+<span class="k">def</span> <span class="nf">bool</span><span class="p">(</span>obj<span class="p">)</span>
+  <span class="k">if</span> obj
+    <span class="k">true</span>
+  <span class="k">else</span>
+    <span class="k">false</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">coverage</span><span class="s2">"</span>
+<span class="no">Coverage</span><span class="p">.</span><span class="nf">start</span>
+<span class="nb">load</span> <span class="s2">"</span><span class="s2">bool.rb</span><span class="s2">"</span>
+<span class="nb">p</span> <span class="no">Coverage</span><span class="p">.</span><span class="nf">result</span>  <span class="c1">#=&gt; {&quot;bool.rb&quot;=&gt;[1, 0, 0, nil, 0, nil, nil]}
+</span>bool<span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="nb">p</span> <span class="no">Coverage</span><span class="p">.</span><span class="nf">result</span>  <span class="c1"># coverage measurement is not enabled (RuntimeError)
+</span></code></pre>
+<p>
+Ruby 2.6 以降では、オプションを指定できます。
+Coverage.result(clear: true, stop: false) と指定することで、続けて新しく実行された行だけを記録することができます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">coverage</span><span class="s2">"</span>
+<span class="no">Coverage</span><span class="p">.</span><span class="nf">start</span><span class="p">(</span><span class="ss">oneshot_lines:</span> <span class="k">true</span><span class="p">)</span>
+<span class="nb">load</span> <span class="s2">"</span><span class="s2">bool.rb</span><span class="s2">"</span>
+<span class="nb">p</span> <span class="no">Coverage</span><span class="p">.</span><span class="nf">result</span><span class="p">(</span><span class="ss">clear:</span> <span class="k">true</span>, <span class="ss">stop:</span> <span class="k">false</span><span class="p">)</span>  <span class="c1">#=&gt; {&quot;bool.rb&quot;=&gt;{:oneshot_lines=&gt;[1]}}
+</span>bool<span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="nb">p</span> <span class="no">Coverage</span><span class="p">.</span><span class="nf">result</span><span class="p">(</span><span class="ss">clear:</span> <span class="k">true</span>, <span class="ss">stop:</span> <span class="k">false</span><span class="p">)</span>  <span class="c1">#=&gt; {&quot;bool.rb&quot;=&gt;{:oneshot_lines=&gt;[2, 3]}}
+</span>bool<span class="p">(</span><span class="k">nil</span><span class="p">)</span>
+<span class="nb">p</span> <span class="no">Coverage</span><span class="p">.</span><span class="nf">result</span><span class="p">(</span><span class="ss">clear:</span> <span class="k">true</span>, <span class="ss">stop:</span> <span class="k">false</span><span class="p">)</span>  <span class="c1">#=&gt; {&quot;bool.rb&quot;=&gt;{:oneshot_lines=&gt;[5]}}
+</span></code></pre>
+<p>
+上記のコード例で、bool(0) で実行された2行目の条件式は、測定記録がクリアされたあと bool(nil) で実行されても新しく記録されません。測定記録をクリアしても、記録を開始してから実行されたことまでリセットされているわけではないことに注意して下さい。
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-coverage/s/peek_result.html">Coverage.peek_result</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>WIN32OLE_EVENT.message_loop (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="Windowsのメッセージポンプを実行します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/win32ole.html">win32oleライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-w-i-n32-o-l-e_-e-v-e-n-t.html">WIN32OLE_EVENTクラス</a>
+      </li>
+      <li>
+        message_loop 
+      </li>
+    </ol>
+  </nav>
+
+<h1>singleton method WIN32OLE_EVENT.message_loop</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_MESSAGE_LOOP"><code>message_loop -&gt; ()</code><span class="permalink">[<a href="../../../method/-w-i-n32-o-l-e_-e-v-e-n-t/s/message_loop.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/WIN32OLE_EVENT.html#method-c-message_loop">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Windowsのメッセージポンプを実行します。
+</p>
+<p>
+message_loopメソッドは、Windowsメッセージがキューイングされている限りメッセージの読み出しとディスパッチを実行します。
+</p>
+<p>
+COMのスレッド間/プロセス間通信はスレッド内で呼び出しをシリアライズするためにWindowsメッセージを利用します。このため、ほとんどのイベント処理は
+Windowsメッセージを読み取ってディスパッチすることで通知されます。
+</p>
+<pre>
+ie = WIN32OLE.new('InternetExplorer.Application.1')
+event = WIN32OLE_EVENT.new(ie, 'DWebBrowserEvents2')
+b = false
+event.on_event('DocumentComplete') do |disp, uri|
+  disp.document.getElementsByTagName('a').each do |e|
+    puts &quot;#{e.innerHTML}=#{e.href}&quot;   #=&gt; ダウンロード=http://www.ruby-lang.org/ja/downloads/ など
+  end
+  disp.quit
+  b = true
+end
+ie.Navigate2 'http://www.ruby-lang.org/ja/'
+loop do
+  break if b
+  WIN32OLE_EVENT.message_loop
+end
+</pre>
+<p>
+なお、メソッド名はloopですが、呼び出し時および既にキューイングされたメッセージの処理中にキューされたメッセージの処理が終わると呼び出し元に制御が戻ります。このため、イベント通知までに長い時間がかかる場合はすべてのイベントを受信するまでループを実行する必要があります。このとき他のスレッドに制御を与える必要があれば、<a href="../../../method/-kernel/m/sleep.html">Kernel.#sleep</a>などを呼び出してください。message_loopメソッドの呼び出し中はRubyのスレッドの切り替えは行われません。
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

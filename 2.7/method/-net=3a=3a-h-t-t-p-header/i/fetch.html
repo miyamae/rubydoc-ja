@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Net::HTTPHeader#fetch (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="たとえばキー 'content-length' に対しては  '2048'
+のような文字列が得られます。キーが存在しなければ nil を返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/net=2fhttp.html">net/httpライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-net=3a=3a-h-t-t-p-header.html">Net::HTTPHeaderモジュール</a>
+      </li>
+      <li>
+        fetch 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Net::HTTPHeader#fetch</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_FETCH"><code>fetch(key) -&gt; String</code><span class="permalink">[<a href="../../../method/-net=3a=3a-h-t-t-p-header/i/fetch.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Net/HTTPHeader.html#method-i-fetch">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>fetch(key, default) -&gt; String</code></dt>
+<dt class="method-heading"><code>fetch(key) {|hash| .... } -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+key ヘッダフィールドを返します。
+</p>
+<p>
+たとえばキー 'content-length' に対しては  '2048'
+のような文字列が得られます。キーが存在しなければ nil を返します。
+</p>
+<p>
+該当するキーが登録されていない時には、引数 default が与えられていればその値を、ブロックが与えられていればそのブロックを評価した値を返します。
+</p>
+<p>
+一種類のヘッダフィールドが一つのヘッダの中に複数存在する場合にはそれを全て &quot;, &quot; で連結した文字列を返します。
+key は大文字小文字を区別しません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+ヘッダフィール名を文字列で与えます。
+</dd>
+<dt class='method-param'>[PARAM] default:</dt>
+<dd>
+該当するキーが登録されていない時の返り値を指定します。
+</dd>
+<dt>[EXCEPTION] IndexError:</dt>
+<dd>
+引数defaultもブロックも与えられてない時、キーの探索に 失敗すると発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例 key のみ指定。key が存在する</span>
+<code>
+<span class="nb">require</span> <span class="s1">'net/http'</span>
+
+uri <span class="o">=</span> <span class="no">URI</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="s1">'http://www.example.com/index.html'</span><span class="p">)</span>
+req <span class="o">=</span> <span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="o">::</span><span class="no">Get</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>uri<span class="p">.</span><span class="nf">request_uri</span><span class="p">)</span>
+req<span class="p">.</span><span class="nf">fetch</span><span class="p">(</span><span class="s2">"</span><span class="s2">user-agent</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;Ruby&quot;
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例 key のみ指定。key が存在しない</span>
+<code>
+<span class="nb">require</span> <span class="s1">'net/http'</span>
+
+<span class="k">begin</span>
+  req<span class="p">.</span><span class="nf">fetch</span><span class="p">(</span><span class="s2">"</span><span class="s2">content-length</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">rescue</span> <span class="o">=&gt;</span> e
+  e <span class="c1"># =&gt; #&lt;KeyError: key not found: &quot;content-length&quot;&gt;
+</span><span class="k">end</span>
+</code></pre>
+<pre class="highlight ruby">
+<span class="caption">例 key , default を指定</span>
+<code>
+<span class="nb">require</span> <span class="s1">'net/http'</span>
+
+uri <span class="o">=</span> <span class="no">URI</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="s1">'http://www.example.com/index.html'</span><span class="p">)</span>
+req <span class="o">=</span> <span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="o">::</span><span class="no">Get</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>uri<span class="p">.</span><span class="nf">request_uri</span><span class="p">)</span>
+req<span class="p">.</span><span class="nf">fetch</span><span class="p">(</span><span class="s2">"</span><span class="s2">content-length</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">default</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;default&quot;
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例 key とブロックを指定</span>
+<code>
+<span class="nb">require</span> <span class="s1">'net/http'</span>
+
+uri <span class="o">=</span> <span class="no">URI</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="s1">'http://www.example.com/index.html'</span><span class="p">)</span>
+req <span class="o">=</span> <span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="o">::</span><span class="no">Get</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>uri<span class="p">.</span><span class="nf">request_uri</span><span class="p">)</span>
+req<span class="p">.</span><span class="nf">fetch</span><span class="p">(</span><span class="s2">"</span><span class="s2">content-length</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>e<span class="o">|</span> <span class="mi">99</span> <span class="p">}</span> <span class="c1"># =&gt; 99
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-net=3a=3a-h-t-t-p-header/i/=5b=5d.html">Net::HTTPHeader#[]</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

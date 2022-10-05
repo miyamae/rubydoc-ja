@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Thread.handle_interrupt (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="スレッドの割り込みのタイミングを引数で指定した内容に変更してブロックを
+実行します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-thread.html">Threadクラス</a>
+      </li>
+      <li>
+        handle_interrupt 
+      </li>
+    </ol>
+  </nav>
+
+<h1>singleton method Thread.handle_interrupt</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_HANDLE_INTERRUPT"><code>handle_interrupt(hash) { ... } -&gt; object</code><span class="permalink">[<a href="../../../method/-thread/s/handle_interrupt.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Thread.html#method-c-handle_interrupt">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+スレッドの割り込みのタイミングを引数で指定した内容に変更してブロックを実行します。
+</p>
+<p>
+「割り込み」とは、非同期イベントや <a href="../../../method/-thread/i/raise.html">Thread#raise</a> や
+<a href="../../../method/-thread/i/kill.html">Thread#kill</a>、<a href="../../../method/-signal/m/trap.html">Signal.#trap</a>(未サポート)、メインスレッドの終了
+(メインスレッドが終了すると、他のスレッドも終了されます)を意味します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] hash:</dt>
+<dd>
+例外クラスがキー、割り込みのタイミングを指定する
+<a href="../../../class/-symbol.html">Symbol</a> が値の <a href="../../../class/-hash.html">Hash</a> を指定します。値の内容は以下のいずれかです。
+</dd>
+</dl>
+<dl>
+<dt>:immediate</dt>
+<dd>
+<p>
+すぐに割り込みます。
+</p>
+</dd>
+<dt>:on_blocking</dt>
+<dd>
+<p>
+ブロッキング処理(後述)の間は割り込みが発生します。
+</p>
+</dd>
+<dt>:never</dt>
+<dd>
+<p>
+まったく割り込みません。
+</p>
+</dd>
+</dl>
+<p>
+「ブロッキング処理」とは、読み込み処理や書き込み処理のような呼び出し元のスレッドをブロックするような処理を意味します。CRuby の実装では、GVL
+を解放して実行する処理は全てブロッキング処理に含まれます。
+</p>
+<p>
+また、マスクされた非同期割り込みは再度有効にされるまで延期されます。本メソッドは <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/sigprocmask.html">sigprocmask(3)</a> に似ています。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+ブロックの評価結果を返します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+ブロックを指定しなかった場合に発生します。
+</dd>
+</dl>
+<h2 >注意</h2>
+<p>
+非同期割り込みの利用は難しいため、スレッド間での通信を実現する場合はまずはキューのような他の方法を検討してください。それでも非同期割り込みを利用する場合は本メソッドをよく理解してから利用してください。
+</p>
+<h2 >使い方</h2>
+<p>
+例:<a href="../../../class/-thread=23raise.html">Thread#raise</a> 発生のタイミングを制御する例
+</p>
+<pre>
+th = Thread.new do
+  Thread.handle_interrupt(RuntimeError =&gt; :never) {
+    begin
+      # 安全にリソースの割り当てが可能
+      Thread.handle_interrupt(RuntimeError =&gt; :immediate) {
+        # ...
+      }
+    ensure
+      # 安全にリソースの解放が可能
+    end
+  }
+end
+Thread.pass
+# ...
+th.raise &quot;stop&quot;
+</pre>
+<p>
+<a href="../../../class/-runtime-error.html">RuntimeError</a> を無視(延期)している間はリソースの割り当てや ensure
+節でリソースの解放を安全に行う事ができます。
+</p>
+<h3 >TimeoutError 対策</h3>
+<p>
+例:<a href="../../../class/-timeout-error.html">TimeoutError</a> 発生のタイミングを制御する例
+</p>
+<pre>
+require 'timeout'
+Thread.handle_interrupt(TimeoutError =&gt; :never) {
+  timeout(10){
+    # TimeoutError =&gt; :never の指定により、ここでは TimeoutError が発生しない。
+    Thread.handle_interrupt(TimeoutError =&gt; :on_blocking) {
+      # :on_blocking な処理は TimeoutError が発生し得る。
+    }
+    # TimeoutError =&gt; :never の指定により、ここでは TimeoutError が発生しない。
+  }
+}
+</pre>
+<p>
+この例を ensure 節での <a href="../../../class/-timeout-error.html">TimeoutError</a> 発生に応用する事でリソースリークに備える事ができます。<a href="../../../method/-timeout/m/timeout.html">Timeout.#timeout</a> はスレッドを使って実装されているため、Thread.handle_interrupt による制御が有効です。
+</p>
+<h3 >Stack control settings</h3>
+<p>
+It's possible to stack multiple levels of ::handle_interrupt blocks in order
+to control more than one ExceptionClass and TimingSymbol at a time.
+</p>
+<pre>
+Thread.handle_interrupt(FooError =&gt; :never) {
+  Thread.handle_interrupt(BarError =&gt; :never) {
+     # FooError and BarError are prohibited.
+  }
+}
+</pre>
+<h3 >例外クラスの継承関係</h3>
+<p>
+本メソッドでは引数 hash のキーに指定した例外クラスの全てのサブクラスが処理の対象になります。
+</p>
+<p>
+例:
+</p>
+<pre>
+Thread.handle_interrupt(Exception =&gt; :never) {
+  # Exception を継承する全ての例外クラスの例外の発生を延期。
+}
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-thread/s/pending_interrupt=3f.html">Thread.pending_interrupt?</a>, <a href="../../../method/-thread/i/pending_interrupt=3f.html">Thread#pending_interrupt?</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

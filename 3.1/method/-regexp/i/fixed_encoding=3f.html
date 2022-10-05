@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Regexp#fixed_encoding? (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="正規表現が任意の ASCII 互換エンコーディングとマッチ可能な時に false を返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-regexp.html">Regexpクラス</a>
+      </li>
+      <li>
+        fixed_encoding? 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Regexp#fixed_encoding?</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_FIXED_ENCODING--3F"><code>fixed_encoding? -&gt; bool</code><span class="permalink">[<a href="../../../method/-regexp/i/fixed_encoding=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Regexp.html#method-i-fixed_encoding-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+正規表現が任意の ASCII 互換エンコーディングとマッチ可能な時に false を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># -*- coding:utf-8 -*-
+</span>
+r <span class="o">=</span> <span class="sr">/a/</span>
+r<span class="p">.</span><span class="nf">fixed_encoding?</span>                               <span class="c1"># =&gt; false
+</span>r<span class="p">.</span><span class="nf">encoding</span>                                      <span class="c1"># =&gt; #&lt;Encoding:US-ASCII&gt;
+</span>r <span class="o">=~</span> <span class="s2">"</span><span class="s2">\u{6666} a</span><span class="s2">"</span>                               <span class="c1"># =&gt; 2
+</span>r <span class="o">=~</span> <span class="s2">"</span><span class="s2">\xa1\xa2 a</span><span class="s2">"</span><span class="p">.</span><span class="nf">force_encoding</span><span class="p">(</span><span class="s2">"</span><span class="s2">euc-jp</span><span class="s2">"</span><span class="p">)</span>      <span class="c1"># =&gt; 2
+</span>r <span class="o">=~</span> <span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">.</span><span class="nf">force_encoding</span><span class="p">(</span><span class="s2">"</span><span class="s2">euc-jp</span><span class="s2">"</span><span class="p">)</span>             <span class="c1"># =&gt; 0
+</span>
+r <span class="o">=</span> <span class="sr">/a/u</span>
+r<span class="p">.</span><span class="nf">fixed_encoding?</span>                               <span class="c1"># =&gt; true
+</span>r<span class="p">.</span><span class="nf">encoding</span>                                      <span class="c1"># =&gt; #&lt;Encoding:UTF-8&gt;
+</span>r <span class="o">=~</span> <span class="s2">"</span><span class="s2">\u{6666} a</span><span class="s2">"</span>                               <span class="c1"># =&gt; 2
+</span><span class="k">begin</span>
+  r <span class="o">=~</span> <span class="s2">"</span><span class="s2">\xa1\xa2</span><span class="s2">"</span><span class="p">.</span><span class="nf">force_encoding</span><span class="p">(</span><span class="s2">"</span><span class="s2">euc-jp</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">rescue</span> <span class="o">=&gt;</span> e
+  e<span class="p">.</span><span class="nf">class</span>                                       <span class="c1"># =&gt; Encoding::CompatibilityError
+</span><span class="k">end</span>
+r <span class="o">=~</span> <span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">.</span><span class="nf">force_encoding</span><span class="p">(</span><span class="s2">"</span><span class="s2">euc-jp</span><span class="s2">"</span><span class="p">)</span>             <span class="c1"># =&gt; 0
+</span>
+r <span class="o">=</span> <span class="sr">/\u{6666}/</span>
+r<span class="p">.</span><span class="nf">fixed_encoding?</span>                               <span class="c1"># =&gt; true
+</span>r<span class="p">.</span><span class="nf">encoding</span>                                      <span class="c1"># =&gt; #&lt;Encoding:UTF-8&gt;
+</span>r <span class="o">=~</span> <span class="s2">"</span><span class="s2">\u{6666} a</span><span class="s2">"</span>                               <span class="c1"># =&gt; 0
+</span><span class="k">begin</span>
+  r <span class="o">=~</span> <span class="s2">"</span><span class="s2">\xa1\xa2</span><span class="s2">"</span><span class="p">.</span><span class="nf">force_encoding</span><span class="p">(</span><span class="s2">"</span><span class="s2">euc-jp</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">rescue</span> <span class="o">=&gt;</span> e
+  e<span class="p">.</span><span class="nf">class</span>                                       <span class="c1"># =&gt; Encoding::CompatibilityError
+</span><span class="k">end</span>
+r <span class="o">=~</span> <span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">.</span><span class="nf">force_encoding</span><span class="p">(</span><span class="s2">"</span><span class="s2">euc-jp</span><span class="s2">"</span><span class="p">)</span>             <span class="c1"># =&gt; nil
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

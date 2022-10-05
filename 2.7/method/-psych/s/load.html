@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Psych.load (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="YAML ドキュメントを Ruby のデータ構造(オブジェクト)に変換します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/psych.html">psychライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-psych.html">Psychモジュール</a>
+      </li>
+      <li>
+        load 
+      </li>
+    </ol>
+  </nav>
+
+<h1>singleton method Psych.load</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_LOAD"><code>load(yaml, filename = nil, fallback: false, symbolize_names: false) -&gt; object</code><span class="permalink">[<a href="../../../method/-psych/s/load.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Psych.html#method-c-load">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+YAML ドキュメントを Ruby のデータ構造(オブジェクト)に変換します。
+</p>
+<p>
+入力に複数のドキュメントが含まれている場合は、先頭のものを変換して返します。
+</p>
+<p>
+filename はパース中に発生した例外のメッセージに用います。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] yaml:</dt>
+<dd>
+YAML ドキュメント(文字列 or IO オブジェクト)
+</dd>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+<a href="../../../class/-psych=3a=3a-syntax-error.html">Psych::SyntaxError</a> 発生時にファイル名として表示する文字列。
+</dd>
+<dt class='method-param'>[PARAM] fallback:</dt>
+<dd>
+引数 yaml に空のYAMLを指定した場合の戻り値を指定します。デフォルトは false です。
+</dd>
+<dt class='method-param'>[PARAM] symbolize_names:</dt>
+<dd>
+ハッシュ(YAMLの仕様では正確にはマッピング)のキーを <a href="../../../class/-symbol.html">Symbol</a> に変換するかどうかを指定します。
+true を指定した場合は変換します。デフォルトでは文字列に変換されます。
+</dd>
+<dt>[EXCEPTION] Psych::SyntaxError:</dt>
+<dd>
+YAMLドキュメントに文法エラーが発見されたときに発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-psych/s/parse.html">Psych.parse</a>
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">Psych</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="s2">"</span><span class="s2">--- a</span><span class="s2">"</span><span class="p">)</span>           <span class="c1"># =&gt; 'a'
+</span><span class="no">Psych</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="s2">"</span><span class="s2">---\n - a\n - b</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; ['a', 'b']
+</span>
+<span class="k">begin</span>
+  <span class="no">Psych</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="s2">"</span><span class="s2">--- `</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">file.txt</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">rescue</span> <span class="no">Psych</span><span class="o">::</span><span class="no">SyntaxError</span> <span class="o">=&gt;</span> ex
+  <span class="nb">p</span> ex<span class="p">.</span><span class="nf">file</span>    <span class="c1"># =&gt; 'file.txt'
+</span>  <span class="nb">p</span> ex<span class="p">.</span><span class="nf">message</span> <span class="c1"># =&gt; &quot;(file.txt): found character that cannot start any token while scanning for the next token at line 1 column 5&quot;
+</span><span class="k">end</span>
+</code></pre>
+<p>
+キーワード引数 symbolize_names に true を指定した場合はハッシュのキーを <a href="../../../class/-symbol.html">Symbol</a> に変換して返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">Psych</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="s2">"</span><span class="s2">---\n foo: bar</span><span class="s2">"</span><span class="p">)</span>                         <span class="c1"># =&gt; {&quot;foo&quot;=&gt;&quot;bar&quot;}
+</span><span class="no">Psych</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="s2">"</span><span class="s2">---\n foo: bar</span><span class="s2">"</span>, <span class="ss">symbolize_names:</span> <span class="k">true</span><span class="p">)</span>  <span class="c1"># =&gt; {:foo=&gt;&quot;bar&quot;}
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

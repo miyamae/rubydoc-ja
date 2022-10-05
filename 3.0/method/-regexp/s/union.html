@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Regexp.union (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="引数として与えた pattern を選択 | で連結し、Regexp として返します。
+結果の Regexp は与えた pattern のどれかにマッチする場合にマッチするものになります。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-regexp.html">Regexpクラス</a>
+      </li>
+      <li>
+        union 
+      </li>
+    </ol>
+  </nav>
+
+<h1>singleton method Regexp.union</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_UNION"><code>union(*pattern) -&gt; Regexp</code><span class="permalink">[<a href="../../../method/-regexp/s/union.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Regexp.html#method-c-union">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数として与えた pattern を選択 | で連結し、Regexp として返します。結果の Regexp は与えた pattern のどれかにマッチする場合にマッチするものになります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="sr">/a/</span>, <span class="sr">/b/</span>, <span class="sr">/c/</span><span class="p">)</span> <span class="c1"># =&gt; /(?-mix:a)|(?-mix:b)|(?-mix:c)/
+</span></code></pre>
+<p>
+引数を一つだけ与える場合は、<a href="../../../class/-array.html">Array</a> を与えても Regexp を生成します。つまり、以下のように書くことができます。
+</p>
+<pre class="highlight ruby">
+<code>
+arr <span class="o">=</span> <span class="p">[</span><span class="sr">/a/</span>, <span class="sr">/b/</span>, <span class="sr">/c/</span><span class="p">]</span>
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span>arr<span class="p">)</span>  <span class="c1"># =&gt; /(?-mix:a)|(?-mix:b)|(?-mix:c)/
+</span><span class="c1"># 1.8.7 より前は、以下のように書く必要があった
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="o">*</span>arr<span class="p">)</span> <span class="c1"># =&gt; /(?-mix:a)|(?-mix:b)|(?-mix:c)/
+</span></code></pre>
+<p>
+pattern は Regexp または String で与えます。
+String で与えた場合、それ自身と等しい文字列にマッチするものと解釈され、エスケープされて結果の Regexp に組み込まれます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">?</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">b</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; /a|\?|b/
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="sr">/a/</span>, <span class="s2">"</span><span class="s2">*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; /(?-mix:a)|\*/
+</span></code></pre>
+<p>
+引数をひとつも与えなかった場合、決してマッチしない Regexp を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="p">)</span> <span class="c1"># =&gt; /(?!)/
+</span></code></pre>
+<p>
+結果の Regexp が対応する文字コードは引数として与えた Regexp が扱う文字コードに一致します。固定コードに対してコンパイルされている Regexp を複数与える場合、それらのコードは一致していなければなりません。異なる固定コードに対してコンパイルされている Regexp が存在する場合、
+<a href="../../../class/-argument-error.html">ArgumentError</a> が発生します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="sr">/a/e</span>, <span class="sr">/b/e</span><span class="p">)</span> <span class="c1"># =&gt; /(?-mix:a)|(?-mix:b)/e
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="sr">/a/e</span>, <span class="sr">/b/s</span><span class="p">)</span> <span class="c1"># =&gt; ArgumentError
+</span></code></pre>
+<p>
+コードが固定されている Regexp とコードが固定されていない Regexp を混ぜた場合、結果の Regexp は固定されているコードに対応するものになります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="sr">/a/e</span>, <span class="sr">/b/</span><span class="p">)</span> <span class="c1"># =&gt; /(?-mix:a)|(?-mix:b)/e
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+| で連結したい正規表現を指定します
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># オプションは合成されない
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="sr">/foo/i</span>, <span class="sr">/bar/x</span>, <span class="sr">/hoge/m</span><span class="p">)</span> <span class="c1"># =&gt; /(?i-mx:foo)|(?x-mi:bar)|(?m-ix:hoge)/
+</span>
+<span class="c1"># 文字列そのものにマッチする
+</span>rep1 <span class="o">=</span> <span class="p">[</span> <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">hoge</span><span class="s2">"</span><span class="p">]</span> 
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="o">*</span>rep1<span class="p">)</span> <span class="c1"># =&gt; /foo|bar|hoge/
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span>rep1<span class="p">)</span>  <span class="c1"># =&gt; /foo|bar|hoge/
+</span>
+<span class="c1"># 下記の場合オプションがつくのは最初だけ
+</span>rep2 <span class="o">=</span> <span class="p">[</span> <span class="sr">/foo/x</span>, <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">hoge</span><span class="s2">"</span><span class="p">]</span> 
+<span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span><span class="o">*</span>rep2<span class="p">)</span> <span class="c1"># =&gt; /(?x-mi:foo)|bar|hoge/
+</span><span class="nb">p</span> <span class="no">Regexp</span><span class="p">.</span><span class="nf">union</span><span class="p">(</span>rep2<span class="p">)</span>  <span class="c1"># =&gt; /(?x-mi:foo)|bar|hoge/
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Kernel.#spawn (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="引数を外部コマンドとして実行しますが、生成した
+子プロセスの終了を待ち合わせません。生成した子プロセスのプロセスIDを返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-kernel.html">Kernelモジュール</a>
+      </li>
+      <li>
+        spawn 
+      </li>
+    </ol>
+  </nav>
+
+<h1>module function Kernel.#spawn</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_SPAWN"><code>spawn(command, options={}) -&gt; Integer</code><span class="permalink">[<a href="../../../method/-kernel/m/spawn.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Kernel.html#method-c-spawn">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>spawn(env, command, options={}) -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+引数を外部コマンドとして実行しますが、生成した子プロセスの終了を待ち合わせません。生成した子プロセスのプロセスIDを返します。
+</p>
+<h2 >引数の解釈</h2>
+<p>
+この形式では command が shell のメタ文字
+</p>
+<pre>
+  * ? {} [] &lt;&gt; () ~ &amp; | \ $ ; ' ` &quot; \n
+</pre>
+<p>
+を含む場合、shell 経由で実行されます。そうでなければインタプリタから直接実行されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] command:</dt>
+<dd>
+コマンドを文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+更新する環境変数を表す Hash
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+オプションパラメータ Hash
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+起動に失敗し、ruby インタプリタに制御が戻った場合に発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+コマンドが実行できなかった場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/system.html">Kernel.#system</a>,<a href="../../../method/-kernel/m/exec.html">Kernel.#exec</a>
+</p>
+</dd>
+<dt class="method-heading" id="M_SPAWN"><code>spawn(program, *args) -&gt; Integer</code><span class="permalink">[<a href="../../../method/-kernel/m/spawn.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Kernel.html#method-c-spawn">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>spawn(env, program, *args, options={}) -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+引数を外部コマンドとして実行しますが、生成した子プロセスの終了を待ち合わせません。生成した子プロセスのプロセスIDを返します。
+</p>
+<p>
+env に Hash を渡すことで、<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/exec.html">exec(2)</a> で子プロセス内でファイルを実行する前に環境変数を変更することができます。
+Hash のキーは環境変数名文字列、Hash の値に設定する値とします。
+nil とすることで環境変数が削除(<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/unsetenv.html">unsetenv(3)</a>)されます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># FOO を BAR にして BAZ を削除する
+</span>pid <span class="o">=</span> spawn<span class="p">(</span><span class="p">{</span><span class="s2">"</span><span class="s2">FOO</span><span class="s2">"</span><span class="o">=&gt;</span><span class="s2">"</span><span class="s2">BAR</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">BAZ</span><span class="s2">"</span><span class="o">=&gt;</span><span class="k">nil</span><span class="p">}</span>, command<span class="p">)</span>
+</code></pre>
+<p>
+親プロセスは <a href="../../../method/-process/m/waitpid.html">Process.#waitpid</a> で子プロセスの終了を待ち合わせるかもしくは <a href="../../../method/-process/m/detach.html">Process.#detach</a> で子プロセスを切り離すかしてください。そうでないとゾンビプロセスが残る場合があります。
+</p>
+<h2 >引数の解釈</h2>
+<p>
+この形式で呼び出した場合、空白や shell のメタキャラクタもそのまま program の引数に渡されます。先頭の引数が2要素の配列であった場合、第1要素の文字列が実際に起動するプログラムのパスであり、第2要素が「みせかけ」のプログラム名になります。また、第1要素はフルパスで指定しなくても環境変数 PATH から探します。
+</p>
+<h2 >option引数の概要</h2>
+<p>
+Hash を options として渡すことで、起動される子プロセスの
+</p>
+<ul>
+<li>プロセスグループ</li>
+<li>resource limit</li>
+<li>カレントディレクトリ</li>
+<li>umask</li>
+<li>子プロセスでのリダイレクト</li>
+</ul>
+<p>
+などを変更できます。環境変数のクリアなども指定できます。
+</p>
+<p>
+以下のオプションが指定できます。
+</p>
+<dl>
+<dt>:unsetenv_others</dt>
+<dd>
+<p>
+これを true にすると、envで指定した環境変数以外をすべてクリアします。
+false だとクリアしません。false がデフォルトです。
+</p>
+</dd>
+<dt>:pgroup</dt>
+<dd>
+<p>
+引数に true or 0 を渡すと新しいプロセスグループを作成し、そこで動きます。整数を渡すと、指定したプロセスグループに属します。
+nil を渡すとプロセスグループを変更しません。デフォルトは nil です。
+</p>
+</dd>
+<dt>:rlimit_core, :rlimit_cpu, etc</dt>
+<dd>
+<p>
+resource limit を設定します。詳しくは <a href="../../../method/-process/m/setrlimit.html">Process.#setrlimit</a> を見てください。引数には整数、もしくは整数2つの配列を渡します。
+</p>
+</dd>
+<dt>:chdir</dt>
+<dd>
+<p>
+指定した文字列をカレントディレクトリにします。
+</p>
+</dd>
+<dt>:umask</dt>
+<dd>
+<p>
+指定した整数を umask に設定します。
+</p>
+</dd>
+<dt>リダイレクト関連</dt>
+<dd>
+<p>
+Hash のキーに子プロセス側のファイルデスクリプタを、対応する値に親プロセス側のファイルデスクリプタやファイル名を指定することでリダイレクトを実現できます。
+</p>
+</dd>
+<dt>:close_others</dt>
+<dd>
+<p>
+これを true に設定するとリダイレクトされていない、0(stdin), 1(stdout), 2(stderr) 以外のファイルデスクリプタをすべて閉じます。
+false がデフォルトです。
+</p>
+</dd>
+<dt>:exception</dt>
+<dd>
+<p>
+<a href="../../../method/-kernel/m/system.html">Kernel.#system</a> のみで指定できます。これを true に設定すると、nil や false を返す代わりに例外が発生します。
+false がデフォルトです。
+</p>
+</dd>
+</dl>
+<h2 >option引数によるリダイレクトの概要</h2>
+<p>
+Hash のキー(子プロセス側)には以下のいずれかが指定できます。
+</p>
+<ul>
+<li>単一のファイルデスクリプタ</li>
+<li>ファイルデスクリプタの配列</li>
+</ul>
+<p>
+配列を渡すことで複数のファイルデスクリプタを同時にリダイレクトできます。
+</p>
+<p>
+Hash の値(親プロセス側)には以下のいずれかが指定できます。
+</p>
+<ul>
+<li>単一のファイルデスクリプタ</li>
+<li>リダイレクト先のファイル名文字列</li>
+<li>[リダイレクト先のファイル名文字列]、配列の要素にすることで
+<a href="../../../method/-file=3a=3a-constants/c/-r-d-o-n-l-y.html">File::Constants::RDONLY</a> でファイルを開いてリダイレクトします。</li>
+<li>[リダイレクト先のファイル名文字列, モード文字列]
+open(ファイル名, モード, 0644) でファイルを開いてリダイレクト
+します。</li>
+<li>[リダイレクト先のファイル名文字列, モード文字列, パーミション(整数)]
+open(ファイル名, モード, パーミッション) でファイルを
+開いてリダイレクトします。</li>
+<li>[:child, ファイルデスクリプタ]
+子プロセス側のファイルデスクリプタを指定できます。</li>
+<li>:close キーで指定したファイルデスクリプタを子プロセス側で閉じます</li>
+</ul>
+<p>
+ファイルデスクリプタを表すためには、以下が利用できます。
+</p>
+<ul>
+<li>:in  標準入力, ファイルデスクリプタ0</li>
+<li>:out 標準出力, ファイルデスクリプタ1</li>
+<li>:err 標準エラー出力, ファイルデスクリプタ2</li>
+<li>整数 指定した整数が表すファイルデスクリプタ</li>
+<li><a href="../../../class/-i-o.html">IO</a> <a href="../../../method/-i-o/i/fileno.html">IO#fileno</a> で表されるファイルデスクリプタ</li>
+</ul>
+<h2 >option引数の詳細および例</h2>
+<p>
+「:unsetenv_others」を使うと、envで指定したもの以外の環境変数をクリアします。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># すべての環境変数をクリア
+</span>pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:unsetenv_others</span><span class="o">=&gt;</span><span class="k">true</span><span class="p">)</span>
+<span class="c1"># FOO だけ
+</span>pid <span class="o">=</span> spawn<span class="p">(</span><span class="p">{</span><span class="s2">"</span><span class="s2">FOO</span><span class="s2">"</span><span class="o">=&gt;</span><span class="s2">"</span><span class="s2">BAR</span><span class="s2">"</span><span class="p">}</span>, command, <span class="ss">:unsetenv_others</span><span class="o">=&gt;</span><span class="k">true</span><span class="p">)</span>
+</code></pre>
+<p>
+「:pgroup」でプロセスグループを指定できます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># true, 0 で新しいプロセスグループを作りそのリーダーになります。
+</span>pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:pgroup</span> <span class="o">=&gt;</span> <span class="k">true</span><span class="p">)</span>
+<span class="c1"># 整数を渡すとそのグループに所属します。
+</span>pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:pgroup</span> <span class="o">=&gt;</span> <span class="mi">10</span><span class="p">)</span>
+</code></pre>
+<p>
+「:rlimit_core」「:rlimit_cpu」などで、resource limit を指定します。詳しくは <a href="../../../method/-process/m/setrlimit.html">Process.#setrlimit</a> を見てください。このオプションには 整数 or 整数2つの配列、を渡すことができます。それぞれ <a href="../../../method/-process/m/setrlimit.html">Process.#setrlimit</a> の引数が2個、3個の場合に対応します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># 現プロセスの core の resource limit を取得
+</span>cur, max <span class="o">=</span> <span class="no">Process</span><span class="p">.</span><span class="nf">getrlimit</span><span class="p">(</span><span class="ss">:CORE</span><span class="p">)</span>
+<span class="c1"># 一時的に子プロセスの core dump を止める
+</span>pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:rlimit_core</span><span class="o">=&gt;</span><span class="p">[</span><span class="mi">0</span>,max<span class="p">]</span><span class="p">)</span> <span class="c1"># disable core temporary.
+</span><span class="c1"># 子プロセスで core dump を出せるようにする
+</span>pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:rlimit_core</span><span class="o">=&gt;</span>max<span class="p">)</span> <span class="c1"># enable core dump
+</span><span class="c1"># 子プロセスで core dump を出せなくする
+</span>pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:rlimit_core</span><span class="o">=&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># never dump core.
+</span></code></pre>
+<p>
+「:chdir」で子プロセスのカレントディレクトリを変更できます。
+</p>
+<pre class="highlight ruby">
+<code>
+pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:chdir</span><span class="o">=&gt;</span><span class="s2">"</span><span class="s2">/var/tmp</span><span class="s2">"</span><span class="p">)</span>
+</code></pre>
+<p>
+「:umask」で子プロセスの umask を指定できます。
+</p>
+<pre class="highlight ruby">
+<code>
+pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:umask</span><span class="o">=&gt;</span><span class="mi">077</span><span class="p">)</span>
+</code></pre>
+<p>
+リダイレクトは様々なやりかたが使えます。
+Hash のキーが子プロセス側、値が親プロセス側です。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># 以下の例はすべて stderr を stdout にリダイレクトします
+</span>pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:err</span><span class="o">=&gt;</span><span class="ss">:out</span><span class="p">)</span>
+pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="mi">2</span><span class="o">=&gt;</span><span class="mi">1</span><span class="p">)</span>
+pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="no">STDERR</span><span class="o">=&gt;</span><span class="ss">:out</span><span class="p">)</span>
+pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="no">STDERR</span><span class="o">=&gt;</span><span class="no">STDOUT</span><span class="p">)</span>
+</code></pre>
+<p>
+この例では子プロセス側の stdout には触れていないので、親プロセスから引き継がれます。
+</p>
+<p>
+Hash の値にはファイル名も指定できます。
+</p>
+<pre class="highlight ruby">
+<code>
+pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:in</span><span class="o">=&gt;</span><span class="s2">"</span><span class="s2">/dev/null</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># read mode
+</span>pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:out</span><span class="o">=&gt;</span><span class="s2">"</span><span class="s2">/dev/null</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># write mode
+</span>pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:err</span><span class="o">=&gt;</span><span class="s2">"</span><span class="s2">log</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># write mode
+</span>pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="mi">3</span><span class="o">=&gt;</span><span class="s2">"</span><span class="s2">/dev/null</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># read mode
+</span></code></pre>
+<p>
+stdout と stderr をリダイレクトした場合は、ファイルは write mode で open されます。それ以外の場合は
+read mode で open されます。
+</p>
+<p>
+ファイルのフラグ(write/read mode)やパーミッションを明示したい場合は、配列を用います。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># なにも指定がなければデフォルトで read mode が使われる。
+</span>pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:in</span><span class="o">=&gt;</span><span class="p">[</span><span class="s2">"</span><span class="s2">file</span><span class="s2">"</span><span class="p">]</span><span class="p">)</span>
+<span class="c1"># read mode で file を open し、リダイレクトする。
+</span>pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:in</span><span class="o">=&gt;</span><span class="p">[</span><span class="s2">"</span><span class="s2">file</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">r</span><span class="s2">"</span><span class="p">]</span><span class="p">)</span>
+<span class="c1"># write mode で file を open し、リダイレクトする。
+</span><span class="c1"># パーミッションはデフォルトで 644。
+</span>pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:out</span><span class="o">=&gt;</span><span class="p">[</span><span class="s2">"</span><span class="s2">log</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">]</span><span class="p">)</span> <span class="c1"># 0644 assumed
+</span><span class="c1"># write mode、パーミッション 0600 でファイルをオープンし、リダイレクトする。
+</span>pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:out</span><span class="o">=&gt;</span><span class="p">[</span><span class="s2">"</span><span class="s2">log</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">w</span><span class="s2">"</span>, <span class="mi">0600</span><span class="p">]</span><span class="p">)</span>
+<span class="c1"># flagを文字列でなくビットで指定する
+</span>pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:out</span><span class="o">=&gt;</span><span class="p">[</span><span class="s2">"</span><span class="s2">log</span><span class="s2">"</span>, <span class="no">File</span><span class="o">::</span><span class="no">WRONLY</span><span class="o">|</span><span class="no">File</span><span class="o">::</span><span class="no">EXCL</span><span class="o">|</span><span class="no">File</span><span class="o">::</span><span class="no">CREAT</span>, <span class="mi">0600</span><span class="p">]</span><span class="p">)</span>
+</code></pre>
+<p>
+配列で複数のファイルデスクリプタを同時にリダイレクトできます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># stdout と stderr を &quot;log&quot; ファイルにリダイレクト
+</span>pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="p">[</span><span class="ss">:out</span>, <span class="ss">:err</span><span class="p">]</span><span class="o">=&gt;</span><span class="p">[</span><span class="s2">"</span><span class="s2">log</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">]</span><span class="p">)</span>
+</code></pre>
+<p>
+複数のファイルデスクリプタを合わせてリダイレクトするには、
+[ :child, FileDescriptor ] を使うこともできます。これは子プロセス側で FileDescriptor にリダイレクトすることを意味します。これはファイルデスクリプタを直接指定するのと異なるということに注意してください。例えば、
+</p>
+<pre>
+:err =&gt; :out
+</pre>
+<p>
+とすると、子プロセスの stderr を親プロセスの stdout にリダイレクトします。
+</p>
+<pre>
+:err =&gt; [:child, :out]
+</pre>
+<p>
+とすると、子プロセスの stderr を子プロセスの stdout にリダイレクトします。これを用いて、<a href="../../../method/-i-o/s/popen.html">IO.popen</a> で、子プロセスの
+stderr と stdout を混ぜる例を以下に示します。
+</p>
+<pre class="highlight ruby">
+<code>
+io <span class="o">=</span> <span class="no">IO</span><span class="p">.</span><span class="nf">popen</span><span class="p">(</span><span class="p">[</span><span class="s2">"</span><span class="s2">sh</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">-c</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">echo out; echo err &gt;&amp;2</span><span class="s2">"</span>, <span class="ss">:err</span><span class="o">=&gt;</span><span class="p">[</span><span class="ss">:child</span>, <span class="ss">:out</span><span class="p">]</span><span class="p">]</span><span class="p">)</span>
+<span class="nb">p</span> io<span class="p">.</span><span class="nf">read</span> <span class="c1">#=&gt; &quot;out\nerr\n
+</span></code></pre>
+<p>
+spawn と IO.popen ではデフォルトでは非標準的なファイルデスクリプタ(3以降)を閉じません。「:close_others」オプションでこの挙動を制御できます。標準的ファイルデスクリプタ(0,1,2)は :close で明示的に閉じない限り、このオプションの影響を受けません。
+</p>
+<p>
+「:close_others」とは無関係に ruby が open する IO にはデフォルトでは close_on_exec が設定されていて、自動的に閉じられることに注意してください。
+</p>
+<pre class="highlight ruby">
+<code>
+pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:close_others</span><span class="o">=&gt;</span><span class="k">true</span><span class="p">)</span>  <span class="c1"># close 3,4,5,...
+</span>pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:close_others</span><span class="o">=&gt;</span><span class="k">false</span><span class="p">)</span> <span class="c1"># don't close 3,4,5,... (default)
+</span></code></pre>
+<p>
+これを利用して spawn を <a href="../../../method/-i-o/s/popen.html">IO.popen</a> のように使うことができます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># similar to r = IO.popen(command)
+</span>r, w <span class="o">=</span> <span class="no">IO</span><span class="p">.</span><span class="nf">pipe</span>
+pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:out</span><span class="o">=&gt;</span>w<span class="p">)</span>   <span class="c1"># r は子プロセスで閉じられる
+</span>w<span class="p">.</span><span class="nf">close</span>
+</code></pre>
+<p>
+「:close」を使ってファイルデスクリプタを明示的に閉じることもできます。
+</p>
+<pre class="highlight ruby">
+<code>
+f <span class="o">=</span> <span class="nb">open</span><span class="p">(</span>foo<span class="p">)</span>
+<span class="c1"># f は継承されない
+</span><span class="c1"># system は :close_others=&gt;false がデフォルトなのでそれ以外は継承される
+</span><span class="nb">system</span><span class="p">(</span>command, f<span class="o">=&gt;</span><span class="ss">:close</span><span class="p">)</span>        <span class="c1"># don't inherit f.
+</span></code></pre>
+<p>
+spawn で特定のファイルデスクリプタだけを継承したい場合は、
+io =&gt; io という形のオプションを指定します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># valgrind は --log-fd というオプションでログの出力先を指定できます。
+</span><span class="c1"># これで指定したファイルデスクリプタは親プロセスから
+</span><span class="c1"># 子プロセスに継承されなければならないため、 log_w=&gt;log_w とします。
+</span>log_r, log_w <span class="o">=</span> <span class="no">IO</span><span class="p">.</span><span class="nf">pipe</span>
+pid <span class="o">=</span> spawn<span class="p">(</span><span class="s2">"</span><span class="s2">valgrind</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">--log-fd=</span><span class="si">#{</span><span class="n">log_w</span><span class="p">.</span><span class="nf">fileno</span><span class="si">}</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">echo</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">a</span><span class="s2">"</span>, log_w<span class="o">=&gt;</span>log_w<span class="p">)</span>
+log_w<span class="p">.</span><span class="nf">close</span>
+<span class="nb">p</span> log_r<span class="p">.</span><span class="nf">read</span>
+</code></pre>
+<p>
+ファイルデスクリプタを入れ替えることもできます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># stdout と stderr を入れ替えリダイレクト
+</span>pid <span class="o">=</span> spawn<span class="p">(</span>command, <span class="ss">:out</span><span class="o">=&gt;</span><span class="ss">:err</span>, <span class="ss">:err</span><span class="o">=&gt;</span><span class="ss">:out</span><span class="p">)</span>
+</code></pre>
+<p>
+このような相互参照を解決するため、spawnの内部で新しいファイルデスクリプタを作り、利用します。
+</p>
+<p>
+:close_others と :close オプションが意味を持つのは、子プロセスに閉じていないファイルデスクリプタが全て渡される環境
+(Unix 系統の環境)のみです。例えば Windows では元々子プロセスにはファイルデスクリプタ 0 1 2 のみ渡されるので :close_others や :close オプションは意味を持ちません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+更新する環境変数を表す Hash
+</dd>
+<dt class='method-param'>[PARAM] program:</dt>
+<dd>
+文字列か2要素の配列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+渡される引数です。0 個以上の文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+オプションパラメータ Hash
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+第一引数が配列かつ要素数が 2 でない場合に発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+コマンドが実行できなかった場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/system.html">Kernel.#system</a>,<a href="../../../method/-kernel/m/exec.html">Kernel.#exec</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

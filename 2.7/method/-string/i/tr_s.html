@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>String#tr_s (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="文字列の中に pattern 文字列に含まれる文字が存在したら、
+replace 文字列の対応する文字に置き換えます。さらに、
+置換した部分内に同一の文字の並びがあったらそれを 1 文字に圧縮します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-string.html">Stringクラス</a>
+      </li>
+      <li>
+        tr_s 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method String#tr_s</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_TR_S"><code>tr_s(pattern, replace) -&gt; String</code><span class="permalink">[<a href="../../../method/-string/i/tr_s.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/String.html#method-i-tr_s">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列の中に pattern 文字列に含まれる文字が存在したら、
+replace 文字列の対応する文字に置き換えます。さらに、置換した部分内に同一の文字の並びがあったらそれを 1 文字に圧縮します。
+</p>
+<p>
+pattern の形式は <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/utilities/tr.html">tr(1)</a> と同じです。つまり「a-c」は a から c を意味し、
+&quot;^0-9&quot; のように文字列の先頭が「^」の場合は指定した文字以外が置換の対象になります。
+</p>
+<p>
+replace でも「-」を使って範囲を指定できます。
+</p>
+<p>
+「-」は文字列の両端にない場合にだけ範囲指定の意味になります。同様に、「^」もその効果は文字列の先頭にあるときだけです。また、「-」、「^」、「\」はバックスラッシュ (「\」) でエスケープできます。
+</p>
+<p>
+replace の範囲が pattern の範囲よりも小さい場合、
+replace の最後の文字が無限に続くものとして扱われます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字のパターン
+</dd>
+<dt class='method-param'>[PARAM] replace:</dt>
+<dd>
+pattern で指定した文字を置き換える文字
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="s2">"</span><span class="s2">gooooogle</span><span class="s2">"</span><span class="p">.</span><span class="nf">tr_s</span><span class="p">(</span><span class="s2">"</span><span class="s2">o</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">X</span><span class="s2">"</span><span class="p">)</span>       <span class="c1"># =&gt; &quot;gXgle&quot;
+</span><span class="nb">p</span> <span class="s2">"</span><span class="s2">gooooogle</span><span class="s2">"</span><span class="p">.</span><span class="nf">tr_s</span><span class="p">(</span><span class="s2">"</span><span class="s2">a-z</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">A-Z</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;GOGLE&quot;
+</span></code></pre>
+<p>
+注意:
+一般に、tr_s を tr と squeeze で置き換えることはできません。
+tr と squeeze の組みあわせでは tr の置換後の文字列全体を squeeze しますが、
+tr_s は置換された部分だけを squeeze します。以下のコードを参照してください。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span><span class="p">.</span><span class="nf">tr_s</span><span class="p">(</span><span class="s2">"</span><span class="s2">o</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">f</span><span class="s2">"</span><span class="p">)</span>              <span class="c1"># =&gt; &quot;ff&quot;
+</span><span class="nb">p</span> <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span><span class="p">.</span><span class="nf">tr</span><span class="p">(</span><span class="s2">"</span><span class="s2">o</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">f</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">squeeze</span><span class="p">(</span><span class="s2">"</span><span class="s2">f</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;f&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-string/i/tr.html">String#tr</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

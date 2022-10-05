@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Object#respond_to? (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="オブジェクトがメソッド name を持つとき真を返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-object.html">Objectクラス</a>
+      </li>
+      <li>
+        respond_to? 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Object#respond_to?</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_RESPOND_TO--3F"><code>respond_to?(name, include_all = false) -&gt; bool</code><span class="permalink">[<a href="../../../method/-object/i/respond_to=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Object.html#method-i-respond_to-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+オブジェクトがメソッド name を持つとき真を返します。
+</p>
+<p>
+オブジェクトが メソッド name を持つというのは、オブジェクトが メソッド name に応答できることをいいます。
+</p>
+<p>
+Windows での <a href="../../../method/-process/s/fork.html">Process.fork</a> や GNU/Linux での <a href="../../../method/-file/s/lchmod.html">File.lchmod</a> のような <a href="../../../class/-not-implemented-error.html">NotImplementedError</a> が発生する場合は false を返します。
+</p>
+<p>
+※ NotImplementedError が発生する場合に false を返すのは
+Rubyの組み込みライブラリや標準ライブラリなど、C言語で実装されているメソッドのみです。
+Rubyで実装されたメソッドで NotImplementedError が発生する場合は true を返します。
+</p>
+<p>
+メソッドが定義されていない場合は、<a href="../../../method/-object/i/respond_to_missing=3f.html">Object#respond_to_missing?</a> を呼び出してその結果を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+<a href="../../../class/-symbol.html">Symbol</a> または文字列で指定するメソッド名です。
+</dd>
+<dt class='method-param'>[PARAM] include_all:</dt>
+<dd>
+private メソッドと protected メソッドを確認の対象に含めるかを true か false で指定します。省略した場合は false(含めない) を指定した事になります。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">F</span>
+  <span class="k">def</span> <span class="nf">hello</span>
+    <span class="s2">"</span><span class="s2">Bonjour</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">D</span>
+  private
+  <span class="k">def</span> <span class="nf">hello</span>
+    <span class="s2">"</span><span class="s2">Guten Tag</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+list <span class="o">=</span> <span class="p">[</span><span class="no">F</span><span class="p">.</span><span class="nf">new</span>,<span class="no">D</span><span class="p">.</span><span class="nf">new</span><span class="p">]</span>
+
+list<span class="p">.</span><span class="nf">each</span><span class="p">{</span><span class="o">|</span>it<span class="o">|</span> <span class="nb">puts</span> it<span class="p">.</span><span class="nf">hello</span> <span class="k">if</span> it<span class="p">.</span><span class="nf">respond_to?</span><span class="p">(</span><span class="ss">:hello</span><span class="p">)</span><span class="p">}</span>
+<span class="c1">#=&gt; Bonjour
+</span>
+list<span class="p">.</span><span class="nf">each</span><span class="p">{</span><span class="o">|</span>it<span class="o">|</span> it<span class="p">.</span><span class="nf">instance_eval</span><span class="p">(</span><span class="s2">"</span><span class="s2">puts hello if it.respond_to?(:hello, true)</span><span class="s2">"</span><span class="p">)</span><span class="p">}</span>
+<span class="c1">#=&gt; Bonjour
+</span><span class="c1">#   Guten Tag
+</span>
+<span class="k">module</span> <span class="nn">Template</span>
+  <span class="k">def</span> <span class="nf">main</span>
+    start
+    template_method
+    finish
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">start</span>
+    <span class="nb">puts</span> <span class="s2">"</span><span class="s2">start</span><span class="s2">"</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">template_method</span>
+    <span class="nb">raise</span> <span class="no">NotImplementedError</span><span class="p">.</span><span class="nf">new</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">finish</span>
+    <span class="nb">puts</span> <span class="s2">"</span><span class="s2">finish</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">ImplTemplateMethod</span>
+  include <span class="no">Template</span>
+  <span class="k">def</span> <span class="nf">template_method</span>
+    <span class="s2">"</span><span class="s2">implement template_method</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">NotImplTemplateMethod</span>
+  include <span class="no">Template</span>
+
+  <span class="c1"># not implement template_method
+</span><span class="k">end</span>
+
+<span class="nb">puts</span> <span class="no">ImplTemplateMethod</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">respond_to?</span><span class="p">(</span><span class="ss">:template_method</span><span class="p">)</span> <span class="c1"># =&gt; true
+</span><span class="c1"># NotImplementedError が発生しているが、Rubyによる実装部のため true を返す
+</span><span class="nb">puts</span> <span class="no">NotImplTemplateMethod</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">respond_to?</span><span class="p">(</span><span class="ss">:template_method</span><span class="p">)</span> <span class="c1"># =&gt; true
+</span><span class="c1"># GNU/Linux で実行。C言語による実装部のため false を返す
+</span><span class="nb">puts</span> <span class="no">File</span><span class="p">.</span><span class="nf">respond_to?</span><span class="p">(</span><span class="ss">:lchmod</span><span class="p">)</span>         <span class="c1"># =&gt; false
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-module/i/method_defined=3f.html">Module#method_defined?</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

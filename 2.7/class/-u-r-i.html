@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>module URI (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="URI を扱うためのモジュールです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/uri.html">uriライブラリ</a>
+      </li>
+      <li>
+        URIモジュール
+      </li>
+    </ol>
+  </nav>
+
+<h1>module URI</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+      <li>
+        URI
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+URI を扱うためのモジュールです。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_DECODE">decode</a></li>
+
+<li><a href="#S_DECODE_WWW_FORM">decode_www_form</a></li>
+
+<li><a href="#S_DECODE_WWW_FORM_COMPONENT">decode_www_form_component</a></li>
+
+<li><a href="#S_ENCODE">encode</a></li>
+
+<li><a href="#S_ENCODE_WWW_FORM">encode_www_form</a></li>
+
+<li><a href="#S_ENCODE_WWW_FORM_COMPONENT">encode_www_form_component</a></li>
+
+<li><a href="#S_ENCODE">escape</a></li>
+
+<li><a href="#S_EXTRACT">extract</a></li>
+
+<li><a href="#S_JOIN">join</a></li>
+
+<li><a href="#S_PARSE">parse</a></li>
+
+<li><a href="#S_REGEXP">regexp</a></li>
+
+<li><a href="#S_SPLIT">split</a></li>
+
+<li><a href="#S_DECODE">unescape</a></li>
+
+</ul>
+</dd>
+
+<dt>定数</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#C_-U-N-S-A-F-E">UNSAFE</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_DECODE"><code>unescape(str) -&gt; String</code><span class="permalink">[<a href="../method/-u-r-i/s/decode.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/URI.html#method-c-decode">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>decode(str) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+URI 文字列をデコードした文字列を返します。
+</p>
+<p>
+このメソッドは obsolete です。
+</p>
+<p>
+代わりに
+<a href="../method/-c-g-i/s/unescape.html">CGI.unescape</a>,
+<a href="../method/-u-r-i/s/decode_www_form.html">URI.decode_www_form</a>,
+<a href="../method/-u-r-i/s/decode_www_form_component.html">URI.decode_www_form_component</a>
+などの使用を検討してください。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'uri'
+puts URI.unescape('http://images.google.co.jp/images?q=%A5%E2%A5%CA%A5%EA%A5%B6&amp;ie=EUC-JP')
+
+#=&gt; &quot;http://images.google.co.jp/images?q=モナリザ&amp;ie=EUC-JP&quot;
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+URI を文字列として与えます。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_DECODE_WWW_FORM"><code>decode_www_form(str, enc=Encoding::UTF_8) -&gt; [[String, String]]</code><span class="permalink">[<a href="../method/-u-r-i/s/decode_www_form.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/URI.html#method-c-decode_www_form">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列から URL-encoded form data をデコードします。
+</p>
+<p>
+application/x-www-form-urlencoded 形式のデータをデコードし、
+[key, value] という形の配列の配列を返します。
+</p>
+<p>
+enc で指定したエンコーディングの文字列が URL エンコードされたものとみなし、エンコーディングを付加します。
+</p>
+<p>
+このメソッドは
+<a class="external" href="https://url.spec.whatwg.org/#concept-urlencoded-parser">https://url.spec.whatwg.org/#concept-urlencoded-parser</a>
+にもとづいて実装されています。そのため「&amp;」区切りのみに対応していて、「;」区切りには対応していません。
+</p>
+<pre>
+require 'uri'
+ary = URI.decode_www_form(&quot;a=1&amp;a=2&amp;b=3&quot;)
+p ary                  #=&gt; [['a', '1'], ['a', '2'], ['b', '3']]
+p ary.assoc('a').last  #=&gt; '1'
+p ary.assoc('b').last  #=&gt; '3'
+p ary.rassoc('a').last #=&gt; '2'
+p Hash[ary]            # =&gt; {&quot;a&quot;=&gt;&quot;2&quot;, &quot;b&quot;=&gt;&quot;3&quot;}
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+デコード対象の文字列
+</dd>
+<dt class='method-param'>[PARAM] enc:</dt>
+<dd>
+エンコーディング
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+str のフォーマットが不正である場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-u-r-i/s/decode_www_form_component.html">URI.decode_www_form_component</a>, <a href="../method/-u-r-i/s/encode_www_form.html">URI.encode_www_form</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_DECODE_WWW_FORM_COMPONENT"><code>decode_www_form_component(str, enc=Encoding::UTF_8) -&gt; String</code><span class="permalink">[<a href="../method/-u-r-i/s/decode_www_form_component.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/URI.html#method-c-decode_www_form_component">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+URL-encoded form data の文字列の各コンポーネントをデコードした文字列を返します。
+</p>
+<p>
+通常は <a href="../method/-u-r-i/s/decode_www_form.html">URI.decode_www_form</a> を使うほうがよいでしょう。
+</p>
+<p>
+&quot;+&quot; という文字は空白文字にデコードします。
+</p>
+<p>
+enc で指定したエンコーディングの文字列が URL エンコードされたものとみなし、エンコーディングを付加します。
+</p>
+<p>
+このメソッドは
+<a class="external" href="https://www.w3.org/TR/html5/sec-forms.html#urlencoded-form-data">https://www.w3.org/TR/html5/sec-forms.html#urlencoded-form-data</a>
+にもとづいて実装されています。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'uri'</span>
+enc <span class="o">=</span> <span class="no">URI</span><span class="p">.</span><span class="nf">encode_www_form_component</span><span class="p">(</span><span class="s1">'Ruby リファレンスマニュアル'</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;Ruby+%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9%E3%83%9E%E3%83%8B%E3%83%A5%E3%82%A2%E3%83%AB&quot;
+</span><span class="nb">p</span> <span class="no">URI</span><span class="p">.</span><span class="nf">decode_www_form_component</span><span class="p">(</span>enc<span class="p">)</span>
+<span class="c1"># =&gt; &quot;Ruby リファレンスマニュアル&quot;
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+デコード対象の文字列
+</dd>
+<dt class='method-param'>[PARAM] enc:</dt>
+<dd>
+エンコーディング
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+str のフォーマットが不正である場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-u-r-i/s/encode_www_form_component.html">URI.encode_www_form_component</a>, <a href="../method/-u-r-i/s/decode_www_form.html">URI.decode_www_form</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_ENCODE"><code>escape(str, unsafe = URI::UNSAFE) -&gt; String</code><span class="permalink">[<a href="../method/-u-r-i/s/encode.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/URI.html#method-c-encode">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>encode(str, unsafe = URI::UNSAFE) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+URI 文字列をエンコードした文字列を返します。
+</p>
+<p>
+このメソッドは obsolete です。
+</p>
+<p>
+代わりに
+<a href="../method/-e-r-b=3a=3a-util/m/url_encode.html">ERB::Util.#url_encode</a>,
+<a href="../method/-c-g-i/s/escape.html">CGI.escape</a>,
+<a href="../method/-u-r-i/s/encode_www_form_component.html">URI.encode_www_form_component</a>,
+<a href="../method/-w-e-brick=3a=3a-h-t-t-p-utils/m/escape_form.html">WEBrick::HTTPUtils.#escape_form</a>,
+<a href="../method/-w-e-brick=3a=3a-h-t-t-p-utils/m/escape.html">WEBrick::HTTPUtils.#escape</a>
+などの使用を検討してください。詳細は <a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-core/29293">[ruby-core:29293]</a> からのスレッドを参照してください。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'uri'
+p URI.escape('http://images.google.co.jp/images?q=モナリザ&amp;ie=EUC-JP')
+
+#=&gt; &quot;http://images.google.co.jp/images?q=%A5%E2%A5%CA%A5%EA%A5%B6&amp;ie=EUC-JP&quot;
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+URI を文字列として与えます。
+</dd>
+<dt class='method-param'>[PARAM] unsafe:</dt>
+<dd>
+URI として指定できない文字を正規表現か文字列で指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_ENCODE_WWW_FORM"><code>encode_www_form(enum, enc=nil) -&gt; String</code><span class="permalink">[<a href="../method/-u-r-i/s/encode_www_form.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/URI.html#method-c-encode_www_form">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+enum から URL-encoded form data を生成します。
+</p>
+<p>
+HTML5 で定義されている application/x-www-form-urlencoded 形式の文字列を生成します。
+</p>
+<p>
+enum には通常 [key, value] という形の配列の配列を渡します。以下の例を見てください。
+</p>
+<pre>
+require 'uri'
+URI.encode_www_form([[&quot;a&quot;, &quot;1&quot;], [&quot;b&quot;, &quot;2&quot;], [&quot;c&quot;, &quot;x yz&quot;]])
+# =&gt; &quot;a=1&amp;b=2&amp;c=x+yz&quot;
+</pre>
+<p>
+実際には、each のブロック呼び出しで [key, value] の形のデータを渡すものであれば何でも渡すことができます(例えば <a href="../class/-hash.html">Hash</a> など)。
+</p>
+<pre>
+require 'uri'
+URI.encode_www_form({&quot;a&quot;=&gt;&quot;1&quot;, &quot;b&quot;=&gt;&quot;2&quot;, &quot;c&quot;=&gt;&quot;x yz&quot;})
+# =&gt; &quot;a=1&amp;b=2&amp;c=x+yz&quot;
+</pre>
+<p>
+このメソッドは引数のエンコーディングを変換しません。そのため送るデータのエンコーディングを変換したい場合はあらかじめ変換しておいてください(例えば ASCII incompatible なものを
+UTF-8 に変換する場合など)。各要素のエンコーディングがばらばらの場合もあらかじめエンコーディングを揃えてからこのメソッドを使うべきです。
+</p>
+<p>
+このメソッドはファイルを入力にすることはできません。ファイルを送りたい場合は multipart/form-data をつかうべきでこのメソッドを使うべきではありません。
+</p>
+<p>
+このメソッドは内部的に
+<a href="../method/-u-r-i/s/encode_www_form_component.html">URI.encode_www_form_component</a>
+を使っています。
+</p>
+<p>
+このメソッドは
+<a class="external" href="https://url.spec.whatwg.org/#concept-urlencoded-serializer">https://url.spec.whatwg.org/#concept-urlencoded-serializer</a>
+にもとづいて実装されています。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] enum:</dt>
+<dd>
+エンコードするデータ列([key, value] という形のデータの列)
+</dd>
+<dt class='method-param'>[PARAM] enc:</dt>
+<dd>
+指定された場合、パーセントエンコーディングする前に、このエンコーディングに変換
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-u-r-i/s/encode_www_form_component.html">URI.encode_www_form_component</a>, <a href="../method/-u-r-i/s/decode_www_form.html">URI.decode_www_form</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_ENCODE_WWW_FORM_COMPONENT"><code>encode_www_form_component(str, enc=nil) -&gt; String</code><span class="permalink">[<a href="../method/-u-r-i/s/encode_www_form_component.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/URI.html#method-c-encode_www_form_component">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列を URL-encoded form data の1コンポーネントとしてエンコードした文字列を返します。
+</p>
+<p>
+通常は <a href="../method/-u-r-i/s/encode_www_form.html">URI.encode_www_form</a> を使うほうがよいでしょう。
+</p>
+<p>
+このメソッドでは *, -, ., 0-9, A-Z, _, a-z, は変換せず、空白は + に変換し、その他は %XX に、変換します。
+</p>
+<p>
+このメソッドは
+<a class="external" href="https://www.w3.org/TR/2013/CR-html5-20130806/forms.html#url-encoded-form-data">https://www.w3.org/TR/2013/CR-html5-20130806/forms.html#url-encoded-form-data</a>
+にもとづいて実装されています。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'uri'</span>
+<span class="nb">p</span> <span class="no">URI</span><span class="p">.</span><span class="nf">encode_www_form_component</span><span class="p">(</span><span class="s1">'Ruby リファレンスマニュアル'</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;Ruby+%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9%E3%83%9E%E3%83%8B%E3%83%A5%E3%82%A2%E3%83%AB&quot;
+</span></code></pre>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+エンコードする文字列
+</dd>
+<dt class='method-param'>[PARAM] enc:</dt>
+<dd>
+指定された場合、パーセントエンコーディングする前に、strをこのエンコーディングに変換
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-u-r-i/s/decode_www_form_component.html">URI.decode_www_form_component</a>, <a href="../method/-u-r-i/s/encode_www_form.html">URI.encode_www_form</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_EXTRACT"><code>extract(str) -&gt; [String]</code><span class="permalink">[<a href="../method/-u-r-i/s/extract.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/URI.html#method-c-extract">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>extract(str, schemes) -&gt; [String]</code></dt>
+<dt class="method-heading"><code>extract(str) {|uri_str| ... } -&gt; nil</code></dt>
+<dt class="method-heading"><code>extract(str, schemes) {|uri_str| ... } -&gt; nil</code></dt>
+<dd class="method-description">
+<p>
+文字列 str に対してパターンマッチングを試み、絶対URIにマッチした部分文字列からなる配列として返します。抽出する URI がなければ空の配列を返します。
+</p>
+<p>
+第2引数に文字列の配列 schemes が与えられた場合はそのスキームだけを検索します。
+</p>
+<p>
+ブロックが与えられた場合は <a href="../method/-string/i/scan.html">String#scan</a> と同様で、マッチした部分がみつかるたびに uri_str にその部分を代入してブロックを評価します。このときは nil を返します。
+</p>
+<p>
+このメソッドは Ruby 2.2 から obsolete です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+文字列を与えます。
+</dd>
+<dt class='method-param'>[PARAM] schemes:</dt>
+<dd>
+検索の対象としたいスキームを、文字列の配列として与えます。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'uri'
+str = &quot;
+        http://www.ruby-lang.org/
+        http://www.ruby-lang.org/man-1.6/
+&quot;
+p URI.extract(str, [&quot;http&quot;])
+=&gt; [&quot;http://www.ruby-lang.org/&quot;, &quot;http://www.ruby-lang.org/man-1.6/&quot;]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_JOIN"><code>join(uri_str, *path) -&gt; object</code><span class="permalink">[<a href="../method/-u-r-i/s/join.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/URI.html#method-c-join">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列 uri_str と path ... を URI として連結して得られる
+URI オブジェクトを返します。
+</p>
+<p>
+<a class="external" href="https://tools.ietf.org/html/rfc2396">[RFC2396]</a> の Section 5.2 の仕様に従って連結します。以下と等価です
+</p>
+<pre>
+require 'uri'
+URI.parse(uri_str) + path + ...
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] uri_str:</dt>
+<dd>
+URI 文字列
+</dd>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+後ろに連結する文字列
+</dd>
+<dt>[EXCEPTION] URI::InvalidComponentError:</dt>
+<dd>
+各要素が適合しない場合に発生します。
+</dd>
+<dt>[EXCEPTION] URI::InvalidURIError:</dt>
+<dd>
+パースに失敗した場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'uri'
+p URI.join('http://www.ruby-lang.org/', '/ja/man-1.6/')
+=&gt; #&lt;URI::HTTP:0x2010017a URL:http://www.ruby-lang.org/ja/man-1.6/&gt;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_PARSE"><code>parse(uri_str) -&gt; object</code><span class="permalink">[<a href="../method/-u-r-i/s/parse.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/URI.html#method-c-parse">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+与えられた URI から該当する <a href="../class/-u-r-i=3a=3a-generic.html">URI::Generic</a> のサブクラスのインスタンスを生成して返します。scheme が指定されていない場合は、<a href="../class/-u-r-i=3a=3a-generic.html">URI::Generic</a> オブジェクトを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] uri_str:</dt>
+<dd>
+パースしたい URI を文字列として与えます。
+</dd>
+<dt>[EXCEPTION] URI::InvalidComponentError:</dt>
+<dd>
+各要素が適合しない場合に発生します。
+</dd>
+<dt>[EXCEPTION] URI::InvalidURIError:</dt>
+<dd>
+パースに失敗した場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'uri'
+p uri = URI.parse(&quot;http://www.ruby-lang.org/&quot;)
+
+# =&gt; #&lt;URI::HTTP:0x201002a6 URL:http://www.ruby-lang.org/&gt;
+p uri.scheme    # =&gt; &quot;http&quot;
+p uri.host      # =&gt; &quot;www.ruby-lang.org&quot;
+p uri.port      # =&gt; 80
+p uri.path      # =&gt; &quot;/&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_REGEXP"><code>regexp -&gt; Regexp</code><span class="permalink">[<a href="../method/-u-r-i/s/regexp.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/URI.html#method-c-regexp">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>regexp(schemes) -&gt; Regexp</code></dt>
+<dd class="method-description">
+<p>
+URIにマッチする正規表現を返します。
+</p>
+<p>
+schemes を与えた場合は、そのスキームの URI にのみマッチする正規表現を返します。
+</p>
+<p>
+いずれの場合も返り値の正規表現は不定数の正規表現グループ
+(括弧) を含みます。この括弧の数はバージョンによって変動する可能性があるので、それに依存したコードを書くべきではありません。
+</p>
+<p>
+また、有効なURIではない文字列(たとえば&quot;http://&quot;) にもマッチするため、有効なURIかどうかは必要に応じて別途検査してください。
+</p>
+<p>
+このメソッドは Ruby 2.2 から obsolete です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] schemes:</dt>
+<dd>
+マッチさせたいスキームを、文字列の配列として与えます。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'uri'
+p URI.regexp =~ &quot;http://www.ruby-lang.org/&quot;  #=&gt; 0
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_SPLIT"><code>split(url) -&gt; [String | nil]</code><span class="permalink">[<a href="../method/-u-r-i/s/split.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/URI.html#method-c-split">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+URI を要素に分割した文字列の配列を返します。
+</p>
+<p>
+各要素の種類と順番は以下のとおりです。
+</p>
+<ul>
+<li>scheme</li>
+<li>userinfo</li>
+<li>host</li>
+<li>port</li>
+<li>registry</li>
+<li>path</li>
+<li>opaque</li>
+<li>query</li>
+<li>fragment</li>
+</ul>
+<dl>
+<dt class='method-param'>[PARAM] url:</dt>
+<dd>
+パースしたい URI を文字列として与えます。
+</dd>
+<dt>[EXCEPTION] URI::InvalidURIError:</dt>
+<dd>
+パースに失敗した場合に発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'uri'
+p URI.split(&quot;http://www.ruby-lang.org/&quot;)
+#=&gt; [&quot;http&quot;, nil, &quot;www.ruby-lang.org&quot;, nil, nil, &quot;/&quot;, nil, nil, nil]
+</pre>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-U-N-S-A-F-E"><code>UNSAFE -&gt; Regexp</code><span class="permalink">[<a href="../method/-u-r-i/c/-u-n-s-a-f-e.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/URI.html#method-c-UNSAFE">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+URIとして指定できない文字にマッチする正規表現
+</p>
+<pre>
+/[^-_.!~*'()a-zA-Z\d;\/?:@&amp;=+$,\[\]]/n
+</pre>
+<p>
+です。
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

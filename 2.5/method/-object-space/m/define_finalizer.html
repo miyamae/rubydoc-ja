@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>ObjectSpace.#define_finalizer (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="obj が解放されるときに実行されるファイナライザ proc を
+登録します。同じオブジェクトについて複数回呼ばれたときは置き換えで
+はなく追加登録されます。固定値 0 と proc を配列にして返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-object-space.html">ObjectSpaceモジュール</a>
+      </li>
+      <li>
+        define_finalizer 
+      </li>
+    </ol>
+  </nav>
+
+<h1>module function ObjectSpace.#define_finalizer</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_DEFINE_FINALIZER"><code>define_finalizer(obj, proc) -&gt; Array</code><span class="permalink">[<a href="../../../method/-object-space/m/define_finalizer.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/ObjectSpace.html#method-c-define_finalizer">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>define_finalizer(obj) {|id| ...} -&gt; Array</code></dt>
+<dd class="method-description">
+<p>
+obj が解放されるときに実行されるファイナライザ proc を登録します。同じオブジェクトについて複数回呼ばれたときは置き換えではなく追加登録されます。固定値 0 と proc を配列にして返します。
+</p>
+<p>
+ブロックを指定した場合は、そのブロックがファイナライザになります。
+obj の回収時にブロックは obj の ID (<a href="../../../method/-basic-object/i/__id__.html">BasicObject#__id__</a>)を引数として実行されます。しかし、後述の問題があるのでブロックでファイナライザを登録するのは難しいでしょう。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+ファイナライザを登録したいオブジェクトを指定します。
+</dd>
+<dt class='method-param'>[PARAM] proc:</dt>
+<dd>
+ファイナライザとして <a href="../../../class/-proc.html">Proc</a> オブジェクトを指定します。proc は obj の回収時に obj の ID を引数として実行されます。
+</dd>
+</dl>
+<h2 >使い方の注意</h2>
+<p>
+以下は、define_finalizer の使い方の悪い例です。
+</p>
+<pre class="highlight ruby">
+<span class="caption">悪い例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">initialize</span>
+    <span class="no">ObjectSpace</span><span class="p">.</span><span class="nf">define_finalizer</span><span class="p">(</span><span class="nc">self</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nb">puts</span> <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>
+    <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="no">Foo</span><span class="p">.</span><span class="nf">new</span>
+<span class="no">GC</span><span class="p">.</span><span class="nf">start</span>
+</code></pre>
+<p>
+これは、渡された proc の self が obj を参照しつづけるため。そのオブジェクトが GC の対象になりません。
+</p>
+<p>
+<a href="../../../library/tempfile.html">tempfile</a> は、ファイナライザの使い方の良い例になっています。これは、クラスのコンテキストで <a href="../../../class/-proc.html">Proc</a> を生成することで上記の問題を回避しています。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span>
+  <span class="k">def</span> <span class="no">Bar</span><span class="p">.</span><span class="nf">callback</span>
+    <span class="nf">proc</span> <span class="p">{</span>
+      <span class="nb">puts</span> <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span>
+    <span class="p">}</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">initialize</span>
+    <span class="no">ObjectSpace</span><span class="p">.</span><span class="nf">define_finalizer</span><span class="p">(</span><span class="nc">self</span>, <span class="no">Bar</span><span class="p">.</span><span class="nf">callback</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="no">Bar</span><span class="p">.</span><span class="nf">new</span>
+<span class="no">GC</span><span class="p">.</span><span class="nf">start</span>
+</code></pre>
+<p>
+proc の呼び出しで発生した大域脱出(exitや例外)は無視されます。これは、スクリプトのメイン処理が GC の発生によって非同期に中断されるのを防ぐためです。不安なうちは -d オプションで事前に例外の発生の有無を確認しておいた方が良いでしょう。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Baz</span>
+  <span class="k">def</span> <span class="nf">initialize</span>
+    <span class="no">ObjectSpace</span><span class="p">.</span><span class="nf">define_finalizer</span> <span class="nc">self</span>, <span class="nb">eval</span><span class="p">(</span><span class="s2">%q{</span><span class="s2">
+      proc {
+        raise &quot;baz&quot; rescue puts $!
+        raise &quot;baz2&quot;
+        puts &quot;baz3&quot;
+      }
+    </span><span class="s2">}</span>, <span class="no">TOPLEVEL_BINDING</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="no">Baz</span><span class="p">.</span><span class="nf">new</span>
+<span class="no">GC</span><span class="p">.</span><span class="nf">start</span>
+
+<span class="c1"># =&gt; baz
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../doc/spec=2frubycmd.html">Rubyの起動</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

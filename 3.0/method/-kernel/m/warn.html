@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Kernel.#warn (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="message を 標準エラー出力 [[m:$stderr]] に出力します。 [[m:$VERBOSE]]
+フラグ が nil のときは何も出力しません。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-kernel.html">Kernelモジュール</a>
+      </li>
+      <li>
+        warn 
+      </li>
+    </ol>
+  </nav>
+
+<h1>module function Kernel.#warn</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_WARN"><code>warn(*message, uplevel: nil, category: nil) -&gt; nil</code><span class="permalink">[<a href="../../../method/-kernel/m/warn.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Kernel.html#method-c-warn">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+message を 標準エラー出力 <a href="../../../method/-kernel/v/stderr.html">$stderr</a> に出力します。 <a href="../../../method/-kernel/v/-v-e-r-b-o-s-e.html">$VERBOSE</a>
+フラグ が nil のときは何も出力しません。
+</p>
+<p>
+文字列以外のオブジェクトが引数として与えられた場合には、
+to_s メソッドにより文字列に変換してから出力します。
+</p>
+<p>
+uplevel を指定しない場合は、このメソッドは以下と同じです。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="vg">$stderr</span><span class="p">.</span><span class="nf">puts</span><span class="p">(</span><span class="o">*</span>message<span class="p">)</span> <span class="k">if</span> <span class="o">!</span><span class="vg">$VERBOSE</span><span class="p">.</span><span class="nf">nil?</span> <span class="o">&amp;&amp;</span> <span class="o">!</span>message<span class="p">.</span><span class="nf">empty?</span>
+<span class="k">nil</span>
+</code></pre>
+<dl>
+<dt class='method-param'>[PARAM] message:</dt>
+<dd>
+出力するオブジェクトを任意個指定します。
+</dd>
+<dt class='method-param'>[PARAM] uplevel:</dt>
+<dd>
+いくつ前の呼び出し元のファイル名と行番号を表示するかを0以上の数値で指定します。 nil の場合は表示しません。
+</dd>
+<dt class='method-param'>[PARAM] category:</dt>
+<dd>
+警告のカテゴリを指定します。サポートされている category については <a href="../../../method/-warning/s/=5b=5d.html">Warning.[]</a> を参照してください。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+標準エラー出力が書き込み用にオープンされていなければ発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+出力に失敗した場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">warn</span> <span class="s2">"</span><span class="s2">caution!</span><span class="s2">"</span> <span class="c1">#=&gt; caution!
+</span><span class="vg">$VERBOSE</span> <span class="o">=</span> <span class="k">nil</span>
+<span class="nb">warn</span> <span class="s2">"</span><span class="s2">caution!</span><span class="s2">"</span> <span class="c1"># 何もしない
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">uplevel の例</span>
+<code>
+<span class="k">def</span> <span class="nf">foo</span>
+  <span class="nb">warn</span><span class="p">(</span><span class="s2">"</span><span class="s2">test message</span><span class="s2">"</span>, <span class="ss">uplevel:</span> <span class="mi">0</span><span class="p">)</span> <span class="c1"># =&gt; test.rb:2: warning: test message
+</span>  <span class="nb">warn</span><span class="p">(</span><span class="s2">"</span><span class="s2">test message</span><span class="s2">"</span>, <span class="ss">uplevel:</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># =&gt; test.rb:6: warning: test message
+</span>  <span class="nb">warn</span><span class="p">(</span><span class="s2">"</span><span class="s2">test message</span><span class="s2">"</span>, <span class="ss">uplevel:</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># =&gt; test message
+</span><span class="k">end</span>
+foo
+</code></pre>
+<pre class="highlight ruby">
+<span class="caption">category の例</span>
+<code>
+<span class="no">Warning</span><span class="p">[</span><span class="ss">:deprecated</span><span class="p">]</span> <span class="o">=</span> <span class="k">true</span> <span class="c1"># 非推奨の警告を表示する
+</span><span class="nb">warn</span><span class="p">(</span><span class="s2">"</span><span class="s2">deprecated!!</span><span class="s2">"</span>, <span class="ss">category:</span> <span class="ss">:deprecated</span><span class="p">)</span>
+<span class="c1"># =&gt; deprecated!
+</span>
+<span class="no">Warning</span><span class="p">[</span><span class="ss">:deprecated</span><span class="p">]</span> <span class="o">=</span> <span class="k">false</span> <span class="c1"># 非推奨の警告を表示しない
+</span><span class="nb">warn</span><span class="p">(</span><span class="s2">"</span><span class="s2">deprecated!!</span><span class="s2">"</span>, <span class="ss">category:</span> <span class="ss">:deprecated</span><span class="p">)</span>
+<span class="c1"># 警告は出力されない
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-warning/i/warn.html">Warning#warn</a>, <a href="../../../method/-kernel/v/stderr.html">$stderr</a>,<a href="../../../method/-kernel/v/-v-e-r-b-o-s-e.html">$VERBOSE</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>
