@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>module RubyVM::AbstractSyntaxTree (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="Ruby のコードをパースして得られる抽象構文木を扱うモジュールです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        RubyVM::AbstractSyntaxTreeモジュール
+      </li>
+    </ol>
+  </nav>
+
+<h1>module RubyVM::AbstractSyntaxTree</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+      <li>
+        RubyVM::AbstractSyntaxTree
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+Ruby のコードをパースして得られる抽象構文木を扱うモジュールです。
+</p>
+<p>
+抽象構文木は<a href="../class/-ruby-v-m=3a=3a-abstract-syntax-tree=3a=3a-node.html">RubyVM::AbstractSyntaxTree::Node</a>クラスのインスタンスとして表されます。
+</p>
+<p>
+このモジュールはMRIの抽象構文木の実装の詳細を表します。
+</p>
+<p>
+このモジュールは実験的であり、安定したAPIではないため、予告なしに変更される可能性があります。例えば、子要素の順序は保証されておらず、子要素の数は変更される可能性があります。また子要素に名前でアクセスする方法は提供されていません。
+</p>
+<p>
+もし安定したAPIやMRI以外の実装で抽象構文木を扱いたい場合、
+parser gem (<a class="external" href="https://github.com/whitequark/parser">https://github.com/whitequark/parser</a>)や
+<a href="../class/-ripper.html">Ripper</a>の使用を検討してください。もし RubyVM::AbstractSyntaxTree のAPIを安定にしたい場合、<a class="external" href="https://bugs.ruby-lang.org/issues/14844">[feature#14844]</a> での議論に参加してください。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_OF">of</a></li>
+
+<li><a href="#S_PARSE">parse</a></li>
+
+<li><a href="#S_PARSE_FILE">parse_file</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_OF"><code>of(proc) -&gt; RubyVM::AbstractSyntaxTree::Node</code><span class="permalink">[<a href="../method/-ruby-v-m=3a=3a-abstract-syntax-tree/s/of.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/RubyVM/AbstractSyntaxTree.html#method-c-of">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数 proc に渡したProcやメソッドオブジェクトの抽象構文木を返します。
+</p>
+<p>
+このメソッドはProcやメソッドが定義されたファイルを読み込む必要があるため、
+irbのようなファイルを介さない対話的環境では動作しません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] proc:</dt>
+<dd>
+Procもしくはメソッドオブジェクトを指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+pp <span class="no">RubyVM</span><span class="o">::</span><span class="no">AbstractSyntaxTree</span><span class="p">.</span><span class="nf">of</span><span class="p">(</span><span class="nb">proc</span> <span class="p">{</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span><span class="p">}</span><span class="p">)</span>
+<span class="c1"># =&gt; (SCOPE@2:38-2:45
+</span><span class="c1">#     tbl: []
+</span><span class="c1">#     args: nil
+</span><span class="c1">#     body:
+</span><span class="c1">#       (OPCALL@2:39-2:44 (LIT@2:39-2:40 1) :+
+</span><span class="c1">#          (LIST@2:43-2:44 (LIT@2:43-2:44 2) nil)))
+</span>
+<span class="k">def</span> <span class="nf">hello</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">hello, world</span><span class="s2">"</span>
+<span class="k">end</span>
+
+pp <span class="no">RubyVM</span><span class="o">::</span><span class="no">AbstractSyntaxTree</span><span class="p">.</span><span class="nf">of</span><span class="p">(</span><span class="nb">method</span><span class="p">(</span><span class="ss">:hello</span><span class="p">)</span><span class="p">)</span>
+<span class="c1"># =&gt; (SCOPE@5:0-7:3
+</span><span class="c1">#     tbl: []
+</span><span class="c1">#     args:
+</span><span class="c1">#       (ARGS@5:9-5:9
+</span><span class="c1">#        pre_num: 0
+</span><span class="c1">#        pre_init: nil
+</span><span class="c1">#        opt: nil
+</span><span class="c1">#        first_post: nil
+</span><span class="c1">#        post_num: 0
+</span><span class="c1">#        post_init: nil
+</span><span class="c1">#        rest: nil
+</span><span class="c1">#        kw: nil
+</span><span class="c1">#        kwrest: nil
+</span><span class="c1">#        block: nil)
+</span><span class="c1">#     body:
+</span><span class="c1">#       (FCALL@6:2-6:21 :puts (LIST@6:7-6:21 (STR@6:7-6:21 &quot;hello, world&quot;) nil)))
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_PARSE"><code>parse(string) -&gt; RubyVM::AbstractSyntaxTree::Node</code><span class="permalink">[<a href="../method/-ruby-v-m=3a=3a-abstract-syntax-tree/s/parse.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/RubyVM/AbstractSyntaxTree.html#method-c-parse">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列を抽象構文木にパースし、その木の根ノードを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+パースする対象の Ruby のコードを文字列で指定します。
+</dd>
+<dt>[EXCEPTION] SyntaxError:</dt>
+<dd>
+string が Ruby のコードとして正しくない場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+pp <span class="no">RubyVM</span><span class="o">::</span><span class="no">AbstractSyntaxTree</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="s2">"</span><span class="s2">x = 1 + 2</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; (SCOPE@1:0-1:9
+</span><span class="c1">#     tbl: [:x]
+</span><span class="c1">#     args: nil
+</span><span class="c1">#     body:
+</span><span class="c1">#       (LASGN@1:0-1:9 :x
+</span><span class="c1">#          (OPCALL@1:4-1:9 (LIT@1:4-1:5 1) :+ (LIST@1:8-1:9 (LIT@1:8-1:9 2) nil))))
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_PARSE_FILE"><code>parse_file(pathname) -&gt; RubyVM::AbstractSyntaxTree::Node</code><span class="permalink">[<a href="../method/-ruby-v-m=3a=3a-abstract-syntax-tree/s/parse_file.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/RubyVM/AbstractSyntaxTree.html#method-c-parse_file">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+pathname のファイルを読み込み、その内容を抽象構文木にパースし、その木の根ノードを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pathname:</dt>
+<dd>
+パースする対象のファイルパスを指定します
+</dd>
+<dt>[EXCEPTION] SyntaxError:</dt>
+<dd>
+string が Ruby のコードとして正しくない場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+pp <span class="no">RubyVM</span><span class="o">::</span><span class="no">AbstractSyntaxTree</span><span class="p">.</span><span class="nf">parse_file</span><span class="p">(</span><span class="k">__FILE__</span><span class="p">)</span>
+<span class="c1"># =&gt; (SCOPE@1:0-1:50
+</span><span class="c1">#     tbl: []
+</span><span class="c1">#     args: nil
+</span><span class="c1">#     body:
+</span><span class="c1">#       (FCALL@1:0-1:50 :pp
+</span><span class="c1">#          (LIST@1:3-1:50
+</span><span class="c1">#             (CALL@1:3-1:50
+</span><span class="c1">#                (COLON2@1:3-1:29 (CONST@1:3-1:9 :RubyVM) :AbstractSyntaxTree)
+</span><span class="c1">#                :parse_file (LIST@1:41-1:49 (STR@1:41-1:49 &quot;&quot;) nil)) nil)))
+</span></code></pre>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

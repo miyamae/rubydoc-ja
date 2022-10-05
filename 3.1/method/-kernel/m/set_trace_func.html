@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Kernel.#set_trace_func (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="Ruby インタプリタのイベントをトレースする [[c:Proc]] オブジェクトとして
+指定された proc を登録します。 nil を指定するとトレースがオフになります。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-kernel.html">Kernelモジュール</a>
+      </li>
+      <li>
+        set_trace_func 
+      </li>
+    </ol>
+  </nav>
+
+<h1>module function Kernel.#set_trace_func</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_SET_TRACE_FUNC"><code>set_trace_func(proc) -&gt; Proc</code><span class="permalink">[<a href="../../../method/-kernel/m/set_trace_func.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Kernel.html#method-c-set_trace_func">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Ruby インタプリタのイベントをトレースする <a href="../../../class/-proc.html">Proc</a> オブジェクトとして指定された proc を登録します。 nil を指定するとトレースがオフになります。
+</p>
+<p>
+Ruby インタプリタがプログラムを実行する過程で、メソッドの呼び出しや式の評価などのイベントが発生する度に、以下で説明する6個の引数とともに登録された <a href="../../../class/-proc.html">Proc</a> オブジェクトを実行します。
+</p>
+<p>
+標準添付の <a href="../../../library/debug.html">debug</a>、<a href="../../../library/tracer.html">tracer</a>、
+<a href="../../../library/profile.html">profile</a> はこの組み込み関数を利用して実現されています。
+</p>
+<h2 >ブロックパラメータの意味</h2>
+<p>
+渡す Proc オブジェクトのパラメータは
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">proc</span><span class="p">{</span><span class="o">|</span>event, file, line, <span class="nb">id</span>, <span class="nb">binding</span>, klass<span class="o">|</span> <span class="s2">"</span><span class="s2">...</span><span class="s2">"</span> <span class="p">}</span>
+</code></pre>
+<p>
+で、意味は以下の通りです。
+</p>
+<dl>
+<dt>event</dt>
+<dd>
+<p>
+実行のタイプを表す、以下のいずれかの文字列。
+</p>
+<pre>
+  &quot;line&quot;:      式の評価。
+  &quot;call&quot;:      メソッドの呼び出し。
+  &quot;return&quot;:    メソッド呼び出しからのリターン。
+  &quot;c-call&quot;:    Cで記述されたメソッドの呼び出し。
+  &quot;c-return&quot;:  Cで記述されたメソッド呼び出しからのリターン。
+  &quot;class&quot;:     クラス定義、特異クラス定義、モジュール定義への突入。
+  &quot;end&quot;:       クラス定義、特異クラス定義、モジュール定義の終了。
+  &quot;raise&quot;:     例外の発生。
+</pre>
+</dd>
+<dt>file</dt>
+<dd>
+<p>
+実行中のプログラムのソースファイル名 (文字列)。
+</p>
+</dd>
+<dt>line</dt>
+<dd>
+<p>
+実行中のプログラムのソースファイル上の行番号 (整数)。
+</p>
+</dd>
+<dt>id</dt>
+<dd>
+<p>
+event に応じ、以下のものが渡されます。第六ブロック引数の klass と対応しています。
+</p>
+<pre>
+    line
+        最後に呼び出されたメソッドを表す Symbol オブジェクト。
+        トップレベルでは nil。
+    call/return/c-call/c-return
+        呼び出された/リターンするメソッドを表す Symbol オブジェクト。
+    class/end
+        nil。
+    raise
+        最後に呼び出されたメソッドを表す Symbol オブジェクト。
+        トップレベルでは nil。
+</pre>
+</dd>
+<dt>binding</dt>
+<dd>
+<p>
+実行中のプログラムのコンテキストを表す <a href="../../../class/-binding.html">Binding</a> オブジェクト。
+</p>
+</dd>
+<dt>klass</dt>
+<dd>
+<p>
+event に応じ、以下のものが渡されます。第四ブロック引数の id と対応しています。
+</p>
+<pre>
+    line
+        最後に呼び出されたメソッドが属するクラスを表す
+        Class オブジェクト。トップレベルでは nil。
+    call/return/c-call/c-return
+        呼び出された/リターンするメソッドが属するクラス
+        を表す Class オブジェクト。
+    class/end
+        nil。
+    raise
+        最後に呼び出されたメソッドが属するクラスを表す
+        Class オブジェクト。トップレベルでは nil。
+</pre>
+</dd>
+</dl>
+<dl>
+<dt class='method-param'>[PARAM] proc:</dt>
+<dd>
+トレース用 <a href="../../../class/-proc.html">Proc</a> オブジェクトを指定します。nil を指定した場合、トレースをオフにします。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+proc を返します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">set_trace_func</span> <span class="nb">lambda</span> <span class="p">{</span><span class="o">|</span><span class="o">*</span>arg<span class="o">|</span>
+  <span class="nb">p</span> arg
+<span class="p">}</span>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+<span class="k">end</span>
+<span class="mi">43</span><span class="p">.</span><span class="nf">to_s</span>
+
+<span class="c1"># ----結果----
+</span><span class="c1"># [&quot;c-return&quot;, &quot;..&quot;, 1, :set_trace_func, #&lt;Binding:0xf6ceb8&gt;, Kernel]
+</span><span class="c1"># [&quot;line&quot;, &quot;..&quot;, 4, nil, #&lt;Binding:0x10cbcd8&gt;, nil]
+</span><span class="c1"># [&quot;c-call&quot;, &quot;..&quot;, 4, :inherited, #&lt;Binding:0x10cba98&gt;, Class]
+</span><span class="c1"># [&quot;c-return&quot;, &quot;..&quot;, 4, :inherited, #&lt;Binding:0x10cb858&gt;, Class]
+</span><span class="c1"># [&quot;class&quot;, &quot;..&quot;, 4, nil, #&lt;Binding:0x10cb600&gt;, nil]
+</span><span class="c1"># [&quot;end&quot;, &quot;..&quot;, 5, nil, #&lt;Binding:0x10cb3f0&gt;, nil]
+</span><span class="c1"># [&quot;line&quot;, &quot;..&quot;, 6, nil, #&lt;Binding:0x10cb1e0&gt;, nil]
+</span><span class="c1"># [&quot;c-call&quot;, &quot;..&quot;, 6, :to_s, #&lt;Binding:0x10cafd0&gt;, Fixnum]
+</span><span class="c1"># [&quot;c-return&quot;, &quot;..&quot;, 6, :to_s, #&lt;Binding:0x10cad78&gt;, Fixnum]
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/caller.html">Kernel.#caller</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

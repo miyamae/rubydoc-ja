@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Net::HTTPResponse#read_body (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="ブロックを与えなかった場合にはエンティティボディを
+文字列で返します。
+ブロックを与えた場合には
+エンティティボディを少しずつ取得して順次ブロックに
+文字列で与えます。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/net=2fhttp.html">net/httpライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-net=3a=3a-h-t-t-p-response.html">Net::HTTPResponseクラス</a>
+      </li>
+      <li>
+        read_body 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Net::HTTPResponse#read_body</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_READ_BODY"><code>read_body(dest=nil) -&gt; String|nil</code><span class="permalink">[<a href="../../../method/-net=3a=3a-h-t-t-p-response/i/read_body.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Net/HTTPResponse.html#method-i-read_body">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>read_body {|str| .... } -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+ブロックを与えなかった場合にはエンティティボディを文字列で返します。ブロックを与えた場合にはエンティティボディを少しずつ取得して順次ブロックに文字列で与えます。
+</p>
+<p>
+レスポンスがボディを持たない場合には nil を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例1 ブロックを与えずに一度に結果取得</span>
+<code>
+<span class="nb">require</span> <span class="s1">'net/http'</span>
+
+uri <span class="o">=</span> <span class="s2">"</span><span class="s2">http://www.example.com/index.html</span><span class="s2">"</span>
+response <span class="o">=</span> <span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="p">.</span><span class="nf">get_response</span><span class="p">(</span><span class="no">URI</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span>uri<span class="p">)</span><span class="p">)</span>
+response<span class="p">.</span><span class="nf">read_body</span><span class="p">[</span><span class="mi">0</span><span class="o">..</span><span class="mi">10</span><span class="p">]</span> <span class="c1"># =&gt; &quot;&lt;!doctype h&quot;
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例2 ブロックを与えて大きいファイルを取得</span>
+<code>
+<span class="nb">require</span> <span class="s1">'net/http'</span>
+
+uri <span class="o">=</span> <span class="no">URI</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="s1">'http://www.example.com/path/to/big.file'</span><span class="p">)</span>
+<span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="p">.</span><span class="nf">start</span><span class="p">(</span>uri<span class="p">.</span><span class="nf">host</span>, uri<span class="p">.</span><span class="nf">port</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>http<span class="o">|</span>
+  <span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">/path/to/big.file</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+    <span class="c1"># Net::HTTP#request_get と Net::HTTPResponse#read_body で少しずつ読み書き。メモリ消費が少ない。
+</span>    http<span class="p">.</span><span class="nf">request_get</span><span class="p">(</span>uri<span class="p">.</span><span class="nf">path</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>response<span class="o">|</span>
+      response<span class="p">.</span><span class="nf">read_body</span> <span class="k">do</span> <span class="o">|</span>s<span class="o">|</span>
+        f<span class="p">.</span><span class="nf">write</span><span class="p">(</span>s<span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+一度ブロックを与えずにこのメソッドを呼んだ場合には、次からはすでに読みだしたボディを文字列として返します。また一度ブロックを与えてこのメソッドを呼んだ場合には、次からは Net::ReadAdapter のインスタンスが返ってきますが、その場合はそのオブジェクトは使わないでください。
+</p>
+<p>
+dest は obsolete です。使わないでください。
+dest を指定した場合にはボディを少しずつ取得して順次「dest &lt;&lt; ボディの断片」を実行します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] dest:</dt>
+<dd>
+obsoleteな引数です。利用しないでください。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-net=3a=3a-h-t-t-p/i/request_get.html">Net::HTTP#request_get</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

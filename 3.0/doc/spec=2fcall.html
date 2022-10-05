@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>メソッド呼び出し(super・ブロック付き・yield) (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="* [[ref:super]]
+  * [[ref:block]]
+  * [[ref:yield]]
+  * [[ref:block_arg]]
+  * [[ref:call_method]]">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      
+        <li>
+          <a href="../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+        </li>
+        <li>
+          メソッド呼び出し(super・ブロック付き・yield)
+        </li>
+      
+    </ol>
+  </nav>
+
+<h1>メソッド呼び出し(super・ブロック付き・yield)</h1>
+</header>
+
+<main>
+
+<ul>
+<li><a href="#super">super</a></li>
+<li><a href="#block">ブロック付きメソッド呼び出し</a></li>
+<li><a href="#yield">yield</a></li>
+<li><a href="#block_arg">ブロックパラメータの挙動</a></li>
+<li><a href="#call_method">.() および ::() 形式のメソッド呼び出し（callメソッドの糖衣構文）</a></li>
+</ul>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+foo<span class="p">.</span><span class="nf">bar</span><span class="p">(</span><span class="p">)</span>
+foo<span class="p">.</span><span class="nf">bar</span>
+bar<span class="p">(</span><span class="p">)</span>
+<span class="nb">print</span> <span class="s2">"</span><span class="s2">hello world\n</span><span class="s2">"</span>
+<span class="nb">print</span>
+<span class="no">Class</span><span class="p">.</span><span class="nf">new</span>
+<span class="no">Class</span><span class="o">::</span>new
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+[式  `.'] 識別子 [`(' [[`*'] 式] ... [`&amp;' 式] `)']
+[式 `::'] 識別子 [`(' [[`*'] 式] ... [`&amp;' 式] `)']
+</pre>
+<p>
+メソッド呼び出し式はレシーバ(`.' の左側の式の値)のメソッドを呼び出します。レシーバが指定されない時は self のメソッドを呼び出します。
+</p>
+<p>
+`.' と `::' とはほぼ同じ意味です。但し、定数を表す場合は、
+`::' を使わなければいけません(例: <a href="../method/-math/c/-p-i.html">Math::PI</a>)。逆に、
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="no">Klass</span><span class="o">::</span><span class="no">Foo</span>
+</code></pre>
+<p>
+とした場合、常に定数と見なされるという制限があります。
+`::' を、クラスメソッド呼び出しに使うという流儀がありますが、この点は要注意です。大文字で始まるメソッド名を使用する場合は
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="no">Klass</span><span class="p">.</span><span class="no">Foo</span>
+</code></pre>
+<p>
+と `.' を使うか、
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="no">Klass</span><span class="o">::</span><span class="no">Foo</span><span class="p">(</span><span class="p">)</span>
+</code></pre>
+<p>
+と括弧でメソッド呼び出しであることを明示する必要があります。
+</p>
+<p>
+メソッド名には通常の識別子の他、識別子に ? または ! の続いたものが許されます。慣習として、述語(真偽値を返すメソッド)には ?
+を、同名の(! の無い)メソッドに比べてより破壊的な作用をもつメソッド(例: tr と tr!)には ! をつけるようになっています。
+</p>
+<p>
+引数の直前に * がついている場合、その引数の値が展開されて渡されます。展開はメソッド to_a を経由して行なわれます。つまり:
+</p>
+<pre class="highlight ruby">
+<code>
+foo<span class="p">(</span><span class="mi">1</span>,<span class="o">*</span><span class="p">[</span><span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span><span class="p">]</span><span class="p">)</span>
+foo<span class="p">(</span><span class="mi">1</span>,<span class="o">*</span><span class="p">[</span><span class="p">]</span><span class="p">)</span>
+foo<span class="p">(</span><span class="mi">1</span>,<span class="o">*</span><span class="p">[</span><span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span><span class="p">]</span>,<span class="mi">5</span><span class="p">)</span>
+foo<span class="p">(</span><span class="mi">1</span>,<span class="o">*</span><span class="p">[</span><span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span><span class="p">]</span>,<span class="mi">5</span>,<span class="o">*</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="p">)</span>
+</code></pre>
+<p>
+は、それぞれ
+</p>
+<pre class="highlight ruby">
+<code>
+foo<span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span><span class="p">)</span>
+foo<span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+foo<span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">5</span><span class="p">)</span>
+foo<span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">5</span>,<span class="mi">6</span><span class="p">)</span>
+</code></pre>
+<p>
+と同じです。
+</p>
+<p>
+最後の引数の直前に &amp; がついている場合、その引数で指定した手続きオブジェクト(<a href="../class/-proc.html">Proc</a>)やメソッドオブジェクト(<a href="../class/-method.html">Method</a>)がブロックとしてメソッドに渡されます。詳細は <a href="#block">ブロック付きメソッド呼び出し</a> を参照してください。
+</p>
+<p>
+メソッド呼び出しの際、private なメソッドは関数形式(レシーバを省略した形式)でしか呼び出すことができません。また protected なメソッドはそのメソッドを持つオブジェクトのメソッド定義式内でなければ呼び出せません。<a href="../doc/spec=2fdef.html#limit">クラス／メソッドの定義/呼び出し制限</a> を参照して下さい。
+</p>
+<p>
+ハッシュ式の解説(<a href="../doc/spec=2fliteral.html#hash">リテラル/ハッシュ式</a>)にも書かれている通り、メソッド呼出の末尾にHashを渡す場合は {, } を省略することができます。これを用いることでキーワード引数を渡すことができます。この Hash は<a href="../doc/spec=2fdef.html#method">クラス／メソッドの定義/メソッド定義</a>で解説されているキーワード引数に分解されて引き渡されます。
+</p>
+<p>
+メソッド呼び出しで `.' の代わりに `&amp;.' を使うことができます。この形式でメソッドを呼びだそうとすると、レシーバが nil の場合は以下のように働きます。
+</p>
+<ul>
+<li>引数の評価が行なわれない</li>
+<li>メソッド呼び出しが行われない</li>
+<li>nil を返す</li>
+</ul>
+<p>
+レシーバが nil でない場合は通常のメソッド呼び出しが行われます。
+</p>
+<pre class="highlight ruby">
+<code>
+foo <span class="o">=</span> <span class="mi">13</span>
+foo<span class="o">&amp;.</span><span class="nb">to_s</span> <span class="c1"># =&gt; &quot;13&quot;
+</span>foo <span class="o">=</span> <span class="k">nil</span>
+foo<span class="o">&amp;.</span><span class="nb">to_s</span> <span class="c1"># nil, not &quot;&quot;
+</span></code></pre>
+<p>
+`&amp;.' は要素代入(アトリビュート)に対しても使えます。
+</p>
+<pre class="highlight ruby">
+<code>
+foo<span class="o">&amp;.</span>bar <span class="o">=</span> <span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span> <span class="c1"># for `bar=' method
+</span></code></pre>
+<h2 id='super'>super</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">super</span>
+<span class="k">super</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span><span class="p">)</span>
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+super
+super(式, ... )
+</pre>
+<p>
+super は現在のメソッドがオーバーライドしているメソッドを呼び出します。括弧と引数が省略された場合には現在のメソッドの引数がそのまま引き渡されます。引数を渡さずにオーバーライドしたメソッドを呼び出すには
+super() と括弧を明示します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>arg<span class="o">=</span><span class="k">nil</span><span class="p">)</span>
+    <span class="nb">p</span> arg
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span> <span class="o">&lt;</span> <span class="no">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>arg<span class="p">)</span>
+    <span class="k">super</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>       <span class="c1"># 5 を引数にして呼び出す
+</span>    <span class="k">super</span><span class="p">(</span>arg<span class="p">)</span>     <span class="c1"># 5 を引数にして呼び出す
+</span>    <span class="k">super</span>          <span class="c1"># 5 を引数にして呼び出す super(arg) の略記法
+</span>    arg <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">super</span>          <span class="c1"># 1 を引数にして呼び出す super(arg) の略記法
+</span>    <span class="k">super</span><span class="p">(</span><span class="p">)</span>        <span class="c1"># 引数なしで呼び出す
+</span>  <span class="k">end</span>
+<span class="k">end</span>
+<span class="no">Bar</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">foo</span> <span class="mi">5</span>
+</code></pre>
+<h2 id='block'>ブロック付きメソッド呼び出し</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span><span class="p">]</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span>i<span class="o">|</span> <span class="nb">print</span> i<span class="o">*</span><span class="mi">2</span>, <span class="s2">"</span><span class="s2">\n</span><span class="s2">"</span> <span class="k">end</span>
+<span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span><span class="p">]</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span><span class="o">|</span>i<span class="o">|</span> <span class="nb">print</span> i<span class="o">*</span><span class="mi">2</span>, <span class="s2">"</span><span class="s2">\n</span><span class="s2">"</span> <span class="p">}</span>
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+method(arg1, arg2, ...)  do [`|' 式 ... `|'] 式 ... end
+method(arg1, arg2, ...) `{' [`|' 式 ... `|'] 式 ... `}'
+method(arg1, arg2, ..., `&amp;' proc_object)
+</pre>
+<p>
+ブロック付きメソッドとは制御構造の抽象化のために用いられるメソッドです。最初はループの抽象化のために用いられていたため、特にイテレータと呼ばれることもあります。
+do ... end または { ... }  で囲まれたコードの断片
+(ブロックと呼ばれる)を後ろに付けてメソッドを呼び出すと、そのメソッドの内部からブロックを評価できます。ブロック付きメソッドを自分で定義するには yield 式を使います。
+</p>
+<p>
+{ ...  } の方が do ...  end ブロックよりも強く結合します。次に例を挙げますが、このような違いが影響するコードは読み辛いので避けましょう:
+</p>
+<pre class="highlight ruby">
+<code>
+foobar a, b <span class="k">do</span> body <span class="k">end</span>   <span class="c1"># foobarの引数はa, bの値とブロック
+</span>foobar a, b <span class="p">{</span> body <span class="p">}</span>      <span class="c1"># ブロックはメソッドbの引数、aの値とbの返り値とがfoobarの引数
+</span></code></pre>
+<p>
+ブロックの中で初めて代入された(宣言された)ローカル変数はそのブロックの中でだけ有効です。例えば:
+</p>
+<pre class="highlight ruby">
+<code>
+foobar <span class="p">{</span>
+  i <span class="o">=</span> <span class="mi">20</span>                <span class="c1"># ローカル変数 `i' が宣言された
+</span>  <span class="c1"># ...
+</span><span class="p">}</span>
+<span class="nb">print</span> <span class="k">defined?</span> i        <span class="c1"># `i' はここでは未定義なので false
+</span>foobar a, b <span class="k">do</span>
+  i <span class="o">=</span> <span class="mi">11</span>                <span class="c1"># まったく別の変数 i の宣言
+</span>  <span class="c1"># ...
+</span><span class="k">end</span>
+</code></pre>
+<p>
+以下は逆にブロック外でも有効な例です。
+</p>
+<pre class="highlight ruby">
+<code>
+i <span class="o">=</span> <span class="mi">10</span>
+<span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span><span class="p">]</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span>m<span class="o">|</span>
+  <span class="nb">p</span> i <span class="o">*</span> m               <span class="c1"># いきなり i を使える
+</span><span class="k">end</span>
+</code></pre>
+<p>
+ブロックの部分だけを先に定義して変数に保存しておき、後からブロック付きメソッドに渡すことも出来ます。それを実現するのが手続きオブジェクト(<a href="../class/-proc.html">Proc</a>)です。それをブロックとして渡すにはブロック付きメソッドの最後の引数として `&amp;' で修飾した手続きオブジェクトを渡します。Proc の代わりにメソッドオブジェクト(<a href="../class/-method.html">Method</a>)を渡すことも出来ます。この場合、そのメソッドを呼ぶ手続きオブジェクトが生成され渡されます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># 1引数の手続き(その働きは引数をpで印字すること)を生成し、変数pobjに格納
+</span>pobj <span class="o">=</span> <span class="nb">proc</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span>
+  <span class="nb">p</span> v
+<span class="p">}</span>
+
+<span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span><span class="p">]</span><span class="p">.</span><span class="nf">each</span><span class="p">(</span><span class="o">&amp;</span>pobj<span class="p">)</span> <span class="c1"># 手続きオブジェクトをブロックの代わりに渡している
+</span><span class="c1"># =&gt; 1
+</span><span class="c1">#    2
+</span><span class="c1">#    3
+</span></code></pre>
+<p>
+to_proc メソッドを持つオブジェクトならば、`&amp;'
+修飾した引数として渡すことができます。デフォルトで Proc、Method オブジェクトは共に to_proc メソッドを持ちます。to_proc はメソッド呼び出し時に実行され、Proc オブジェクトを返すことが期待されます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">to_proc</span>
+    <span class="no">Proc</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v<span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span><span class="p">]</span><span class="p">.</span><span class="nf">each</span><span class="p">(</span><span class="o">&amp;</span><span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span>
+<span class="c1"># =&gt; 1
+</span><span class="c1">#    2
+</span><span class="c1">#    3
+</span></code></pre>
+<p>
+ブロック付きメソッドの戻り値は、通常のメソッドと同様ですが、ブロックの中から
+<a href="../doc/spec=2fcontrol.html#break">制御構造/break</a> により中断された場合は nil を返します。
+</p>
+<p>
+break に引数を指定した場合はその値がブロック付きメソッドの戻り値になります。
+</p>
+<h2 id='yield'>yield</h2>
+<p>
+自分で定義したブロック付きメソッドでブロックを呼び出すときに使います。
+yield に渡された値はブロック記法において | と | の間にはさまれた変数(ブロックパラメータ)に代入されます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">yield</span> data
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+yield `(' [式 [`,' 式 ... ]] `)'
+yield [式 [`,' 式 ... ]]
+</pre>
+<p>
+引数をブロックパラメータとして渡してブロックを評価します。yield はイテレータを定義するために <a href="../doc/spec=2fdef.html#method">クラス／メソッドの定義/メソッド定義</a> 内で使用します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># ブロック付きメソッドの定義、
+</span><span class="c1"># その働きは与えられたブロック(手続き)に引数1, 2を渡して実行すること
+</span><span class="k">def</span> <span class="nf">foo</span>
+  <span class="k">yield</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="c1"># fooに「2引数手続き、その働きは引数を配列に括ってpで印字する」というものを渡して実行させる
+</span>foo <span class="p">{</span><span class="o">|</span>a,b<span class="o">|</span>
+  <span class="nb">p</span> <span class="p">[</span>a, b<span class="p">]</span>
+<span class="p">}</span>  <span class="c1"># =&gt; [1, 2] (要するに p [1, 2] を実行した)
+</span>
+<span class="c1"># 今度は「2引数手続き、その働きは足し算をしてpで印字する」というものを渡して実行させる
+</span>foo <span class="p">{</span><span class="o">|</span>a, b<span class="o">|</span>
+  <span class="nb">p</span> a <span class="o">+</span> b
+<span class="p">}</span>  <span class="c1"># =&gt; 3 (要するに p 1 + 2 を実行した)
+</span>
+<span class="c1"># 今度のブロック付きメソッドの働きは、
+</span><span class="c1"># 与えられたブロックに引数10を渡して起動し、続けざまに引数20を渡して起動し、
+</span><span class="c1"># さらに引数30を渡して起動すること
+</span><span class="k">def</span> <span class="nf">bar</span>
+  <span class="k">yield</span> <span class="mi">10</span>
+  <span class="k">yield</span> <span class="mi">20</span>
+  <span class="k">yield</span> <span class="mi">30</span>
+<span class="k">end</span>
+
+<span class="c1"># barに「1引数手続き、その働きは引数に3を足してpで印字する」というものを渡して実行させる
+</span>bar <span class="p">{</span><span class="o">|</span>v<span class="o">|</span>
+  <span class="nb">p</span> v <span class="o">+</span> <span class="mi">3</span>
+<span class="p">}</span>
+<span class="c1"># =&gt; 13
+</span><span class="c1">#    23
+</span><span class="c1">#    33 (同じブロックが3つのyieldで3回起動された。
+</span><span class="c1">#        具体的には p 10 + 3; p 20 + 3; p 30 + 3 を実行した)
+</span>
+<span class="c1"># Array#eachの(粗製乱造の)類似品
+</span><span class="k">def</span> <span class="nf">iich</span><span class="p">(</span>arr<span class="p">)</span> <span class="c1"># 引数に配列を取る
+</span>  idx <span class="o">=</span> <span class="mi">0</span>
+  <span class="k">while</span> idx <span class="o">&lt;</span> arr<span class="p">.</span><span class="nf">size</span>
+    <span class="k">yield</span><span class="p">(</span>arr<span class="p">[</span>idx<span class="p">]</span><span class="p">)</span> <span class="c1"># 引数の各要素毎に、その要素を引数にしてブロックを起動
+</span>    idx <span class="o">+=</span> <span class="mi">1</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+sum <span class="o">=</span> <span class="mi">0</span>
+iich<span class="p">(</span><span class="p">[</span><span class="mi">1</span>, <span class="mi">4</span>, <span class="mi">9</span>, <span class="mi">16</span>, <span class="mi">25</span><span class="p">]</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>elem<span class="o">|</span>
+  sum <span class="o">+=</span> elem
+<span class="p">}</span>
+<span class="nb">p</span> sum <span class="c1"># =&gt; 55
+</span></code></pre>
+<p>
+ブロックパラメータの代入は<a href="../doc/spec=2foperator.html#multiassign">演算子式/多重代入</a>と同じルールで行われます。また yield を実行したメソッドにブロックが渡されていない
+(ブロック付きメソッド呼び出しではない)時は例外 <a href="../class/-local-jump-error.html">LocalJumpError</a> が発生します。
+</p>
+<p>
+yield はブロック内で最後に評価した式の値を返します。また、
+<a href="../doc/spec=2fcontrol.html#next">制御構造/next</a> によりブロックの実行が中断された場合は nil
+を返します。
+</p>
+<p>
+next に引数を指定した場合はその値が yield の戻り値になります。
+</p>
+<h3 id='block_arg'>ブロックパラメータの挙動</h3>
+<p>
+メソッド呼び出しと挙動が異なります。
+lambda でないブロックを呼び出したとき
+</p>
+<ul>
+<li>引数の数が違ってもエラーになりません。</li>
+<li>配列をひとつ渡したときにそれが引数の並びとして展開されることがあります。</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="k">def</span> <span class="nf">foo</span>
+  <span class="k">yield</span> <span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span>
+<span class="k">end</span>
+
+foo<span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v<span class="p">}</span>       <span class="c1">#=&gt; 1
+</span>
+<span class="k">def</span> <span class="nf">bar</span>
+  <span class="k">yield</span> <span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span><span class="p">]</span>
+<span class="k">end</span>
+
+bar<span class="p">{</span><span class="o">|</span>a, b, c<span class="o">|</span> <span class="nb">p</span> a<span class="p">}</span> <span class="c1">#=&gt; 1
+</span>
+<span class="k">def</span> <span class="nf">hoge</span>
+  <span class="k">yield</span> <span class="p">[</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span><span class="p">]</span>,<span class="mi">4</span>,<span class="mi">5</span>
+<span class="k">end</span>
+
+hoge<span class="p">{</span><span class="o">|</span>a, b, c<span class="o">|</span> <span class="nb">p</span> a<span class="p">}</span> <span class="c1">#=&gt; [1,2,3]
+</span></code></pre>
+<p>
+<a class="external" href="http://www.a-k-r.org/d/2007-08.html#a2007_08_16_1">http://www.a-k-r.org/d/2007-08.html#a2007_08_16_1</a>
+</p>
+<h2 id='call_method'>.() および ::() 形式のメソッド呼び出し（callメソッドの糖衣構文）</h2>
+<p>
+下記はcallメソッドの糖衣構文です。
+<a href="../method/-proc/i/call.html">Proc#call</a>にも言及がありますが、<a href="../class/-proc.html">Proc</a>以外のオブジェクトに対しても（callメソッドさえ定義されていれば）使えます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+foo<span class="p">.</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>      <span class="c1"># foo.call(100)と全く同じ意味
+</span><span class="nf">foo</span><span class="o">::</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>     <span class="c1"># foo.call(100)と全く同じ意味
+</span></code></pre>
+<p>
+文法:
+</p>
+<pre>
+式  `.' `(' [[`*'] 式] ... [`&amp;' 式] `)'
+式 `::' `(' [[`*'] 式] ... [`&amp;' 式] `)'
+</pre>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

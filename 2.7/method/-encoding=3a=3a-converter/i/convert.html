@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Encoding::Converter#convert (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="[[c:Encoding::Converter]] を用いると、文字列の一部または全部を渡して変換を行うことができます。よって、不正なバイトを意識せずにストリームから読み出した文字列を変換したいときには Encoding::Converter が適します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-encoding=3a=3a-converter.html">Encoding::Converterクラス</a>
+      </li>
+      <li>
+        convert 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Encoding::Converter#convert</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_CONVERT"><code>convert(source_string) -&gt; String</code><span class="permalink">[<a href="../../../method/-encoding=3a=3a-converter/i/convert.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Encoding/Converter.html#method-i-convert">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+与えられた文字列を変換して、変換できた結果を返します。引数の末尾の文字がバイト列の途中で終わっている場合、そのバイト列は変換器内に取り置かれます。変換を終了させるには <a href="../../../method/-encoding=3a=3a-converter/i/finish.html">Encoding::Converter#finish</a> を呼びます。
+</p>
+<p>
+<a href="../../../class/-encoding=3a=3a-converter.html">Encoding::Converter</a> を用いると、文字列の一部または全部を渡して変換を行うことができます。よって、不正なバイトを意識せずにストリームから読み出した文字列を変換したいときには Encoding::Converter が適します。
+</p>
+<p>
+なお、Encoding::Converter#convert では、これらの例外を捕獲しても、例外を起こしたところから変換を再開することはできません。不正なバイトや変換先で未定義な文字をエスケープしたい場合やさらに細かい指定を行いたい場合は、<a href="../../../method/-encoding=3a=3a-converter/i/primitive_convert.html">Encoding::Converter#primitive_convert</a> を用います。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] source_string:</dt>
+<dd>
+変換する文字列の一部または全部です。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+変換結果である文字列の一部または全部です。
+</dd>
+<dt>[EXCEPTION] Encoding::InvalidByteSequenceError:</dt>
+<dd>
+変換元のエンコーディングにおいて不正なバイト列があった場合に発生します。
+</dd>
+<dt>[EXCEPTION] Encoding::UndefinedConversionError:</dt>
+<dd>
+変換先のエンコーディングで未定義な文字があった場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+ec <span class="o">=</span> <span class="no">Encoding</span><span class="o">::</span><span class="no">Converter</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">utf-8</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">euc-jp</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">puts</span> ec<span class="p">.</span><span class="nf">convert</span><span class="p">(</span><span class="s2">"</span><span class="s2">\u3042</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">dump</span>     <span class="c1">#=&gt; &quot;\xA4\xA2&quot;
+</span><span class="nb">puts</span> ec<span class="p">.</span><span class="nf">finish</span><span class="p">.</span><span class="nf">dump</span>                <span class="c1">#=&gt; &quot;&quot;
+</span>
+ec <span class="o">=</span> <span class="no">Encoding</span><span class="o">::</span><span class="no">Converter</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">euc-jp</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">utf-8</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">puts</span> ec<span class="p">.</span><span class="nf">convert</span><span class="p">(</span><span class="s2">"</span><span class="s2">\xA4</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">dump</span>       <span class="c1">#=&gt; &quot;&quot;
+</span><span class="nb">puts</span> ec<span class="p">.</span><span class="nf">convert</span><span class="p">(</span><span class="s2">"</span><span class="s2">\xA2</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">dump</span>       <span class="c1">#=&gt; &quot;\xE3\x81\x82&quot;
+</span><span class="nb">puts</span> ec<span class="p">.</span><span class="nf">finish</span><span class="p">.</span><span class="nf">dump</span>                <span class="c1">#=&gt; &quot;&quot;
+</span>
+ec <span class="o">=</span> <span class="no">Encoding</span><span class="o">::</span><span class="no">Converter</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">utf-8</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">iso-2022-jp</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">puts</span> ec<span class="p">.</span><span class="nf">convert</span><span class="p">(</span><span class="s2">"</span><span class="s2">\xE3</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">dump</span>       <span class="c1">#=&gt; &quot;&quot;.force_encoding(&quot;ISO-2022-JP&quot;)
+</span><span class="nb">puts</span> ec<span class="p">.</span><span class="nf">convert</span><span class="p">(</span><span class="s2">"</span><span class="s2">\x81</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">dump</span>       <span class="c1">#=&gt; &quot;&quot;.force_encoding(&quot;ISO-2022-JP&quot;)
+</span><span class="nb">puts</span> ec<span class="p">.</span><span class="nf">convert</span><span class="p">(</span><span class="s2">"</span><span class="s2">\x82</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">dump</span>       <span class="c1">#=&gt; &quot;\e$B$\&quot;&quot;.force_encoding(&quot;ISO-2022-JP&quot;)
+</span><span class="nb">puts</span> ec<span class="p">.</span><span class="nf">finish</span><span class="p">.</span><span class="nf">dump</span>                <span class="c1">#=&gt; &quot;\e(B&quot;.force_encoding(&quot;ISO-2022-JP&quot;)
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

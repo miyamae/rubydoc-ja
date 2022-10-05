@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class Process::Status (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="プロセスの終了ステータスを表すクラスです。
+メソッド [[m:Process.#wait2]] などの返り値として使われます。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        Process::Statusクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class Process::Status</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+      <li>
+        Process::Status
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+プロセスの終了ステータスを表すクラスです。メソッド <a href="../method/-process/m/wait2.html">Process.#wait2</a> などの返り値として使われます。
+</p>
+<h2 >使用例</h2>
+<p>
+wait を使用した例
+</p>
+<pre>
+fork { exit }
+Process.wait
+case
+when $?.signaled?
+  p &quot;child #{$?.pid} was killed by signal #{$?.termsig}&quot;
+  if $?.coredump?   # システムがこのステータスをサポートしてなければ常にfalse
+    p &quot;child #{$?.pid} dumped core.&quot;
+  end
+when $?.stopped?
+  # 実際には Process.wait を使用しているので、ここに来ることはない
+  p &quot;child #{$?.pid} was stopped by signal #{$?.stopsig}&quot;
+when $?.exited?
+  p &quot;child #{$?.pid} exited normally. status=#{$?.exitstatus}&quot;
+else
+  p &quot;unknown status %#x&quot; % $?.to_i
+end
+</pre>
+<p>
+SIGCHLD を trap する例
+</p>
+<pre>
+trap(:SIGCHLD) {|sig|
+
+  puts &quot;interrupted by signal #{sig} at #{caller[1]}&quot;
+  # 複数の子プロセスの終了に対して1つの SIGCHLD しか届かない
+  # 場合があるのでループさせる必要があります
+
+  while Process.waitpid(-1, Process::WNOHANG|Process::WUNTRACED)
+    case
+    when $?.signaled?
+      puts &quot;   child #{$?.pid} was killed by signal #{$?.termsig}&quot;
+      if $?.coredump?
+        puts &quot;   child #{$?.pid} dumped core.&quot;
+      end
+    when $?.stopped?
+      puts &quot;   child #{$?.pid} was stopped by signal #{$?.stopsig}&quot;
+    when $?.exited?
+      puts &quot;   child #{$?.pid} exited normally. status=#{$?.exitstatus}&quot;
+    else
+      p &quot;unknown status %#x&quot; % $?.to_i
+    end
+  end
+}
+
+p pid1 = fork { sleep 1; exit }
+p pid2 = fork { loop { sleep } } # signal を待つための sleep
+begin
+   Process.kill :STOP, pid2
+   sleep                      # SIGCHLD を待つための sleep
+   Process.kill :CONT, pid2
+   Process.kill :TERM, pid2
+   loop { sleep }             # SIGCHLD を待つための sleep
+rescue Errno::ECHILD
+  puts &quot;done&quot;
+end
+
+=&gt; 12964
+   12965
+   interrupted by signal 17 at -:27:in `sleep'
+      child 12965 was stopped by signal 19
+   interrupted by signal 17 at -:30:in `sleep'
+      child 12965 was killed by signal 15
+   interrupted by signal 17 at -:30:in `sleep'
+      child 12964 exited normally. status=0
+   done
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_--26">&amp;</a></li>
+
+<li><a href="#I_--3D--3D">==</a></li>
+
+<li><a href="#I_--3E--3E">&gt;&gt;</a></li>
+
+<li><a href="#I_COREDUMP--3F">coredump?</a></li>
+
+<li><a href="#I_EXITED--3F">exited?</a></li>
+
+<li><a href="#I_EXITSTATUS">exitstatus</a></li>
+
+<li><a href="#I_INSPECT">inspect</a></li>
+
+<li><a href="#I_PID">pid</a></li>
+
+<li><a href="#I_SIGNALED--3F">signaled?</a></li>
+
+<li><a href="#I_STOPPED--3F">stopped?</a></li>
+
+<li><a href="#I_STOPSIG">stopsig</a></li>
+
+<li><a href="#I_SUCCESS--3F">success?</a></li>
+
+<li><a href="#I_TERMSIG">termsig</a></li>
+
+<li><a href="#I_TO_I">to_i</a></li>
+
+<li><a href="#I_TO_S">to_s</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--26"><code>self &amp; other -&gt; Integer</code><span class="permalink">[<a href="../method/-process=3a=3a-status/i/=26.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Process/Status.html#method-i-26">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self.to_i &amp; other と同じです。このメソッドは後方互換性のためにあります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身との &amp; 演算をしたい整数を指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_--3D--3D"><code>self == other -&gt; bool</code><span class="permalink">[<a href="../method/-process=3a=3a-status/i/=3d=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Process/Status.html#method-i-3D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+同じステータスの場合に真を返します。
+</p>
+<p>
+other が数値の場合、self.to_i との比較が行われます。これは後方互換性のためです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身と比較したいオブジェクトを指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_--3E--3E"><code>self &gt;&gt; num -&gt; Integer</code><span class="permalink">[<a href="../method/-process=3a=3a-status/i/=3e=3e.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Process/Status.html#method-i-3E-3E">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self.to_i &gt;&gt; num と同じです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] num:</dt>
+<dd>
+整数を指定します。
+</dd>
+</dl>
+<pre>
+fork { exit 99 }   #=&gt; 26563
+Process.wait       #=&gt; 26563
+$?.to_i            #=&gt; 25344
+$? &gt;&gt; 8            #=&gt; 99
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_COREDUMP--3F"><code>coredump? -&gt; bool</code><span class="permalink">[<a href="../method/-process=3a=3a-status/i/coredump=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Process/Status.html#method-i-coredump-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+終了時にコアダンプしていたら真を返します。
+</p>
+<p>
+このメソッドは signaled? が真のときにしか意味を持ちません。
+</p>
+<p>
+このメソッドはシステムに依存します。サポートしないプラットフォームでは常に false を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EXITED--3F"><code>exited? -&gt; bool</code><span class="permalink">[<a href="../method/-process=3a=3a-status/i/exited=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Process/Status.html#method-i-exited-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+プロセスが <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/exit.html">exit(2)</a> などにより正常に終了した場合に、真を返します。そうでない場合に false を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EXITSTATUS"><code>exitstatus -&gt; Integer | nil</code><span class="permalink">[<a href="../method/-process=3a=3a-status/i/exitstatus.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Process/Status.html#method-i-exitstatus">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+exited? が真の場合プロセスが返した終了ステータスの整数を、そうでない場合は nil を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-process=3a=3a-status/i/inspect.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Process/Status.html#method-i-inspect">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を人間が読みやすい形の文字列表現にして返します。
+</p>
+<p>
+プロセスの状態を以下のフォーマットで返します。
+</p>
+<dl>
+<dt>正常終了のとき</dt>
+<dd>
+<p>
+#&lt;Process::Status: pid=18262,exited(nnn)&gt;
+</p>
+</dd>
+<dt>シグナルによる停止のとき</dt>
+<dd>
+<p>
+#&lt;Process::Status: pid=18262,stopped(SIGxxx=nnn)&gt;
+</p>
+</dd>
+<dt>シグナルによる終了のとき</dt>
+<dd>
+<p>
+#&lt;Process::Status: pid=18262,signaled(SIGxxx=nnn)&gt;
+</p>
+</dd>
+<dt>コアダンプしたとき(このステータスの表示はシステムに依存します)</dt>
+<dd>
+<p>
+#&lt;Process::Status: pid=18262,coredumped&gt;
+</p>
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_PID"><code>pid -&gt; Integer</code><span class="permalink">[<a href="../method/-process=3a=3a-status/i/pid.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Process/Status.html#method-i-pid">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+終了したプロセスのプロセス ID を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SIGNALED--3F"><code>signaled? -&gt; bool</code><span class="permalink">[<a href="../method/-process=3a=3a-status/i/signaled=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Process/Status.html#method-i-signaled-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+プロセスがハンドラを定義していないシグナルを受けて終了した場合に真を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_STOPPED--3F"><code>stopped? -&gt; bool</code><span class="permalink">[<a href="../method/-process=3a=3a-status/i/stopped=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Process/Status.html#method-i-stopped-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+プロセスが現在停止(終了ではない)している場合に真を返します。
+<a href="../method/-process/m/waitpid.html">Process.#waitpid</a> に <a href="../method/-process/c/-w-u-n-t-r-a-c-e-d.html">Process::WUNTRACED</a> フラグを設定した場合にだけ真になりえます。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_STOPSIG"><code>stopsig -&gt; Integer | nil</code><span class="permalink">[<a href="../method/-process=3a=3a-status/i/stopsig.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Process/Status.html#method-i-stopsig">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+stopped? が真の場合そのシグナルの番号を、そうでない場合は
+nil を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SUCCESS--3F"><code>success? -&gt; bool</code><span class="permalink">[<a href="../method/-process=3a=3a-status/i/success=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Process/Status.html#method-i-success-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+プロセスの終了状態が成功である場合に true を返します。そうでない場合に false を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TERMSIG"><code>termsig -&gt; Integer | nil</code><span class="permalink">[<a href="../method/-process=3a=3a-status/i/termsig.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Process/Status.html#method-i-termsig">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+signaled? が真の場合プロセスを終了させたシグナル番号を、そうでない場合は nil を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_I"><code>to_i -&gt; Integer</code><span class="permalink">[<a href="../method/-process=3a=3a-status/i/to_i.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Process/Status.html#method-i-to_i">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+C 言語での終了ステータス表現の整数を返します。
+</p>
+<p>
+多くのシステムの実装では、この値の上位 8 bit に <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/exit.html">exit(2)</a>
+に渡した終了ステータスが、下位 8 bit にシグナル等で終了した等の情報が入っています。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_S"><code>to_s -&gt; String</code><span class="permalink">[<a href="../method/-process=3a=3a-status/i/to_s.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Process/Status.html#method-i-to_s">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+to_i.to_s と同じです。
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

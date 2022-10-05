@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Module#const_source_location (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="name で指定した定数の定義を含むソースコードのファイル名と行番号を配列で返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-module.html">Moduleクラス</a>
+      </li>
+      <li>
+        const_source_location 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Module#const_source_location</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_CONST_SOURCE_LOCATION"><code>const_source_location(name, inherited = true) -&gt; [String, Integer]</code><span class="permalink">[<a href="../../../method/-module/i/const_source_location.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Module.html#method-i-const_source_location">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+name で指定した定数の定義を含むソースコードのファイル名と行番号を配列で返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+<a href="../../../class/-symbol.html">Symbol</a>,<a href="../../../class/-string.html">String</a> で定数の名前を指定します。
+</dd>
+<dt class='method-param'>[PARAM] inherited:</dt>
+<dd>
+true を指定するとスーパークラスや include したモジュールで定義された定数が対象にはなります。false を指定した場合 対象にはなりません。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+ソースコードのファイル名と行番号を配列で返します。指定した定数が見つからない場合は nil を返します。定数は見つかったがソースファイルが見つからなかった場合は空の配列を返します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># test.rb:
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">A</span>         <span class="c1"># line 1
+</span>  <span class="no">C1</span> <span class="o">=</span> <span class="mi">1</span>
+  <span class="no">C2</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="k">end</span>
+
+<span class="k">module</span> <span class="nn">M</span>        <span class="c1"># line 6
+</span>  <span class="no">C3</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">B</span> <span class="o">&lt;</span> <span class="no">A</span>     <span class="c1"># line 10
+</span>  include <span class="no">M</span>
+  <span class="no">C4</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">A</span> <span class="c1"># 継続して A を定義する
+</span>  <span class="no">C2</span> <span class="o">=</span> <span class="mi">8</span> <span class="c1"># 定数を再定義する
+</span><span class="k">end</span>
+
+<span class="nb">p</span> <span class="no">B</span><span class="p">.</span><span class="nf">const_source_location</span><span class="p">(</span><span class="s1">'C4'</span><span class="p">)</span>           <span class="c1"># =&gt; [&quot;test.rb&quot;, 12]
+</span><span class="nb">p</span> <span class="no">B</span><span class="p">.</span><span class="nf">const_source_location</span><span class="p">(</span><span class="s1">'C3'</span><span class="p">)</span>           <span class="c1"># =&gt; [&quot;test.rb&quot;, 7]
+</span><span class="nb">p</span> <span class="no">B</span><span class="p">.</span><span class="nf">const_source_location</span><span class="p">(</span><span class="s1">'C1'</span><span class="p">)</span>           <span class="c1"># =&gt; [&quot;test.rb&quot;, 2]
+</span>
+<span class="nb">p</span> <span class="no">B</span><span class="p">.</span><span class="nf">const_source_location</span><span class="p">(</span><span class="s1">'C3'</span>, <span class="k">false</span><span class="p">)</span>    <span class="c1"># =&gt; nil  -- include したモジュールは検索しない
+</span>
+<span class="nb">p</span> <span class="no">A</span><span class="p">.</span><span class="nf">const_source_location</span><span class="p">(</span><span class="s1">'C2'</span><span class="p">)</span>           <span class="c1"># =&gt; [&quot;test.rb&quot;, 16] -- 最後に定義された位置を返す
+</span>
+<span class="nb">p</span> <span class="no">Object</span><span class="p">.</span><span class="nf">const_source_location</span><span class="p">(</span><span class="s1">'B'</span><span class="p">)</span>       <span class="c1"># =&gt; [&quot;test.rb&quot;, 10] -- Object はトップレベルの定数を検索する
+</span><span class="nb">p</span> <span class="no">Object</span><span class="p">.</span><span class="nf">const_source_location</span><span class="p">(</span><span class="s1">'A'</span><span class="p">)</span>       <span class="c1"># =&gt; [&quot;test.rb&quot;, 1] -- クラスが再定義された場合は最初の定義位置を返す
+</span>
+<span class="nb">p</span> <span class="no">B</span><span class="p">.</span><span class="nf">const_source_location</span><span class="p">(</span><span class="s1">'A'</span><span class="p">)</span>            <span class="c1"># =&gt; [&quot;test.rb&quot;, 1]  -- Object を継承している為
+</span><span class="nb">p</span> <span class="no">M</span><span class="p">.</span><span class="nf">const_source_location</span><span class="p">(</span><span class="s1">'A'</span><span class="p">)</span>            <span class="c1"># =&gt; [&quot;test.rb&quot;, 1]  -- Object は継承していないが追加で modules をチェックする
+</span>
+<span class="nb">p</span> <span class="no">Object</span><span class="p">.</span><span class="nf">const_source_location</span><span class="p">(</span><span class="s1">'A::C1'</span><span class="p">)</span>   <span class="c1"># =&gt; [&quot;test.rb&quot;, 2]  -- ネストの指定もサポートしている
+</span><span class="nb">p</span> <span class="no">Object</span><span class="p">.</span><span class="nf">const_source_location</span><span class="p">(</span><span class="s1">'String'</span><span class="p">)</span>  <span class="c1"># =&gt; []  -- 定数は C のコードで定義されている
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

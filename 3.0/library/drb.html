@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>library drb (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="分散オブジェクトプログラミングのためのライブラリです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        drbライブラリ
+      </li>
+    </ol>
+  </nav>
+
+<h1>library drb</h1>
+</header>
+
+<main>
+
+
+
+<h2>要約</h2>
+<p>
+分散オブジェクトプログラミングのためのライブラリです。
+</p>
+<p>
+Ruby のプロセスから他のRubyプロセスにあるオブジェクトのメソッドを呼びだすことができます。他のマシン上のプロセスにもアクセスできます。
+</p>
+<h2 >概要</h2>
+<p>
+dRuby は Ruby 専用の分散オブジェクトシステムです。
+Ruby のみで記述され、TCP socket のような Ruby 本体が提供する通信手段があれば追加のインストール物なしに利用可能です。独自のプロトコルで通信し、他の分散オブジェクトシステム
+(CORBA, RMI, .NETなど)との相互運用性はありません。
+</p>
+<p>
+dRuby は
+</p>
+<ul>
+<li>他のプロセスと Ruby オブジェクトのリファレンスをやりとりすること</li>
+<li>そこからのメソッド呼び出し</li>
+<li>メソッド呼出の引数/返り値を <a href="../class/-marshal.html">Marshal</a> でバイト列に変換(マーシャリング)
+して通信先のプロセスと受け渡しすること</li>
+</ul>
+<p>
+ができます。これらはすべて透過的に行われます。
+</p>
+<p>
+リモートプロセスにあるオブジェクトはローカルには <a href="../class/-d-rb=3a=3a-d-rb-object.html">DRb::DRbObject</a> のインスタンスとして表現されます。このオブジェクトはリモートオブジェクトの
+proxy のように振舞います。つまり、このオブジェクトのメソッドを呼び出すとリモートオブジェクトに転送されます。
+CORBA の IDL のようなリモートオブジェクトのインターフェースを静的に宣言する必要はなく、すべては実行時に解決されます。
+</p>
+<p>
+リモートプロセスからのメソッド呼出しはそれを受け取ったプロセスの
+<a href="../class/-d-rb=3a=3a-d-rb-server.html">DRb::DRbServer</a> オブジェクトが処理します。受け取ったメッセージからメソッド呼出し情報を取り出し、ローカルにあるオブジェクトを特定し、そのメソッドを呼び出し、返り値をリモートの呼び出し元に送ります。どのようなオブジェクトのメソッドも呼びだすことができます。何か特別なインターフェースを実装したり、特別な mixin を必要としたりはしません。オブジェクトの特定は DRb::DRbServer が自動でします。そのためオブジェクトの登録のようなことは通常必要ありません。
+</p>
+<p>
+<a href="../class/-d-rb=3a=3a-d-rb-server.html">DRb::DRbServer</a> に URI(例: druby://example.com:8787)を関連付けることで、他のプロセスからの通信(リモートメソッド呼び出し)ができるようになります
+(逆に言うと、URIを指定しないことで、他のプロセスからのリモートメソッド呼び出しを拒否することができます)。また、DRb::DRbServer に「フロントオブジェクト」を登録しておくと、サーバの URI からそのオブジェクトをリモートオブジェクトとして取り出すことができます。通常はこのオブジェクトから辿って必要な(リモート)オブジェクトを取り出します。
+</p>
+<p>
+リモートメソッド呼び出しはかなりの部分、同じプロセス内のオブジェクトのメソッドを呼び出すのと同じ動作をします。ブロック付きのメソッド呼び出しもできますし、リモートプロセス上で生じた例外はローカルプロセス上に転送されます。DRb 関連の例外は <a href="../class/-d-rb=3a=3a-d-rb-error.html">DRb::DRbError</a> のサブクラスです。
+</p>
+<p>
+リモートメソッド呼び出しの引数や返り値には任意の Ruby オブジェクトが使えます。デフォルトではオブジェクトをマーシャリングして渡され、受け取った側が元のオブジェクトに戻します。つまりオブジェクトはコピーされます。これは通常の同一プロセス上でのメソッド呼び出しと大きく異なる点です(通常のメソッド呼び出しではオブジェクトへのリファレンスが渡されます)。
+</p>
+<p>
+ただし、マーシャリング不可能なオブジェクトは dRuby によってある種のリファレンスとして取り扱われます。これは <a href="../class/-d-rb=3a=3a-d-rb-object.html">DRb::DRbObject</a>
+のインスタンスとして表現されます。これはリモートオブジェクトの
+proxy として動作し、proxy のメソッドを呼び出すと上に説明した通りの方法でリモートオブジェクトのメソッドを呼び出します。
+</p>
+<p>
+マーシャリング可能なオブジェクトを DRbObject でリファレンスとして渡したい、つまりコピーでなくリファレンスで渡したい場合はそのオブジェクトに
+<a href="../class/-d-rb=3a=3a-d-rb-undumped.html">DRb::DRbUndumped</a> を <a href="../method/-module/i/include.html">Module#include</a> します。
+</p>
+<p>
+dRuby はブロック付きのメソッド呼び出しをサポートしていますが、
+<a href="../class/-proc.html">Proc</a> はマーシャリング不可能なので、ブロックの中身は
+(リモート側でなく)ローカルプロセス上で実行されます。リモート側がブロックを呼び出そうとすると、ブロックの引数がリモート側からローカル側に(上で説明したようにコピーもしくは dRuby のリファレンスオブジェクトとして)渡され、ブロックが実行され、その返り値がリモート側に送られます。
+</p>
+<h2 >セキュリティ</h2>
+<p>
+dRuby でインターネット上に公開するサービスを作るべきではありません。イントラネットのサービスとして動かす場合もセキュリティには気を使う必要があるでしょう。
+</p>
+<p>
+あるオブジェクトへの外部からのアクセスを許可すると、単にそのオブジェクトのメソッドを外部から呼び出せるだけでなく、任意の Ruby のコードを実行できてしまいます。例えば以下のようなことができます。
+</p>
+<pre>
+# !! 危険 !!
+ro = DRbObject.new_with_uri(&quot;druby://your.server.com:8989&quot;)
+class &lt;&lt; ro
+  # リモートオブジェクトの instance_eval を呼ぶため
+  # ローカルオブジェクトの instance_eval を取り除く
+  undef :instance_eval
+end
+ro.instance_eval(&quot;DANGEROUS RUBY CODE!&quot;)
+</pre>
+<p>
+このような instance_eval による危険性は <a href="../method/-kernel/v/-s-a-f-e.html">$SAFE</a> を 1
+にすることで防げます。
+<a href="../method/-d-rb/m/start_service.html">DRb.#start_service</a> の :safe_level オプションでリモートからのメソッド呼び出しのコンテキストで指定されるセーフレベルを指定できます。
+</p>
+<p>
+また、<a href="../class/-d-rb=3a=3a-d-rb-server.html">DRb::DRbServer</a> にはアクセスコントロールリスト(アクセスを許可/拒否する IP のリスト)によりアクセス制御をすることができます。この機能は <a href="../class/-a-c-l.html">ACL</a> で実現されています。このアクセス制御は単体で使うのではなく、適切なファイアウォールと併用すべきです。
+</p>
+<h2 >リファレンス</h2>
+<ul>
+<li><a class="external" href="http://www2a.biglobe.ne.jp/~seki/ruby/druby.html">http://www2a.biglobe.ne.jp/~seki/ruby/druby.html</a></li>
+<li><a class="external" href="http://www.ruby-doc.org/stdlib/libdoc/drb/rdoc/index.html">http://www.ruby-doc.org/stdlib/libdoc/drb/rdoc/index.html</a></li>
+</ul>
+<h2 >Example</h2>
+<p>
+単純なクライアント-サーバシステムの例。
+</p>
+<p>
+ターミナルを2つサーバ側/クライアント側として起動して、サーバ側を先に動かしてください。
+</p>
+<h3 >サーバ側コード</h3>
+<pre>
+require 'drb/drb'
+
+# 通信を待ち受ける URI
+SERVER_URI=&quot;druby://localhost:8787&quot;
+
+class TimeServer
+
+  def get_current_time
+    return Time.now
+  end
+
+end
+
+# サーバ側でリクエストを受け付けるオブジェクト
+FRONT_OBJECT=TimeServer.new
+
+# サーバを起動する
+DRb.start_service(SERVER_URI, FRONT_OBJECT, :safe_level =&gt; 1)
+# DRb のスレッドが終了するのを待つ
+DRb.thread.join
+</pre>
+<h3 >クライアント側コード</h3>
+<pre>
+require 'drb/drb'
+
+# 接続先の URI
+SERVER_URI=&quot;druby://localhost:8787&quot;
+
+# DRbサーバを起動する
+# この例には必要ないが、front オブジェクト以外の
+# リモートオブジェクトのメソッドを呼び出す時には必要
+DRb.start_service
+# リモートオブジェクトの取得
+timeserver = DRbObject.new_with_uri(SERVER_URI)
+# リモートメソッドの呼び出し
+puts timeserver.get_current_time
+</pre>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-rb=3a=3a-d-rb-id-conv.html">DRb::DRbIdConv</a>
+</td>
+<td class="description"><p>
+オブジェクトと識別子を相互に変換するクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-rb=3a=3a-d-rb-object.html">DRb::DRbObject</a>
+</td>
+<td class="description"><p>
+リモートの dRuby オブジェクトを表すオブジェクトです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-rb=3a=3a-d-rb-server.html">DRb::DRbServer</a>
+</td>
+<td class="description"><p>
+dRuby サーバクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-rb=3a=3a-d-rb-unknown.html">DRb::DRbUnknown</a>
+</td>
+<td class="description"><p>
+リモートプロセスからマーシャリングされて送られてきたオブジェクトで、そのクラスがローカルプロセス内では不明であるようなものを表すクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-rb-id-conv.html">DRbIdConv</a>
+</td>
+<td class="description"><p>
+Alias of <a href="../class/-d-rb=3a=3a-d-rb-id-conv.html">DRb::DRbIdConv</a>
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-rb-object.html">DRbObject</a>
+</td>
+<td class="description"><p>
+Alias of <a href="../class/-d-rb=3a=3a-d-rb-object.html">DRb::DRbObject</a>
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>モジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-rb.html">DRb</a>
+</td>
+<td class="description"><p>
+drb ライブラリの名前空間となるモジュール。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-rb=3a=3a-d-rb-protocol.html">DRb::DRbProtocol</a>
+</td>
+<td class="description"><p>
+drb で使われる通信プロトコルを取り扱うモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-rb=3a=3a-d-rb-undumped.html">DRb::DRbUndumped</a>
+</td>
+<td class="description"><p>
+このモジュールをインクルードしたクラスのインスタンスはネットワーク越しに参照渡しで渡されるようになります。値渡し出来ないオブジェクトを <a href="../library/drb.html">drb</a> と一緒に使う時に有用です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-rb-undumped.html">DRbUndumped</a>
+</td>
+<td class="description"><p>
+Alias of <a href="../class/-d-rb=3a=3a-d-rb-undumped.html">DRb::DRbUndumped</a>
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-rb=3a=3a-d-rb-error.html">DRb::DRbError</a>
+</td>
+<td class="description"><p>
+drb ライブラリ固有の例外を表すクラス
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-d-rb=3a=3a-d-rb-bad-scheme.html">DRb::DRbBadScheme</a>
+</td>
+<td class="description"><p>
+プロトコルクラスが受け取った URI の schema がそのクラスでサポートされていないことを、伝えるための例外。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-d-rb=3a=3a-d-rb-bad-u-r-i.html">DRb::DRbBadURI</a>
+</td>
+<td class="description"><p>
+URI に含まれている schema をサポートしているプロトコルが見付からないことを意味する例外クラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-d-rb=3a=3a-d-rb-conn-error.html">DRb::DRbConnError</a>
+</td>
+<td class="description"><p>
+通信エラーが発生したことを意味する例外クラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-d-rb=3a=3a-d-rb-remote-error.html">DRb::DRbRemoteError</a>
+</td>
+<td class="description"><p>
+例外オブジェクトを wrap したクラス
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-d-rb=3a=3a-d-rb-server-not-found.html">DRb::DRbServerNotFound</a>
+</td>
+<td class="description"><p>
+カレントサーバが見付からない場合に発生する例外のクラス
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-d-rb=3a=3a-d-rb-unknown-error.html">DRb::DRbUnknownError</a>
+</td>
+<td class="description"><p>
+<a href="../class/-d-rb=3a=3a-d-rb-unknown.html">DRb::DRbUnknown</a> をラップする例外クラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>サブライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/drb=2facl.html">drb/acl</a></td>
+<td class="description"><p>
+drb で用いる ACL(Access Control List)を定義するライブラリ。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/drb=2fextserv.html">drb/extserv</a></td>
+<td class="description"><p>
+<a href="../class/-d-rb=3a=3a-ext-serv.html">DRb::ExtServ</a> を定義しているライブラリ。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/drb=2fextservm.html">drb/extservm</a></td>
+<td class="description"><p>
+<a href="../class/-d-rb=3a=3a-ext-serv-manager.html">DRb::ExtServManager</a> を定義しているライブラリ。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/drb=2fgw.html">drb/gw</a></td>
+<td class="description"><p>
+drb 通信を中継するゲートウェイ(<a href="../class/-d-rb=3a=3a-g-w.html">DRb::GW</a>)と、中継に必要なオブジェクト識別子変換クラス(<a href="../class/-d-rb=3a=3a-g-w-id-conv.html">DRb::GWIdConv</a>)、および <a href="../class/-d-rb=3a=3a-d-rb-object.html">DRb::DRbObject</a> への拡張が含まれています。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/drb=2fobserver.html">drb/observer</a></td>
+<td class="description"><p>
+DRb 用の修正をした <a href="../class/-observable.html">Observable</a>
+(<a href="../class/-d-rb=3a=3a-d-rb-observable.html">DRb::DRbObservable</a>)
+を定義するライブラリ。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/drb=2fssl.html">drb/ssl</a></td>
+<td class="description"><p>
+DRb のプロトコルとして SSL/TLS 上で通信する drbssl が使えるようになります。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/drb=2ftimeridconv.html">drb/timeridconv</a></td>
+<td class="description"><p>
+<a href="../class/-d-rb=3a=3a-d-rb-id-conv.html">DRb::DRbIdConv</a> の拡張 <a href="../class/-d-rb=3a=3a-timer-id-conv.html">DRb::TimerIdConv</a> を定義するライブラリ。
+<a href="../class/-d-rb=3a=3a-d-rb-id-conv.html">DRb::DRbIdConv</a> の GC 問題をタイムアウトを定めることで部分的に解決します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/drb=2funix.html">drb/unix</a></td>
+<td class="description"><p>
+DRb のプロトコルとして UNIX ドメインソケット経由で通信する drbunix が使えるようになります。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

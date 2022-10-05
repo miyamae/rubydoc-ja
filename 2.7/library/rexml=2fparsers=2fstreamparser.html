@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>library rexml/parsers/streamparser (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="ストリーム式の XML パーサ。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        rexml/parsers/streamparserライブラリ
+      </li>
+    </ol>
+  </nav>
+
+<h1>library rexml/parsers/streamparser</h1>
+</header>
+
+<main>
+
+
+
+<h2>要約</h2>
+<p>
+ストリーム式の XML パーサ。
+</p>
+<p>
+rexml の XML パーサの中では高速ですが、機能は限定的です。もう少し高機能なストリーム式パーサが必要な場合は
+<a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-s-a-x2-parser.html">REXML::Parsers::SAX2Parser</a> を用いてください。
+</p>
+<p>
+パーサからはコールバックによってパースした情報を受け取ります。
+<a href="../class/-r-e-x-m-l=3a=3a-stream-listener.html">REXML::StreamListener</a> を include し、必要なメソッドをオーバーライドしたクラスのオブジェクトをコールバックオブジェクトとして <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-stream-parser/s/new.html">REXML::Parsers::StreamParser.new</a>
+に渡します。
+</p>
+<p>
+<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-stream-parser/i/parse.html">REXML::Parsers::StreamParser#parse</a> を呼び出すとパースが開始しその結果によってコールバックが呼び出されます。
+</p>
+<p>
+コールバックされるメソッドは <a href="../class/-r-e-x-m-l=3a=3a-stream-listener.html">REXML::StreamListener</a> になにもしないメソッドとして定義されています。どのようなコールバックがあるかはそちらを参照してください。
+</p>
+<p>
+パーサはXML文書の各構成要素を前から順に処理し、その順にコールバックメソッドを呼び出します。順が前後することはありません。
+</p>
+<h2 id='example'>StreamParserの例</h2>
+<p>
+この例では tag_start と text をオーバーライドして開始タグとテキストの情報を受け取れるようにしています。空白や改行もテキストであることに注意してください。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'rexml/parsers/baseparser'</span>
+<span class="nb">require</span> <span class="s1">'rexml/parsers/streamparser'</span>
+<span class="nb">require</span> <span class="s1">'rexml/streamlistener'</span>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Listener</span>
+  include <span class="no">REXML</span><span class="o">::</span><span class="no">StreamListener</span>
+  <span class="k">def</span> <span class="nf">initialize</span>
+    <span class="vi">@events</span> <span class="o">=</span> <span class="p">[</span><span class="p">]</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">text</span><span class="p">(</span>text<span class="p">)</span>
+    <span class="vi">@events</span> <span class="o">&lt;&lt;</span> <span class="s2">"</span><span class="s2">text[</span><span class="si">#{</span><span class="n">text</span><span class="si">}</span><span class="s2">]</span><span class="s2">"</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">tag_start</span><span class="p">(</span><span class="nb">name</span>, attrs<span class="p">)</span>
+    <span class="vi">@events</span> <span class="o">&lt;&lt;</span> <span class="s2">"</span><span class="s2">tag_start[</span><span class="si">#{</span><span class="n">name</span><span class="si">}</span><span class="s2">]</span><span class="s2">"</span>
+  <span class="k">end</span>
+
+  <span class="nb">attr_reader</span> <span class="ss">:events</span>
+<span class="k">end</span>
+
+xml <span class="o">=</span> <span class="no">&lt;&lt;EOS</span>
+<span class="sh">&lt;members&gt;
+  &lt;member name=&quot;apple&quot; color=&quot;red&quot;&gt;
+    &lt;comment&gt;comment here&lt;/comment&gt;
+  &lt;/member&gt;
+  &lt;member name=&quot;banana&quot; color=&quot;yellow&quot;/&gt;
+&lt;/members&gt;
+</span><span class="no">EOS
+</span>listener <span class="o">=</span> <span class="no">Listener</span><span class="p">.</span><span class="nf">new</span>
+<span class="no">REXML</span><span class="o">::</span><span class="no">Parsers</span><span class="o">::</span><span class="no">StreamParser</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>xml, listener<span class="p">)</span><span class="p">.</span><span class="nf">parse</span>
+listener<span class="p">.</span><span class="nf">events</span>
+<span class="c1"># =&gt; [&quot;tag_start[members]&quot;,
+</span><span class="c1">#     &quot;text[\n  ]&quot;,
+</span><span class="c1">#     &quot;tag_start[member]&quot;,
+</span><span class="c1">#     &quot;text[\n    ]&quot;,
+</span><span class="c1">#     &quot;tag_start[comment]&quot;,
+</span><span class="c1">#     &quot;text[comment here]&quot;,
+</span><span class="c1">#     &quot;text[\n  ]&quot;,
+</span><span class="c1">#     &quot;text[\n  ]&quot;,
+</span><span class="c1">#     &quot;tag_start[member]&quot;,
+</span><span class="c1">#     &quot;text[\n]&quot;,
+</span><span class="c1">#     &quot;text[\n]&quot;]
+</span></code></pre>
+<h2 >コールバック仕様確認サンプル</h2>
+<p>
+以下の例では様々なXMLの構成要素を含むXML文書を
+StreamParser で処理したときに、どのコールバックメソッドがどのような引数で呼び出されるかを示すためのサンプルです。実体参照は定義済みのものを除いては変換処理されていないことなどがわかります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'rexml/parsers/baseparser'</span>
+<span class="nb">require</span> <span class="s1">'rexml/parsers/streamparser'</span>
+<span class="nb">require</span> <span class="s1">'rexml/streamlistener'</span>
+
+xml <span class="o">=</span> <span class="no">&lt;&lt;EOS</span>
+<span class="sh">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;?xml-stylesheet type=&quot;text/css&quot; href=&quot;style.css&quot;?&gt;
+&lt;!DOCTYPE root SYSTEM &quot;foo&quot; [
+  &lt;!ELEMENT root (a+)&gt;
+  &lt;!ELEMENT a&gt;
+  &lt;!ENTITY bar &quot;barbarbarbar&quot;&gt;
+  &lt;!ATTLIST a att CDATA #REQUIRED xyz CDATA &quot;foobar&quot;&gt;
+  &lt;!NOTATION foobar SYSTEM &quot;http://example.org/foobar.dtd&quot;&gt;
+  &lt;!ENTITY % HTMLsymbol PUBLIC
+      &quot;-//W3C//ENTITIES Symbols for XHTML//EN&quot;
+      &quot;xhtml-symbol.ent&quot;&gt;
+  %HTMLsymbol;
+]&gt;
+&lt;root xmlns:foo=&quot;http://example.org/foo&quot;
+      xmlns:bar=&quot;http://example.org/bar&quot;&gt;&lt;![CDATA[cdata is here]]&gt;
+  &lt;a foo:att='1' bar:att='2' att='&amp;lt;'/&gt;
+  &amp;amp;&amp;amp; &lt;!-- comment here--&gt; &amp;bar;
+&lt;/root&gt;
+</span><span class="no">EOS
+</span>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Listener</span>
+  <span class="k">def</span> <span class="nf">method_missing</span><span class="p">(</span><span class="nb">name</span>, <span class="o">*</span>args<span class="p">)</span>
+    <span class="nb">p</span> <span class="p">[</span><span class="nb">name</span>, <span class="o">*</span>args<span class="p">]</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">respond_to_missing?</span><span class="p">(</span>sym, include_private<span class="p">)</span>
+    <span class="k">true</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="no">REXML</span><span class="o">::</span><span class="no">Parsers</span><span class="o">::</span><span class="no">StreamParser</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>xml, <span class="no">Listener</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span><span class="p">.</span><span class="nf">parse</span>
+<span class="c1"># &gt;&gt; [:xmldecl, &quot;1.0&quot;, &quot;UTF-8&quot;, nil]
+</span><span class="c1"># &gt;&gt; [:text, &quot;\n&quot;]
+</span><span class="c1"># &gt;&gt; [:instruction, &quot;xml-stylesheet&quot;, &quot; type=\&quot;text/css\&quot; href=\&quot;style.css\&quot;&quot;]
+</span><span class="c1"># &gt;&gt; [:text, &quot;\n&quot;]
+</span><span class="c1"># &gt;&gt; [:doctype, &quot;root&quot;, &quot;SYSTEM&quot;, &quot;foo&quot;, nil]
+</span><span class="c1"># &gt;&gt; [:elementdecl, &quot;&lt;!ELEMENT root (a+)&quot;]
+</span><span class="c1"># &gt;&gt; [:elementdecl, &quot;&lt;!ELEMENT a&quot;]
+</span><span class="c1"># &gt;&gt; [:entitydecl, [&quot;bar&quot;, &quot;barbarbarbar&quot;]]
+</span><span class="c1"># &gt;&gt; [:attlistdecl, &quot;a&quot;, {&quot;att&quot;=&gt;nil, &quot;xyz&quot;=&gt;&quot;foobar&quot;}, &quot; \n  &lt;!ATTLIST a att CDATA #REQUIRED xyz CDATA \&quot;foobar\&quot;&gt;&quot;]
+</span><span class="c1"># &gt;&gt; [:notationdecl, [&quot;foobar&quot;, &quot;SYSTEM&quot;, nil, &quot;http://example.org/foobar.dtd&quot;]]
+</span><span class="c1"># &gt;&gt; [:entitydecl, [&quot;HTMLsymbol&quot;, &quot;PUBLIC&quot;, &quot;-//W3C//ENTITIES Symbols for XHTML//EN&quot;, &quot;xhtml-symbol.ent&quot;, &quot;%&quot;]]
+</span><span class="c1"># &gt;&gt; [:doctype_end]
+</span><span class="c1"># &gt;&gt; [:text, &quot;\n&quot;]
+</span><span class="c1"># &gt;&gt; [:tag_start, &quot;root&quot;, {&quot;xmlns:foo&quot;=&gt;&quot;http://example.org/foo&quot;, &quot;xmlns:bar&quot;=&gt;&quot;http://example.org/bar&quot;}]
+</span><span class="c1"># &gt;&gt; [:cdata, &quot;cdata is here&quot;]
+</span><span class="c1"># &gt;&gt; [:text, &quot;\n  &quot;]
+</span><span class="c1"># &gt;&gt; [:tag_start, &quot;a&quot;, {&quot;foo:att&quot;=&gt;&quot;1&quot;, &quot;bar:att&quot;=&gt;&quot;2&quot;, &quot;att&quot;=&gt;&quot;&lt;&quot;}]
+</span><span class="c1"># &gt;&gt; [:tag_end, &quot;a&quot;]
+</span><span class="c1"># &gt;&gt; [:text, &quot;\n  &amp;&amp; &quot;]
+</span><span class="c1"># &gt;&gt; [:comment, &quot; comment here&quot;]
+</span><span class="c1"># &gt;&gt; [:text, &quot; &amp;bar;\n&quot;]
+</span><span class="c1"># &gt;&gt; [:tag_end, &quot;root&quot;]
+</span><span class="c1"># &gt;&gt; [:text, &quot;\n&quot;]
+</span></code></pre>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-stream-parser.html">REXML::Parsers::StreamParser</a>
+</td>
+<td class="description"><p>
+ストリーム式の XML パーサクラス。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

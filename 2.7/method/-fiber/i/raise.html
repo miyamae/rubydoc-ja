@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Fiber#raise (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="selfが表すファイバーが最後に [[m:Fiber.yield]] を呼んだ場所で例外を発生させます。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-fiber.html">Fiberクラス</a>
+      </li>
+      <li>
+        raise 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Fiber#raise</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_RAISE"><code>raise -&gt; object</code><span class="permalink">[<a href="../../../method/-fiber/i/raise.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Fiber.html#method-i-raise">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>raise(message) -&gt; object</code></dt>
+<dt class="method-heading"><code>raise(exception, message = nil, backtrace = nil) -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+selfが表すファイバーが最後に <a href="../../../method/-fiber/s/yield.html">Fiber.yield</a> を呼んだ場所で例外を発生させます。
+</p>
+<p>
+Fiber.yield が呼ばれていないかファイバーがすでに終了している場合、
+<a href="../../../class/-fiber-error.html">FiberError</a> が発生します。
+</p>
+<p>
+引数を渡さない場合、<a href="../../../class/-runtime-error.html">RuntimeError</a> が発生します。
+message 引数を渡した場合、message 引数をメッセージとした RuntimeError
+が発生します。
+</p>
+<p>
+その他のケースでは、最初の引数は <a href="../../../class/-exception.html">Exception</a> か Exception
+のインスタンスを返す exception メソッドを持ったオブジェクトである必要があります。この場合、2つ目の引数に例外のメッセージを渡せます。また3つ目の引数に例外発生時のスタックトレースを指定できます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] message:</dt>
+<dd>
+例外のメッセージとなる文字列です。
+</dd>
+<dt class='method-param'>[PARAM] exception:</dt>
+<dd>
+発生させる例外です。
+</dd>
+<dt class='method-param'>[PARAM] backtrace:</dt>
+<dd>
+例外発生時のスタックトレースです。文字列の配列で指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+f <span class="o">=</span> <span class="no">Fiber</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="no">Fiber</span><span class="p">.</span><span class="nf">yield</span> <span class="p">}</span>
+f<span class="p">.</span><span class="nf">resume</span>
+f<span class="p">.</span><span class="nf">raise</span> <span class="s2">"</span><span class="s2">Error!</span><span class="s2">"</span> <span class="c1"># =&gt; Error! (RuntimeError)
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">ファイバー内のイテレーションを終了させる例</span>
+<code>
+f <span class="o">=</span> <span class="no">Fiber</span><span class="p">.</span><span class="nf">new</span> <span class="k">do</span>
+  <span class="nb">loop</span> <span class="k">do</span>
+    <span class="no">Fiber</span><span class="p">.</span><span class="nf">yield</span><span class="p">(</span><span class="ss">:loop</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="ss">:exit</span>
+<span class="k">end</span>
+
+<span class="nb">p</span> f<span class="p">.</span><span class="nf">resume</span>              <span class="c1"># =&gt; :loop
+</span><span class="nb">p</span> f<span class="p">.</span><span class="nf">raise</span> <span class="no">StopIteration</span> <span class="c1"># =&gt; :exit
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

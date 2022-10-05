@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Struct.[] (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="[[c:Struct]] クラスに新しいサブクラスを作って、それを返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-struct.html">Structクラス</a>
+      </li>
+      <li>
+        [] 
+      </li>
+    </ol>
+  </nav>
+
+<h1>singleton method Struct.[]</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_--5B--5D"><code>new(*args, keyword_init: nil) -&gt; Class</code><span class="permalink">[<a href="../../../method/-struct/s/=5b=5d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Struct.html#method-c-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>new(*args, keyword_init: nil) {|Class| block } -&gt; Class</code></dt>
+<dd class="method-description">
+<p>
+<a href="../../../class/-struct.html">Struct</a> クラスに新しいサブクラスを作って、それを返します。
+</p>
+<p>
+サブクラスでは構造体のメンバに対するアクセスメソッドが定義されています。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+dog <span class="o">=</span> <span class="no">Struct</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">Dog</span><span class="s2">"</span>, <span class="ss">:name</span>, <span class="ss">:age</span><span class="p">)</span>
+fred <span class="o">=</span> dog<span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">fred</span><span class="s2">"</span>, <span class="mi">5</span><span class="p">)</span>
+fred<span class="p">.</span><span class="nf">age</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="nb">printf</span> <span class="s2">"</span><span class="s2">name:%s age:%d</span><span class="s2">"</span>, fred<span class="p">.</span><span class="nf">name</span>, fred<span class="p">.</span><span class="nf">age</span>
+<span class="c1">#=&gt; &quot;name:fred age:6&quot; を出力します
+</span></code></pre>
+<p>
+実装の都合により、クラス名の省略は後づけの機能でした。メンバ名に <a href="../../../class/-string.html">String</a> を指定できるのは後方互換性のためだと考えた方が良いでしょう。したがって、メンバ名は <a href="../../../class/-symbol.html">Symbol</a> で指定するのが無難です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+構造体を定義するための可変長引数。<a href="../../../class/-string.html">String</a> または <a href="../../../class/-symbol.html">Symbol</a> を指定します。
+</dd>
+<dt class='method-param'>[PARAM] keyword_init:</dt>
+<dd>
+true を指定すると、キーワード引数で初期化する構造体を定義します。
+Ruby 3.1 では互換性に影響のある使い方をしたときに警告が出るため、従来の挙動を期待する構造体には明示的に false を指定してください。
+</dd>
+</dl>
+<h2 >第一引数が String の場合</h2>
+<p>
+args[0] が <a href="../../../class/-string.html">String</a> の場合、クラス名になるので、大文字で始まる必要があります。つまり、以下のような指定はエラーになります。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="no">Struct</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s1">'foo'</span>, <span class="s1">'bar'</span><span class="p">)</span>
+<span class="c1"># =&gt; -:1:in `new': identifier foo needs to be constant (NameError)
+</span></code></pre>
+<p>
+また args[1..-1] は、<a href="../../../class/-symbol.html">Symbol</a> か <a href="../../../class/-string.html">String</a> で指定します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="no">Struct</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">Foo</span><span class="s2">"</span>, <span class="ss">:foo</span>, <span class="ss">:bar</span><span class="p">)</span>   <span class="c1"># =&gt; Struct::Foo
+</span></code></pre>
+<h2 >第一引数が Symbol の場合</h2>
+<p>
+args[0] が <a href="../../../class/-symbol.html">Symbol</a> の場合、生成した構造体クラスは名前の無いクラスになります。名前の無いクラスは最初に名前を求める際に代入されている定数名を検索し、見つかった定数名をクラス名とします。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">Foo</span> <span class="o">=</span> <span class="no">Struct</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:foo</span>, <span class="ss">:bar</span><span class="p">)</span>
+<span class="nb">p</span> <span class="no">Foo</span>                             <span class="c1"># =&gt; Foo
+</span></code></pre>
+<h2 >ブロックを指定した場合</h2>
+<p>
+Struct.new にブロックを指定した場合は定義した Struct をコンテキストにブロックを評価します。また、定義した Struct はブロックパラメータにも渡されます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">Customer</span> <span class="o">=</span> <span class="no">Struct</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:name</span>, <span class="ss">:address</span><span class="p">)</span> <span class="k">do</span>
+  <span class="k">def</span> <span class="nf">greeting</span>
+    <span class="s2">"</span><span class="s2">Hello </span><span class="si">#{</span><span class="n">name</span><span class="si">}</span><span class="s2">!</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">Dave</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">123 Main</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">greeting</span> <span class="c1"># =&gt; &quot;Hello Dave!&quot;
+</span></code></pre>
+<p>
+Structをカスタマイズする場合はこの方法が推奨されます。無名クラスのサブクラスを作成する方法でカスタマイズする場合は無名クラスが使用されなくなってしまうことがあるためです。
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-class/s/new.html">Class.new</a>
+</p>
+<h2 >keyword_init: true を指定した場合</h2>
+<p>
+キーワード引数で初期化することを想定した構造体になります。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">Point</span> <span class="o">=</span> <span class="no">Struct</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:x</span>, <span class="ss">:y</span>, <span class="ss">keyword_init:</span> <span class="k">true</span><span class="p">)</span> <span class="c1"># =&gt; Point(keyword_init: true)
+</span><span class="no">Point</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">x:</span> <span class="mi">1</span>, <span class="ss">y:</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;struct Point x=1, y=2&gt;
+</span><span class="no">Point</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">x:</span> <span class="mi">1</span><span class="p">)</span>       <span class="c1"># =&gt; #&lt;struct Point x=1, y=nil&gt;
+</span><span class="no">Point</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">y:</span> <span class="mi">2</span><span class="p">)</span>       <span class="c1"># =&gt; #&lt;struct Point x=nil, y=2&gt;
+</span><span class="no">Point</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">z:</span> <span class="mi">3</span><span class="p">)</span>       <span class="c1"># ArgumentError (unknown keywords: z)
+</span></code></pre>
+</dd>
+<dt class="method-heading" id="S_--5B--5D"><code>new(*args) -&gt; Struct</code><span class="permalink">[<a href="../../../method/-struct/s/=5b=5d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Struct.html#method-c-5B-5D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>self[*args] -&gt; Struct</code></dt>
+<dd class="method-description">
+<p>
+(このメソッドは Struct の下位クラスにのみ定義されています)
+構造体オブジェクトを生成して返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+構造体の初期値を指定します。メンバの初期値は指定されなければ nil です。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+構造体クラスのインスタンス。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+構造体のメンバの数よりも多くの引数を指定した場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">Foo</span> <span class="o">=</span> <span class="no">Struct</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:foo</span>, <span class="ss">:bar</span><span class="p">)</span>
+foo <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">p</span> foo<span class="p">.</span><span class="nf">values</span>      <span class="c1"># =&gt; [1, nil]
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

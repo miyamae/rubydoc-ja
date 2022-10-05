@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>module OpenSSL::Random (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="OpenSSL が利用する擬似乱数生成器関連のモジュールです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/openssl.html">opensslライブラリ</a>
+      </li>
+      <li>
+        OpenSSL::Randomモジュール
+      </li>
+    </ol>
+  </nav>
+
+<h1>module OpenSSL::Random</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+      <li>
+        OpenSSL::Random
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+OpenSSL が利用する擬似乱数生成器関連のモジュールです。
+</p>
+<ul>
+<li><a class="external" href="https://tools.ietf.org/html/rfc4086">[RFC4086]</a></li>
+</ul>
+<h2 >暗号と乱数</h2>
+<p>
+OpenSSL では、鍵を生成するためなどに乱数を用いています。例えば RSA では巨大(512bitや1024bitなど)な素数の組を乱数で生成し、そこから公開鍵、秘密鍵のペアを計算します。鍵は他人に知られてはならないため、その乱数は外部からの推論が不可能な良い性質を持っている必要があります。このようなメソッドには以下のものがあります。
+</p>
+<ul>
+<li><a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-r-s-a/s/generate.html">OpenSSL::PKey::RSA.generate</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-s-a/s/generate.html">OpenSSL::PKey::DSA.generate</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-p-key=3a=3a-d-h/s/generate.html">OpenSSL::PKey::DH.generate</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-cipher/i/random_key.html">OpenSSL::Cipher#random_key</a></li>
+</ul>
+<p>
+そのような乱数は適切な実装を持つ擬似乱数生成器に適切なシードを渡すことによって実現できます。
+</p>
+<p>
+OpenSSL にはそのような擬似乱数生成器が実装されています。そして、この擬似乱数生成器は OpenSSL の様々なモジュールから利用されています。上に挙げた鍵生成メソッドの他に、
+</p>
+<ul>
+<li><a href="../method/-open-s-s-l=3a=3a-b-n/s/rand.html">OpenSSL::BN.rand</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-b-n/s/rand_range.html">OpenSSL::BN.rand_range</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-b-n/s/generate_prime.html">OpenSSL::BN.generate_prime</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-cipher/i/random_iv.html">OpenSSL::Cipher#random_iv</a></li>
+</ul>
+<p>
+などでも利用されます。
+</p>
+<p>
+擬似乱数生成器は適切なシードを与えられなければ正しく動作しません。
+OpenSSL にはそのための API
+</p>
+<ul>
+<li><a href="../method/-open-s-s-l=3a=3a-random/m/random_add.html">OpenSSL::Random.#random_add</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-random/m/seed.html">OpenSSL::Random.#seed</a></li>
+<li><a href="../method/-open-s-s-l=3a=3a-random/m/load_random_file.html">OpenSSL::Random.#load_random_file</a></li>
+</ul>
+<p>
+が存在します。これらの API を模式的に説明すると、以下のようになります。
+</p>
+<ul>
+<li>シードの各ビットは統計的な乱雑さ、予測不可能性を持ち、ビット列の
+乱雑さはエントロピーという量(単位は bit, 8bit = 1byte)
+で量ることができる。</li>
+<li>特にシードのすべてのビットが完全にランダムである場合には、
+エントロピーの大きさとシードのビット数は一致する。逆に
+シードのすべてのビットがある意味で既知ならば、
+エントロピーは 0 である。</li>
+<li>擬似乱数生成器にエントロピーを追加することによって
+乱数生成器から得られる乱数がより予測不可能になる。</li>
+</ul>
+<p>
+エントロピー源には良いものと悪いものがあります。例えば現在時刻(Unix time)はエントロピー源としては悪いです。なぜなら予測不可能なのはせいぜい秒の部分のみであり、上位のビットは予測可能だからです。そこに含まれるエントロピー量を適切に評価できるならばシードとして利用できますが、通常はもっと良いエントロピー源があるはずです。
+Linux であれば /dev/random が適当なエントロピー源となるでしょう。
+</p>
+<p>
+OpenSSL では EGD(Entropy Gathering Daemon)からエントロピーを取得することもできます。適切なエントロピー源を提供していない OS ではこのような方法でエントロピー源を用意する必要があるかもしれません。
+</p>
+<p>
+実際のところ、OpenSSL バージョンによっては OS が提供するエントロピー源から必要な量のエントロピーを得るよう実装してあるため、これらの API を使ってエントロピーを追加する必要はない場合が多いでしょう。ただし、 OS によっては
+OpenSSL が利用可能なエントロピー源を見つけられない場合があり、その場合はこれらのメソッドで明示的にエントロピーを追加する必要があるでしょう。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>モジュール関数</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#M_EGD">egd</a></li>
+
+<li><a href="#M_EGD_BYTES">egd_bytes</a></li>
+
+<li><a href="#M_LOAD_RANDOM_FILE">load_random_file</a></li>
+
+<li><a href="#M_PSEUDO_BYTES">pseudo_bytes</a></li>
+
+<li><a href="#M_RANDOM_ADD">random_add</a></li>
+
+<li><a href="#M_RANDOM_BYTES">random_bytes</a></li>
+
+<li><a href="#M_SEED">seed</a></li>
+
+<li><a href="#M_STATUS--3F">status?</a></li>
+
+<li><a href="#M_WRITE_RANDOM_FILE">write_random_file</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>モジュール関数</h2>
+<dl>
+
+<dt class="method-heading" id="M_EGD"><code>egd(filename) -&gt; true</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-random/m/egd.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Random.html#method-c-egd">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+EGD(Entropy Gathering Daemon) からエントロピーを得、乱数生成器に追加します。
+</p>
+<p>
+filename で指定した Unix domain socket から EGD に問い合わせ、
+255 バイト分のエントロピーを取得します。
+<a href="../method/-open-s-s-l=3a=3a-random/s/egd_bytes.html">OpenSSL::Random.egd_bytes</a>(filename, 255) と同じです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+EGD のソケットのファイル名
+</dd>
+<dt>[EXCEPTION] OpenSSL::Random::RandomError:</dt>
+<dd>
+
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="M_EGD_BYTES"><code>egd_bytes(filename, length) -&gt; true</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-random/m/egd_bytes.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Random.html#method-c-egd_bytes">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+EGD(Entropy Gathering Daemon) から length バイト分のエントロピーを得ます。
+</p>
+<p>
+filename で指定した Unix domain socket から EGD に問い合わせ、指定した大きさのエントロピーを乱数生成器に追加します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+EGD のソケットのファイル名
+</dd>
+<dt class='method-param'>[PARAM] length:</dt>
+<dd>
+読み込むバイト数
+</dd>
+<dt>[EXCEPTION] OpenSSL::Random::RandomError:</dt>
+<dd>
+
+</dd>
+<dt>[EXCEPTION] OpenSSL::Random::RandomError:</dt>
+<dd>
+
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="M_LOAD_RANDOM_FILE"><code>load_random_file(filename) -&gt; true</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-random/m/load_random_file.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Random.html#method-c-load_random_file">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ファイルを読み込み、その内容をエントロピー源として乱数生成器に渡します。
+</p>
+<p>
+エントロピーの推定量はファイルのバイト数と同じであると見なします。
+</p>
+<p>
+OpenSSL::Random.seed(File.read(filename)) と同じです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+読み込むファイル名
+</dd>
+<dt>[EXCEPTION] OpenSSL::Random::RandomError:</dt>
+<dd>
+ファイルの読み込みに失敗した場合に発生します
+</dd>
+<dt>[EXCEPTION] OpenSSL::Random::RandomError:</dt>
+<dd>
+
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="M_PSEUDO_BYTES"><code>pseudo_bytes(len) -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-random/m/pseudo_bytes.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Random.html#method-c-pseudo_bytes">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+暗号論的な予測不可能性を持たない(が高速な)
+乱数生成器によって、 len バイトのランダムなバイト列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] len:</dt>
+<dd>
+必要なランダムバイト列の長さ
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="M_RANDOM_ADD"><code>random_add(str, entropy) -&gt; self</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-random/m/random_add.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Random.html#method-c-random_add">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+乱数生成器にエントロピーを追加します。
+</p>
+<p>
+entropy には str が持っているエントロピーの予測値(の下限)をバイト単位で渡します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+予測不可能な内容の文字列
+</dd>
+<dt class='method-param'>[PARAM] entropy:</dt>
+<dd>
+str が持っているエントロピーの予測値(バイト単位)の浮動小数点数
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="M_RANDOM_BYTES"><code>random_bytes(len) -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-random/m/random_bytes.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Random.html#method-c-random_bytes">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+暗号論的な予測不可能性を持つ乱数生成器によって、 len バイトのランダムなバイト列を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] len:</dt>
+<dd>
+必要なランダムバイト列の長さ
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="M_SEED"><code>seed(str) -&gt; str</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-random/m/seed.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Random.html#method-c-seed">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+乱数生成器にエントロピーを「エントロピー予測値 = str のバイト数」として追加します。
+</p>
+<p>
+OpenSSL::Random.random_add(str, str.size) と同じです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+予測不可能な内容の文字列
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-random/m/random_add.html">OpenSSL::Random.#random_add</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_STATUS--3F"><code>status? -&gt; bool</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-random/m/status=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Random.html#method-c-status-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+乱数生成器内のエントロピーが十分である場合に true を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="M_WRITE_RANDOM_FILE"><code>write_random_file(filename) -&gt; true</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-random/m/write_random_file.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Random.html#method-c-write_random_file">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+乱数生成器で生成された 1024 バイトのランダムなバイト列をファイルに書き込みます。
+</p>
+<p>
+これで出力したランダムなバイト列はあとで乱数生成器を初期化するのに使えます。リブート直後などシステムからのエントロピーが少ない場合に利用できます。
+</p>
+<p>
+このファイルは利用者以外には読めないように保存しなければなりません。部外者がこのファイルを読めることはセキュリティ上の問題を引き起します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+書き込むファイルの名前
+</dd>
+<dt>[EXCEPTION] OpenSSL::Random::RandomError:</dt>
+<dd>
+ファイルの書き出しに失敗した場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

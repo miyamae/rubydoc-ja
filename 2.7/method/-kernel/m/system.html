@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Kernel.#system (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="引数を外部コマンドとして実行して、成功した時に真を返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-kernel.html">Kernelモジュール</a>
+      </li>
+      <li>
+        system 
+      </li>
+    </ol>
+  </nav>
+
+<h1>module function Kernel.#system</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_SYSTEM"><code>system(command, options={}) -&gt; bool | nil</code><span class="permalink">[<a href="../../../method/-kernel/m/system.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Kernel.html#method-c-system">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>system(env, command, options={}) -&gt; bool | nil</code></dt>
+<dd class="method-description">
+<p>
+引数を外部コマンドとして実行して、成功した時に真を返します。
+</p>
+<p>
+子プロセスが終了ステータス 0 で終了すると成功とみなし true を返します。それ以外の終了ステータスの場合は false を返します。コマンドを実行できなかった場合は nil を返します。
+</p>
+<p>
+options で :exception に true を指定することで、
+nil や false を返す代わりに例外を発生するようにできます。
+</p>
+<p>
+終了ステータスは変数 <a href="../../../method/-kernel/v/=3f.html">$?</a> で参照できます。
+</p>
+<p>
+コマンドを実行することができなかった場合、多くのシェルはステータス
+127 を返します。シェルを介さない場合は Ruby の子プロセスがステータス
+127 で終了します。コマンドが実行できなかったのか、コマンドが失敗したのかは、普通
+<a href="../../../method/-kernel/v/=3f.html">$?</a> を参照することで判別可能です。
+</p>
+<h2 >引数の解釈</h2>
+<p>
+この形式では command が shell のメタ文字
+</p>
+<pre>
+  * ? {} [] &lt;&gt; () ~ &amp; | \ $ ; ' ` &quot; \n
+</pre>
+<p>
+を含む場合、shell 経由で実行されます。そうでなければインタプリタから直接実行されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] command:</dt>
+<dd>
+command コマンドを文字列で指定します。
+</dd>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+更新する環境変数を表す Hash
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+オプションパラメータ Hash
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+exception: true が指定されていて、コマンドの実行が失敗したときに発生します。
+</dd>
+<dt>[EXCEPTION] RuntimeError:</dt>
+<dd>
+exception: true が指定されていて、コマンドの終了ステータスが 0 以外のときに発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">シェル経由でコマンドを実行</span>
+<code>
+<span class="nb">system</span><span class="p">(</span><span class="s2">"</span><span class="s2">echo *</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; true
+</span><span class="c1"># fileA fileB fileC ...
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">exceptionオプションを指定</span>
+<code>
+<span class="nb">system</span><span class="p">(</span><span class="s2">"</span><span class="s2">sad</span><span class="s2">"</span>, <span class="ss">exception:</span> <span class="k">true</span><span class="p">)</span>                   <span class="c1"># =&gt; Errno::ENOENT (No such file or directory - sad)
+</span><span class="nb">system</span><span class="p">(</span><span class="s1">'ruby -e &quot;exit(false)&quot;'</span>, <span class="ss">exception:</span> <span class="k">true</span><span class="p">)</span> <span class="c1"># =&gt; RuntimeError (Command failed with exit 1: ruby -e &quot;exit(false)&quot;)
+</span><span class="nb">system</span><span class="p">(</span><span class="s1">'ruby -e &quot;exit(true)&quot;'</span>, <span class="ss">exception:</span> <span class="k">true</span><span class="p">)</span>  <span class="c1"># =&gt; true
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/=60.html">Kernel.#`</a>,<a href="../../../method/-kernel/m/spawn.html">Kernel.#spawn</a>,<a href="../../../method/-kernel/m/exec.html">Kernel.#exec</a>,<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/system.html">system(3)</a>
+</p>
+</dd>
+<dt class="method-heading" id="M_SYSTEM"><code>system(program, *args, options={}) -&gt; bool | nil</code><span class="permalink">[<a href="../../../method/-kernel/m/system.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Kernel.html#method-c-system">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>system(env, program, *args, options={}) -&gt; bool | nil</code></dt>
+<dd class="method-description">
+<p>
+引数を外部コマンドとして実行して、成功した時に真を返します。
+</p>
+<p>
+子プロセスが終了ステータス 0 で終了すると成功とみなし true を返します。それ以外の終了ステータスの場合は false を返します。コマンドを実行できなかった場合は nil を返します。
+</p>
+<p>
+options で :exception に true を指定することで、
+nil や false を返す代わりに例外を発生するようにできます。
+</p>
+<p>
+終了ステータスは変数 <a href="../../../method/-kernel/v/=3f.html">$?</a> で参照できます。
+</p>
+<p>
+コマンドを実行することができなかった場合、多くのシェルはステータス
+127 を返します。シェルを介さない場合は Ruby の子プロセスがステータス
+127 で終了します。コマンドが実行できなかったのか、コマンドが失敗したのかは、普通 <a href="../../../method/-kernel/v/=3f.html">$?</a> を参照することで判別可能です。
+</p>
+<p>
+Hash を options として渡すことで、起動される子プロセスの
+</p>
+<ul>
+<li>プロセスグループ</li>
+<li>resource limit</li>
+<li>カレントディレクトリ</li>
+<li>umask</li>
+<li>子プロセスでのリダイレクト</li>
+</ul>
+<p>
+などを変更できます。環境変数のクリアなども指定できます。詳しくは <a href="../../../method/-kernel/m/spawn.html">Kernel.#spawn</a> を参照してください。
+</p>
+<h2 >引数の解釈</h2>
+<p>
+この形式で呼び出した場合、空白や shell のメタキャラクタもそのまま program の引数に渡されます。先頭の引数が2要素の配列であった場合、第1要素の文字列が実際に起動するプログラムのパスであり、第2要素が「みせかけ」のプログラム名になります。また、第1要素はフルパスで指定しなくても環境変数 PATH から探します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] program:</dt>
+<dd>
+文字列か2要素の配列です。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+program に渡す引数を 0 個以上指定する
+</dd>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+更新する環境変数を表す Hash
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+オプションパラメータ Hash
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+第一引数が配列かつ要素数が 2 でない場合に発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+exception: true が指定されていて、コマンドの実行が失敗したときに発生します。
+</dd>
+<dt>[EXCEPTION] RuntimeError:</dt>
+<dd>
+exception: true が指定されていて、コマンドの終了ステータスが 0 以外のときに発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">インタプリタから直接コマンドを実行</span>
+<code>
+<span class="nb">system</span><span class="p">(</span><span class="s2">"</span><span class="s2">echo</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; true
+</span><span class="c1"># *
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/=60.html">Kernel.#`</a>,<a href="../../../method/-kernel/m/spawn.html">Kernel.#spawn</a>,<a href="../../../method/-kernel/m/exec.html">Kernel.#exec</a>,<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/system.html">system(3)</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

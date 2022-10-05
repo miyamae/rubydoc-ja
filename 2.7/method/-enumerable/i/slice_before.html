@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Enumerable#slice_before (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="パターンがマッチした要素、もしくはブロックが真を返した要素から
+次にマッチする手前までを
+チャンク化(グループ化)したものを繰り返す [[c:Enumerator]] を
+返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-enumerable.html">Enumerableモジュール</a>
+      </li>
+      <li>
+        slice_before 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Enumerable#slice_before</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_SLICE_BEFORE"><code>slice_before(pattern) -&gt; Enumerator</code><span class="permalink">[<a href="../../../method/-enumerable/i/slice_before.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Enumerable.html#method-i-slice_before">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>slice_before {|elt| bool } -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+パターンがマッチした要素、もしくはブロックが真を返した要素から次にマッチする手前までをチャンク化(グループ化)したものを繰り返す <a href="../../../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<p>
+パターンを渡した場合は各要素に対し === が呼び出され、それが真になったところをチャンクの先頭と見なします。ブロックを渡した場合は、各要素に対しブロックを適用し返り値が真であった要素をチャンクの先頭と見なします。
+</p>
+<p>
+より厳密にいうと、「先頭要素」の手前で分割していきます。最初の要素の評価は無視されます。
+</p>
+<p>
+各チャンクは配列として表現されます。
+</p>
+<p>
+<a href="../../../method/-enumerable/i/to_a.html">Enumerable#to_a</a> や <a href="../../../method/-enumerable/i/map.html">Enumerable#map</a> のようなメソッドを使うこともできます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># 偶数要素をチャンクの先頭と見なす
+</span><span class="p">[</span><span class="mi">0</span>,<span class="mi">2</span>,<span class="mi">4</span>,<span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">4</span>,<span class="mi">5</span>,<span class="mi">3</span>,<span class="mi">1</span>,<span class="mi">4</span>,<span class="mi">2</span><span class="p">]</span><span class="p">.</span><span class="nf">slice_before</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:even?</span><span class="p">)</span><span class="p">.</span><span class="nf">to_a</span>
+<span class="c1"># =&gt; [[0], [2], [4, 1], [2], [4, 5, 3, 1], [4], [2]]
+</span>
+<span class="c1"># 奇数要素をチャンクの先頭と見なす
+</span><span class="p">[</span><span class="mi">0</span>,<span class="mi">2</span>,<span class="mi">4</span>,<span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">4</span>,<span class="mi">5</span>,<span class="mi">3</span>,<span class="mi">1</span>,<span class="mi">4</span>,<span class="mi">2</span><span class="p">]</span><span class="p">.</span><span class="nf">slice_before</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:odd?</span><span class="p">)</span><span class="p">.</span><span class="nf">to_a</span>
+<span class="c1"># =&gt; [[0, 2, 4], [1, 2, 4], [5], [3], [1, 4, 2]]
+</span>
+<span class="c1"># ChangeLog のエントリーを順に取る
+</span><span class="nb">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">ChangeLog</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>f<span class="o">|</span>
+  f<span class="p">.</span><span class="nf">slice_before</span><span class="p">(</span><span class="sr">/\A\S/</span><span class="p">)</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span><span class="o">|</span>e<span class="o">|</span> pp e<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1"># 上と同じだが、パターンでなくブロックを使う
+</span><span class="nb">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">ChangeLog</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>f<span class="o">|</span>
+  f<span class="p">.</span><span class="nf">slice_before</span> <span class="p">{</span><span class="o">|</span>line<span class="o">|</span> <span class="sr">/\A\S/</span> <span class="o">===</span> line <span class="p">}</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span><span class="o">|</span>e<span class="o">|</span> pp e<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1"># &quot;svn proplist -R&quot; の結果を分割する
+</span><span class="c1"># これは一要素が複数行にまたがっている
+</span>
+<span class="no">IO</span><span class="p">.</span><span class="nf">popen</span><span class="p">(</span><span class="p">[</span><span class="p">{</span><span class="s2">"</span><span class="s2">LC_ALL</span><span class="s2">"</span><span class="o">=&gt;</span><span class="s2">"</span><span class="s2">C</span><span class="s2">"</span><span class="p">}</span>, <span class="s2">"</span><span class="s2">svn</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">proplist</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">-R</span><span class="s2">"</span><span class="p">]</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>f<span class="o">|</span>
+  f<span class="p">.</span><span class="nf">lines</span><span class="p">.</span><span class="nf">slice_before</span><span class="p">(</span><span class="sr">/\AProp/</span><span class="p">)</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span><span class="o">|</span>lines<span class="o">|</span> <span class="nb">p</span> lines <span class="p">}</span>
+<span class="p">}</span>
+<span class="c1">#=&gt; [&quot;Properties on '.':\n&quot;, &quot;  svn:ignore\n&quot;, &quot;  svk:merge\n&quot;]
+</span><span class="c1">#   [&quot;Properties on 'goruby.c':\n&quot;, &quot;  svn:eol-style\n&quot;]
+</span><span class="c1">#   [&quot;Properties on 'complex.c':\n&quot;, &quot;  svn:mime-type\n&quot;, &quot;  svn:eol-style\n&quot;]
+</span><span class="c1">#   [&quot;Properties on 'regparse.c':\n&quot;, &quot;  svn:eol-style\n&quot;]
+</span><span class="c1">#   ...
+</span></code></pre>
+<p>
+複数要素にわたる状態遷移が必要な場合は、ローカル変数でこれを実現することができます。例えば、連続に増える数値が3つ以上ある場合、これをまとめる処理をするためには以下のようにします
+(<a href="../../../method/-enumerable/i/chunk_while.html">Enumerable#chunk_while</a> のより簡単な例も参照)。
+</p>
+<pre class="highlight ruby">
+<code>
+a <span class="o">=</span> <span class="p">[</span><span class="mi">0</span>,<span class="mi">2</span>,<span class="mi">3</span>,<span class="mi">4</span>,<span class="mi">6</span>,<span class="mi">7</span>,<span class="mi">9</span><span class="p">]</span>
+prev <span class="o">=</span> a<span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="nb">p</span> a<span class="p">.</span><span class="nf">slice_before</span> <span class="p">{</span><span class="o">|</span>e<span class="o">|</span>
+  prev, prev2 <span class="o">=</span> e, prev
+  prev2 <span class="o">+</span> <span class="mi">1</span> <span class="o">!=</span> e
+<span class="p">}</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span><span class="o">|</span>es<span class="o">|</span>
+  es<span class="p">.</span><span class="nf">length</span> <span class="o">&lt;=</span> <span class="mi">2</span> <span class="o">?</span> es<span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">"</span><span class="s2">,</span><span class="s2">"</span><span class="p">)</span> <span class="o">:</span> <span class="s2">"</span><span class="si">#{</span><span class="n">es</span><span class="p">.</span><span class="nf">first</span><span class="si">}</span><span class="s2">-</span><span class="si">#{</span><span class="n">es</span><span class="p">.</span><span class="nf">last</span><span class="si">}</span><span class="s2">"</span>
+<span class="p">}</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s2">"</span><span class="s2">,</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1">#=&gt; &quot;0,2-4,6,7,9&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-enumerable/i/chunk.html">Enumerable#chunk</a>, <a href="../../../method/-enumerable/i/slice_after.html">Enumerable#slice_after</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

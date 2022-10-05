@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>library bigdecimal (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="bigdecimal は浮動小数点数演算ライブラリです。
+任意の精度で 10 進表現された浮動小数点数を扱えます。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        bigdecimalライブラリ
+      </li>
+    </ol>
+  </nav>
+
+<h1>library bigdecimal</h1>
+</header>
+
+<main>
+
+
+
+<h2>要約</h2>
+<p>
+bigdecimal は浮動小数点数演算ライブラリです。任意の精度で 10 進表現された浮動小数点数を扱えます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'bigdecimal'</span>
+a <span class="o">=</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">0.123456789123456789</span><span class="s2">"</span><span class="p">)</span>
+b <span class="o">=</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">123456.78912345678</span><span class="s2">"</span>, <span class="mi">40</span><span class="p">)</span>
+<span class="nb">print</span> a <span class="o">+</span> b <span class="c1"># =&gt; 0.123456912580245903456789e6
+</span></code></pre>
+<p>
+一般的な 10 進数の計算でも有用です。2 進数の浮動小数点演算には微小な誤差があるのに対し、<a href="../class/-big-decimal.html">BigDecimal</a> では正確な値を得る事ができます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例1: 0.0001 を 10000 回足す場合。</span>
+<code>
+sum <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> i <span class="k">in</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">10000</span><span class="p">)</span>
+  sum <span class="o">=</span> sum <span class="o">+</span> <span class="mf">0.0001</span>
+<span class="k">end</span>
+<span class="nb">print</span> sum <span class="c1"># =&gt; 0.9999999999999062
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例2: 0.0001 を 10000 回足す場合。(BigDecimal)</span>
+<code>
+<span class="nb">require</span> <span class="s1">'bigdecimal'</span>
+
+sum <span class="o">=</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">0</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">for</span> i <span class="k">in</span> <span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">10000</span><span class="p">)</span>
+  sum <span class="o">=</span> sum <span class="o">+</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">0.0001</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">end</span>
+<span class="nb">print</span> sum <span class="c1"># =&gt; 0.1e1
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例3: 1.2 - 1.0 と 0.2 との比較</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal</span><span class="s2">"</span>
+
+<span class="p">(</span><span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">1.2</span><span class="s2">"</span><span class="p">)</span> <span class="o">-</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">1.0</span><span class="s2">"</span><span class="p">)</span><span class="p">)</span> <span class="o">==</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">0.2</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; true
+</span>
+<span class="p">(</span><span class="mf">1.2</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">==</span> <span class="mf">0.2</span> <span class="c1"># =&gt; false
+</span></code></pre>
+<h2 >特別な値</h2>
+<p>
+正確な計算結果の提供のために、<a href="../class/-big-decimal.html">BigDecimal</a> はいくつかの特別な値を持ちます。
+</p>
+<h3 >無限大</h3>
+<p>
+<a href="../class/-big-decimal.html">BigDecimal</a> による演算の際には無限大を表す値を返す場合があります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal</span><span class="s2">"</span>
+<span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">1.0</span><span class="s2">"</span><span class="p">)</span> <span class="o">/</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">0.0</span><span class="s2">"</span><span class="p">)</span>  <span class="c1">#=&gt; Infinity
+</span><span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">-1.0</span><span class="s2">"</span><span class="p">)</span> <span class="o">/</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">0.0</span><span class="s2">"</span><span class="p">)</span>  <span class="c1">#=&gt; -Infinity
+</span></code></pre>
+<p>
+無限大を表す <a href="../class/-big-decimal.html">BigDecimal</a> オブジェクトを作成する場合、
+<a href="../method/-kernel/m/-big-decimal.html">Kernel.#BigDecimal</a> の引数に &quot;Infinity&quot; や &quot;-Infinity&quot; を指定してください。(大文字小文字を区別します)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal</span><span class="s2">"</span>
+<span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">Infinity</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; Infinity
+</span><span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">+Infinity</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; Infinity
+</span><span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">-Infinity</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; -Infinity
+</span></code></pre>
+<h3 >非数(Not a Number)</h3>
+<p>
+0 / 0 のような未定義の計算を行った場合、非数(Not a Number)を表す値を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal</span><span class="s2">"</span>
+<span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">0.0</span><span class="s2">"</span><span class="p">)</span> <span class="o">/</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">0.0</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; NaN
+</span></code></pre>
+<p>
+NaN を表す <a href="../class/-big-decimal.html">BigDecimal</a> オブジェクトを作成する場合、
+<a href="../method/-kernel/m/-big-decimal.html">Kernel.#BigDecimal</a> の引数に &quot;NaN&quot; を指定してください。(大文字小文字を区別します)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal</span><span class="s2">"</span>
+<span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">NaN</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; NaN
+</span></code></pre>
+<p>
+NaN はどのような値と比較しても一致しません。(NaN 自身を含みます)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal</span><span class="s2">"</span>
+<span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">NaN</span><span class="s2">"</span><span class="p">)</span> <span class="o">==</span> <span class="mf">0.0</span>               <span class="c1"># =&gt; false
+</span><span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">NaN</span><span class="s2">"</span><span class="p">)</span> <span class="o">==</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">NaN</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; false
+</span></code></pre>
+<h3 >+ゼロと-ゼロ</h3>
+<p>
+計算結果が現在の有効桁数に比べて小さい値である場合、0 を返します。
+</p>
+<p>
+負の非常に小さな <a href="../class/-big-decimal.html">BigDecimal</a> の値は -0 を表す値になります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal</span><span class="s2">"</span>
+<span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">1.0</span><span class="s2">"</span><span class="p">)</span> <span class="o">/</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">-Infinity</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; -0.0
+</span></code></pre>
+<p>
+正の非常に小さな <a href="../class/-big-decimal.html">BigDecimal</a> の値は 0 を表す値になります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal</span><span class="s2">"</span>
+<span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">1.0</span><span class="s2">"</span><span class="p">)</span> <span class="o">/</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">Infinity</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; 0.0
+</span></code></pre>
+<p>
+精度については <a href="../method/-big-decimal/s/mode.html">BigDecimal.mode</a> も併せて参照してください。
+</p>
+<p>
+また、0.0 と -0.0 は比較した場合に同じ値であるとみなされます。
+</p>
+<p>
+ただし、計算に利用した際に、異なる結果をもたらすことがあります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal</span><span class="s2">"</span>
+<span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">0.0</span><span class="s2">"</span><span class="p">)</span> <span class="o">==</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">-0.0</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; true
+</span>
+<span class="mi">1</span> <span class="o">/</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">0.0</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt;  Infinity
+</span><span class="mi">1</span> <span class="o">/</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">-0.0</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; -Infinity
+</span></code></pre>
+<h2 >他の数値オブジェクトとの変換 (coerce)</h2>
+<p>
+BigDecimal オブジェクトが算術演算子の左にあるときは、
+BigDecimal オブジェクトが右にあるオブジェクトを
+(必要なら) BigDecimal に変換してから計算します。従って、BigDecimal オブジェクト以外でも数値を意味するものなら右に置けば演算は可能です。
+</p>
+<p>
+ただし、文字列は (通常) 数値に自動変換することはできません。文字列を数値に自動変換したい場合は bigdecimal.c の「/* #define ENABLE_NUMERIC_STRING */」のコメントを外してから、再コンパイル、再インストールする必要があります。文字列で数値を与える場合は注意が必要です。数値に変換できない文字があると、単に変換を止めるだけでエラーにはなりません。
+&quot;10XX&quot;なら 10、&quot;XXXX&quot;は 0 と扱われます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal</span><span class="s2">"</span>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal/math</span><span class="s2">"</span>
+
+a <span class="o">=</span> <span class="no">BigMath</span><span class="p">.</span><span class="no">E</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="nf">c</span> <span class="o">=</span> a <span class="o">*</span> <span class="s2">"</span><span class="s2">0.123456789123456789123456789</span><span class="s2">"</span>   <span class="c1"># 文字列を BigDecimal に変換してから計算
+</span></code></pre>
+<p>
+無限大や非数を表す文字列として、
+&quot;Infinity&quot;、&quot;+Infinity&quot;、&quot;-Infinity&quot;、&quot;NaN&quot; も使用できます
+(大文字・小文字を区別します)。ただし、mode メソッドで false を指定した場合は例外が発生します。また、BigDecimalクラスは coerce(Ruby本参照)をサポートしています。従って、BigDecimal オブジェクトが右にある場合も大抵は大丈夫です。ただ、文字列が左にあると計算はできません。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal</span><span class="s2">"</span>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal/math</span><span class="s2">"</span>
+a <span class="o">=</span> <span class="no">BigMath</span><span class="p">.</span><span class="no">E</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="nf">p</span> c <span class="o">=</span> <span class="s2">"</span><span class="s2">0.123456789</span><span class="s2">"</span> <span class="o">*</span> a  <span class="c1"># =&gt; &quot;0.1234567890.123456789&quot;
+</span></code></pre>
+<p>
+これは、<a href="../method/-string/i/=2a.html">String#*</a> の内部で、BigDecimal が暗黙的に Integer に変換された結果です。
+</p>
+<h2 id='internal_structure'>内部構造</h2>
+<p>
+BigDecimal内部で浮動小数点は構造体(Real)で表現されます。そのうち仮数部は unsigned long の配列 (以下の構造体要素 frac) で管理されます。概念的には、以下のようになります。
+</p>
+<pre>
+&lt;浮動小数点数&gt; = 0.xxxxxxxxx * BASE ** n
+</pre>
+<p>
+ここで、x は仮数部を表す数字、BASE は基数 (10 進表現なら 10)、
+n は指数部を表す整数値です。BASEが大きいほど、大きな数値が表現できます。つまり、配列のサイズを少なくできます。
+BASE は大きいほど都合がよいわけですが、デバッグのやりやすさなどを考慮して、
+10000になっています (BASE は VpInit() 関数で自動的に計算します)。これは 32 ビット整数の場合です。64ビット整数の場合はもっと大きな値になります。残念ながら、64 ビット整数でのテストはまだやっていません。もし、テストをした方がいれば結果を教えてください。
+BASE が 10000 のときは、以下の仮数部の配列 (frac) の各要素には最大で 4 桁の数字が格納されます。
+</p>
+<p>
+浮動小数点構造体 (Real) は以下のようになっています。
+</p>
+<pre>
+typedef struct {
+   unsigned long MaxPrec; // 最大精度(frac[]の配列サイズ)
+   unsigned long Prec;    // 精度(frac[]の使用サイズ)
+   short    sign;         // 以下のように符号等の状態を定義します。
+                          //  ==0 : NaN
+                          //    1 : +0
+                          //   -1 : -0
+                          //    2 : 正の値
+                          //   -2 : 負の値
+                          //    3 : +Infinity
+                          //   -3 : -Infinity
+   unsigned short flag;   // 各種の制御フラッグ
+   int      exponent;     // 指数部の値(仮数部*BASE**exponent)
+   unsigned long frac[1]; // 仮数部の配列(可変)
+} Real;
+</pre>
+<p>
+例えば BASE=10000 のとき 1234.56784321 という数字は、
+</p>
+<pre>
+0.1234 5678 4321*(10000)**1
+</pre>
+<p>
+ですから frac[0] = 1234、frac[1] = 5678、frac[2] = 4321、
+Prec = 3、sign = 2、exponent = 1 となります。
+MaxPrec は Prec より大きければいくつでもかまいません。
+flag の使用方法は実装に依存して内部で使用されます。
+</p>
+<h2 >2 進と 10 進</h2>
+<p>
+BigDecimal は &lt;浮動小数点数&gt; = 0.xxxxxxxxx*10**n という 10 進形式で数値を保持します。しかし、計算機の浮動小数点数の内部表現は、言うまでもなく &lt;浮動小数点数&gt; = 0.bbbbbbbb*2**n という 2 進形式が普通です
+(x は 0 から 9 まで、b は 0 か 1 の数字)。
+BigDecimal がなぜ 10 進の内部表現形式を採用したのかを以下に説明します。
+</p>
+<h2 >10 進のメリット</h2>
+<h3 >デバッグのしやすさ</h3>
+<p>
+まず、プログラム作成が楽です。
+frac[0]=1234、frac[1]=5678、frac[2]=4321、 exponent=1、sign=2
+なら数値が 1234.56784321 であるのは見ればすぐに分かります。
+</p>
+<h3 >10進表記された数値なら確実に内部表現に変換できる</h3>
+<p>
+例えば、以下のようなプログラムは全く誤差無しで計算することができます。以下の例は、一行に一つの数値が書いてあるファイル file の合計数値を求める例です。
+</p>
+<pre class="highlight ruby">
+<span class="caption">digits.txt</span>
+<code>
+<span class="mf">0.1</span>
+<span class="mf">0.1</span>
+<span class="mf">0.1</span>
+</code></pre>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal</span><span class="s2">"</span>
+<span class="no">File</span><span class="o">::</span><span class="nb">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">digits.txt</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">r</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>file<span class="o">|</span>
+  s <span class="o">=</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">0</span><span class="s2">"</span><span class="p">)</span>
+  <span class="k">while</span> line <span class="o">=</span> file<span class="p">.</span><span class="nf">gets</span>
+    s <span class="o">=</span> s <span class="o">+</span> <span class="no">BigDecimal</span><span class="p">(</span>line<span class="p">)</span>
+  <span class="k">end</span>
+  <span class="nb">puts</span> s  <span class="c1"># =&gt; 0.3e0
+</span><span class="k">end</span>
+
+<span class="no">File</span><span class="o">::</span><span class="nb">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">digits.txt</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">r</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>file<span class="o">|</span>
+  s <span class="o">=</span> <span class="mi">0</span>
+  <span class="k">while</span> line <span class="o">=</span> file<span class="p">.</span><span class="nf">gets</span>
+    s <span class="o">=</span> s <span class="o">+</span> line<span class="p">.</span><span class="nf">to_f</span>
+  <span class="k">end</span>
+  <span class="nb">puts</span> s  <span class="c1"># =&gt; 0.30000000000000004
+</span><span class="k">end</span>
+</code></pre>
+<p>
+2 進数で計算すると誤差が入る可能性があります。例えば 0.1 を2進で表現すると
+0.1 = b1*2**(-1)+b1*2**(-2)+b3*2**(-3)+b4*2**(-4) ……と無限に続いてしまいます (b1=0,b2=0,b3=0,b4=1...)。ここで bn(n=1,2,3,...) は 2進を表現する 0 か 1 の数字列です。従って、どこかで打ち切る必要があります。ここで変換誤差が入ります。もちろん、これを再度 10 進表記にして印刷するような場合は適切な丸め操作(四捨五入)によって再び &quot;0.1&quot; と表示されることがあります。しかし、内部では正確な 0.1 ではありません。
+</p>
+<h3 >有効桁数は有限である (つまり自動決定できる)</h3>
+<p>
+0.1 を表現するための領域はたった一つの配列要素 (frac[0] = 1) で済みます。配列要素の数は10進数値から自動的に決定できます。これは、可変長浮動小数点演算では大事なことです。逆に 0.1 を 2 進表現したときに 2 進の有効桁をいくつにするのかは、
+0.1 という数値だけからは決定できません。
+</p>
+<h2 >10 進のデメリット</h2>
+<p>
+実は今までのメリットは、そのままデメリットにもなります。そもそも、10 進を 2 進に変換するような操作は変換誤差を伴う場合を回避することはできません。大概のコンピュータは 10 進の内部表現を持っていないので、
+BigDecimal を利用して誤差無しの計算をする場合は、計算速度を無視しても最後まで BigDecimal を使用し続ける必要があります。
+</p>
+<h3 >最初は何か？</h3>
+<p>
+自分で計算するときにわざわざ 2 進数を使う人は極めてまれです。計算機にデータを入力するときもほとんどの場合、 10進数で入力します。その結果、double 等の計算機内部表現は最初から誤差が入っている場合があります。
+BigDecimal はユーザ入力を誤差無しで取り込むことができます。デバッグのしやすさと、データ読みこみ時に誤差が入らないという 2 点が実際のメリットです。
+</p>
+<h3 id='precision'>計算精度について</h3>
+<p>
+「有効桁数」とは BigDecimal が精度を保証する桁数です。ぴったりではありません、若干の余裕を持って計算されます。また、例えば32ビットのシステムでは10進で4桁毎に計算します。従って、現状では、内部の「有効桁数」は4の倍数となっています。
+</p>
+<p>
+c = a op b という計算 (op は + - * /) をしたときの動作は以下のようになります。
+</p>
+<ol>
+<li>乗算は (a の有効桁数) + (b の有効桁数)、
+除算は (a の最大有効桁数) + (b の最大有効桁数) 分の最大桁数
+(実際は、余裕を持って、もう少し大きくなります) を持つ変数 c を新たに生成します。
+加減算の場合は、誤差が出ないだけの精度を持つ c を生成します。
+例えば c = 0.1+0.1*10**(-100) のような場合、c の精度は100桁以上の精度を持つようになります。</li>
+<li>次に c = a op b の計算を実行します。</li>
+</ol>
+<p>
+このように、加減算と乗算での c は必ず「誤差が出ない」だけの精度を持って生成されます
+(BigDecimal.limit を指定しない場合)。除算は (a の最大有効桁数) + (b の最大有効桁数) 分の最大桁数を持つ c が生成されますが、
+c = 1.0/3.0 のような計算で明らかなように、
+c の最大精度を超えるところで計算が打ち切られる場合があります。
+</p>
+<p>
+いずれにせよ、c の最大精度は a や b より大きくなりますので
+c が必要とするメモリー領域は大きくなることに注意して下さい。
+</p>
+<p>
+注意：「+, -, *, /」では結果の精度(有効桁数)を自分で指定できません。精度をコントロールしたい場合は、以下のインスタンスメソッドを使用します。
+</p>
+<dl>
+<dt>add, sub, mult, div</dt>
+<dd>
+<p>
+これらのメソッドは先頭 (最左) の数字からの桁数を指定できます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal</span><span class="s2">"</span>
+<span class="nb">p</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">2</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">div</span><span class="p">(</span><span class="mi">3</span>, <span class="mi">12</span><span class="p">)</span><span class="p">.</span><span class="nf">to_s</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="c1"># 2.0 / 3.0
+</span><span class="c1"># =&gt; 0.6666666666 67e0
+</span></code></pre>
+</dd>
+<dt>truncate, round, ceil, floor</dt>
+<dd>
+<p>
+これらのメソッドは小数点からの相対位置を指定して桁数を決定します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal</span><span class="s2">"</span>
+<span class="nb">p</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">6.66666666666666</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">round</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="p">.</span><span class="nf">to_s</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="c1"># =&gt; 0.6666666666 667e1
+</span></code></pre>
+</dd>
+</dl>
+<h3 >自分で精度をコントロールしたい場合</h3>
+<p>
+自分で精度(有効桁数)をコントロールしたい場合は add、sub、mult、div 等のメソッドが使用できます。以下の円周率を計算するプログラム例のように、求める桁数は自分で指定することができます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">pi.rb</span>
+<code>
+<span class="c1">#!/usr/local/bin/ruby
+</span>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal</span><span class="s2">"</span>
+<span class="c1">#
+</span><span class="c1"># Calculates 3.1415.... (the number of times that a circle's diameter
+</span><span class="c1"># will fit around the circle) using J. Machin's formula.
+</span><span class="c1">#
+</span><span class="k">def</span> <span class="nf">big_pi</span><span class="p">(</span>sig<span class="p">)</span> <span class="c1"># sig: Number of significant figures
+</span>  exp    <span class="o">=</span> <span class="o">-</span>sig
+  pi     <span class="o">=</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">0</span><span class="s2">"</span><span class="p">)</span>
+  two    <span class="o">=</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">2</span><span class="s2">"</span><span class="p">)</span>
+  m25    <span class="o">=</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">-0.04</span><span class="s2">"</span><span class="p">)</span>
+  m57121 <span class="o">=</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">-57121</span><span class="s2">"</span><span class="p">)</span>
+
+  u <span class="o">=</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">1</span><span class="s2">"</span><span class="p">)</span>
+  k <span class="o">=</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">1</span><span class="s2">"</span><span class="p">)</span>
+  w <span class="o">=</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">1</span><span class="s2">"</span><span class="p">)</span>
+  t <span class="o">=</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">-80</span><span class="s2">"</span><span class="p">)</span>
+  <span class="k">while</span> <span class="p">(</span>u<span class="p">.</span><span class="nf">nonzero?</span> <span class="o">&amp;&amp;</span> u<span class="p">.</span><span class="nf">exponent</span> <span class="o">&gt;=</span> exp<span class="p">)</span>
+    t   <span class="o">=</span> t <span class="o">*</span> m25
+    u   <span class="o">=</span> t<span class="p">.</span><span class="nf">div</span><span class="p">(</span>k,sig<span class="p">)</span>
+    pi  <span class="o">=</span> pi <span class="o">+</span> u
+    k   <span class="o">=</span> k <span class="o">+</span> two
+  <span class="k">end</span>
+
+  u <span class="o">=</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">1</span><span class="s2">"</span><span class="p">)</span>
+  k <span class="o">=</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">1</span><span class="s2">"</span><span class="p">)</span>
+  w <span class="o">=</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">1</span><span class="s2">"</span><span class="p">)</span>
+  t <span class="o">=</span> <span class="no">BigDecimal</span><span class="p">(</span><span class="s2">"</span><span class="s2">956</span><span class="s2">"</span><span class="p">)</span>
+  <span class="k">while</span> <span class="p">(</span>u<span class="p">.</span><span class="nf">nonzero?</span> <span class="o">&amp;&amp;</span> u<span class="p">.</span><span class="nf">exponent</span> <span class="o">&gt;=</span> exp <span class="p">)</span>
+    t   <span class="o">=</span> t<span class="p">.</span><span class="nf">div</span><span class="p">(</span>m57121,sig<span class="p">)</span>
+    u   <span class="o">=</span> t<span class="p">.</span><span class="nf">div</span><span class="p">(</span>k,sig<span class="p">)</span>
+    pi  <span class="o">=</span> pi <span class="o">+</span> u
+    k   <span class="o">=</span> k <span class="o">+</span> two
+  <span class="k">end</span>
+  pi
+<span class="k">end</span>
+
+<span class="k">if</span> <span class="vg">$0</span> <span class="o">==</span> <span class="k">__FILE__</span>
+  <span class="k">if</span> <span class="no">ARGV</span><span class="p">.</span><span class="nf">size</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="nb">puts</span> <span class="s2">"</span><span class="s2">PI(</span><span class="s2">"</span><span class="o">+</span><span class="no">ARGV</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s2">"</span><span class="s2">):</span><span class="s2">"</span>
+    <span class="nb">puts</span> big_pi<span class="p">(</span><span class="no">ARGV</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="p">.</span><span class="nf">to_i</span><span class="p">)</span>
+  <span class="k">else</span>
+    <span class="nb">puts</span> <span class="s2">"</span><span class="s2">TRY: ruby pi.rb 1000</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<h2 >その他</h2>
+<p>
+以下のメソッド以外にも、(C ではない) Ruby ソースの形で提供されているものもあります。例えば、
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal/math</span><span class="s2">"</span>
+</code></pre>
+<p>
+とすることで、sin や cos といった関数が使用できるようになります。使用方法など、詳細は <a href="../library/bigdecimal=2fmath.html">bigdecimal/math</a> を参照して下さい。 その他、Float との相互変換などのメソッドが <a href="../library/bigdecimal=2futil.html">bigdecimal/util</a> でサポートされています。利用するには
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">bigdecimal/util</span><span class="s2">"</span>
+</code></pre>
+<p>
+のようにします。詳細は <a href="../library/bigdecimal=2futil.html">bigdecimal/util</a> を参照して下さい。
+</p>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-big-decimal.html">BigDecimal</a>
+</td>
+<td class="description"><p>
+可変長浮動小数点計算クラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>モジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-big-math.html">BigMath</a>
+</td>
+<td class="description"><p>
+BigDecimalを使った数学的な機能を提供するモジュールです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>サブライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/bigdecimal=2fjacobian.html">bigdecimal/jacobian</a></td>
+<td class="description"><p>
+ヤコビ行列を計算する機能を提供します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/bigdecimal=2fludcmp.html">bigdecimal/ludcmp</a></td>
+<td class="description"><p>
+LU 分解を用いて、連立1次方程式 Ax = b の解 x を求める機能を提供します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/bigdecimal=2fmath.html">bigdecimal/math</a></td>
+<td class="description"><p>
+BigDecimalを使った数学的な機能を提供します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/bigdecimal=2fnewton.html">bigdecimal/newton</a></td>
+<td class="description"><p>
+ニュートン法を用いて非線形方程式 f(x) = 0 の解 x を求める機能を提供します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/bigdecimal=2futil.html">bigdecimal/util</a></td>
+<td class="description"><p>
+String、Integer、Float、Rational オブジェクトを
+BigDecimal オブジェクトに変換する機能を提供します。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>追加・再定義されるメソッド</h2>
+<p><code>
+
+<a href="../method/-kernel/m/-big-decimal.html">Kernel.#BigDecimal</a>
+
+</code></p>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

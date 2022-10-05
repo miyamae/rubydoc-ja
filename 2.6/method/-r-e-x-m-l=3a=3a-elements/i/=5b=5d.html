@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>REXML::Elements#[] (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="index には整数もしくは文字列を指定できます。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/rexml=2fdocument.html">rexml/documentライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-r-e-x-m-l=3a=3a-elements.html">REXML::Elementsクラス</a>
+      </li>
+      <li>
+        [] 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method REXML::Elements#[]</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_--5B--5D"><code>self[index, name = nil] -&gt; REXML::Element | nil</code><span class="permalink">[<a href="../../../method/-r-e-x-m-l=3a=3a-elements/i/=5b=5d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/REXML/Elements.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+index が指し示している要素を返します。
+</p>
+<p>
+index には整数もしくは文字列を指定できます。
+</p>
+<p>
+index に整数を指定した場合は index 番目の子要素を返します。
+index は 1-origin です。つまり最初の要素の index は 1 であり、 0 ではありません。
+n 番目の要素の index は n であり、 n-1 ではありません。これは XPath の仕様に合わせています。
+</p>
+<p>
+index に文字列を指定した場合はその文字列を XPath と見なし、それで指定された要素を返します。
+XPath が複数の要素を指している場合は、そのうち一つを返します。
+XPath の性質上、子要素でない要素を返す場合もあります。
+</p>
+<p>
+name は index に整数を指定した場合にのみ意味があります。
+name を指定した場合 name という名前を持つ子要素の中で index 番目のものを返します。この場合も index は 1-origin です。
+</p>
+<p>
+整数で指定した場合でも、XPathで指定した場合でも、指定した要素が存在しない場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] index:</dt>
+<dd>
+取り出したい要素の index (整数)もしくは xpath (文字列)
+</dd>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+子要素の名前(文字列)
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'rexml/document'</span>
+doc <span class="o">=</span> <span class="no">REXML</span><span class="o">::</span><span class="no">Document</span><span class="p">.</span><span class="nf">new</span> <span class="s1">'&lt;a&gt;&lt;b/&gt;&lt;c id=&quot;1&quot;/&gt;&lt;c id=&quot;2&quot;/&gt;&lt;d/&gt;&lt;/a&gt;'</span>
+doc<span class="p">.</span><span class="nf">root</span><span class="p">.</span><span class="nf">elements</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>       <span class="c1"># =&gt; &lt;b/&gt;
+</span>doc<span class="p">.</span><span class="nf">root</span><span class="p">.</span><span class="nf">elements</span><span class="p">[</span><span class="s1">'c'</span><span class="p">]</span>     <span class="c1"># =&gt; &lt;c id='1'/&gt;
+</span>doc<span class="p">.</span><span class="nf">root</span><span class="p">.</span><span class="nf">elements</span><span class="p">[</span><span class="mi">2</span>,<span class="s1">'c'</span><span class="p">]</span>   <span class="c1"># =&gt; &lt;c id='2'/&gt;
+</span>
+doc <span class="o">=</span> <span class="no">REXML</span><span class="o">::</span><span class="no">Document</span><span class="p">.</span><span class="nf">new</span> <span class="s1">'&lt;a&gt;&lt;b&gt;&lt;c /&gt;&lt;a id=&quot;1&quot;/&gt;&lt;/b&gt;&lt;/a&gt;'</span>
+doc<span class="p">.</span><span class="nf">root</span><span class="p">.</span><span class="nf">elements</span><span class="p">[</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span><span class="p">]</span>     <span class="c1"># =&gt; nil
+</span>doc<span class="p">.</span><span class="nf">root</span><span class="p">.</span><span class="nf">elements</span><span class="p">[</span><span class="s2">"</span><span class="s2">b/a</span><span class="s2">"</span><span class="p">]</span>   <span class="c1"># =&gt; &lt;a id='1'/&gt;
+</span>doc<span class="p">.</span><span class="nf">root</span><span class="p">.</span><span class="nf">elements</span><span class="p">[</span><span class="s2">"</span><span class="s2">/a</span><span class="s2">"</span><span class="p">]</span>    <span class="c1"># =&gt; &lt;a&gt; ... &lt;/&gt;
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

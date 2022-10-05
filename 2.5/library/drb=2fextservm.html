@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>library drb/extservm (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="[[c:DRb::ExtServManager]] を定義しているライブラリ。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        drb/extservmライブラリ
+      </li>
+    </ol>
+  </nav>
+
+<h1>library drb/extservm</h1>
+</header>
+
+<main>
+
+
+
+<h2>要約</h2>
+<p>
+<a href="../class/-d-rb=3a=3a-ext-serv-manager.html">DRb::ExtServManager</a> を定義しているライブラリ。
+</p>
+<p>
+DRb::ExtServManager は drb で実現されたサービスブローカーです。個々のサービスは <a href="../library/drb=2fextserv.html">drb/extserv</a> で定義されている
+<a href="../class/-d-rb=3a=3a-ext-serv.html">DRb::ExtServ</a> を用いて実装します。
+DRb::ExtServManager
+はクライアントの要求に応じて個々のサービスをサブプロセスとして起動し、各サービスを表す DRb::ExtServ オブジェクトをリモートオブジェクトとしてクライアントに渡します。
+</p>
+<p>
+このライブラリは簡易的なもので、あまりメンテナンスもされていないので、本格的な用途にはこのライブラリを参考にして実装してください。
+</p>
+<h2 >Example</h2>
+<p>
+以下の例を実行するためには、まず server.rb を起動し、その後 client.rb を動かします。service.rb は server.rb が client.rb からサービスを要求された時に起動されます。また、stop.rbを用いて
+</p>
+<p>
+server.rb:
+</p>
+<pre>
+require 'drb/drb'
+require 'drb/extservm'
+
+Dir.chdir(File.dirname(__FILE__))
+# サービスを起動するコマンドを指定する
+# コマンドは文字列配列、もしくは文字列で指定できる
+# サブプロセスの起動は Kernel.#spawn でなされる
+#
+# サブプロセスを起動するときは、ここに指定したパラメータに加えて
+# さらに2つのパラメータ(サーバの druby URI とサービス名)が渡されます
+DRb::ExtServManager.command[&quot;No1&quot;] = %w(ruby service.rb service1)
+DRb::ExtServManager.command[&quot;No2&quot;] = %w(ruby service.rb service2)
+
+# ExtServManager オブジェクトを生成して
+# drb の front object に指定する
+s = DRb::ExtServManager.new
+DRb.start_service(&quot;druby://localhost:10234&quot;, s)
+
+# drb のプロセスの終了を待つ
+DRb.thread.join
+</pre>
+<p>
+service.rb:
+</p>
+<pre>
+require 'drb/drb'
+require 'drb/extserv'
+
+# サービスを表すクラス
+class Service
+  include DRb::DRbUndumped
+
+  def initialize(service_name)
+    @service_name = service_name
+  end
+
+  def hello
+    &quot;You invoke #{@service_name}&quot;
+  end
+end
+
+puts &quot;Start #{ARGV[0]}&quot;
+# ARGV の最後2つを除いた部分は ExtServManager.command で
+# 指定した引数が渡される
+front = Service.new(ARGV[0])
+
+# 通信のため drb を起動する
+# ポート番号に 0 を指定すると ephemeral port から適当なポート番号が
+# 選ばれる
+server = DRb::DRbServer.new(&quot;druby://localhost:0&quot;, front)
+
+# ARGV の最後の2つと DRbServer オブジェクトを ExtServ.new に渡す。
+# これによってブローカープロセスにサービスの
+# 窓口となる ExtServ オブジェクトを渡す
+es = DRb::ExtServ.new(ARGV[1], ARGV[2], server)
+
+# サーバスレッドの停止を待つ
+DRb.thread.join
+# サービスを DRb::ExtServ#stop_service で止めると、サーバスレッドが
+# 終了するため、以下の行が実行される
+puts &quot;Stop #{ARGV[0]}&quot;
+</pre>
+<p>
+client.rb:
+</p>
+<pre>
+require 'drb/drb'
+
+DRb.start_service
+s = DRbObject.new_with_uri(&quot;druby://localhost:10234&quot;)
+
+# No1 と名付けられたサービスを呼び出す
+service1 = s.service(&quot;No1&quot;).front
+p service1.hello # =&gt; &quot;service1&quot;
+
+# No2 と名付けられたサービスを呼び出す
+service2 = s.service(&quot;No2&quot;).front
+p service2.hello # =&gt; &quot;service2&quot;
+</pre>
+<p>
+stop.rb:
+</p>
+<pre>
+require 'drb/drb'
+
+DRb.start_service
+s = DRbObject.new_with_uri(&quot;druby://localhost:10234&quot;)
+s.service(ARGV[0]).stop_service
+</pre>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-d-rb=3a=3a-ext-serv-manager.html">DRb::ExtServManager</a>
+</td>
+<td class="description"><p>
+<a href="../class/-d-rb=3a=3a-ext-serv.html">DRb::ExtServ</a> で作られたサービスを管理するクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

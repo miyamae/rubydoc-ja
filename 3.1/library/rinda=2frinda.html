@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>library rinda/rinda (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="Rubyで実装されたタプルスペース(Tuple Space)を扱うためのライブラリです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        rinda/rindaライブラリ
+      </li>
+    </ol>
+  </nav>
+
+<h1>library rinda/rinda</h1>
+</header>
+
+<main>
+
+
+
+<h2>要約</h2>
+<p>
+Rubyで実装されたタプルスペース(Tuple Space)を扱うためのライブラリです。
+</p>
+<p>
+タプルスペースとは並列プログラムにおける一つのパターンです。並列プログラミングにおいては、ロックのような同期処理が必須ですが、適切な同期処理を実現することは困難をともないます。このパターンにおいては、複数の並列単位(スレッド/プロセス)間の通信をすべてタプルスペースという領域を経由して行います。これによってプロセス間の通信トポロジーを単純化し、問題を簡単化します。タプルスペースに対しては、タプルを書き込む(write)、取り出す(take)、タプルの要素を覗き見る(read)
+という操作のみが利用できます。可能な操作を限定し、定型化することで安全な同期処理を実現します。rinda においてはタプルとは配列もしくはハッシュテーブルを意味します。タプルを取り出すときにはパターンを指定して、それにマッチしたもののみを取り出すことができます。特にタプルの第1要素最初の要素を限定することで必要なタプルのみを取り出します。
+</p>
+<p>
+タプルスペースそのものの実装は <a href="../library/rinda=2ftuplespace.html">rinda/tuplespace</a> でなされています。このライブラリはタプルスペースへのアクセス機能等を提供します。
+</p>
+<h2 >参考</h2>
+<ul>
+<li><a class="external" href="http://www.druby.org/ilikeruby/rinda.html">http://www.druby.org/ilikeruby/rinda.html</a></li>
+<li><a class="external" href="http://www2a.biglobe.ne.jp/~seki/ruby/d208.html">http://www2a.biglobe.ne.jp/~seki/ruby/d208.html</a></li>
+</ul>
+<h2 id='tuplepattern'>タプルのパターンについて</h2>
+<p>
+<a href="../method/-rinda=3a=3a-tuple-space/i/take.html">Rinda::TupleSpace#take</a> や <a href="../method/-rinda=3a=3a-tuple-space-proxy/i/take.html">Rinda::TupleSpaceProxy#take</a> などでは取り出したいタプルを指定するため、パターンをメソッドの引数に渡す必要があります。
+</p>
+<p>
+パターンは配列、もしくはハッシュテーブルのいずれかです。配列によるパターンは配列によるタプルにのみ、ハッシュテーブルによるパターンはハッシュテーブルによるタプルにのみ、それぞれマッチします。
+</p>
+<p>
+パターンが配列の場合は、長さが同じ配列タプルにのみマッチします。そしてパターン配列の各要素が対応する配列タプルの各要素にマッチする場合にパターンがタプルにマッチします。各要素に関しては以下が成立する場合にマッチします。
+</p>
+<ul>
+<li>パターン側の要素が nil である (つまり nil はワイルドカード)</li>
+<li>「パターン側の要素 == タプル側の要素」 が成立する(例えば2つの文字列が等しい)</li>
+<li>「パターン側の要素 === タプル側の要素」 が成立する(例えばパターン側に正規表現を指定し、
+タプル側がマッチする文字列である場合。別の例としてパターン側にクラスを指定し、
+タプル側がそのインスタンスである場合)</li>
+</ul>
+<p>
+パターンがハッシュテーブルの場合、キーと値のペアの個数が一致し、キーの集合が一致し、それぞれのキーに対応する値がマッチする場合にパターンがタプルにマッチします。値のマッチのルールは配列の各要素に関するマッチのルールと同じです。ハッシュテーブルのキーとしては文字列のみ使えます。
+</p>
+<h2 >例</h2>
+<p>
+この例では、rinda_ts.rb を起動したプロセスがタプルスペースを提供します。
+</p>
+<p>
+rindas.rb はタプルスペースに書き込まれたクエリ('sum' というキーのタプル)
+を取り出し、それを2倍したものを応答として('ans'というキーのタプル)
+タプルスペースに書き込みます。
+</p>
+<p>
+一方 rindac.rb はクエリ('sum' というキーのタプル)をタプルスペースに書き込み、その応答('ans'というキーのタプル)をタプルスペースから取り出して表示します。
+</p>
+<p>
+例の動かしかたは以下の通りです。
+</p>
+<pre>
+# まず、rinda_ts.rb を動かす
+ruby rinda_ts.rb druby://localhost:40121
+
+# rinda_ts.rb を動かしたまま、rindas.rbを動かす
+# 複数の rindas.rb を同時に動かしてもよい。
+# 別のターミナルで:
+ruby rindas.rb druby://localhost:40121
+
+# rindac.rb を動かし、クエリをタプルスペースに書き込む
+ruby rindac.rb druby://localhost:40121
+# on rindas.rb terminal
+do_it(1)
+do_it(2)
+do_it(3)
+do_it(4)
+do_it(5)
+do_it(6)
+do_it(7)
+do_it(8)
+do_it(9)
+do_it(10)
+# on rindac.rb terminal
+[1, 2]
+[2, 4]
+[3, 6]
+[4, 8]
+[5, 10]
+[6, 12]
+[7, 14]
+[8, 16]
+[9, 18]
+[10, 20]
+</pre>
+<p>
+rindas.rb や rindac.rb を同時に複数動かすと、タプルスペースの並列性の問題についてのよりよい理解が得られます。例えば rindas.rb を複数動かすと、
+rindac.rb からのクエリを複数の rindas.rb が分散して処理します。複数の rindac.rb を動かしても、応答が混ざったりせず、rindac.rb に適切に応答が返されます。これは DRb.uri を使うことで rindac.rb のプロセスを一意に同定しているからです。
+</p>
+<pre>
+# rinda_ts.rb
+require 'drb/drb'
+require 'rinda/tuplespace'
+
+uri = ARGV.shift
+DRb.start_service(uri, Rinda::TupleSpace.new)
+puts DRb.uri
+DRb.thread.join
+
+
+# rindas.rb
+require 'drb/drb'
+require 'rinda/rinda'
+
+def do_it(v)
+  puts &quot;do_it(#{v})&quot;
+  v + v
+end
+
+uri = ARGV.shift || raise(&quot;usage: #{$0} &lt;server_uri&gt;&quot;)
+
+DRb.start_service
+ts = Rinda::TupleSpaceProxy.new(DRbObject.new(nil, uri))
+
+while true
+  r = ts.take(['sum', nil, nil])
+  v = do_it(r[2])
+  ts.write(['ans', r[1], r[2], v])
+end
+
+
+# rindac.rb
+require 'drb/drb'
+require 'rinda/rinda'
+
+uri = ARGV.shift || raise(&quot;usage: #{$0} &lt;server_uri&gt;&quot;)
+
+DRb.start_service
+ts = Rinda::TupleSpaceProxy.new(DRbObject.new(nil, uri))
+
+(1..10).each do |n|
+  ts.write(['sum', DRb.uri, n])
+end
+
+(1..10).each do |n|
+  ans = ts.take(['ans', DRb.uri, n, nil])
+  p [ans[2], ans[3]]
+end
+</pre>
+<p>
+この例は ruby の配布物の sample/drb/rinda{_ts,s,c}.rb と同じものです。
+</p>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rinda=3a=3a-d-rb-object-template.html">Rinda::DRbObjectTemplate</a>
+</td>
+<td class="description"></td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rinda=3a=3a-simple-renewer.html">Rinda::SimpleRenewer</a>
+</td>
+<td class="description"><p>
+シンプルな renewer で renewer のサンプル実装です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rinda=3a=3a-tuple.html">Rinda::Tuple</a>
+</td>
+<td class="description"><p>
+Tuple のためのクラスです。ユーザがこのクラスを直接使うことはありません。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-rinda=3a=3a-template.html">Rinda::Template</a>
+</td>
+<td class="description"><p>
+タプルのマッチングのためのクラスです。ユーザがこのクラスを直接使うことはありません。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rinda=3a=3a-tuple-space-proxy.html">Rinda::TupleSpaceProxy</a>
+</td>
+<td class="description"><p>
+リモートの <a href="../class/-rinda=3a=3a-tuple-space.html">Rinda::TupleSpace</a> オブジェクトを包むプロクシクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>モジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rinda.html">Rinda</a>
+</td>
+<td class="description"><p>
+<a href="../library/rinda=2frinda.html">rinda/rinda</a> および <a href="../library/rinda=2ftuplespace.html">rinda/tuplespace</a> の名前空間を提供するモジュール。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rinda=3a=3a-request-canceled-error.html">Rinda::RequestCanceledError</a>
+</td>
+<td class="description"><p>
+rinda で take などのリクエストが何らかの理由でキャンセルされたことを意味する例外クラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rinda=3a=3a-request-expired-error.html">Rinda::RequestExpiredError</a>
+</td>
+<td class="description"><p>
+rinda で take などのリクエストがタイムアウトしたことを意味する例外クラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-rinda=3a=3a-rinda-error.html">Rinda::RindaError</a>
+</td>
+<td class="description"><p>
+rinda ライブラリの基底例外クラス
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-rinda=3a=3a-invalid-hash-tuple-key.html">Rinda::InvalidHashTupleKey</a>
+</td>
+<td class="description"><p>
+<a href="../method/-rinda=3a=3a-tuple-space/i/write.html">Rinda::TupleSpace#write</a> などで不正なハッシュテーブル(キーが文字列でないもの)をタプルスペースに書き込もうとすると発生すると発生する例外です。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

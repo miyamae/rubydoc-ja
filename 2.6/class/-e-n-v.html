@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>object ENV (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="環境変数を表すオブジェクト。[[c:Hash]] と同様のインターフェースを持ち
+ます。ただし、Hash と異なり、ENV のキーと値には文字列しか
+とることができません。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        ENVオブジェクト
+      </li>
+    </ol>
+  </nav>
+
+<h1>object ENV</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+      <li>
+        <a href="../class/-e-n-v.html">ENV</a>
+      </li>
+    </ol>
+  </nav>
+
+
+
+<p>
+  extend: <a href="../class/-enumerable.html">Enumerable</a>
+</p>
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+環境変数を表すオブジェクト。<a href="../class/-hash.html">Hash</a> と同様のインターフェースを持ちます。ただし、Hash と異なり、ENV のキーと値には文字列しかとることができません。
+</p>
+<p>
+ENV で得られる文字列は ENV['PATH'] 以外は常に汚染されています。オブジェクトの汚染に関しては <a href="../doc/spec=2fsafelevel.html">セキュリティモデル</a> を参照して下さい。
+ENV['PATH'] はその要素が誰でも書き込み可能なディレクトリを含んでいる場合に限り汚染されます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="no">ENV</span><span class="p">[</span><span class="s1">'TERM'</span><span class="p">]</span><span class="p">.</span><span class="nf">tainted?</span>  <span class="c1"># =&gt; true
+</span><span class="nb">p</span> path <span class="o">=</span> <span class="no">ENV</span><span class="p">[</span><span class="s1">'PATH'</span><span class="p">]</span>    <span class="c1"># =&gt; &quot;/usr/local/bin:/usr/bin:/bin:/usr/X11/bin&quot;
+</span><span class="nb">p</span> path<span class="p">.</span><span class="nf">tainted?</span>         <span class="c1"># =&gt; false
+</span></code></pre>
+<p>
+また、ENV で得られる文字列は <a href="../method/-object/i/freeze.html">Object#freeze</a> されています。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="no">ENV</span><span class="p">[</span><span class="s1">'TERM'</span><span class="p">]</span><span class="p">.</span><span class="nf">frozen?</span>  <span class="c1"># =&gt; true
+</span></code></pre>
+<p>
+Windows では環境変数は大文字、小文字を区別しません。(cygwin を除く)
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">ENV</span><span class="p">[</span><span class="s1">'OS'</span><span class="p">]</span> <span class="c1"># =&gt; Windows_NT
+</span><span class="no">ENV</span><span class="p">[</span><span class="s1">'os'</span><span class="p">]</span> <span class="c1"># =&gt; Windows_NT
+</span></code></pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_--5B--5D">[]</a></li>
+
+<li><a href="#S_--5B--5D--3D">[]=</a></li>
+
+<li><a href="#S_ASSOC">assoc</a></li>
+
+<li><a href="#S_CLEAR">clear</a></li>
+
+<li><a href="#S_CLONE">clone</a></li>
+
+<li><a href="#S_DELETE">delete</a></li>
+
+<li><a href="#S_DELETE_IF">delete_if</a></li>
+
+<li><a href="#S_EACH">each</a></li>
+
+<li><a href="#S_EACH_KEY">each_key</a></li>
+
+<li><a href="#S_EACH">each_pair</a></li>
+
+<li><a href="#S_EACH_VALUE">each_value</a></li>
+
+<li><a href="#S_EMPTY--3F">empty?</a></li>
+
+<li><a href="#S_FETCH">fetch</a></li>
+
+<li><a href="#S_FILTER">filter</a></li>
+
+<li><a href="#S_FILTER--21">filter!</a></li>
+
+<li><a href="#S_HAS_KEY--3F">has_key?</a></li>
+
+<li><a href="#S_HAS_VALUE--3F">has_value?</a></li>
+
+<li><a href="#S_HAS_KEY--3F">include?</a></li>
+
+<li><a href="#S_INDEX">index</a></li>
+
+<li><a href="#S_INSPECT">inspect</a></li>
+
+<li><a href="#S_INVERT">invert</a></li>
+
+<li><a href="#S_FILTER--21">keep_if</a></li>
+
+<li><a href="#S_INDEX">key</a></li>
+
+<li><a href="#S_HAS_KEY--3F">key?</a></li>
+
+<li><a href="#S_KEYS">keys</a></li>
+
+<li><a href="#S_LENGTH">length</a></li>
+
+<li><a href="#S_HAS_KEY--3F">member?</a></li>
+
+<li><a href="#S_RASSOC">rassoc</a></li>
+
+<li><a href="#S_REHASH">rehash</a></li>
+
+<li><a href="#S_REJECT">reject</a></li>
+
+<li><a href="#S_DELETE_IF">reject!</a></li>
+
+<li><a href="#S_REPLACE">replace</a></li>
+
+<li><a href="#S_FILTER">select</a></li>
+
+<li><a href="#S_FILTER--21">select!</a></li>
+
+<li><a href="#S_SHIFT">shift</a></li>
+
+<li><a href="#S_LENGTH">size</a></li>
+
+<li><a href="#S_SLICE">slice</a></li>
+
+<li><a href="#S_--5B--5D--3D">store</a></li>
+
+<li><a href="#S_TO_A">to_a</a></li>
+
+<li><a href="#S_TO_H">to_h</a></li>
+
+<li><a href="#S_TO_HASH">to_hash</a></li>
+
+<li><a href="#S_TO_S">to_s</a></li>
+
+<li><a href="#S_UPDATE">update</a></li>
+
+<li><a href="#S_HAS_VALUE--3F">value?</a></li>
+
+<li><a href="#S_VALUES">values</a></li>
+
+<li><a href="#S_VALUES_AT">values_at</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_--5B--5D"><code>self[key] -&gt; String</code><span class="permalink">[<a href="../method/-e-n-v/s/=5b=5d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+key に対応する環境変数の値を返します。該当する環境変数が存在しない時には nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+環境変数名を指定します。文字列で指定します。文字列以外のオブジェクトを指定した場合は to_str メソッドによる暗黙の型変換を試みます。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="no">ENV</span><span class="p">[</span><span class="s1">'PATH'</span><span class="p">]</span>           <span class="c1"># =&gt; &quot;/usr/local/bin:/usr/bin:/bin:/usr/X11/bin&quot;
+</span><span class="no">ENV</span><span class="p">[</span><span class="s1">'NON_EXIST_KEY'</span><span class="p">]</span>  <span class="c1"># =&gt; nil
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_--5B--5D--3D"><code>self[key] = value</code><span class="permalink">[<a href="../method/-e-n-v/s/=5b=5d=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-5B-5D-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>store(key, value) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+key に対応する環境変数の値を value にします。
+value が nil の時、key に対応する環境変数を取り除きます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+環境変数名を指定します。文字列で指定します。文字列以外のオブジェクトを指定した場合は to_str メソッドによる暗黙の型変換を試みます。
+</dd>
+<dt class='method-param'>[PARAM] value:</dt>
+<dd>
+置き換えるべき値を指定します。文字列で指定します。文字列以外のオブジェクトを指定した場合は to_str メソッドによる暗黙の型変換を試みます。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+value を返します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="no">ENV</span><span class="p">[</span><span class="s1">'NEW_KEY'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'some_value'</span>
+<span class="no">ENV</span><span class="p">[</span><span class="s1">'NEW_KEY'</span><span class="p">]</span> <span class="c1"># =&gt; 'some_value'
+</span><span class="no">ENV</span><span class="p">.</span><span class="nf">store</span><span class="p">(</span><span class="s1">'NEW_KEY'</span>, <span class="k">nil</span><span class="p">)</span> <span class="c1"># =&gt; nil
+</span><span class="no">ENV</span><span class="p">.</span><span class="nf">has_key?</span><span class="p">(</span><span class="s1">'NEW_KEY'</span><span class="p">)</span> <span class="c1"># =&gt; false
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_ASSOC"><code>assoc(key) -&gt; Array | nil</code><span class="permalink">[<a href="../method/-e-n-v/s/assoc.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-assoc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身が与えられたキーに対応する要素を持つとき、見つかった要素のキーと値のペアを配列として返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+検索するキーを指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/assoc.html">Hash#assoc</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_CLEAR"><code>clear -&gt; self</code><span class="permalink">[<a href="../method/-e-n-v/s/clear.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-clear">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+環境変数をすべてクリアします。self を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="no">ENV</span><span class="p">.</span><span class="nf">clear</span>
+<span class="nb">p</span> <span class="no">ENV</span> <span class="c1"># =&gt; {}
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_CLONE"><code>clone(freeze: true) -&gt; object</code><span class="permalink">[<a href="../method/-e-n-v/s/clone.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-clone">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ENV オブジェクトの複製を作成して返します。
+</p>
+<p>
+ENV は OS のプロセス全体で共有される環境変数を操作するラッパーオブジェクトなので、複製は有用ではありません。そのため、3.1 からは複製で環境変数を操作するときに deprecated 警告がでます。
+</p>
+<p>
+テスト実行中に環境変数を退避する用途には <a href="../method/-e-n-v/s/to_h.html">ENV.to_h</a> を使用してください。
+</p>
+<pre class="highlight ruby">
+<code>
+saved_env <span class="o">=</span> <span class="no">ENV</span><span class="p">.</span><span class="nf">to_h</span>
+<span class="c1"># (テストなど)
+</span><span class="no">ENV</span><span class="p">.</span><span class="nf">replace</span><span class="p">(</span>saved_env<span class="p">)</span>
+</code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-object/i/clone.html">Object#clone</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_DELETE"><code>delete(key) -&gt; String | nil</code><span class="permalink">[<a href="../method/-e-n-v/s/delete.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-delete">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>delete(key) {|key| ... } -&gt; String | nil</code></dt>
+<dd class="method-description">
+<p>
+key に対応する環境変数を取り除きます。取り除かれた環境変数の値を返しますが、key に対応する環境変数が存在しない時には
+nil を返します。
+</p>
+<p>
+ブロックが与えられた時には key にマッチするものがなかった時に評価されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+環境変数名を指定します。文字列で指定します。文字列で指定します。文字列以外のオブジェクトを指定した場合は to_str メソッドによる暗黙の型変換を試みます。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="no">ENV</span><span class="p">[</span><span class="s1">'TEST'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'foo'</span>
+<span class="no">ENV</span><span class="p">.</span><span class="nf">delete</span><span class="p">(</span><span class="s1">'TEST'</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;foo&quot;
+</span><span class="no">ENV</span><span class="p">.</span><span class="nf">delete</span><span class="p">(</span><span class="s1">'TEST'</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>key<span class="o">|</span> <span class="nb">puts</span> <span class="s2">"</span><span class="si">#{</span><span class="n">key</span><span class="si">}</span><span class="s2"> is not found in ENV</span><span class="s2">"</span> <span class="p">}</span> <span class="c1"># TEST is not found in ENV
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_DELETE_IF"><code>delete_if {|key, value| ... } -&gt; ENV</code><span class="permalink">[<a href="../method/-e-n-v/s/delete_if.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-delete_if">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>reject! {|key, value| ... } -&gt; ENV | nil</code></dt>
+<dt class="method-heading"><code>delete_if -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>reject! -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+key と value を引数としてブロックを評価した値が真である時、環境変数を削除します。
+</p>
+<p>
+reject! は要素に変化がなければ nil を返します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="no">ENV</span><span class="p">[</span><span class="s1">'FOO'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'bar'</span>
+<span class="no">ENV</span><span class="p">.</span><span class="nf">delete_if</span> <span class="p">{</span> <span class="o">|</span>key, value<span class="o">|</span> key <span class="o">==</span> <span class="s1">'FOO'</span> <span class="o">&amp;&amp;</span> value <span class="o">==</span> <span class="s1">'bar'</span> <span class="p">}</span> <span class="c1"># =&gt; ENV
+</span><span class="no">ENV</span><span class="p">.</span><span class="nf">reject!</span> <span class="p">{</span> <span class="o">|</span>key, value<span class="o">|</span> key <span class="o">==</span> <span class="s1">'FOO'</span> <span class="o">&amp;&amp;</span> value <span class="o">==</span> <span class="s1">'bar'</span> <span class="p">}</span> <span class="c1"># =&gt; nil
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_EACH"><code>each -&gt; Enumerator</code><span class="permalink">[<a href="../method/-e-n-v/s/each.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-each">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_pair -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>each {|key, value| ... } -&gt; self</code></dt>
+<dt class="method-heading"><code>each_pair {|key, value| ... } -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+key と value を引数としてブロックを評価します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="no">ENV</span><span class="p">[</span><span class="s1">'FOO'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'bar'</span>
+<span class="no">ENV</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span>key, value<span class="o">|</span>
+  <span class="nb">p</span> <span class="s2">"</span><span class="s2">value is </span><span class="si">#{</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> key <span class="o">==</span> <span class="s1">'FOO'</span> <span class="c1"># =&gt; &quot;value is bar&quot;
+</span><span class="k">end</span>
+<span class="c1"># =&gt; ENV
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_EACH_KEY"><code>each_key -&gt; Enumerator</code><span class="permalink">[<a href="../method/-e-n-v/s/each_key.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-each_key">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_key {|key| ... } -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+key を引数としてブロックを評価します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="no">ENV</span><span class="p">[</span><span class="s1">'FOO'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'bar'</span>
+<span class="no">ENV</span><span class="p">.</span><span class="nf">each_key</span> <span class="k">do</span> <span class="o">|</span>key<span class="o">|</span>
+  <span class="nb">p</span> <span class="s2">"</span><span class="s2">key </span><span class="si">#{</span><span class="n">key</span><span class="si">}</span><span class="s2"> detected</span><span class="s2">"</span> <span class="k">if</span> key <span class="o">==</span> <span class="s1">'FOO'</span>
+<span class="k">end</span>
+<span class="c1"># &quot;key FOO detected&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_EACH_VALUE"><code>each_value -&gt; Enumerator</code><span class="permalink">[<a href="../method/-e-n-v/s/each_value.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-each_value">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_value {|value| ... } -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+value を引数としてブロックを評価します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_EMPTY--3F"><code>empty? -&gt; bool</code><span class="permalink">[<a href="../method/-e-n-v/s/empty=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-empty-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+環境変数がひとつも定義されていない時真を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_FETCH"><code>fetch(key) -&gt; String</code><span class="permalink">[<a href="../method/-e-n-v/s/fetch.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-fetch">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>fetch(key, default) -&gt; String</code></dt>
+<dt class="method-heading"><code>fetch(key) {|key| ... } -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+key に関連づけられた値を返します。該当するキーが登録されていない時には、引数 default が与えられていればその値を、ブロックが与えられていればそのブロックを評価した値を返します。そのいずれでもなければ例外が発生します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+環境変数の名前を指定します。 文字列で指定します。文字列で指定します。文字列以外のオブジェクトを指定した場合は
+to_str メソッドによる暗黙の型変換を試みます。
+</dd>
+<dt class='method-param'>[PARAM] default:</dt>
+<dd>
+keyに対応する環境変数の値がないときにこの値を返します。
+</dd>
+<dt>[EXCEPTION] KeyError:</dt>
+<dd>
+引数defaultもブロックも与えられてない時、キーの探索に失敗すると発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_FILTER"><code>select -&gt; Enumerator</code><span class="permalink">[<a href="../method/-e-n-v/s/filter.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-filter">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>select {|key, value| ... } -&gt; Hash</code></dt>
+<dt class="method-heading"><code>filter -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>filter {|key, value| ... } -&gt; Hash</code></dt>
+<dd class="method-description">
+<p>
+環境変数名と値についてブロックを評価し、真を返したものを集めたハッシュを返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_FILTER--21"><code>keep_if {|key, value| ... } -&gt; ENV</code><span class="permalink">[<a href="../method/-e-n-v/s/filter=21.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-filter-21">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>select! {|key, value| ... } -&gt; ENV | nil</code></dt>
+<dt class="method-heading"><code>filter! {|key, value| ... } -&gt; ENV | nil</code></dt>
+<dt class="method-heading"><code>keep_if -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>select! -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>filter! -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+キーと値を引数としてブロックを評価した結果が真であるような要素を環境変数に残します。
+</p>
+<p>
+keep_if は常に self を返します。
+select! と filter! はオブジェクトが変更された場合に self を、されていない場合に nil を返します。
+</p>
+<p>
+ブロックが省略された場合には <a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-e-n-v/s/delete_if.html">ENV.delete_if</a>,<a href="../method/-e-n-v/s/reject=21.html">ENV.reject!</a>, <a href="../method/-hash/i/keep_if.html">Hash#keep_if</a>, <a href="../method/-hash/i/select=21.html">Hash#select!</a>,
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_HAS_KEY--3F"><code>has_key?(key) -&gt; bool</code><span class="permalink">[<a href="../method/-e-n-v/s/has_key=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-has_key-3F">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>include?(key) -&gt; bool</code></dt>
+<dt class="method-heading"><code>key?(key) -&gt; bool</code></dt>
+<dt class="method-heading"><code>member?(key) -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+key で指定される環境変数が存在する時、真を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+環境変数の名前を指定します。文字列で指定します。文字列で指定します。文字列以外のオブジェクトを指定した場合は to_str メソッドによる暗黙の型変換を試みます。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_HAS_VALUE--3F"><code>has_value?(val) -&gt; bool</code><span class="permalink">[<a href="../method/-e-n-v/s/has_value=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-has_value-3F">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>value?(val) -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+val を値として持つ環境変数が存在する時、真を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+値を指定します。文字列で指定します。文字列以外のオブジェクトを指定した場合は to_str メソッドによる暗黙の型変換を試みます。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_INDEX"><code>key(val) -&gt; String | nil</code><span class="permalink">[<a href="../method/-e-n-v/s/index.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-index">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>index(val) -&gt; String | nil</code></dt>
+<dd class="method-description">
+<p>
+val に対応するキーを返します。対応する要素が存在しない時には
+nil を返します。
+</p>
+<p>
+<a href="../method/-e-n-v/s/index.html">ENV.index</a> は obsolete です。使用すると警告メッセージが表示されます。
+<a href="../method/-e-n-v/s/key.html">ENV.key</a> を使用してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] val:</dt>
+<dd>
+値を指定します。文字列で指定します。文字列以外のオブジェクトを指定した場合は to_str メソッドによる暗黙の型変換を試みます。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-e-n-v/s/inspect.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-inspect">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ENV オブジェクトを文字列化します。 <a href="../method/-hash/i/inspect.html">Hash#inspect</a> と同じように動作します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_INVERT"><code>invert -&gt; Hash</code><span class="permalink">[<a href="../method/-e-n-v/s/invert.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-invert">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+環境変数の値をキー、名前を値とした <a href="../class/-hash.html">Hash</a> を生成して返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_KEYS"><code>keys -&gt; [String]</code><span class="permalink">[<a href="../method/-e-n-v/s/keys.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-keys">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+全環境変数の名前の配列を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_LENGTH"><code>length -&gt; Integer</code><span class="permalink">[<a href="../method/-e-n-v/s/length.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-length">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>size -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+環境変数の数を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_RASSOC"><code>rassoc(value) -&gt; Array | nil</code><span class="permalink">[<a href="../method/-e-n-v/s/rassoc.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-rassoc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身が与えられた値に対応する要素を持つとき、見つかった要素のキーと値のペアを配列として返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] value:</dt>
+<dd>
+検索する値を指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/rassoc.html">Hash#rassoc</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_REHASH"><code>rehash -&gt; nil</code><span class="permalink">[<a href="../method/-e-n-v/s/rehash.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-rehash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+何もしません。nilを返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_REJECT"><code>reject -&gt; Enumerator</code><span class="permalink">[<a href="../method/-e-n-v/s/reject.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-reject">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>reject {|key, value| ... } -&gt; Hash</code></dt>
+<dd class="method-description">
+<p>
+環境変数のうち、ブロックを評価した値が真であるものをとり除きます。
+<a href="../method/-enumerable/i/reject.html">Enumerable#reject</a> と異なり Hash を返します。また、とり除いた結果は実際の環境変数に影響を与えません。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="no">ENV</span><span class="p">[</span><span class="s1">'TEST'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'foo'</span>
+result <span class="o">=</span> <span class="no">ENV</span><span class="p">.</span><span class="nf">reject</span> <span class="p">{</span> <span class="o">|</span>key, value<span class="o">|</span> key <span class="o">==</span> <span class="s1">'TEST'</span> <span class="p">}</span>
+result<span class="p">[</span><span class="s1">'TEST'</span><span class="p">]</span> <span class="c1"># =&gt; nil
+</span><span class="no">ENV</span><span class="p">[</span><span class="s1">'TEST'</span><span class="p">]</span> <span class="c1"># =&gt; &quot;foo&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_REPLACE"><code>replace(hash) -&gt; ENV</code><span class="permalink">[<a href="../method/-e-n-v/s/replace.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-replace">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+環境変数を hash と同じ内容に変更します。 self を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] hash:</dt>
+<dd>
+キーと値の対応関係を指定します。 to_hash でハッシュに変換されます。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_SHIFT"><code>shift -&gt; [String, String] | nil</code><span class="permalink">[<a href="../method/-e-n-v/s/shift.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-shift">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+環境変数を一つ取り除いて、それを名前と値の組の配列で返します。環境変数が一つも設定されていなければ nil を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_SLICE"><code>slice(*keys) -&gt; Hash</code><span class="permalink">[<a href="../method/-e-n-v/s/slice.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-slice">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数で指定されたキーとその値だけを含む Hash を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">ENV</span><span class="p">[</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span>
+<span class="no">ENV</span><span class="p">[</span><span class="s2">"</span><span class="s2">baz</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"</span><span class="s2">qux</span><span class="s2">"</span>
+<span class="no">ENV</span><span class="p">[</span><span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"</span><span class="s2">rab</span><span class="s2">"</span>
+<span class="no">ENV</span><span class="p">.</span><span class="nf">slice</span><span class="p">(</span><span class="p">)</span>             <span class="c1"># =&gt; {}
+</span><span class="no">ENV</span><span class="p">.</span><span class="nf">slice</span><span class="p">(</span><span class="s2">"</span><span class="s2">"</span><span class="p">)</span>           <span class="c1"># =&gt; {}
+</span><span class="no">ENV</span><span class="p">.</span><span class="nf">slice</span><span class="p">(</span><span class="s2">"</span><span class="s2">unknown</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># =&gt; {}
+</span><span class="no">ENV</span><span class="p">.</span><span class="nf">slice</span><span class="p">(</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">baz</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; {&quot;foo&quot;=&gt;&quot;bar&quot;, &quot;baz&quot;=&gt;&quot;qux&quot;}
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-hash/i/slice.html">Hash#slice</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_TO_A"><code>to_a -&gt; [[String, String]]</code><span class="permalink">[<a href="../method/-e-n-v/s/to_a.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-to_a">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+環境変数から [変数名, 値] となる 2 要素の配列の配列を生成します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_TO_H"><code>to_h -&gt; Hash</code><span class="permalink">[<a href="../method/-e-n-v/s/to_h.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-to_h">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_h {|name, value| block } -&gt; Hash</code></dt>
+<dd class="method-description">
+<p>
+環境変数の名前をキーとし、対応する値をもつハッシュを返します。
+</p>
+<p>
+ブロックを指定すると各ペアでブロックを呼び出し、その結果をペアとして使います。
+</p>
+<pre class="highlight ruby">
+<span class="caption">ブロック付きの例</span>
+<code>
+<span class="no">ENV</span><span class="p">.</span><span class="nf">to_h</span> <span class="p">{</span><span class="o">|</span><span class="nb">name</span>, value<span class="o">|</span> <span class="p">[</span><span class="nb">name</span>, value<span class="p">.</span><span class="nf">size</span><span class="p">]</span> <span class="p">}</span>
+</code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_TO_HASH"><code>to_hash -&gt; Hash</code><span class="permalink">[<a href="../method/-e-n-v/s/to_hash.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-to_hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+環境変数の名前をキーとし、対応する値をもつハッシュを返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_TO_S"><code>to_s -&gt; String</code><span class="permalink">[<a href="../method/-e-n-v/s/to_s.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-to_s">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+環境変数を文字列化します。 Hash#to_s と同じように動作します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_UPDATE"><code>update(other) -&gt; ENV</code><span class="permalink">[<a href="../method/-e-n-v/s/update.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-update">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>update(other) {|key, self_val, other_val| ... } -&gt; ENV</code></dt>
+<dd class="method-description">
+<p>
+ハッシュ other の内容を環境変数にマージします。重複するキーに対応する値は other の内容で上書きされます。
+</p>
+<p>
+self と other に同じキーがあった場合はブロック付きか否かで判定方法が違います。ブロック付きのときはブロックを呼び出してその返す値を重複キーに対応する値にします。ブロック付きでない場合は常に other の値を使います。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+上書きするハッシュを指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_VALUES"><code>values -&gt; [String]</code><span class="permalink">[<a href="../method/-e-n-v/s/values.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-values">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+環境変数の全値の配列を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_VALUES_AT"><code>values_at(*key) -&gt; [String]</code><span class="permalink">[<a href="../method/-e-n-v/s/values_at.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ENV.html#method-c-values_at">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数で指定されたキー(環境変数名)に対応する値の配列を返します。存在しないキーに対しては nil が対応します。
+</p>
+<p>
+例:
+</p>
+<pre>
+ENV.update({'FOO' =&gt; 'foo', 'BAR' =&gt; 'bar'})
+p ENV.values_at(*%w(FOO BAR BAZ))   # =&gt; [&quot;foo&quot;, &quot;bar&quot;, nil]
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+環境変数名を指定します。文字列で指定します。文字列以外のオブジェクトを指定した場合は to_str メソッドによる暗黙の型変換を試みます。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

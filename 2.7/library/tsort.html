@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>library tsort (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="tsort はトポロジカルソートと強連結成分に関するモジュールを提供します。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        tsortライブラリ
+      </li>
+    </ol>
+  </nav>
+
+<h1>library tsort</h1>
+</header>
+
+<main>
+
+
+
+<h2>要約</h2>
+<p>
+tsort はトポロジカルソートと強連結成分に関するモジュールを提供します。
+</p>
+<h2 >Example</h2>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'tsort'</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Hash</span>
+  include <span class="no">TSort</span>
+  <span class="k">alias</span> tsort_each_node each_key
+  <span class="k">def</span> <span class="nf">tsort_each_child</span><span class="p">(</span>node, <span class="o">&amp;</span>block<span class="p">)</span>
+    fetch<span class="p">(</span>node<span class="p">)</span><span class="p">.</span><span class="nf">each</span><span class="p">(</span><span class="o">&amp;</span>block<span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="p">{</span><span class="mi">1</span><span class="o">=&gt;</span><span class="p">[</span><span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span>, <span class="mi">2</span><span class="o">=&gt;</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>, <span class="mi">3</span><span class="o">=&gt;</span><span class="p">[</span><span class="p">]</span>, <span class="mi">4</span><span class="o">=&gt;</span><span class="p">[</span><span class="p">]</span><span class="p">}</span><span class="p">.</span><span class="nf">tsort</span>
+<span class="c1">#=&gt; [3, 2, 1, 4]
+</span>
+<span class="p">{</span><span class="mi">1</span><span class="o">=&gt;</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>, <span class="mi">2</span><span class="o">=&gt;</span><span class="p">[</span><span class="mi">3</span>, <span class="mi">4</span><span class="p">]</span>, <span class="mi">3</span><span class="o">=&gt;</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>, <span class="mi">4</span><span class="o">=&gt;</span><span class="p">[</span><span class="p">]</span><span class="p">}</span><span class="p">.</span><span class="nf">strongly_connected_components</span>
+<span class="c1">#=&gt; [[4], [2, 3], [1]]
+</span></code></pre>
+<h2 >より現実的な例</h2>
+<p>
+非常に単純な `make' に似たツールは以下のように実装できます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'tsort'</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Make</span>
+  <span class="k">def</span> <span class="nf">initialize</span>
+    <span class="vi">@dep</span> <span class="o">=</span> <span class="p">{</span><span class="p">}</span>
+    <span class="vi">@dep</span><span class="p">.</span><span class="nf">default</span> <span class="o">=</span> <span class="p">[</span><span class="p">]</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">rule</span><span class="p">(</span>outputs, inputs<span class="o">=</span><span class="p">[</span><span class="p">]</span>, <span class="o">&amp;</span>block<span class="p">)</span>
+    triple <span class="o">=</span> <span class="p">[</span>outputs, inputs, block<span class="p">]</span>
+    outputs<span class="p">.</span><span class="nf">each</span> <span class="p">{</span><span class="o">|</span>f<span class="o">|</span> <span class="vi">@dep</span><span class="p">[</span>f<span class="p">]</span> <span class="o">=</span> <span class="p">[</span>triple<span class="p">]</span><span class="p">}</span>
+    <span class="vi">@dep</span><span class="p">[</span>triple<span class="p">]</span> <span class="o">=</span> inputs
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">build</span><span class="p">(</span>target<span class="p">)</span>
+    each_strongly_connected_component_from<span class="p">(</span>target<span class="p">)</span> <span class="p">{</span><span class="o">|</span>ns<span class="o">|</span>
+      <span class="k">if</span> ns<span class="p">.</span><span class="nf">length</span> <span class="o">!=</span> <span class="mi">1</span>
+        fs <span class="o">=</span> ns<span class="p">.</span><span class="nf">delete_if</span> <span class="p">{</span><span class="o">|</span>n<span class="o">|</span> <span class="no">Array</span> <span class="o">===</span> n<span class="p">}</span>
+        <span class="nb">raise</span> <span class="no">TSort</span><span class="o">::</span><span class="no">Cyclic</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">cyclic dependencies: </span><span class="si">#{</span><span class="n">fs</span><span class="p">.</span><span class="nf">join</span> <span class="s1">', '</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+      <span class="k">end</span>
+      n <span class="o">=</span> ns<span class="p">.</span><span class="nf">first</span>
+      <span class="k">if</span> <span class="no">Array</span> <span class="o">===</span> n
+        outputs, inputs, block <span class="o">=</span> n
+        inputs_time <span class="o">=</span> inputs<span class="p">.</span><span class="nf">map</span> <span class="p">{</span><span class="o">|</span>f<span class="o">|</span> <span class="no">File</span><span class="p">.</span><span class="nf">mtime</span> f<span class="p">}</span><span class="p">.</span><span class="nf">max</span>
+        <span class="k">begin</span>
+          outputs_time <span class="o">=</span> outputs<span class="p">.</span><span class="nf">map</span> <span class="p">{</span><span class="o">|</span>f<span class="o">|</span> <span class="no">File</span><span class="p">.</span><span class="nf">mtime</span> f<span class="p">}</span><span class="p">.</span><span class="nf">min</span>
+        <span class="k">rescue</span> <span class="no">Errno</span><span class="o">::</span><span class="no">ENOENT</span>
+          outputs_time <span class="o">=</span> <span class="k">nil</span>
+        <span class="k">end</span>
+        <span class="k">if</span> outputs_time <span class="o">==</span> <span class="k">nil</span> <span class="o">||</span>
+            inputs_time <span class="o">!=</span> <span class="k">nil</span> <span class="o">&amp;&amp;</span> outputs_time <span class="o">&lt;=</span> inputs_time
+          <span class="nb">sleep</span> <span class="mi">1</span> <span class="k">if</span> inputs_time <span class="o">!=</span> <span class="k">nil</span> <span class="o">&amp;&amp;</span> inputs_time<span class="p">.</span><span class="nf">to_i</span> <span class="o">==</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">to_i</span>
+          block<span class="p">.</span><span class="nf">call</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+    <span class="p">}</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">tsort_each_child</span><span class="p">(</span>node, <span class="o">&amp;</span>block<span class="p">)</span>
+    <span class="vi">@dep</span><span class="p">[</span>node<span class="p">]</span><span class="p">.</span><span class="nf">each</span><span class="p">(</span><span class="o">&amp;</span>block<span class="p">)</span>
+  <span class="k">end</span>
+  include <span class="no">TSort</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">command</span><span class="p">(</span>arg<span class="p">)</span>
+  <span class="nb">print</span> arg, <span class="s2">"</span><span class="s2">\n</span><span class="s2">"</span>
+  <span class="nb">system</span> arg
+<span class="k">end</span>
+
+m <span class="o">=</span> <span class="no">Make</span><span class="p">.</span><span class="nf">new</span>
+m<span class="p">.</span><span class="nf">rule</span><span class="p">(</span><span class="sx">%w[t1]</span><span class="p">)</span> <span class="p">{</span> command <span class="s1">'date &gt; t1'</span> <span class="p">}</span>
+m<span class="p">.</span><span class="nf">rule</span><span class="p">(</span><span class="sx">%w[t2]</span><span class="p">)</span> <span class="p">{</span> command <span class="s1">'date &gt; t2'</span> <span class="p">}</span>
+m<span class="p">.</span><span class="nf">rule</span><span class="p">(</span><span class="sx">%w[t3]</span><span class="p">)</span> <span class="p">{</span> command <span class="s1">'date &gt; t3'</span> <span class="p">}</span>
+m<span class="p">.</span><span class="nf">rule</span><span class="p">(</span><span class="sx">%w[t4]</span>, <span class="sx">%w[t1 t3]</span><span class="p">)</span> <span class="p">{</span> command <span class="s1">'cat t1 t3 &gt; t4'</span> <span class="p">}</span>
+m<span class="p">.</span><span class="nf">rule</span><span class="p">(</span><span class="sx">%w[t5]</span>, <span class="sx">%w[t4 t2]</span><span class="p">)</span> <span class="p">{</span> command <span class="s1">'cat t4 t2 &gt; t5'</span> <span class="p">}</span>
+m<span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="s1">'t5'</span><span class="p">)</span>
+</code></pre>
+<h2 >Bugs</h2>
+<p>
+tsort という名前は正確ではありません。なぜならこのライブラリは Tarjan の強連結成分に関するアルゴリズムを使っているからです。とはいえ strongly_connected_components という正確な名前は長過ぎます。
+</p>
+<h2 >References</h2>
+<p>
+R. E. Tarjan,
+Depth First Search and Linear Graph Algorithms,
+SIAM Journal on Computing, Vol. 1, No. 2, pp. 146-160, June 1972.
+</p>
+
+
+<h2>モジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-t-sort.html">TSort</a>
+</td>
+<td class="description"><p>
+TSort は強連結成分に関する Tarjan のアルゴリズムを用いたトポロジカルソートの実装です。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-t-sort=3a=3a-cyclic.html">TSort::Cyclic</a>
+</td>
+<td class="description"><p>
+閉路が存在する時、発生します。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

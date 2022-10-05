@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>IO.binwrite (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="ファイルを開くときの mode が &quot;rb:ASCII-8BIT&quot; で、バイナリモードが有効
+である点以外は [[m:IO.write]] と同じです。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-i-o.html">IOクラス</a>
+      </li>
+      <li>
+        binwrite 
+      </li>
+    </ol>
+  </nav>
+
+<h1>singleton method IO.binwrite</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_BINWRITE"><code>binwrite(path, string, offset=nil) -&gt; Integer</code><span class="permalink">[<a href="../../../method/-i-o/s/binwrite.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/IO.html#method-c-binwrite">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+path で指定されるファイルを開き、string を書き込み、閉じます。
+</p>
+<p>
+ファイルを開くときの mode が &quot;rb:ASCII-8BIT&quot; で、バイナリモードが有効である点以外は <a href="../../../method/-i-o/s/write.html">IO.write</a> と同じです。
+</p>
+<p>
+<a href="../../../method/-kernel/m/open.html">Kernel.#open</a> と同様 path の先頭が &quot;|&quot; ならば、&quot;|&quot; に続くコマンドを実行し、コマンドの出力を標準出力に書き込みます。
+</p>
+<p>
+offset を指定するとその位置までシークします。
+</p>
+<p>
+offset を指定しないと、書き込みの末尾でファイルを切り捨てます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+ファイル名文字列
+</dd>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+書き込む文字列
+</dd>
+<dt class='method-param'>[PARAM] offset:</dt>
+<dd>
+書き込み開始位置
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># 8x8の真っ白なPNG画像データ。
+</span>png <span class="o">=</span> <span class="s1">'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAAAAADhZOFXAAAADklEQVQIW2P4DwUMlDEA98A/wTjP
+QBoAAAAASUVORK5CYII='</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s1">'m'</span><span class="p">)</span><span class="p">.</span><span class="nf">first</span>
+
+<span class="c1"># 期待する先頭16バイトの16進ダンプ: どの環境でも同じ。
+</span><span class="nb">puts</span> png<span class="p">[</span><span class="mi">0</span><span class="o">...</span><span class="mi">16</span><span class="p">]</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s1">'C*'</span><span class="p">)</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span><span class="o">|</span>c<span class="o">|</span> <span class="s1">'%02x'</span> <span class="o">%</span> c <span class="p">}</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s1">' '</span><span class="p">)</span>
+<span class="c1"># =&gt; 89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52
+</span>
+<span class="c1"># binwriteを使用した場合: どの環境でも正しく保存できる。
+</span><span class="no">IO</span><span class="p">.</span><span class="nf">binwrite</span><span class="p">(</span><span class="s1">'white.binmode.png'</span>, png<span class="p">)</span>
+<span class="nb">puts</span> <span class="no">IO</span><span class="p">.</span><span class="nf">binread</span><span class="p">(</span><span class="s1">'white.binmode.png'</span>, <span class="mi">16</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s1">'C*'</span><span class="p">)</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span><span class="o">|</span>c<span class="o">|</span> <span class="s1">'%02x'</span> <span class="o">%</span> c <span class="p">}</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s1">' '</span><span class="p">)</span>
+<span class="c1"># =&gt; 89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52
+</span>
+<span class="c1"># binwriteを使用しなかった場合: Windowsで改行文字(0x0a: &quot;\n&quot;)と同じビット列が変換されてしまう。
+</span><span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s1">'white.txtmode.png'</span>, png<span class="p">)</span>
+<span class="nb">puts</span> <span class="no">IO</span><span class="p">.</span><span class="nf">binread</span><span class="p">(</span><span class="s1">'white.txtmode.png'</span>, <span class="mi">16</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s1">'C*'</span><span class="p">)</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span><span class="o">|</span>c<span class="o">|</span> <span class="s1">'%02x'</span> <span class="o">%</span> c <span class="p">}</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s1">' '</span><span class="p">)</span>
+<span class="c1"># =&gt; 89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52 (Linux/Macの場合
+</span><span class="c1"># =&gt; 89 50 4e 47 0d 0d 0a 1a 0d 0a 00 00 00 0d 49 48 (Windowsの場合
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../class/-i-o.html#io_binmode">IO/バイナリモード</a>, <a href="../../../method/-i-o/s/write.html">IO.write</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

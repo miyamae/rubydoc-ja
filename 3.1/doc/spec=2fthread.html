@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>スレッド (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="スレッドとはメモリ空間を共有して同時に実行される制御の流れです。
+Ruby ではスレッドは[[c:Thread]] クラスのインスタンスとして表されます。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      
+        <li>
+          <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+        </li>
+        <li>
+          スレッド
+        </li>
+      
+    </ol>
+  </nav>
+
+<h1>スレッド</h1>
+</header>
+
+<main>
+
+<p>
+スレッドとはメモリ空間を共有して同時に実行される制御の流れです。
+Ruby ではスレッドは<a href="../class/-thread.html">Thread</a> クラスのインスタンスとして表されます。
+</p>
+<h2 >実装</h2>
+<p>
+ネイティブスレッドを用いて実装されていますが、現在の実装では Ruby VM は Giant VM lock (GVL) を有しており、同時に実行されるネイティブスレッドは常にひとつです。ただし、IO 関連のブロックする可能性があるシステムコールを行う場合には
+GVL を解放します。その場合にはスレッドは同時に実行され得ます。また拡張ライブラリから GVL を操作できるので、複数のスレッドを同時に実行するような拡張ライブラリは作成可能です。
+</p>
+<h2 >スケジューリング</h2>
+<p>
+Ruby のスレッドスケジューリングはネイティブスレッドのそれを利用しています。よって詳細はプラットフォームに依存します。
+</p>
+<h2 >メインスレッド</h2>
+<p>
+プログラムの開始と同時に生成されるスレッドを「メインスレッド」と呼びます。なんらかの理由でメインスレッドが終了する時には、他の全てのスレッドもプログラム全体も終了します。ユーザからの割込みによって発生した例外はメインスレッドに送られます。
+</p>
+<h2 >スレッドの終了</h2>
+<p>
+スレッドの起動時に指定したブロックの実行が終了するとスレッドの実行も終了します。ブロックの終了は正常な終了も例外などによる異常終了も含みます。
+</p>
+<h2 id='exception'>例外発生時のスレッドの振る舞い</h2>
+<p>
+あるスレッドで例外が発生し、そのスレッド内で rescue で捕捉されなかった場合、通常はそのスレッドだけがなにも警告なしに終了されます。ただしその例外で終了するスレッドを <a href="../method/-thread/i/join.html">Thread#join</a> で待っている他のスレッドがある場合、その待っているスレッドに対して、同じ例外が再度発生します。
+</p>
+<pre>
+begin
+  t = Thread.new do
+    Thread.pass    # メインスレッドが確実にjoinするように
+    raise &quot;unhandled exception&quot;
+  end
+  t.join
+rescue
+  p $!  # =&gt; &quot;unhandled exception&quot;
+end
+</pre>
+<p>
+また、以下の 3 つの方法により、いずれかのスレッドが例外によって終了した時に、インタプリタ全体を中断させるように指定することができます。
+</p>
+<ul>
+<li>組み込み変数 <a href="../method/-kernel/v/-d-e-b-u-g.html">$DEBUG</a> を真に設定する(デバッグモード)
+ruby インタプリタを -d オプション 付きで起動した場合も同様。
+(オプションの詳細に関しては<a href="../doc/spec=2frubycmd.html">Rubyの起動</a> を参照)</li>
+<li><a href="../method/-thread/s/abort_on_exception.html">Thread.abort_on_exception</a> でフラグを設定する。</li>
+<li><a href="../method/-thread/i/abort_on_exception.html">Thread#abort_on_exception</a> で指定
+したスレッドのフラグを設定する。</li>
+</ul>
+<p>
+上記3つのいずれかが設定されていた場合、インタプリタ全体が中断されます。
+</p>
+<h2 >スレッド終了時の ensure 節の実行</h2>
+<p>
+スレッド終了時には ensure 節が実行されます。これはスレッドが正常に終了する時はもちろんですが、他のスレッドから <a href="../method/-thread/i/kill.html">Thread#kill</a>
+などによって終了させられた時も同様に実行されます。
+</p>
+<p>
+メインスレッドの終了時の詳細に関しては <a href="../doc/spec=2fterminate.html">終了処理</a> を参照して下さい。
+</p>
+<h2 >スレッドの状態</h2>
+<p>
+個々のスレッドは、以下の実行状態を持ちます。これらの状態は
+<a href="../method/-object/i/inspect.html">Object#inspect</a> や
+<a href="../method/-thread/i/status.html">Thread#status</a> によって見ることができます。
+</p>
+<pre>
+p Thread.new {sleep 1} # =&gt; #&lt;Thread:0xa039de0 sleep&gt;
+</pre>
+<dl>
+<dt>run (実行or実行可能状態)</dt>
+<dd>
+<p>
+生成されたばかりのスレッドや <a href="../method/-thread/i/run.html">Thread#run</a> や
+<a href="../method/-thread/i/wakeup.html">Thread#wakeup</a> で起こされたスレッドはこの状態です。
+<a href="../method/-thread/i/join.html">Thread#join</a> でスレッドの終了を待っているスレッドもスレッドの終了によりこの状態になります。
+
+この状態のスレッドは「生きて」います。
+</p>
+</dd>
+<dt>sleep (停止状態)</dt>
+<dd>
+<p>
+<a href="../method/-thread/s/stop.html">Thread.stop</a> や <a href="../method/-thread/i/join.html">Thread#join</a> により停止されたスレッドはこの状態になります。
+
+この状態のスレッドは「生きて」います。
+</p>
+</dd>
+<dt>aborting (終了処理中)</dt>
+<dd>
+<p>
+<a href="../method/-thread/i/kill.html">Thread#kill</a> 等で終了されるスレッドは一時的にこの状態になります。この状態から停止状態(sleep)になることもあります。
+
+この状態のスレッドはまだ「生きて」います。
+</p>
+</dd>
+<dt>dead (終了状態)</dt>
+<dd>
+<p>
+<a href="../method/-thread/i/kill.html">Thread#kill</a> 等で終了したスレッドはこの状態になります。この状態のスレッドはどこからも参照されていなければ GC によりメモリ上からなくなります。
+
+この状態のスレッドは「死んで」います。
+</p>
+</dd>
+</dl>
+<h2 >デッドロックの検出</h2>
+<p>
+@todo
+</p>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>library psych (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="[[lib:yaml]] のバックエンドライブラリです。libyaml ベースで作成されてお
+り、YAML バージョン 1.1 を扱う事ができます。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        psychライブラリ
+      </li>
+    </ol>
+  </nav>
+
+<h1>library psych</h1>
+</header>
+
+<main>
+
+
+
+<h2>要約</h2>
+<p>
+<a href="../library/yaml.html">yaml</a> のバックエンドライブラリです。libyaml ベースで作成されており、YAML バージョン 1.1 を扱う事ができます。
+</p>
+<h2 >概要</h2>
+<p>
+Psych を用いると YAML のパースと出力ができます。これらの機能は libyaml <a class="external" href="http://pyyaml.org/wiki/LibYAML">http://pyyaml.org/wiki/LibYAML</a> を用いて実装されています。さらに Ruby の大半のオブジェクトと YAML フォーマットのデータの間を相互に変換することができます。
+</p>
+<h2 >基本的な使いかた</h2>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'psych'</span>
+<span class="c1"># YAML のテキストをパースする
+</span><span class="no">Psych</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="s2">"</span><span class="s2">--- foo</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;foo&quot;
+</span>
+<span class="c1"># YAML のデータを出力
+</span><span class="no">Psych</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span><span class="p">)</span>     <span class="c1"># =&gt; &quot;--- foo\n...\n&quot;
+</span><span class="p">{</span> <span class="ss">:a</span> <span class="o">=&gt;</span> <span class="s1">'b'</span><span class="p">}</span><span class="p">.</span><span class="nf">to_yaml</span>  <span class="c1"># =&gt; &quot;---\n:a: b\n&quot;
+</span></code></pre>
+<p>
+基本的な使い方はこれだけです。簡単な用事は
+<a href="../method/-psych/s/load.html">Psych.load</a>、<a href="../method/-psych/s/dump.html">Psych.dump</a> で片付きます。
+</p>
+<h3 >YAML のパース</h3>
+<p>
+Psych は YAML ドキュメントのパースができます。ユーザの必要に応じ、高水準な API から低水準な API まで用意されています。最も低水準なものは、イベントベースな API です。中程度の水準のものとして
+YAML の AST(Abstract Syntax Tree)にアクセスする APIがあります。高水準な API では、YAML のドキュメントを Ruby のオブジェクトに変換することができます。
+</p>
+<h4 >低水準 パース API</h4>
+<p>
+低水準のパース API は利用者が入力となる YAML ドキュメントについてすでに良く知っていて、AST を構築したり Ruby のオブジェクトに変換するのが無駄である場合に使います。この API については
+<a href="../class/-psych=3a=3a-parser.html">Psych::Parser</a> を参照してください。イベントベースの API です。
+</p>
+<h4 >中水準 パース API</h4>
+<p>
+Psych には YAML ドキュメントの AST にアクセスする API があります。この AST は <a href="../class/-psych=3a=3a-parser.html">Psych::Parser</a> と <a href="../class/-psych=3a=3a-tree-builder.html">Psych::TreeBuilder</a> で構築します。
+<a href="../method/-psych/s/parse_stream.html">Psych.parse_stream</a>、<a href="../class/-psych=3a=3a-nodes.html">Psych::Nodes</a>、<a href="../class/-psych=3a=3a-nodes=3a=3a-node.html">Psych::Nodes::Node</a>
+などを経由して AST を解析したり操作したりできます。
+</p>
+<h4 >高水準 パース API</h4>
+<p>
+YAML ドキュメントをパースして Ruby のオブジェクトに変換することができます。詳しくは <a href="../method/-psych/s/load.html">Psych.load</a> を見てください。
+</p>
+<h3 >YAML ドキュメントの出力</h3>
+<p>
+Psych は YAML ドキュメントを出力する機能があります。高・中・底の三つの水準の API があります。低水準 API はイベントベースの API で、中水準のものは AST を構築する API、高水準の API は Ruby のオブジェクトを直接 YAML ドキュメントに変換する API
+です。これはパースの高・中・底水準 API と対応しています。
+</p>
+<h4 >低水準出力 API</h4>
+<p>
+低水準出力 API はイベントベースな仕組みです。各イベントは <a href="../class/-psych=3a=3a-emitter.html">Psych::Emitter</a> オブジェクトに送られます。このオブジェクトには、各イベントをどのように YAML ドキュメントに変換するかをセットしておきます。この API は出力フォーマットがあらかじめわかっている場合や性能が重要な場合に利用します。
+</p>
+<p>
+詳しくは <a href="../class/-psych=3a=3a-emitter.html">Psych::Emitter</a> を見てください。
+</p>
+<h4 >中水準出力 API</h4>
+<p>
+中水準 API では、利用者が AST を構築し YAML ドキュメントに変換します。この AST は YAML ドキュメントをパースして得られるものと同じものです。詳しくは
+<a href="../class/-psych=3a=3a-nodes.html">Psych::Nodes</a>、<a href="../class/-psych=3a=3a-nodes=3a=3a-node.html">Psych::Nodes::Node</a>、<a href="../class/-psych=3a=3a-tree-builder.html">Psych::TreeBuilder</a>
+を参照してください。
+</p>
+<h4 >高水準出力 API</h4>
+<p>
+高水準 API を使うと Ruby のデータ構造(オブジェクト)を YAML のドキュメントに変換できます。詳しくは <a href="../method/-psych/s/dump.html">Psych.dump</a> を参照してください。
+</p>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-psych=3a=3a-handler.html">Psych::Handler</a>
+</td>
+<td class="description"><p>
+<a href="../class/-psych=3a=3a-parser.html">Psych::Parser</a> で用いるイベントハンドラの抽象基底クラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-psych=3a=3a-emitter.html">Psych::Emitter</a>
+</td>
+<td class="description"><p>
+<a href="../class/-psych=3a=3a-parser.html">Psych::Parser</a> でパースし、生じたイベントから
+YAML ドキュメントを再構築するようなハンドラです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-psych=3a=3a-tree-builder.html">Psych::TreeBuilder</a>
+</td>
+<td class="description"><p>
+YAML AST を構築するためのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-psych=3a=3a-nodes=3a=3a-node.html">Psych::Nodes::Node</a>
+</td>
+<td class="description"><p>
+YAML AST のノードを表す抽象クラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-psych=3a=3a-nodes=3a=3a-alias.html">Psych::Nodes::Alias</a>
+</td>
+<td class="description"><p>
+YAML の alias <a class="external" href="http://yaml.org/spec/1.1/#alias">http://yaml.org/spec/1.1/#alias</a> を表すクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-psych=3a=3a-nodes=3a=3a-document.html">Psych::Nodes::Document</a>
+</td>
+<td class="description"><p>
+YAML ドキュメントを表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-psych=3a=3a-nodes=3a=3a-mapping.html">Psych::Nodes::Mapping</a>
+</td>
+<td class="description"><p>
+YAML の mapping <a class="external" href="http://yaml.org/spec/1.1/#mapping">http://yaml.org/spec/1.1/#mapping</a> を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-psych=3a=3a-nodes=3a=3a-scalar.html">Psych::Nodes::Scalar</a>
+</td>
+<td class="description"><p>
+YAML の scalar <a class="external" href="http://yaml.org/spec/1.1/#id858081">http://yaml.org/spec/1.1/#id858081</a> を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-psych=3a=3a-nodes=3a=3a-sequence.html">Psych::Nodes::Sequence</a>
+</td>
+<td class="description"><p>
+YAML sequence <a class="external" href="http://yaml.org/spec/1.1/#sequence/syntax">http://yaml.org/spec/1.1/#sequence/syntax</a> を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-psych=3a=3a-nodes=3a=3a-stream.html">Psych::Nodes::Stream</a>
+</td>
+<td class="description"><p>
+YAML stream を表すクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-psych=3a=3a-parser.html">Psych::Parser</a>
+</td>
+<td class="description"><p>
+YAML のパーサ。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-psych=3a=3a-scalar-scanner.html">Psych::ScalarScanner</a>
+</td>
+<td class="description"><p>
+YAML の scalar 型を読み込んで Ruby の built-in 型に変換するクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-psych=3a=3a-visitors.html">Psych::Visitors</a>
+</td>
+<td class="description"><p>
+Psych 内部で利用する各種 Visitor class を保持しているモジュール。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-psych=3a=3a-visitors=3a=3a-visitor.html">Psych::Visitors::Visitor</a>
+</td>
+<td class="description"><p>
+Psych 内部で利用する、Visitor パターンのための 抽象クラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-psych=3a=3a-visitors=3a=3a-y-a-m-l-tree.html">Psych::Visitors::YAMLTree</a>
+</td>
+<td class="description"><p>
+Ruby オブジェクトから YAML の AST を構築するためのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-psych=3a=3a-stream.html">Psych::Stream</a>
+</td>
+<td class="description"><p>
+入力されたオブジェクトから変換された YAML document を指定した
+IO に出力する機能を持つクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-psych=3a=3a-omap.html">Psych::Omap</a>
+</td>
+<td class="description"><p>
+YAML の ordered mapping を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-psych=3a=3a-set.html">Psych::Set</a>
+</td>
+<td class="description"><p>
+YAML の unordered set を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-psych=3a=3a-parser=3a=3a-mark.html">Psych::Parser::Mark</a>
+</td>
+<td class="description"><p>
+YAML document の位置を表現するクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>モジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-psych.html">Psych</a>
+</td>
+<td class="description"><p>
+<a href="../library/yaml.html">yaml</a> のバックエンドのためのモジュールです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-psych=3a=3a-nodes.html">Psych::Nodes</a>
+</td>
+<td class="description"><p>
+Psych が中間データとして利用している AST (Abstract Syntax Tree) に関するモジュール。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-psych=3a=3a-exception.html">Psych::Exception</a>
+</td>
+<td class="description"><p>
+Psych 関連のエラーを表す例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-psych=3a=3a-bad-alias.html">Psych::BadAlias</a>
+</td>
+<td class="description"><p>
+YAML の alias が不正である(本体が見つからない)というエラーを表す例外です。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-psych=3a=3a-syntax-error.html">Psych::SyntaxError</a>
+</td>
+<td class="description"><p>
+YAML の文法エラーを表すクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+<h2>追加・再定義されるメソッド</h2>
+<p><code>
+
+<a href="../method/-kernel/i/psych_y.html">Kernel#psych_y</a>
+
+<a href="../method/-kernel/i/psych_y.html">Kernel#y</a>
+
+<a href="../method/-object/i/psych_to_yaml.html">Object#psych_to_yaml</a>
+
+<a href="../method/-object/i/psych_to_yaml.html">Object#to_yaml</a>
+
+<a href="../method/-object/s/yaml_tag.html">Object.yaml_tag</a>
+
+</code></p>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

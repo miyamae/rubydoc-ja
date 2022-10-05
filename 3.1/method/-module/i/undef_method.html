@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Module#undef_method (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="このモジュールのインスタンスメソッド name を未定義にします。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-module.html">Moduleクラス</a>
+      </li>
+      <li>
+        undef_method 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Module#undef_method</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_UNDEF_METHOD"><code>undef_method(*name) -&gt; self</code><span class="permalink">[<a href="../../../method/-module/i/undef_method.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Module.html#method-i-undef_method">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このモジュールのインスタンスメソッド name を未定義にします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+0 個以上の <a href="../../../class/-string.html">String</a> か <a href="../../../class/-symbol.html">Symbol</a> を指定します。
+</dd>
+<dt>[EXCEPTION] NameError:</dt>
+<dd>
+指定したインスタンスメソッドが定義されていない場合に発生します。
+</dd>
+</dl>
+<h2 >「未定義にする」とは</h2>
+<p>
+このモジュールのインスタンスに対して name というメソッドを呼び出すことを禁止するということです。スーパークラスの定義が継承されるかどうかという点において、「未定義」は「メソッドの削除」とは区別されます。以下のコード例を参照してください。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">A</span>
+  <span class="k">def</span> <span class="nf">ok</span>
+    <span class="nb">puts</span> <span class="s1">'A'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">B</span> <span class="o">&lt;</span> <span class="no">A</span>
+  <span class="k">def</span> <span class="nf">ok</span>
+    <span class="nb">puts</span> <span class="s1">'B'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="no">B</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">ok</span>   <span class="c1"># =&gt; B
+</span>
+<span class="c1"># undef_method の場合はスーパークラスに同名のメソッドがあっても
+</span><span class="c1"># その呼び出しはエラーになる
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">B</span>
+  undef_method <span class="ss">:ok</span>
+<span class="k">end</span>
+<span class="no">B</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">ok</span>   <span class="c1"># =&gt; NameError
+</span>
+<span class="c1"># remove_method の場合はスーパークラスに同名のメソッドがあると
+</span><span class="c1"># それが呼ばれる
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">B</span>
+  remove_method <span class="ss">:ok</span>
+<span class="k">end</span>
+<span class="no">B</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">ok</span>   <span class="c1"># =&gt; A
+</span></code></pre>
+<p>
+また、undef 文と undef_method の違いは、メソッド名を <a href="../../../class/-string.html">String</a> または <a href="../../../class/-symbol.html">Symbol</a> で与えられることです。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">module</span> <span class="nn">M1</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="p">.</span><span class="nf">moo</span>
+    <span class="k">undef</span> <span class="nf">foo</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="no">M1</span><span class="p">.</span><span class="nf">instance_methods</span> <span class="k">false</span> <span class="c1">#=&gt; [&quot;foo&quot;]
+</span><span class="no">M1</span><span class="p">.</span><span class="nf">moo</span>
+<span class="no">M1</span><span class="p">.</span><span class="nf">instance_methods</span> <span class="k">false</span> <span class="c1">#=&gt; []
+</span><span class="k">module</span> <span class="nn">M2</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="p">.</span><span class="nf">moo</span>
+    <span class="nf">undef_method</span> <span class="ss">:foo</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="no">M2</span><span class="p">.</span><span class="nf">instance_methods</span> <span class="k">false</span> <span class="c1">#=&gt; [&quot;foo&quot;]
+</span><span class="no">M2</span><span class="p">.</span><span class="nf">moo</span>
+<span class="no">M2</span><span class="p">.</span><span class="nf">instance_methods</span> <span class="k">false</span> <span class="c1">#=&gt; []
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

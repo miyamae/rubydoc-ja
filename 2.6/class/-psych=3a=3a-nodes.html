@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>module Psych::Nodes (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="Psych が中間データとして利用している AST (Abstract Syntax Tree) に
+関するモジュール。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/psych.html">psychライブラリ</a>
+      </li>
+      <li>
+        Psych::Nodesモジュール
+      </li>
+    </ol>
+  </nav>
+
+<h1>module Psych::Nodes</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+      <li>
+        Psych::Nodes
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+Psych が中間データとして利用している AST (Abstract Syntax Tree) に関するモジュール。
+</p>
+<p>
+<a href="../method/-psych/s/load.html">Psych.load</a> によって YAML ドキュメントを Ruby オブジェクトに変換するときには、一度中間的な AST に変換され、その AST が Ruby のオブジェクトに変換されます。
+</p>
+<p>
+逆向き、つまり <a href="../method/-psych/s/dump.html">Psych.dump</a> で Ruby のオブジェクトを
+YAML ドキュメントに変換するときには、中間的な AST に変換してからそれを YAML ドキュメントに変換します。
+</p>
+<p>
+YAML AST の各ノードのクラスはすべて Psych::Nodes の下にあります。
+AST を手作業で構築して、visitor を使って AST を YAML ドキュメントや
+Ruby のオブジェクトに変換したりすることができます。
+</p>
+<p>
+以下の例ではスカラを1つ持つリストの AST を構築しています。
+</p>
+<pre>
+# Create our nodes
+stream = Psych::Nodes::Stream.new
+doc    = Psych::Nodes::Document.new
+seq    = Psych::Nodes::Sequence.new
+scalar = Psych::Nodes::Scalar.new('foo')
+
+# Build up our tree
+stream.children &lt;&lt; doc
+doc.children    &lt;&lt; seq
+seq.children    &lt;&lt; scalar
+</pre>
+<p>
+stream は AST のルートです。以下のようにして AST を YAML ドキュメントに変換できます。
+</p>
+<pre>
+stream.to_yaml =&gt; &quot;---\n- foo\n&quot;
+</pre>
+<p>
+Ruby のオブジェクトに変換するためには以下のようにします。
+</p>
+<pre>
+stream.to_ruby =&gt; [[&quot;foo&quot;]]
+</pre>
+<h2 >YAML AST 仕様</h2>
+<p>
+正しい YAML AST は <a href="../class/-psych=3a=3a-nodes=3a=3a-stream.html">Psych::Nodes::Stream</a> ノードが木のルートでなければなりません。Psych::Nodes::Stream ノードは
+1つ以上の <a href="../class/-psych=3a=3a-nodes=3a=3a-document.html">Psych::Nodes::Document</a> ノードを子として持っていなければなりません。
+</p>
+<p>
+Psych::Nodes::Document は子ノードをちょうど1個持っていなければなりません。子ノードは以下のいずれかでなければなりません。
+</p>
+<ul>
+<li><a href="../class/-psych=3a=3a-nodes=3a=3a-sequence.html">Psych::Nodes::Sequence</a></li>
+<li><a href="../class/-psych=3a=3a-nodes=3a=3a-mapping.html">Psych::Nodes::Mapping</a></li>
+<li><a href="../class/-psych=3a=3a-nodes=3a=3a-scalar.html">Psych::Nodes::Scalar</a></li>
+</ul>
+<p>
+<a href="../class/-psych=3a=3a-nodes=3a=3a-sequence.html">Psych::Nodes::Sequence</a> と <a href="../class/-psych=3a=3a-nodes=3a=3a-mapping.html">Psych::Nodes::Mapping</a> は複数の子ノードを持つことができます。Psych::Nodes::Mapping の子ノード数は偶数でなければなりません。
+</p>
+<p>
+Psych::Nodes::Sequence と Psych::Nodes::Mapping の子ノードとして有効なものは以下のいずれかです。
+</p>
+<ul>
+<li><a href="../class/-psych=3a=3a-nodes=3a=3a-sequence.html">Psych::Nodes::Sequence</a></li>
+<li><a href="../class/-psych=3a=3a-nodes=3a=3a-mapping.html">Psych::Nodes::Mapping</a></li>
+<li><a href="../class/-psych=3a=3a-nodes=3a=3a-scalar.html">Psych::Nodes::Scalar</a></li>
+<li><a href="../class/-psych=3a=3a-nodes=3a=3a-alias.html">Psych::Nodes::Alias</a></li>
+</ul>
+<p>
+<a href="../class/-psych=3a=3a-nodes=3a=3a-scalar.html">Psych::Nodes::Scalar</a> と <a href="../class/-psych=3a=3a-nodes=3a=3a-alias.html">Psych::Nodes::Alias</a> は子ノードを持つことができません。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+</dl>
+
+
+
+
+</dl>
+
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

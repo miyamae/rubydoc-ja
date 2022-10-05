@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>$stdin (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="自プロセスの標準入力をリダイレクトしたいときは
+$stdin に代入すれば十分です。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-kernel.html">Kernelモジュール</a>
+      </li>
+      <li>
+        $stdin 
+      </li>
+    </ol>
+  </nav>
+
+<h1>variable $stdin</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="V_STDIN"><code>$stdin -&gt; object</code><span class="permalink">[<a href="../../../method/-kernel/v/stdin.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Kernel.html#method-c-stdin">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+標準入力です。
+</p>
+<p>
+自プロセスの標準入力をリダイレクトしたいときは
+$stdin に代入すれば十分です。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># 標準入力の入力元 /tmp/foo に変更
+</span><span class="vg">$stdin</span> <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">/tmp/foo</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">gets</span>               <span class="c1"># 入力する
+</span><span class="vg">$stdin</span> <span class="o">=</span> <span class="no">STDIN</span>     <span class="c1"># 元に戻す
+</span></code></pre>
+<p>
+ただし、<a href="../../../method/-kernel/m/gets.html">Kernel.#gets</a> など、特定の組み込みメソッドは
+$stdin オブジェクトにメソッドを転送して実装されています。従って、<a href="../../../method/-kernel/m/gets.html">Kernel.#gets</a> などが正しく動作するには、
+$stdin オブジェクトに代入したオブジェクトが以下のメソッドを正しく実装していなければいけません。
+</p>
+<pre>
+gets, readline, readlines, getc, readchar, tell, seek,
+pos=, rewind, fileno, to_io, eof, each_line, each_byte,
+binmode, closed?
+</pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="vg">$stdin</span> <span class="o">=</span> <span class="no">Object</span><span class="p">.</span><span class="nf">new</span>
+<span class="k">def</span> <span class="vg">$stdin</span><span class="p">.</span><span class="nf">gets</span>
+  <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>
+<span class="k">end</span>
+<span class="nf">p</span> <span class="nb">gets</span><span class="p">(</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;foo&quot;
+</span></code></pre>
+<p>
+自プロセスだけでなく、子プロセスの標準入力もリダイレクトしたいときは以下のように <a href="../../../method/-i-o/i/reopen.html">IO#reopen</a> を使います。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="vg">$stdin</span><span class="p">.</span><span class="nf">reopen</span><span class="p">(</span><span class="s2">"</span><span class="s2">/tmp/foo</span><span class="s2">"</span><span class="p">)</span>
+</code></pre>
+<p>
+また、リダイレクトしたあと出力先をまた元に戻したい場合は以下のようにします。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+stdin_old <span class="o">=</span> <span class="vg">$stdin</span><span class="p">.</span><span class="nf">dup</span>       <span class="c1"># 元の $stdin を保存する
+</span><span class="vg">$stdout</span><span class="p">.</span><span class="nf">reopen</span><span class="p">(</span><span class="s2">"</span><span class="s2">/tmp/foo</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># $stdin を /tmp/foo にリダイレクトする
+</span><span class="nb">gets</span>                         <span class="c1"># /tmp/foo から入力
+</span><span class="vg">$stdin</span><span class="p">.</span><span class="nf">reopen</span> stdin_old      <span class="c1"># 元に戻す
+</span></code></pre>
+<p>
+$stdin はグローバルスコープです。
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

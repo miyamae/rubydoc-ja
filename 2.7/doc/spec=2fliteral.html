@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>リテラル (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="* [[ref:num]]
+  * [[ref:string]]
+  * [[ref:backslash]]
+  * [[ref:exp]]
+  * [[ref:char]]
+  * [[ref:command]]
+  * [[ref:here]]
+  * [[ref:regexp]]
+  * [[ref:array]]
+  * [[ref:hash]]
+  * [[ref:range]]
+  * [[ref:symbol]]
+  * [[ref:percent]]">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      
+        <li>
+          <a href="../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+        </li>
+        <li>
+          リテラル
+        </li>
+      
+    </ol>
+  </nav>
+
+<h1>リテラル</h1>
+</header>
+
+<main>
+
+<ul>
+<li><a href="#num">数値リテラル</a></li>
+<li><a href="#string">文字列リテラル</a></li>
+<li><a href="#backslash">バックスラッシュ記法</a></li>
+<li><a href="#exp">式展開</a></li>
+<li><a href="#char">文字リテラル</a></li>
+<li><a href="#command">コマンド出力</a></li>
+<li><a href="#here">ヒアドキュメント (行指向文字列リテラル)</a></li>
+<li><a href="#regexp">正規表現リテラル</a></li>
+<li><a href="#array">配列式</a></li>
+<li><a href="#hash">ハッシュ式</a></li>
+<li><a href="#range">範囲オブジェクト</a></li>
+<li><a href="#symbol">シンボル</a></li>
+<li><a href="#percent">%記法</a></li>
+</ul>
+<p>
+数字の1や文字列&quot;hello world&quot;のようにRubyのプログラムの中に直接記述できる値の事をリテラルといいます。
+</p>
+<h2 id='num'>数値リテラル</h2>
+<dl>
+<dt>123</dt>
+<dt>0d123</dt>
+<dd>
+<p>
+整数
+</p>
+</dd>
+<dt>-123</dt>
+<dd>
+<p>
+符号つき整数
+</p>
+</dd>
+<dt>123.45</dt>
+<dd>
+<p>
+浮動小数点数。
+.1 など &quot;.&quot; で始まる浮動小数点数は許されなくなりました。0.1 と書く必要があります。
+</p>
+</dd>
+<dt>1.2e-3</dt>
+<dd>
+<p>
+浮動小数点数
+</p>
+</dd>
+<dt>0xffff</dt>
+<dd>
+<p>
+16進整数
+</p>
+</dd>
+<dt>0b1011</dt>
+<dd>
+<p>
+2進整数
+</p>
+</dd>
+<dt>0377</dt>
+<dt>0o377</dt>
+<dd>
+<p>
+8進整数
+</p>
+</dd>
+<dt>42r</dt>
+<dt>3.14r</dt>
+<dd>
+<p>
+有理数。ただし、誤解を招く恐れがあるため、6.022e+23r のような指数部に有理数リテラルを含む形式は指定できません。
+</p>
+</dd>
+<dt>42i</dt>
+<dt>3.14i</dt>
+<dd>
+<p>
+複素数
+</p>
+</dd>
+<dt>42ri</dt>
+<dt>3.14ri</dt>
+<dd>
+<p>
+虚数部が有理数の複素数
+</p>
+</dd>
+</dl>
+<p>
+数値リテラルには、`_' を含めることができます。
+ruby インタプリタは `_' を単に無視し、特別な解釈は何もしません。これは、大きな数値の桁数がひと目でわかるように記述するのに便利です。リテラルの最初と、最後には _ を書くことはできません。(リテラルの前(符号(+,-)の直後を含む)に _を置くとローカル変数やメソッド呼び出しと解釈されます)
+</p>
+<p>
+_ は、0x などの prefix の直後に書くことはできません。また、_ を連続して書いてもエラーになります。他、細かい部分でこのあたりの規則は見直され統一されました。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="mi">1_000_000_000</span> <span class="c1"># =&gt; 1000000000
+</span><span class="mi">0xffff_ffff</span>   <span class="c1"># =&gt; 0xffffffff
+</span></code></pre>
+<h2 id='string'>文字列リテラル</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="s2">"</span><span class="s2">this is a string expression\n</span><span class="s2">"</span>
+<span class="s1">'this is a string expression\n'</span>
+<span class="s2">%q!</span><span class="s2">I said, &quot;You said, 'She said it.'&quot;</span><span class="s2">!</span>
+<span class="s2">%!</span><span class="s2">I said, &quot;You said, 'She said it.'&quot;</span><span class="s2">!</span>
+<span class="s2">%Q(</span><span class="s2">'This is it.'\n</span><span class="s2">)</span>
+<span class="s2">"</span><span class="s2">this is multi line
+string</span><span class="s2">"</span>
+</code></pre>
+<p>
+文字列はダブルクォートまたはシングルクォートで囲まれています。ダブルクォートで囲まれた文字列では<a href="#backslash">バックスラッシュ記法</a>と<a href="#exp">式展開</a>(後述)が有効になります。シングルクォートで囲まれた文字列では、
+\\ (バックスラッシュそのもの)と \' (シングルクォート)
+を除いて文字列の中身の解釈は行われません。シングルクォートで囲まれた文字列では行末の \ は \ そのものとして解釈されます。
+</p>
+<p>
+複数行にわたって書くこともできます。この場合含まれる改行文字は常に\nになります。実際のソースファイルの改行コードとは無関係です。
+</p>
+<p>
+空白を間に挟んだ文字列リテラルは、コンパイル時に1つの文字列リテラルと見倣されます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span> <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span>
+<span class="c1"># =&gt; &quot;foobar&quot;
+</span></code></pre>
+<p>
+<a href="#percent">%記法</a> による別形式の文字列表現もあります。
+</p>
+<p>
+文字列式は評価されるたびに毎回新しい文字列オブジェクトを生成します。
+</p>
+<h3 id='backslash'>バックスラッシュ記法</h3>
+<p>
+文字列中でバックスラッシュ(環境によっては￥記号で表示されます)の後に記述する文字によっては特別な意味を持たせる事ができます。
+</p>
+<dl>
+<dt>\t</dt>
+<dd>
+<p>
+タブ(0x09)
+</p>
+</dd>
+<dt>\v</dt>
+<dd>
+<p>
+垂直タブ(0x0b)
+</p>
+</dd>
+<dt>\n</dt>
+<dd>
+<p>
+改行(0x0a)
+</p>
+</dd>
+<dt>\r</dt>
+<dd>
+<p>
+キャリッジリターン(0x0d)
+</p>
+</dd>
+<dt>\f</dt>
+<dd>
+<p>
+改ページ(0x0c)
+</p>
+</dd>
+<dt>\b</dt>
+<dd>
+<p>
+バックスペース (0x08)
+</p>
+</dd>
+<dt>\a</dt>
+<dd>
+<p>
+ベル (0x07)
+</p>
+</dd>
+<dt>\e</dt>
+<dd>
+<p>
+エスケープ (0x1b)
+</p>
+</dd>
+<dt>\s</dt>
+<dd>
+<p>
+空白 (0x20)
+</p>
+</dd>
+<dt>\nnn</dt>
+<dd>
+<p>
+8 進数表記 (n は 0-7)
+</p>
+</dd>
+<dt>\xnn</dt>
+<dd>
+<p>
+16 進数表記 (n は 0-9,a-f)
+</p>
+</dd>
+<dt>\cx</dt>
+<dt>\C-x</dt>
+<dd>
+<p>
+コントロール文字 (x は ASCII 文字)
+</p>
+</dd>
+<dt>\M-x</dt>
+<dd>
+<p>
+メタ x (c | 0x80)
+</p>
+</dd>
+<dt>\M-\C-x</dt>
+<dd>
+<p>
+メタ コントロール x
+</p>
+</dd>
+<dt>\x</dt>
+<dd>
+<p>
+文字 x そのもの
+</p>
+</dd>
+<dt>\unnnn</dt>
+<dd>
+<p>
+Unicode 文字(n は 0-9,a-f,A-F、16進数4桁で指定)。
+</p>
+</dd>
+<dt>\u{nnnn}</dt>
+<dd>
+<p>
+Unicode 文字列(n は 0-9,a-f,A-F)。nnnnは16進数で1桁から6桁まで指定可能。スペースかタブ区切りで複数の Unicode 文字を指定できる。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="s2">"</span><span class="s2">\u{30eb 30d3 30fc a}</span><span class="s2">"</span> <span class="c1"># =&gt; &quot;ルビー\n&quot;
+</span></code></pre>
+</dd>
+<dt>\改行</dt>
+<dd>
+<p>
+文字列中に改行を含めずに改行
+</p>
+</dd>
+</dl>
+<h3 id='exp'>式展開</h3>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># ($ruby = &quot;RUBY&quot;の場合)
+</span>
+<span class="s2">"</span><span class="s2">my name is </span><span class="si">#{</span><span class="vg">$ruby</span><span class="si">}</span><span class="s2">"</span> <span class="c1">#=&gt; &quot;my name is RUBY&quot;
+</span><span class="s1">'my name is #{$ruby}'</span> <span class="c1">#=&gt; &quot;my name is #{$ruby}&quot;
+</span></code></pre>
+<p>
+ダブルクォート(&quot;)で囲まれた文字列式、コマンド文字列および正規表現の中では#{式}という形式で式の内容(を文字列化したもの)を埋め込むことができます。式が変数記号($,@)で始まる変数の場合には
+{}を省略して、#変数名という形式でも展開できます。文字#に続く文字が
+{,$,@でなければ、そのまま文字#として解釈されます。明示的に式展開を止めるには#の前にバックスラッシュを置きます。
+</p>
+<p>
+式展開中の式は、ダブルクォートなども含めて Ruby の式をそのまま書くことができます。コメントも許されます。
+</p>
+<pre>
+p &quot;#{ &quot;string&quot; # comment }&quot;   # =&gt; &quot;string&quot;
+</pre>
+<p>
+式展開中のコメントは、# から } まででなく改行までです。上記の例は
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="s2">"</span><span class="si">#{</span> <span class="s2">"</span><span class="s2">string</span><span class="s2">"</span> <span class="c1"># comment
+</span>  <span class="si">}</span><span class="s2">"</span>                          <span class="c1"># =&gt; &quot;string&quot;
+</span></code></pre>
+<p>
+と書く必要があります。
+</p>
+<h3 id='char'>文字リテラル</h3>
+<p>
+?の後に文字を1字指定した場合はその文字を表す文字列を返します。文字のエンコーディングはソースコードエンコーディングと同じに設定されます。
+</p>
+<dl>
+<dt>?a</dt>
+<dd>
+<p>
+文字 a を表す String
+</p>
+<p>
+空白類を指定する場合は、?\s, ?\t などとする必要があります。
+</p>
+</dd>
+<dt>?あ</dt>
+<dd>
+<p>
+文字 あ を表す String
+</p>
+</dd>
+<dt>?\u3042</dt>
+<dd>
+<p>
+文字 あ を表す String。
+</p>
+<p>
+文字のエンコーディングは<a href="../method/-encoding/c/-u-t-f_8.html">Encoding::UTF_8</a>に設定されます。
+</p>
+</dd>
+<dt>?\C-a</dt>
+<dd>
+<p>
+コントロール a を表す String
+</p>
+</dd>
+<dt>?\M-a</dt>
+<dd>
+<p>
+メタ a を表す String
+</p>
+</dd>
+<dt>?\M-\C-a</dt>
+<dd>
+<p>
+メタ-コントロール a を表す String
+</p>
+</dd>
+</dl>
+<h2 id='command'>コマンド出力</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="sb">`</span>date<span class="s2">`</span>
+<span class="sb">%x{</span> date <span class="s2">}</span>
+</code></pre>
+<p>
+バッククォート(`)で囲まれた文字列は、ダブルクォートで囲まれた文字列と同様に<a href="#backslash">バックスラッシュ記法</a>
+の解釈と<a href="#exp">式展開</a>
+が行なわれた後、コマンドとして実行され、その標準出力が文字列として与えられます。コマンドは評価されるたびに実行されます。コマンドの終了ステータスを得るには、<a href="../method/-kernel/v/=3f.html">$?</a> を参照します。
+</p>
+<p>
+<a href="#percent">%記法</a> による別形式のコマンド出力もあります。
+</p>
+<h2 id='here'>ヒアドキュメント (行指向文字列リテラル)</h2>
+<p>
+文法:
+</p>
+<pre>
+&lt;&lt;[(-|~)][&quot;'`]識別子[&quot;'`]
+   ...
+識別子
+</pre>
+<p>
+普通の<a href="#string">文字列リテラル</a>はデリミタ(&quot;, ', ` など)で囲まれた文字列ですが、ヒアドキュメントは `&lt;&lt;識別子' を含む行の次の行から `識別子' だけの行の直前までを文字列とする行指向のリテラルです。例えば、
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">print</span> <span class="no">&lt;&lt;EOS</span>      <span class="c1"># 識別子 EOS までがリテラルになる
+</span><span class="sh">  the string
+  next line
+</span><span class="no">EOS
+</span></code></pre>
+<p>
+これは以下と同じです。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">print</span> <span class="s2">"</span><span class="s2">  the string\n  next line\n</span><span class="s2">"</span>
+</code></pre>
+<p>
+ヒアドキュメントでは、開始ラベル `&lt;&lt;識別子' が文法要素としての式にあたります。これは、開始ラベルを使ってヒアドキュメント全体を引数に渡したりレシーバにしたりできるということを意味します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># 式の中に開始ラベルを書く
+</span><span class="c1"># method の第二引数には &quot;    ヒアドキュメント\n&quot; が渡される
+</span><span class="nb">method</span><span class="p">(</span>arg1, <span class="no">&lt;&lt;LABEL</span>, <span class="no">arg2<span class="p">)</span>
+<span class="sh">    ヒアドキュメント
+</span><span class="no">LABEL
+</span>
+<span class="c1"># ヒアドキュメントをレシーバにメソッドを呼ぶ
+</span><span class="nb">p</span>  <span class="no">&lt;&lt;LABEL</span><span class="p">.</span><span class="nf">upcase</span>
+<span class="sh">the lower case string
+</span><span class="no">LABEL
+</span>
+<span class="c1"># =&gt; &quot;THE LOWER CASE STRING&quot;
+</span></code></pre>
+<p>
+開始ラベルの次の行は常にヒアドキュメントとなります。例えば、以下のような記述は文法エラーになります
+</p>
+<pre>
+printf('%s%d',
+       &lt;&lt;EOS,
+       3055 * 2 / 5)   # &lt;- この行はヒアドキュメントに含まれてしまう
+This line is a here document.
+EOS
+</pre>
+<p>
+開始ラベルを `&lt;&lt;-識別子' のように `-' を付けて書くことで終端行をインデントすることができます。これ以外では、終端行に、余分な空白やコメントさえも書くことはできません。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">if</span> need_define_foo
+  <span class="nb">eval</span> <span class="no">&lt;&lt;-EOS</span>   <span class="c1"># '&lt;&lt;-' を使うと……
+</span><span class="sh">    def foo
+      print &quot;foo\n&quot;
+    end
+</span><span class="no">  EOS
+</span>  <span class="c1">#↑終端行をインデントできます。
+</span><span class="k">end</span>
+</code></pre>
+<p>
+開始ラベルを `&lt;&lt;~識別子` のように `~` を付けて書くことで、以下のようなヒアドキュメントを書くことができます。
+</p>
+<pre class="highlight ruby">
+<code>
+expected_result <span class="o">=</span> <span class="no">&lt;&lt;~SQUIGGLY_HEREDOC</span>
+  <span class="sh">This would contain specially formatted text.
+</span><span class="sh">
+</span>  <span class="sh">That might span many lines
+</span><span class="no">SQUIGGLY_HEREDOC
+</span><span class="c1"># =&gt; &quot;This would contain specially formatted text.\n&quot; + &quot;\n&quot; + &quot;That might span many lines\n&quot;
+</span></code></pre>
+<p>
+最もインデントが少ない行を基準にして、全ての行の先頭から空白を取り除きます。インデントの深さを決定するために主にタブやスペースで構成された行は無視されるので、注意してください。しかし、エスケープされたタブやスペースは、通常の文字と同じように扱われます。
+</p>
+<p>
+一行に複数のヒアドキュメントを書くこともできます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">print</span> <span class="no">&lt;&lt;FIRST</span>, <span class="no">&lt;&lt;SECOND</span>
+<span class="sh">   これは一つめのヒアドキュメントです。
+   まだ一つめです。
+</span><span class="no">FIRST
+</span><span class="sh">   この行からは二つめのヒアドキュメントです。
+   この行で終わります。
+</span><span class="no">SECOND
+</span></code></pre>
+<p>
+開始ラベル `&lt;&lt;識別子' の `識別子' を(&quot;&quot;、''、``)のいずれかで囲むことで、ヒアドキュメントとなる文字列リテラルの性質は対応する文字列リテラルと同じ扱いになります。ただし、文字列中に &quot; や ' はバックスラッシュエスケープせずにそのまま書けます(エスケープする必要がありません)。シングルクォートで囲ったヒアドキュメントの場合、' をエスケープする必要がないということは、\の特別扱いも必要ないということになります。つまり、シングルクォートで囲ったヒアドキュメントは完全に書いたままの文字列になります。以下の例を参照してください。`識別子' がクォートで囲まれていないときはダブルクォートでくくられているのと同じです。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># バックスラッシュ記法、式展開が有効
+</span><span class="nb">print</span> <span class="no">&lt;&lt;&quot;EOS&quot;</span>
+<span class="sh">The price is </span><span class="si">#{</span><span class="vg">$price</span><span class="si">}</span><span class="sh">.
+</span><span class="no">EOS
+</span>
+<span class="c1"># 上のものと同じ結果
+</span><span class="nb">print</span> <span class="no">&lt;&lt;EOS</span>
+<span class="sh">The price is </span><span class="si">#{</span><span class="vg">$price</span><span class="si">}</span><span class="sh">.
+</span><span class="no">EOS
+</span>
+<span class="c1"># 式展開はできない
+</span><span class="nb">print</span> <span class="no">&lt;&lt;'EOS'</span>
+<span class="sh">The price is #{$price}.
+</span><span class="no">EOS
+</span>
+<span class="c1"># コマンドを実行
+</span><span class="nb">print</span> <span class="no">&lt;&lt;`EOC`</span>
+<span class="sh">date
+diff test.c.org test.c
+</span><span class="no">EOC
+</span></code></pre>
+<p>
+文字列リテラルのそれぞれの性質に関しては
+<a href="#string">文字列リテラル</a>、
+<a href="#exp">式展開</a>、
+<a href="#backslash">バックスラッシュ記法</a>、
+<a href="#command">コマンド出力</a>
+を参照してください。
+</p>
+<h2 id='regexp'>正規表現リテラル</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="sr">/^Ruby the OOPL/</span>
+<span class="sr">/Ruby/i</span>
+<span class="sr">/my name is <span class="si">#{</span><span class="n">myname</span><span class="si">}</span>/o</span>
+<span class="sr">%r|Ruby|</span>
+</code></pre>
+<p>
+/で囲まれた文字列は正規表現です。正規表現として解釈されるメタ文字については<a href="../doc/spec=2fregexp.html">正規表現</a>を参照してください。
+</p>
+<p>
+終りの/の直後の文字は正規表現に対するオプションになります。オプションの機能は以下の通りです。
+</p>
+<dl>
+<dt>i</dt>
+<dd>
+<p>
+正規表現はマッチ時に大文字小文字の区別を行わない
+</p>
+</dd>
+<dt>o</dt>
+<dd>
+<p>
+一番最初に正規表現の評価が行われた時に一度だけ<a href="#exp">式展開</a>を行う
+</p>
+</dd>
+<dt>x</dt>
+<dd>
+<p>
+正規表現中の空白(改行も含む)を無視する。また、バックスラッシュでエスケープしない`#' から改行までをコメントとみなして無視する(ただし、コメント中に / を含めると構文解析に失敗するので注意)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sr">/foo        # コメント
+bar/x</span>
+</code></pre>
+<p>
+これは /foobar/ と同じ。
+</p>
+<p>
+空白を含めるには \  のようにエスケープします。
+</p>
+</dd>
+<dt>m</dt>
+<dd>
+<p>
+複数行モード。正規表現 &quot;.&quot; が改行にもマッチするようになる
+</p>
+</dd>
+</dl>
+<p>
+正規表現中の文字は特に指定がない場合、スクリプトエンコーディングの値に従って処理されます。
+</p>
+<p>
+オプションとして n, e, s, u のいずれかを指定することで正規表現の文字コードをスクリプトエンコーディングに関係なく個々の正規表現リテラルに指定することもできます。
+</p>
+<p>
+<a href="#percent">%記法</a> による別形式の正規表現も指定できます。
+</p>
+<p>
+正規表現の中では文字列と同じ<a href="#backslash">バックスラッシュ記法</a>や
+<a href="#exp">式展開</a>も有効です。
+</p>
+<p>
+正規表現リテラルはその中に<a href="#exp">式展開</a>を含まなければ、何度評価されても同一の正規表現オブジェクトを返します。
+<a href="#exp">式展開</a>を含む場合は評価のたびに(式展開の結果を元に)正規表現がコンパイルされ正規表現オブジェクトが生成されます(ただし上記の
+o オプションを指定すれば、同一の正規表現オブジェクトを返します)
+</p>
+<h2 id='array'>配列式</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span>
+<span class="sx">%w(a b c)</span>
+<span class="sx">%W(a b c)</span>
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+`[' 式`,' ... `]'
+</pre>
+<p>
+それぞれの式を評価した結果を含む配列を返します。配列は<a href="../class/-array.html">Array</a>クラスのインスタンスです。
+</p>
+<p>
+要素が文字列リテラルかシンボルリテラルの場合に限り、<a href="#percent">%記法</a> による別形式の配列表現も指定できます。
+</p>
+<p>
+配列式は評価されるたびに毎回新しい配列オブジェクトを生成します。
+</p>
+<h2 id='hash'>ハッシュ式</h2>
+<pre class="highlight ruby">
+<code>
+<span class="p">{</span> <span class="mi">1</span> <span class="o">=&gt;</span> <span class="mi">2</span>, <span class="mi">2</span> <span class="o">=&gt;</span> <span class="mi">4</span>, <span class="mi">3</span> <span class="o">=&gt;</span> <span class="mi">6</span><span class="p">}</span>
+<span class="p">{</span> <span class="ss">:a</span> <span class="o">=&gt;</span> <span class="s2">"</span><span class="s2">A</span><span class="s2">"</span>, <span class="ss">:b</span> <span class="o">=&gt;</span> <span class="s2">"</span><span class="s2">B</span><span class="s2">"</span>, <span class="ss">:c</span> <span class="o">=&gt;</span> <span class="s2">"</span><span class="s2">C</span><span class="s2">"</span> <span class="p">}</span>
+<span class="p">{</span> <span class="ss">a:</span><span class="s2">"</span><span class="s2">A</span><span class="s2">"</span>, <span class="ss">b:</span><span class="s2">"</span><span class="s2">B</span><span class="s2">"</span>, <span class="ss">c:</span><span class="s2">"</span><span class="s2">C</span><span class="s2">"</span> <span class="p">}</span> <span class="c1"># 一つ上の例と同じ。キーがシンボルの場合はこのように書ける。
+</span><span class="p">{</span> <span class="s2">"</span><span class="s2">a</span>&quot;:<span class="s2">"</span><span class="s2">A</span><span class="s2">"</span>, <span class="s1">'b':<span class="s2">"</span><span class="s2">B</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">c</span>&quot;:<span class="s2">"</span><span class="s2">C</span><span class="s2">"</span> <span class="p">}</span> <span class="c1"># 一つ上の例と同じ。
+</span>                              <span class="c1"># キーにシンボルを使う文法ではこのように
+</span>                              <span class="c1"># シンボル名をシングルクオートやダブルクオートで
+</span>                              <span class="c1"># 囲うことができる。これによって空白を含むような
+</span>                              <span class="c1"># シンボルなどをキーにできる
+</span></code></pre>
+<p>
+文法:
+</p>
+<pre>
+`{' 式 `=&gt;' 式 `,' ... `}'
+</pre>
+<p>
+それぞれの式を評価した結果をキーと値とするハッシュオブジェクトを返します。ハッシュとは任意のオブジェクトをキー(添字)として持つ配列で、<a href="../class/-hash.html">Hash</a>クラスのインスタンスです。
+</p>
+<p>
+メソッドの引数、もしくは<a href="#array">配列式</a>の末尾に要素が1つ以上のハッシュを渡す場合は、{, }を省略することができます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">method</span><span class="p">(</span><span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">3</span><span class="o">=&gt;</span><span class="mi">4</span><span class="p">)</span>      <span class="c1"># method(1,2,{3=&gt;4})
+</span>obj<span class="p">[</span><span class="mi">1</span><span class="o">=&gt;</span><span class="mi">2</span>,<span class="mi">3</span><span class="o">=&gt;</span><span class="mi">4</span><span class="p">]</span>        <span class="c1"># obj[{1=&gt;2,3=&gt;4}]
+</span><span class="p">[</span><span class="mi">1</span><span class="o">=&gt;</span><span class="mi">2</span>,<span class="mi">3</span><span class="o">=&gt;</span><span class="mi">4</span><span class="p">]</span>           <span class="c1"># [{1=&gt;2, 3=&gt;4}]
+</span></code></pre>
+<p>
+ハッシュ式は評価されるたびに毎回新しいハッシュオブジェクトを生成します。
+</p>
+<h2 id='range'>範囲オブジェクト</h2>
+<p>
+<a href="../doc/spec=2foperator.html#range">演算子式/範囲式</a>を参照
+</p>
+<p>
+範囲式はその両端が数値リテラルであれば、何度評価されても同じオブジェクトを返します。そうでなければ評価されるたびに新しい範囲オブジェクトを生成します。
+</p>
+<h2 id='symbol'>シンボル</h2>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># (シンボルの例)
+</span><span class="ss">:class</span>
+<span class="ss">:lvar</span>
+<span class="ss">:method!</span>
+<span class="ss">:andthisis?</span>
+<span class="ss">:<span class="vg">$gvar</span>
+<span class="ss">:<span class="vi">@ivar</span>
+<span class="ss">:<span class="vc">@@cvar</span>
+<span class="ss">:<span class="o">+</span>
+</code></pre>
+<p>
+文法:
+</p>
+<pre>
+`:' 識別子
+`:' 変数名
+`:' 演算子
+</pre>
+<p>
+<a href="../class/-symbol.html">Symbol</a>クラスのインスタンス。ある文字列とSymbolオブジェクトは一対一に対応します。
+</p>
+<p>
+Symbol リテラルに指定できる演算子はメソッドとして再定義できる演算子だけです。<a href="../doc/spec=2foperator.html">演算子式</a> を参照して下さい。
+</p>
+<p>
+以下の記法も使えます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="ss">:'foo-bar'</span> <span class="c1">#=&gt; :&quot;foo-bar&quot;
+</span><span class="nb">p</span> <span class="ss">:"foo-bar<span class="s2">"</span> <span class="c1">#=&gt; :&quot;foo-bar&quot;
+</span><span class="nb">p</span> <span class="ss">%s{foo-bar<span class="s2">}</span> <span class="c1">#=&gt; :&quot;foo-bar&quot;
+</span></code></pre>
+<p>
+この記法では、任意のシンボルを定義することができます。
+</p>
+<p>
+:&quot;...&quot; の形式は、<a href="#backslash">バックスラッシュ記法</a>や
+<a href="#exp">式展開</a>が有効です。
+</p>
+<p>
+シンボルは常に一意のオブジェクトで、(式展開を含んでいてもその結果が同じ文字列であれば)何度評価されても同じオブジェクトを返します。
+</p>
+<p>
+ほとんどのシンボルはGC可能です。
+</p>
+<p>
+@see <a class="external" href="https://bugs.ruby-lang.org/issues/9634">https://bugs.ruby-lang.org/issues/9634</a>
+</p>
+<h2 id='percent'>%記法</h2>
+<p>
+<a href="#string">文字列リテラル</a>、<a href="#command">コマンド出力</a>、<a href="#regexp">正規表現リテラル</a>、<a href="#array">配列式</a>、<a href="#symbol">シンボル</a>では、
+%で始まる形式の記法を用いることができます。文字列や正規表現では、`&quot;', `/' など(通常のリテラルの区切り文字)を要素に含めたい場合にバックスラッシュの数をコードから減らす効果があります。また配列式では文字列の配列やシンボルの配列を簡単に表現できます。それぞれ以下のように対応します。
+</p>
+<ul>
+<li>%!STRING!  : ダブルクォート文字列</li>
+<li>%Q!STRING! : 同上</li>
+<li>%q!STRING! : シングルクォート文字列</li>
+<li>%x!STRING! : コマンド出力</li>
+<li>%r!STRING! : 正規表現</li>
+<li>%w!STRING! : 要素が文字列の配列(空白区切り)</li>
+<li>%W!STRING! : 要素が文字列の配列(空白区切り)。式展開、バックスラッシュ記法が有効</li>
+<li>%s!STRING! : シンボル。式展開、バックスラッシュ記法は無効</li>
+<li>%i!STRING! : 要素がシンボルの配列(空白区切り)</li>
+<li>%I!STRING! : 要素がシンボルの配列(空白区切り)。式展開、バックスラッシュ記法が有効</li>
+</ul>
+<p>
+!の部分には改行を含めた任意の非英数字を使うことができます
+(%w、%W、%i、%I は区切りに空白、改行を用いるため、!の部分には使うことができません)。始まりの区切り文字が括弧(`(',`[',`{',`&lt;')である時には、終りの区切り文字は対応する括弧になります。括弧を区切り文字にした場合、対応が取れていれば区切り文字と同じ括弧を要素に含めることができます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="s2">%(</span><span class="s2">()</span><span class="s2">)</span> <span class="c1"># =&gt; &quot;()&quot;
+</span></code></pre>
+<p>
+文字列の配列の%記法はシングルクォートで囲んだ文字列を空白文字で分割したのと同じです。たとえば、
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sx">%w(foo bar baz)</span>
+</code></pre>
+<p>
+は['foo', 'bar', 'baz']と等価です。
+</p>
+<p>
+バックスラッシュを使って空白を要素に含むこともできます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="sx">%w(foo\ bar baz)</span>
+
+<span class="c1"># =&gt; [&quot;foo bar&quot;, &quot;baz&quot;]
+</span></code></pre>
+<p>
+%W は、%w と同様ですが、ダブルクォートで囲んだ文字列のように、式展開、バックスラッシュ記法が使用できます。空白による分割は式展開を評価する前に行われます。
+</p>
+<pre class="highlight ruby">
+<code>
+v <span class="o">=</span> <span class="s2">"</span><span class="s2">c d</span><span class="s2">"</span>
+<span class="sx">%W(a\ b <span class="si">#{</span><span class="n">v</span><span class="si">}</span>e\sf <span class="si">#{</span><span class="si">}</span>)</span>
+
+<span class="c1"># =&gt; [&quot;a b&quot;, &quot;c de f&quot;, &quot;&quot;]
+</span></code></pre>
+<p>
+シンボルの配列の場合も文字列の配列の場合と同様です。
+</p>
+<pre class="highlight ruby">
+<code>
+%i(foo\ bar baz<span class="s2">)</span>
+
+<span class="c1"># =&gt; [:&quot;foo bar&quot;, :baz]
+</span>
+
+v <span class="o">=</span> <span class="s2">"</span><span class="s2">c d</span><span class="s2">"</span>
+%I(a\ b <span class="si">#{</span><span class="n">v</span><span class="si">}</span>e\sf <span class="si">#{</span><span class="si">}</span><span class="s2">)</span>
+
+<span class="c1"># =&gt; [:&quot;a b&quot;, :&quot;c de f&quot;, :&quot;&quot;]
+</span></code></pre>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

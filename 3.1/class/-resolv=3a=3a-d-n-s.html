@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class Resolv::DNS (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="このクラスは DNS を利用した名前解決をするリゾルバを
+表します。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/resolv.html">resolvライブラリ</a>
+      </li>
+      <li>
+        Resolv::DNSクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class Resolv::DNS</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+      <li>
+        Resolv::DNS
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+このクラスは DNS を利用した名前解決をするリゾルバを表します。
+</p>
+<p>
+このクラスは実際には下位のクラスに処理を依頼します。
+</p>
+<p>
+DNSについては以下を参照してください。
+</p>
+<ul>
+<li>STD0013</li>
+<li><a class="external" href="https://tools.ietf.org/html/rfc1035">[RFC1035]</a></li>
+<li><a class="external" href="ftp://ftp.isi.edu/in-notes/iana/assignments/dns-parameters">ftp://ftp.isi.edu/in-notes/iana/assignments/dns-parameters</a></li>
+<li>etc.</li>
+</ul>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_NEW">new</a></li>
+
+<li><a href="#S_OPEN">open</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_CLOSE">close</a></li>
+
+<li><a href="#I_EACH_ADDRESS">each_address</a></li>
+
+<li><a href="#I_EACH_NAME">each_name</a></li>
+
+<li><a href="#I_EACH_RESOURCE">each_resource</a></li>
+
+<li><a href="#I_GETADDRESS">getaddress</a></li>
+
+<li><a href="#I_GETADDRESSES">getaddresses</a></li>
+
+<li><a href="#I_GETNAME">getname</a></li>
+
+<li><a href="#I_GETNAMES">getnames</a></li>
+
+<li><a href="#I_GETRESOURCE">getresource</a></li>
+
+<li><a href="#I_GETRESOURCES">getresources</a></li>
+
+<li><a href="#I_TIMEOUTS--3D">timeouts=</a></li>
+
+</ul>
+</dd>
+
+<dt>定数</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#C_-PORT">Port</a></li>
+
+<li><a href="#C_-U-D-P-SIZE">UDPSize</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(resolv_conf = nil) -&gt; Resolv::DNS</code><span class="permalink">[<a href="../method/-resolv=3a=3a-d-n-s/s/new.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Resolv/DNS.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+新しい DNS リゾルバを生成します。
+</p>
+<p>
+resolv_conf が nil の場合は
+/etc/resolv.conf もしくはプラットフォーム固有の
+DNS設定を利用します。
+resolv_conf が文字列の場合は /etc/resolv.conf と同じフォーマットのファイルを設定に利用します。
+resolv_conf がハッシュの場合は、:nameserver, :search, :ndots
+というキーが利用可能です。それぞれの意味は resolv.conf(5) を参照してください。また、:nameserver_portでアドレスとポートを指定できます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">resolv</span><span class="s2">"</span>
+<span class="no">Resolv</span><span class="o">::</span><span class="no">DNS</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:nameserver</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">'210.251.121.21'</span><span class="p">]</span>,
+                <span class="ss">:search</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">'ruby-lang.org'</span><span class="p">]</span>,
+                <span class="ss">:ndots</span> <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="no">Resolv</span><span class="o">::</span><span class="no">DNS</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">:nameserver_port</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="p">[</span><span class="s1">'8.8.8.8'</span>, <span class="mi">53</span><span class="p">]</span>, <span class="p">[</span><span class="s1">'8.8.4.4'</span>, <span class="mi">53</span><span class="p">]</span><span class="p">]</span>,
+                <span class="ss">:search</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">'ruby-lang.org'</span><span class="p">]</span>,
+                <span class="ss">:ndots</span> <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">)</span>
+</code></pre>
+<dl>
+<dt class='method-param'>[PARAM] resolv_conf:</dt>
+<dd>
+DNSの設定を与えます。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_OPEN"><code>open(*args) -&gt; Resolv::DNS</code><span class="permalink">[<a href="../method/-resolv=3a=3a-d-n-s/s/open.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Resolv/DNS.html#method-c-open">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>open(*args) {|dns| ...} -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+新しい DNS リゾルバを生成します。ブロックを与えた場合は生成したリゾルバでブロックを呼びだし、ブロック終了時にリゾルバを閉じます。
+</p>
+<p>
+ブロックを与えなかった場合は <a href="../method/-resolv=3a=3a-d-n-s/s/new.html">Resolv::DNS.new</a> と同じです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+DNSの設定を与えます。意味は <a href="../method/-resolv=3a=3a-d-n-s/s/new.html">Resolv::DNS.new</a>
+の引数と同じです。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+ブロックを与えた場合はブロックの返す値を返し、与えなかった場合は生成したリゾルバを返します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_CLOSE"><code>close -&gt; ()</code><span class="permalink">[<a href="../method/-resolv=3a=3a-d-n-s/i/close.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Resolv/DNS.html#method-i-close">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+DNSリゾルバを閉じます。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_ADDRESS"><code>each_address(name) {|name| ...} -&gt; ()</code><span class="permalink">[<a href="../method/-resolv=3a=3a-d-n-s/i/each_address.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Resolv/DNS.html#method-i-each_address">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ホスト名 name の IP アドレスをルックアップし、各ルックアップ結果のアドレスに対してブロックを評価します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+ホスト名を文字列もしくは<a href="../class/-resolv=3a=3a-d-n-s=3a=3a-name.html">Resolv::DNS::Name</a>のインスタンスで与えます。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_NAME"><code>each_name(address) {|name| ...} -&gt; ()</code><span class="permalink">[<a href="../method/-resolv=3a=3a-d-n-s/i/each_name.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Resolv/DNS.html#method-i-each_name">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IP アドレス address のホスト名をルックアップし、各ルックアップ結果のホスト名に対してブロックを評価します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] address:</dt>
+<dd>
+IPアドレスを文字列、 Resolv::IPv4 のインスタンス、
+Resolv::IPv6 のインスタンス、のいずれか与えます。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_RESOURCE"><code>each_resource(name, typeclass) {|resource| ...} -&gt; ()</code><span class="permalink">[<a href="../method/-resolv=3a=3a-d-n-s/i/each_resource.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Resolv/DNS.html#method-i-each_resource">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+nameに対応するDNSリソースレコードを取得します。見つかったリソースをひとつずつブロックに渡します。
+</p>
+<p>
+typeclass は以下のいずれかです。
+</p>
+<ul>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-a-n-y.html">Resolv::DNS::Resource::IN::ANY</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-n-s.html">Resolv::DNS::Resource::IN::NS</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-c-n-a-m-e.html">Resolv::DNS::Resource::IN::CNAME</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-s-o-a.html">Resolv::DNS::Resource::IN::SOA</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-h-i-n-f-o.html">Resolv::DNS::Resource::IN::HINFO</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-m-i-n-f-o.html">Resolv::DNS::Resource::IN::MINFO</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-m-x.html">Resolv::DNS::Resource::IN::MX</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-t-x-t.html">Resolv::DNS::Resource::IN::TXT</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-a.html">Resolv::DNS::Resource::IN::A</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-w-k-s.html">Resolv::DNS::Resource::IN::WKS</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-p-t-r.html">Resolv::DNS::Resource::IN::PTR</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-a-a-a-a.html">Resolv::DNS::Resource::IN::AAAA</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-s-r-v.html">Resolv::DNS::Resource::IN::SRV</a></li>
+</ul>
+<p>
+ルックアップ結果は Resolv::DNS::Resource （のサブクラス）のインスタンスとなります。
+typeclass に Resolv::DNS::Resource::IN::ANY 以外を指定した場合にはそのクラスのインスタンスを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+ルックアップ対象となる名前を <a href="../class/-resolv=3a=3a-d-n-s=3a=3a-name.html">Resolv::DNS::Name</a> または String で指定します。
+</dd>
+<dt class='method-param'>[PARAM] typeclass:</dt>
+<dd>
+レコード種別を指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_GETADDRESS"><code>getaddress(name) -&gt; Resolv::IPv4 | Resolv::IPv6</code><span class="permalink">[<a href="../method/-resolv=3a=3a-d-n-s/i/getaddress.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Resolv/DNS.html#method-i-getaddress">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ホスト名 name の IP アドレスをルックアップし、ルックアップ結果の最初のアドレスを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+ホスト名を文字列もしくは<a href="../class/-resolv=3a=3a-d-n-s=3a=3a-name.html">Resolv::DNS::Name</a>のインスタンスで与えます。
+</dd>
+<dt>[EXCEPTION] Resolv::ResolvError:</dt>
+<dd>
+ルックアップに失敗したときに発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_GETADDRESSES"><code>getaddresses(name) -&gt; [Resolv::IPv4 | Resolv::IPv6]</code><span class="permalink">[<a href="../method/-resolv=3a=3a-d-n-s/i/getaddresses.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Resolv/DNS.html#method-i-getaddresses">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ホスト名 name の IP アドレスをルックアップし、ルックアップ結果のアドレスリストを返します。
+</p>
+<p>
+ルックアップに失敗した場合は空の配列が返されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+ホスト名を文字列もしくは<a href="../class/-resolv=3a=3a-d-n-s=3a=3a-name.html">Resolv::DNS::Name</a>のインスタンスで与えます。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_GETNAME"><code>getname(address) -&gt; Resolv::DNS::Name</code><span class="permalink">[<a href="../method/-resolv=3a=3a-d-n-s/i/getname.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Resolv/DNS.html#method-i-getname">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IP アドレス address のホスト名をルックアップし、ルックアップ結果の最初のホスト名を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] address:</dt>
+<dd>
+IPアドレスを文字列、 Resolv::IPv4 のインスタンス、
+Resolv::IPv6 のインスタンス、のいずれか与えます。
+</dd>
+<dt>[EXCEPTION] Resolv::ResolvError:</dt>
+<dd>
+ルックアップに失敗したときに発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_GETNAMES"><code>getnames(address) -&gt; [Resolv::DNS::Name]</code><span class="permalink">[<a href="../method/-resolv=3a=3a-d-n-s/i/getnames.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Resolv/DNS.html#method-i-getnames">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IP アドレス address のホスト名をルックアップし、ルックアップ結果のホスト名リストを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] address:</dt>
+<dd>
+IPアドレスを文字列、 Resolv::IPv4 のインスタンス、
+Resolv::IPv6 のインスタンス、のいずれか与えます。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_GETRESOURCE"><code>getresource(name, typeclass) -&gt; Resolv::DNS::Resource</code><span class="permalink">[<a href="../method/-resolv=3a=3a-d-n-s/i/getresource.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Resolv/DNS.html#method-i-getresource">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+nameに対応するDNSリソースレコードを取得します。最初に見つかったリソースを返します。
+</p>
+<p>
+typeclass は以下のいずれかです。
+</p>
+<ul>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-a-n-y.html">Resolv::DNS::Resource::IN::ANY</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-n-s.html">Resolv::DNS::Resource::IN::NS</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-c-n-a-m-e.html">Resolv::DNS::Resource::IN::CNAME</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-s-o-a.html">Resolv::DNS::Resource::IN::SOA</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-h-i-n-f-o.html">Resolv::DNS::Resource::IN::HINFO</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-m-i-n-f-o.html">Resolv::DNS::Resource::IN::MINFO</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-m-x.html">Resolv::DNS::Resource::IN::MX</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-t-x-t.html">Resolv::DNS::Resource::IN::TXT</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-a.html">Resolv::DNS::Resource::IN::A</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-w-k-s.html">Resolv::DNS::Resource::IN::WKS</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-p-t-r.html">Resolv::DNS::Resource::IN::PTR</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-a-a-a-a.html">Resolv::DNS::Resource::IN::AAAA</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-s-r-v.html">Resolv::DNS::Resource::IN::SRV</a></li>
+</ul>
+<p>
+ルックアップ結果は Resolv::DNS::Resource （のサブクラス）のインスタンスとなります。
+typeclass に Resolv::DNS::Resource::IN::ANY 以外を指定した場合にはそのクラスのインスタンスを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+ルックアップ対象となる名前を <a href="../class/-resolv=3a=3a-d-n-s=3a=3a-name.html">Resolv::DNS::Name</a> または String で指定します。
+</dd>
+<dt class='method-param'>[PARAM] typeclass:</dt>
+<dd>
+レコード種別を指定します。
+</dd>
+<dt>[EXCEPTION] Resolv::ResolvError:</dt>
+<dd>
+ルックアップに失敗した場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_GETRESOURCES"><code>getresources(name, typeclass) -&gt; [Resolv::DNS::Resource]</code><span class="permalink">[<a href="../method/-resolv=3a=3a-d-n-s/i/getresources.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Resolv/DNS.html#method-i-getresources">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+nameに対応するDNSリソースレコードを取得します。見つかったリソース全てを配列にして返します。
+</p>
+<p>
+typeclass は以下のいずれかです。
+</p>
+<ul>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-a-n-y.html">Resolv::DNS::Resource::IN::ANY</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-n-s.html">Resolv::DNS::Resource::IN::NS</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-c-n-a-m-e.html">Resolv::DNS::Resource::IN::CNAME</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-s-o-a.html">Resolv::DNS::Resource::IN::SOA</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-h-i-n-f-o.html">Resolv::DNS::Resource::IN::HINFO</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-m-i-n-f-o.html">Resolv::DNS::Resource::IN::MINFO</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-m-x.html">Resolv::DNS::Resource::IN::MX</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-t-x-t.html">Resolv::DNS::Resource::IN::TXT</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-a.html">Resolv::DNS::Resource::IN::A</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-w-k-s.html">Resolv::DNS::Resource::IN::WKS</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-p-t-r.html">Resolv::DNS::Resource::IN::PTR</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-a-a-a-a.html">Resolv::DNS::Resource::IN::AAAA</a></li>
+<li><a href="../class/-resolv=3a=3a-d-n-s=3a=3a-resource=3a=3a-i-n=3a=3a-s-r-v.html">Resolv::DNS::Resource::IN::SRV</a></li>
+</ul>
+<p>
+ルックアップ結果は Resolv::DNS::Resource （のサブクラス）のインスタンスとなります。
+typeclass に Resolv::DNS::Resource::IN::ANY 以外を指定した場合にはそのクラスのインスタンスを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+ルックアップ対象となる名前を <a href="../class/-resolv=3a=3a-d-n-s=3a=3a-name.html">Resolv::DNS::Name</a> または String で指定します。
+</dd>
+<dt class='method-param'>[PARAM] typeclass:</dt>
+<dd>
+レコード種別を指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_TIMEOUTS--3D"><code>timeouts=(values)</code><span class="permalink">[<a href="../method/-resolv=3a=3a-d-n-s/i/timeouts=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Resolv/DNS.html#method-i-timeouts-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+DNSリゾルバのタイムアウト時間を設定します。
+</p>
+<pre class="highlight ruby">
+<code>
+dns<span class="p">.</span><span class="nf">timeouts</span> <span class="o">=</span> <span class="mi">3</span>
+</code></pre>
+<dl>
+<dt class='method-param'>[PARAM] values:</dt>
+<dd>
+タイムアウト時間(秒)を数値か数値の配列で指定します。配列を指定した場合は応答を受信するまでの再試行時のタイムアウト時間も含めて順に設定します。nil を指定した場合はデフォルト値
+([ 5, second = 5 * 2 / nameserver_count, 2 * second, 4 * second ])
+を使用します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-PORT"><code>Port -&gt; Integer</code><span class="permalink">[<a href="../method/-resolv=3a=3a-d-n-s/c/-port.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Resolv/DNS.html#method-c-Port">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+デフォルトの DNS ポート番号です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-U-D-P-SIZE"><code>UDPSize -&gt; Integer</code><span class="permalink">[<a href="../method/-resolv=3a=3a-d-n-s/c/-u-d-p-size.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Resolv/DNS.html#method-c-UDPSize">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+デフォルトの UDP パケットサイズです。
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

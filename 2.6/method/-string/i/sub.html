@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>String#sub (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="文字列中で pattern にマッチした最初の部分を
+文字列 replace で置き換えた文字列を生成して返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-string.html">Stringクラス</a>
+      </li>
+      <li>
+        sub 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method String#sub</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_SUB"><code>sub(pattern, replace) -&gt; String</code><span class="permalink">[<a href="../../../method/-string/i/sub.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/String.html#method-i-sub">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中で pattern にマッチした最初の部分を文字列 replace で置き換えた文字列を生成して返します。
+</p>
+<p>
+置換文字列 replace 中の \&amp; と \0 はマッチした部分文字列に、
+\1 ... \9 は n 番目の括弧の内容に置き換えられます。置換文字列内では \`、\'、\+ も使えます。これらは <a href="../../../method/-kernel/v/=60.html">$`</a>、<a href="../../../method/-kernel/v/=27.html">$'</a>、<a href="../../../method/-kernel/v/=2b.html">$+</a> に対応します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターンを表す文字列か正規表現。文字列を指定した場合は全く同じ文字列にだけマッチする
+</dd>
+<dt class='method-param'>[PARAM] replace:</dt>
+<dd>
+pattern で指定した文字列と置き換える文字列
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="s1">'abcdefg'</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/def/</span>, <span class="s1">'!!'</span><span class="p">)</span>          <span class="c1"># =&gt; &quot;abc!!g&quot;
+</span><span class="nb">p</span> <span class="s1">'abcabc'</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/b/</span>, <span class="s1">'&lt;&lt;\&amp;&gt;&gt;'</span><span class="p">)</span>         <span class="c1"># =&gt; &quot;a&lt;&lt;b&gt;&gt;cabc&quot;
+</span><span class="nb">p</span> <span class="s1">'xxbbxbb'</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/x+(b+)/</span>, <span class="s1">'X&lt;&lt;\1&gt;&gt;'</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;X&lt;&lt;bb&gt;&gt;xbb&quot;
+</span></code></pre>
+<p>
+注意:
+</p>
+<p>
+第 2 引数 replace に <a href="../../../method/-kernel/v/1.html">$1</a> を埋め込んでも意図した結果にはなりません。この文字列が評価される時点ではまだ正規表現マッチが行われておらず、
+$1 がセットされていないからです。
+</p>
+<p>
+また、sub では「\」が部分文字列との置き換えという特別な意味を持つため、
+replace に「\」自身を入れたいときは「\」を二重にエスケープしなければなりません。
+</p>
+<pre class="highlight ruby">
+<span class="caption">ひとつめの括弧の内容に置き換えるときによくある間違い</span>
+<code>
+<span class="nb">p</span> <span class="s1">'xbbb-xbbb'</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/x(b+)/</span>, <span class="s2">"</span><span class="si">#{</span><span class="vg">$1</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;-xbbb&quot;     # NG
+</span><span class="nb">p</span> <span class="s1">'xbbb-xbbb'</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/x(b+)/</span>, <span class="s2">"</span><span class="s2">\1</span><span class="s2">"</span><span class="p">)</span>      <span class="c1"># =&gt; &quot;1-xbbb&quot;    # NG
+</span><span class="nb">p</span> <span class="s1">'xbbb-xbbb'</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/x(b+)/</span>, <span class="s2">"</span><span class="s2">\\1</span><span class="s2">"</span><span class="p">)</span>     <span class="c1"># =&gt; &quot;bbb-xbbb&quot;  # OK
+</span><span class="nb">p</span> <span class="s1">'xbbb-xbbb'</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/x(b+)/</span>, <span class="s1">'\1'</span><span class="p">)</span>      <span class="c1"># =&gt; &quot;bbb-xbbb&quot;  # OK
+</span><span class="nb">p</span> <span class="s1">'xbbb-xbbb'</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/x(b+)/</span>, <span class="s1">'\\1'</span><span class="p">)</span>     <span class="c1"># =&gt; &quot;bbb-xbbb&quot;  # OK
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">バックスラッシュを倍にするときによくある間違い</span>
+<code>
+<span class="nb">puts</span> <span class="s1">'\n'</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/\\/</span>, <span class="s2">"</span><span class="s2">\\\\</span><span class="s2">"</span><span class="p">)</span>      <span class="c1"># =&gt; \n   # NG
+</span><span class="nb">puts</span> <span class="s1">'\n'</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/\\/</span>, <span class="s1">'\\\\'</span><span class="p">)</span>      <span class="c1"># =&gt; \n   # NG
+</span><span class="nb">puts</span> <span class="s1">'\n'</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/\\/</span>, <span class="s2">"</span><span class="s2">\\\\\\\\</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; \\n  # OK
+</span><span class="nb">puts</span> <span class="s1">'\n'</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/\\/</span>, <span class="s1">'\\\\\\\\'</span><span class="p">)</span>  <span class="c1"># =&gt; \\n  # OK
+</span></code></pre>
+<p>
+このような間違いを確実に防止し、コードの可読性を上げるには、
+\&amp; や \1 よりも下記のようにブロック付き形式の sub を使うべきです。
+</p>
+<pre class="highlight ruby">
+<span class="caption">安全な例</span>
+<code>
+<span class="nb">p</span> <span class="s1">'xbbb-xbbb'</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/x(b+)/</span><span class="p">)</span> <span class="p">{</span> <span class="vg">$1</span> <span class="p">}</span>   <span class="c1"># =&gt; &quot;bbb-xbbb&quot;  # OK
+</span>
+<span class="nb">puts</span> <span class="s1">'\n'</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/\\/</span><span class="p">)</span> <span class="p">{</span> <span class="s1">'\\\\'</span> <span class="p">}</span>      <span class="c1"># =&gt; \\n        # OK
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-string/i/gsub.html">String#gsub</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_SUB"><code>sub(pattern) {|matched| .... } -&gt; String</code><span class="permalink">[<a href="../../../method/-string/i/sub.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/String.html#method-i-sub">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中で pattern にマッチした最初の部分をブロックに渡し、その評価結果で置き換えた新しい文字列を返します。ブロックなしの sub と違い、ブロックの中からは組み込み変数 <a href="../../../method/-kernel/v/1.html">$1</a>, $2, $3, ... を問題なく参照できます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターンを表す文字列か正規表現。文字列を指定した場合は全く同じ文字列にだけマッチする
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="s1">'abcabc'</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/b/</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>s<span class="o">|</span> s<span class="p">.</span><span class="nf">upcase</span> <span class="p">}</span>  <span class="c1">#=&gt; &quot;aBcabc&quot;
+</span><span class="nb">p</span> <span class="s1">'abcabc'</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/b/</span><span class="p">)</span> <span class="p">{</span> <span class="vg">$&amp;</span><span class="p">.</span><span class="nf">upcase</span> <span class="p">}</span>    <span class="c1">#=&gt; &quot;aBcabc&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-string/i/gsub.html">String#gsub</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_SUB"><code>sub(pattern, hash) -&gt; String</code><span class="permalink">[<a href="../../../method/-string/i/sub.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/String.html#method-i-sub">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中の pattern にマッチした部分をキーにして hash を引いた値で置き換えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターン
+</dd>
+<dt class='method-param'>[PARAM] hash:</dt>
+<dd>
+置き換える文字列を与えるハッシュ
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">hash</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'b'</span><span class="o">=&gt;</span><span class="s1">'B'</span>, <span class="s1">'c'</span><span class="o">=&gt;</span><span class="s1">'C'</span><span class="p">}</span>
+<span class="nb">p</span> <span class="s2">"</span><span class="s2">abcabc</span><span class="s2">"</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/[bc]/</span><span class="p">)</span><span class="p">{</span><span class="nb">hash</span><span class="p">[</span><span class="vg">$&amp;</span><span class="p">]</span><span class="p">}</span> <span class="c1">#=&gt; &quot;aBCabc&quot;
+</span><span class="nb">p</span> <span class="s2">"</span><span class="s2">abcabc</span><span class="s2">"</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/[bc]/</span>, <span class="nb">hash</span><span class="p">)</span>     <span class="c1">#=&gt; &quot;aBCabc&quot;
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

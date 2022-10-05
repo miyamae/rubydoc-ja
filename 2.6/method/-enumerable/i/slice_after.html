@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Enumerable#slice_after (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="パターンがマッチした要素、もしくはブロックが真を返した要素を末尾の要素
+としてチャンク化(グループ化)したものを繰り返す [[c:Enumerator]] を 返し
+ます。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-enumerable.html">Enumerableモジュール</a>
+      </li>
+      <li>
+        slice_after 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Enumerable#slice_after</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_SLICE_AFTER"><code>slice_after(pattern) -&gt; Enumerator</code><span class="permalink">[<a href="../../../method/-enumerable/i/slice_after.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Enumerable.html#method-i-slice_after">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>slice_after {|elt| bool } -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+パターンがマッチした要素、もしくはブロックが真を返した要素を末尾の要素としてチャンク化(グループ化)したものを繰り返す <a href="../../../class/-enumerator.html">Enumerator</a> を 返します。
+</p>
+<p>
+パターンを渡した場合は各要素に対し === が呼び出され、 それが真になったところをチャンクの末尾と見なします。 ブロックを渡した場合は、各要素に対しブロックを適用し 返り値が真であった要素をチャンクの末尾と見なします。
+</p>
+<p>
+パターンもブロックも最初から最後の要素まで呼び出されます。
+</p>
+<p>
+各チャンクは配列として表現されます。そのため、以下のような呼び出しを行う事もできます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+enum<span class="p">.</span><span class="nf">slice_after</span><span class="p">(</span>pattern<span class="p">)</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span> <span class="o">|</span>ary<span class="o">|</span>
+  <span class="c1"># ...
+</span><span class="p">}</span>
+enum<span class="p">.</span><span class="nf">slice_after</span> <span class="p">{</span> <span class="o">|</span>elt<span class="o">|</span> bool <span class="p">}</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span> <span class="o">|</span>ary<span class="o">|</span>
+  <span class="c1"># ...
+</span><span class="p">}</span>
+</code></pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># 偶数要素をチャンクの末尾と見なす
+</span><span class="p">[</span><span class="mi">0</span>,<span class="mi">2</span>,<span class="mi">4</span>,<span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">4</span>,<span class="mi">5</span>,<span class="mi">3</span>,<span class="mi">1</span>,<span class="mi">4</span>,<span class="mi">2</span><span class="p">]</span><span class="p">.</span><span class="nf">slice_after</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:even?</span><span class="p">)</span><span class="p">.</span><span class="nf">to_a</span>
+<span class="c1"># =&gt; [[0], [2], [4], [1, 2], [4], [5, 3, 1, 4], [2]]
+</span>
+<span class="c1"># 奇数要素をチャンクの末尾と見なす
+</span><span class="p">[</span><span class="mi">0</span>,<span class="mi">2</span>,<span class="mi">4</span>,<span class="mi">1</span>,<span class="mi">2</span>,<span class="mi">4</span>,<span class="mi">5</span>,<span class="mi">3</span>,<span class="mi">1</span>,<span class="mi">4</span>,<span class="mi">2</span><span class="p">]</span><span class="p">.</span><span class="nf">slice_after</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:odd?</span><span class="p">)</span><span class="p">.</span><span class="nf">to_a</span>
+<span class="c1"># =&gt; [[0, 2, 4, 1], [2, 4, 5], [3], [1], [4, 2]]
+</span>
+<span class="c1"># バックスラッシュで終わる行を継続
+</span>lines <span class="o">=</span> <span class="p">[</span><span class="s2">"</span><span class="s2">foo\n</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">bar\\\n</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">baz\n</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">\n</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">qux\n</span><span class="s2">"</span><span class="p">]</span>
+e <span class="o">=</span> lines<span class="p">.</span><span class="nf">slice_after</span><span class="p">(</span><span class="sr">/(?&lt;!\\)\n\z/</span><span class="p">)</span>
+<span class="nb">p</span> e<span class="p">.</span><span class="nf">to_a</span>
+<span class="c1">#=&gt; [[&quot;foo\n&quot;], [&quot;bar\\\n&quot;, &quot;baz\n&quot;], [&quot;\n&quot;], [&quot;qux\n&quot;]]
+</span><span class="nb">p</span> e<span class="p">.</span><span class="nf">map</span> <span class="p">{</span><span class="o">|</span>ll<span class="o">|</span> ll<span class="p">[</span><span class="mi">0</span><span class="o">...</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span><span class="o">|</span>l<span class="o">|</span> l<span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/\\\n\z/</span>, <span class="s2">"</span><span class="s2">"</span><span class="p">)</span> <span class="p">}</span><span class="p">.</span><span class="nf">join</span> <span class="o">+</span> ll<span class="p">.</span><span class="nf">last</span> <span class="p">}</span>
+<span class="c1">#=&gt;[&quot;foo\n&quot;, &quot;barbaz\n&quot;, &quot;\n&quot;, &quot;qux\n&quot;]
+</span></code></pre>
+<p>
+<a href="../../../method/-enumerable/i/map.html">Enumerable#map</a> のようなメソッドを使うこともできます。
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-enumerable/i/chunk.html">Enumerable#chunk</a>, <a href="../../../method/-enumerable/i/slice_before.html">Enumerable#slice_before</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>String#gsub! (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="文字列中で pattern にマッチする部分全てを文字列 replace に破壊的に置き換えます。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-string.html">Stringクラス</a>
+      </li>
+      <li>
+        gsub! 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method String#gsub!</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_GSUB--21"><code>gsub!(pattern, replace) -&gt; self | nil</code><span class="permalink">[<a href="../../../method/-string/i/gsub=21.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/String.html#method-i-gsub-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中で pattern にマッチする部分全てを文字列 replace に破壊的に置き換えます。
+</p>
+<p>
+置換文字列 replace 中の \&amp; と \0 はマッチした部分文字列に、
+\1 ... \9 は n 番目の括弧の内容に置き換えられます。置換文字列内では \`、\'、\+ も使えます。これらは <a href="../../../method/-kernel/v/=60.html">$`</a>、<a href="../../../method/-kernel/v/=27.html">$'</a>、<a href="../../../method/-kernel/v/=2b.html">$+</a> に対応します。
+</p>
+<p>
+gsub! は通常 self を変更して返しますが、置換が起こらなかった場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターンを表す文字列か正規表現。文字列を指定した場合は全く同じ文字列にだけマッチする
+</dd>
+<dt class='method-param'>[PARAM] replace:</dt>
+<dd>
+pattern で指定した文字列と置き換える文字列
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+置換した場合は self、置換しなかった場合は nil
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+buf <span class="o">=</span> <span class="s2">"</span><span class="s2">String-String</span><span class="s2">"</span>
+buf<span class="p">.</span><span class="nf">gsub!</span><span class="p">(</span><span class="sr">/in./</span>, <span class="s2">"</span><span class="s2">!!</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">p</span> buf   <span class="c1"># =&gt; &quot;Str!!-Str!!&quot;
+</span>
+buf <span class="o">=</span> <span class="s2">"</span><span class="s2">String.String</span><span class="s2">"</span>
+buf<span class="p">.</span><span class="nf">gsub!</span><span class="p">(</span><span class="sr">/in./</span>, <span class="s1">'&lt;&lt;\&amp;&gt;&gt;'</span><span class="p">)</span>
+<span class="nb">p</span> buf   <span class="c1"># =&gt; &quot;Str&lt;&lt;ing&gt;&gt;-Str&lt;&lt;ing&gt;&gt;&quot;
+</span></code></pre>
+<p>
+注意:
+</p>
+<p>
+引数 replace の中で <a href="../../../method/-kernel/v/1.html">$1</a> を使うことはできません。
+replace は gsub メソッドの呼び出しより先に評価されるので、まだ gsub の正規表現マッチが行われておらず、
+$1 がセットされていないからです。
+</p>
+<p>
+また、gsub では「\」が部分文字列との置き換えという特別な意味を持つため、
+replace に「\」自身を入れたいときは「\」を二重にエスケープしなければなりません。
+</p>
+<pre class="highlight ruby">
+<span class="caption">ひとつめの括弧にマッチした部分に置き換えるときによくやる間違い</span>
+<code>
+<span class="s1">'abbbcd'</span><span class="p">.</span><span class="nf">gsub!</span><span class="p">(</span><span class="sr">/a(b+)/</span>, <span class="s2">"</span><span class="si">#{</span><span class="vg">$1</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>       <span class="c1"># NG
+</span><span class="s1">'abbbcd'</span><span class="p">.</span><span class="nf">gsub!</span><span class="p">(</span><span class="sr">/a(b+)/</span>, <span class="s2">"</span><span class="s2">\1</span><span class="s2">"</span><span class="p">)</span>          <span class="c1"># NG
+</span><span class="s1">'abbbcd'</span><span class="p">.</span><span class="nf">gsub!</span><span class="p">(</span><span class="sr">/a(b+)/</span>, <span class="s2">"</span><span class="s2">\\1</span><span class="s2">"</span><span class="p">)</span>         <span class="c1"># OK
+</span><span class="s1">'abbbcd'</span><span class="p">.</span><span class="nf">gsub!</span><span class="p">(</span><span class="sr">/a(b+)/</span>, <span class="s1">'\\1'</span><span class="p">)</span>         <span class="c1"># OK
+</span><span class="s1">'abbbcd'</span><span class="p">.</span><span class="nf">gsub!</span><span class="p">(</span><span class="sr">/a(b+)/</span>, <span class="s1">'\1'</span><span class="p">)</span>          <span class="c1"># OK
+</span><span class="s1">'abbbcd'</span><span class="p">.</span><span class="nf">gsub!</span><span class="p">(</span><span class="sr">/a(b+)/</span><span class="p">)</span> <span class="p">{</span> <span class="vg">$1</span> <span class="p">}</span>         <span class="c1"># OK   これがもっとも安全
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-string/i/sub.html">String#sub</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_GSUB--21"><code>gsub!(pattern) {|matched| .... } -&gt; self | nil</code><span class="permalink">[<a href="../../../method/-string/i/gsub=21.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/String.html#method-i-gsub-21">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>gsub!(pattern) -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+文字列中で pattern にマッチする部分全てを順番にブロックに渡し、その評価結果に置き換えます。
+</p>
+<p>
+また、ブロックなしの場合と違い、ブロックの中からは組み込み変数 <a href="../../../method/-kernel/v/1.html">$1</a>, $2, $3, ... を問題なく参照できます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターンを表す文字列か正規表現。文字列を指定した場合は全く同じ文字列にだけマッチする
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+置換した場合は self、置換しなかった場合は nil
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+str <span class="o">=</span> <span class="s1">'abcabc'</span>
+str<span class="p">.</span><span class="nf">gsub!</span><span class="p">(</span><span class="sr">/b/</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>s<span class="o">|</span> s<span class="p">.</span><span class="nf">upcase</span> <span class="p">}</span>
+<span class="nb">p</span> str    <span class="c1">#=&gt; &quot;aBcaBc&quot;
+</span>
+str <span class="o">=</span> <span class="s1">'abcabc'</span>
+str<span class="p">.</span><span class="nf">gsub!</span><span class="p">(</span><span class="sr">/b/</span><span class="p">)</span> <span class="p">{</span> <span class="vg">$&amp;</span><span class="p">.</span><span class="nf">upcase</span> <span class="p">}</span>
+<span class="nb">p</span> str    <span class="c1">#=&gt; &quot;aBcaBc&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-string/i/sub.html">String#sub</a>
+</p>
+</dd>
+<dt class="method-heading" id="I_GSUB--21"><code>gsub!(pattern, hash) -&gt; self | nil</code><span class="permalink">[<a href="../../../method/-string/i/gsub=21.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/String.html#method-i-gsub-21">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列中の pattern にマッチした部分をキーにして hash を引いた値へ破壊的に置き換えます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pattern:</dt>
+<dd>
+置き換える文字列のパターン
+</dd>
+<dt class='method-param'>[PARAM] hash:</dt>
+<dd>
+置き換える文字列を与えるハッシュ
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">hash</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'b'</span><span class="o">=&gt;</span><span class="s1">'B'</span>, <span class="s1">'c'</span><span class="o">=&gt;</span><span class="s1">'C'</span><span class="p">}</span>
+str <span class="o">=</span> <span class="s2">"</span><span class="s2">abcabc</span><span class="s2">"</span>
+str<span class="p">.</span><span class="nf">gsub!</span><span class="p">(</span><span class="sr">/[bc]/</span><span class="p">)</span><span class="p">{</span><span class="nb">hash</span><span class="p">[</span><span class="vg">$&amp;</span><span class="p">]</span><span class="p">}</span>
+<span class="nb">p</span> str     <span class="c1">#=&gt; &quot;aBCaBC&quot;
+</span>
+str <span class="o">=</span> <span class="s2">"</span><span class="s2">abcabc</span><span class="s2">"</span>
+str<span class="p">.</span><span class="nf">gsub!</span><span class="p">(</span><span class="sr">/[bc]/</span>, <span class="nb">hash</span><span class="p">)</span>
+<span class="nb">p</span> str     <span class="c1">#=&gt; &quot;aBCaBC&quot;
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

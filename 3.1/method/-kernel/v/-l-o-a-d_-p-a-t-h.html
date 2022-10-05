@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>$-I (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="[[m:Kernel.#load]] や [[m:Kernel.#require]]
+がファイルをロードする時に検索するディレクトリのリストを含む配列です。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-kernel.html">Kernelモジュール</a>
+      </li>
+      <li>
+        $-I 
+      </li>
+    </ol>
+  </nav>
+
+<h1>variable $-I</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="V_--2D-I"><code>$: -&gt; [String]</code><span class="permalink">[<a href="../../../method/-kernel/v/=2d-i.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Kernel.html#method-c-2DI">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>$LOAD_PATH -&gt; [String]</code></dt>
+<dt class="method-heading"><code>$-I -&gt; [String]</code></dt>
+<dd class="method-description">
+<p>
+Rubyライブラリをロードするときの検索パスです。
+</p>
+<p>
+<a href="../../../method/-kernel/m/load.html">Kernel.#load</a> や <a href="../../../method/-kernel/m/require.html">Kernel.#require</a>
+がファイルをロードする時に検索するディレクトリのリストを含む配列です。
+</p>
+<p>
+起動時にはコマンドラインオプション -I で指定したディレクトリ、環境変数 RUBYLIB の値、コンパイル時に指定したデフォルト値をこの順番で含みます。
+</p>
+<p>
+以下に典型的な UNIX システム上でのロードパスを示します。
+</p>
+<pre>
+-I で指定したパス
+環境変数 RUBYLIB の値
+/usr/local/lib/ruby/site_ruby/VERSION        サイト固有、バージョン依存のライブラリ
+/usr/local/lib/ruby/site_ruby/VERSION/ARCH   サイト固有、システム依存、拡張ライブラリ
+/usr/local/lib/ruby/site_ruby                サイト固有ライブラリ
+/usr/local/lib/ruby/VERSION                  標準ライブラリ
+/usr/local/lib/ruby/VERSION/ARCH             標準、システム依存、拡張ライブラリ
+</pre>
+<p>
+上記表中の VERSION は Ruby のバージョンを表す文字列で、「1.6」や「1.8」です。
+ARCH はハードウェアと OS を表す文字列で、「i686-linux」や「alpha-osf5.1」などです。
+ARCH の値は Config::CONFIG['arch'] で得られます。
+</p>
+<p>
+コンパイル時のデフォルトパスは多くの UNIX システムでは &quot;/usr/local/lib/ruby&quot; です。
+<a href="../../../doc/platform=2fmswin32.html">mswin32</a>、<a href="../../../doc/platform=2fmingw32.html">mingw32</a>、<a href="../../../doc/platform=2f-cygwin.html">Cygwin</a>
+環境では
+ruby.dll の位置からの相対で決まります。
+</p>
+<p>
+require 'foo' を実行すると、以下のように foo.rb と foo.so が交互に探索されます。
+</p>
+<pre>
+/usr/local/lib/ruby/site_ruby/VERSION/foo.rb
+/usr/local/lib/ruby/site_ruby/VERSION/foo.so
+/usr/local/lib/ruby/site_ruby/VERSION/ARCH/foo.rb
+/usr/local/lib/ruby/site_ruby/VERSION/ARCH/foo.so
+  :
+  :
+</pre>
+<p>
+なお、共有ライブラリの拡張子が .so でないシステムでは「.so」が適切な拡張子に変更されます。例えば HP-UX では require 'foo.so' とすると foo.sl を検索します。したがって Ruby で記述されたコードでは常に .so を使うべきです。
+</p>
+<p>
+なお、ロードパスをコマンドラインから調べるには
+</p>
+<pre>
+$ ruby -e 'puts $:'
+</pre>
+<p>
+とします。
+</p>
+<p>
+$LOAD_PATH の特異メソッドとして resolve_feature_path が定義されています。
+require を呼んだときに読み込まれるファイルを特定できます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="vg">$LOAD_PATH</span><span class="p">.</span><span class="nf">resolve_feature_path</span><span class="p">(</span><span class="s1">'set'</span><span class="p">)</span>
+<span class="c1"># =&gt; [:rb, &quot;/build-all-ruby/2.7.0/lib/ruby/2.7.0/set.rb&quot;]
+</span></code></pre>
+<p>
+この変数はグローバルスコープです。
+</p>
+<p>
+[SEE_ALSO] <a href="../../../doc/spec=2frubycmd.html">Rubyの起動</a>, <a href="../../../doc/spec=2fenvvars.html">環境変数</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

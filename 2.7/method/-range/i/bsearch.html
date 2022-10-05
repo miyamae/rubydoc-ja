@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Range#bsearch (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="ブロックの評価結果で範囲内の各要素の大小判定を行い、条件を満たす値を二
+分探索(計算量は O(log n))で検索します。要素が見つからない場合は nil を
+返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-range.html">Rangeクラス</a>
+      </li>
+      <li>
+        bsearch 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Range#bsearch</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_BSEARCH"><code>bsearch {|obj| ... } -&gt; object | nil</code><span class="permalink">[<a href="../../../method/-range/i/bsearch.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Range.html#method-i-bsearch">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>bsearch -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+ブロックの評価結果で範囲内の各要素の大小判定を行い、条件を満たす値を二分探索(計算量は O(log n))で検索します。要素が見つからない場合は nil を返します。
+</p>
+<p>
+本メソッドはブロックを評価した結果により以下のいずれかのモードで動作します。
+</p>
+<ul>
+<li>find-minimum モード</li>
+<li>find-any モード</li>
+</ul>
+<p>
+find-minimum モード(特に理由がない限りはこのモードを使う方がいいでしょう)では、条件判定の結果を以下のようにする必要があります。
+</p>
+<ul>
+<li>求める値がブロックパラメータの値か前の要素の場合: true を返す</li>
+<li>求める値がブロックパラメータより後の要素の場合: false を返す</li>
+</ul>
+<p>
+ブロックの評価結果が true になる最初の要素を返すか、nil を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+ary <span class="o">=</span> <span class="p">[</span><span class="mi">0</span>, <span class="mi">4</span>, <span class="mi">7</span>, <span class="mi">10</span>, <span class="mi">12</span><span class="p">]</span>
+<span class="p">(</span><span class="mi">0</span><span class="o">...</span>ary<span class="p">.</span><span class="nf">size</span><span class="p">)</span><span class="p">.</span><span class="nf">bsearch</span> <span class="p">{</span><span class="o">|</span>i<span class="o">|</span> ary<span class="p">[</span>i<span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">4</span> <span class="p">}</span> <span class="c1"># =&gt; 1
+</span><span class="p">(</span><span class="mi">0</span><span class="o">...</span>ary<span class="p">.</span><span class="nf">size</span><span class="p">)</span><span class="p">.</span><span class="nf">bsearch</span> <span class="p">{</span><span class="o">|</span>i<span class="o">|</span> ary<span class="p">[</span>i<span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">6</span> <span class="p">}</span> <span class="c1"># =&gt; 2
+</span><span class="p">(</span><span class="mi">0</span><span class="o">...</span>ary<span class="p">.</span><span class="nf">size</span><span class="p">)</span><span class="p">.</span><span class="nf">bsearch</span> <span class="p">{</span><span class="o">|</span>i<span class="o">|</span> ary<span class="p">[</span>i<span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">8</span> <span class="p">}</span> <span class="c1"># =&gt; 3
+</span><span class="p">(</span><span class="mi">0</span><span class="o">...</span>ary<span class="p">.</span><span class="nf">size</span><span class="p">)</span><span class="p">.</span><span class="nf">bsearch</span> <span class="p">{</span><span class="o">|</span>i<span class="o">|</span> ary<span class="p">[</span>i<span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">100</span> <span class="p">}</span> <span class="c1"># =&gt; nil
+</span>
+<span class="p">(</span><span class="mf">0.0</span><span class="o">...</span><span class="no">Float</span><span class="o">::</span><span class="no">INFINITY</span><span class="p">)</span><span class="p">.</span><span class="nf">bsearch</span> <span class="p">{</span><span class="o">|</span>x<span class="o">|</span> <span class="no">Math</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span>x<span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="p">}</span> <span class="c1"># =&gt; 1.0
+</span></code></pre>
+<p>
+find-any モードは <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/bsearch.html">bsearch(3)</a> のように動作します。ブロックは真偽値ではなく、以下のような数値を返す必要があります。求める値の範囲がx...y
+（x &lt;= y）であるとします。また、ブロックパラメータの値を v とします。
+</p>
+<ul>
+<li>ブロックパラメータの値が求める値の範囲よりも小さい（v &lt; x）場合: 正の数を返す</li>
+<li>ブロックパラメータの値が求める値の範囲に合致する（x &lt;= v &lt; y）場合: 0 を返す</li>
+<li>ブロックパラメータの値が求める値の範囲よりも大きい（y &lt;= v）場合: 負の数を返す</li>
+</ul>
+<p>
+ブロックの評価結果が 0 になるいずれかの要素を返すか、nil を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+ary <span class="o">=</span> <span class="p">[</span><span class="mi">0</span>, <span class="mi">100</span>, <span class="mi">100</span>, <span class="mi">100</span>, <span class="mi">200</span><span class="p">]</span>
+<span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mi">4</span><span class="p">)</span><span class="p">.</span><span class="nf">bsearch</span> <span class="p">{</span><span class="o">|</span>i<span class="o">|</span> <span class="mi">100</span> <span class="o">-</span> ary<span class="p">[</span>i<span class="p">]</span> <span class="p">}</span> <span class="c1"># =&gt; 1, 2 or 3
+</span><span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mi">4</span><span class="p">)</span><span class="p">.</span><span class="nf">bsearch</span> <span class="p">{</span><span class="o">|</span>i<span class="o">|</span> <span class="mi">300</span> <span class="o">-</span> ary<span class="p">[</span>i<span class="p">]</span> <span class="p">}</span> <span class="c1"># =&gt; nil
+</span><span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mi">4</span><span class="p">)</span><span class="p">.</span><span class="nf">bsearch</span> <span class="p">{</span><span class="o">|</span>i<span class="o">|</span>  <span class="mi">50</span> <span class="o">-</span> ary<span class="p">[</span>i<span class="p">]</span> <span class="p">}</span> <span class="c1"># =&gt; nil
+</span></code></pre>
+<p>
+上記の 2 つのモードを混在して使用しないでください(ブロックの評価結果は常に true/false、数値のいずれかを一貫して返すようにしてください)。また、二分探索の各イテレーションで値がどのような順序で選ばれるかは未規定です。
+</p>
+<p>
+ブロックが与えられなかった場合は、 <a href="../../../class/-enumerator.html">Enumerator</a> のインスタンスを返します。
+</p>
+<dl>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+ブロックの評価結果が true、false、nil、数値以外であった場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-array/i/bsearch.html">Array#bsearch</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

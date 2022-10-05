@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>library net/pop (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="このライブラリは、POP3 (Post Office Protocol version 3) を
+用いてPOPサーバからメールを受信する機能を提供するライブラリです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        net/popライブラリ
+      </li>
+    </ol>
+  </nav>
+
+<h1>library net/pop</h1>
+</header>
+
+<main>
+
+
+
+<h2>要約</h2>
+<p>
+このライブラリは、POP3 (Post Office Protocol version 3) を用いてPOPサーバからメールを受信する機能を提供するライブラリです。
+</p>
+<p>
+POP3 の実装は <a class="external" href="https://tools.ietf.org/html/rfc1939">[RFC1939]</a> に基いています。
+</p>
+<p>
+<a class="external" href="https://tools.ietf.org/html/rfc2449">[RFC2449]</a> で定義されているPOP3拡張には対応していません。
+</p>
+<h2 >使用例</h2>
+<h3 >メールの受信</h3>
+<p>
+以下のコードは、メールを受信してファイル 'inbox/1' 'inbox/2'... に書きこみ、サーバ上からメールを消します。
+</p>
+<p>
+'pop.example.com' は適当なPOP3のサーバのホスト名に、
+'YourAccount' と 'YourPassword' は適当なアカウント名とパスワードに適宜読みかえてください。
+</p>
+<pre>
+require 'net/pop'
+
+pop = Net::POP3.new('pop.example.com', 110)
+pop.start('YourAccount', 'YourPassword') # POPのセッションを開始
+if pop.mails.empty?
+  $stderr.puts 'no mail.'
+else
+  pop.mails.each_with_index do |m, idx|  # 各メッセージにアクセスする
+    File.open(&quot;inbox/#{idx + 1}&quot;, 'w') {|f|
+      f.write m.pop
+    }
+    m.delete
+  end
+  $stderr.puts &quot;#{pop.mails.size} mails popped.&quot;
+end
+pop.finish                                        # セッションを終了する
+</pre>
+<p>
+POP サーバはネットワークのむこうに存在するので、なにか仕事をさせるにはその前に開始手続きを、終わったら終了手続きを、行わなければいけません。それを行うのが <a href="../method/-net=3a=3a-p-o-p3/i/start.html">Net::POP3#start</a> と <a href="../method/-net=3a=3a-p-o-p3/i/finish.html">Net::POP3#finish</a> で、
+POP3 オブジェクトはその二つのメソッドの間でだけ有効になります。
+</p>
+<p>
+サーバ上のメールは <a href="../class/-net=3a=3a-p-o-p-mail.html">Net::POPMail</a> オブジェクトとして表現されており、このオブジェクトのメソッドを呼ぶことでメールを取ってきたり消したりすることができます。<a href="../method/-net=3a=3a-p-o-p3/i/mails.html">Net::POP3#mails</a> はこの <a href="../class/-net=3a=3a-p-o-p-mail.html">Net::POPMail</a> オブジェクトの配列であり、
+<a href="../method/-net=3a=3a-p-o-p3/i/each_mail.html">Net::POP3#each_mail</a> はさらに pop.mails.each のショートカットです。
+</p>
+<h3 >短くする</h3>
+<p>
+上の例はあえて省略や短縮用メソッドを避けたためにかなり冗長です。まず、ブロック付きの <a href="../method/-net=3a=3a-p-o-p3/s/start.html">Net::POP3.start</a> を使うことで
+POP3.new, #start, #finish を併合できます。
+</p>
+<pre>
+require 'net/pop'
+
+Net::POP3.start('pop.example.com', 110,
+                'YourAccount', 'YourPassword') {|pop|
+  if pop.mails.empty?
+    $stderr.puts 'no mail.'
+  else
+    pop.mails.each_with_index do |m, idx|
+      File.open(&quot;inbox/#{idx + 1}&quot;, 'w') {|f|
+        f.write m.pop
+      }
+      m.delete
+    end
+    $stderr.puts &quot;#{pop.mails.size} mails popped.&quot;
+  end
+}
+</pre>
+<p>
+<a href="../method/-net=3a=3a-p-o-p3/i/delete_all.html">Net::POP3#delete_all</a> を使うとさらに <a href="../method/-net=3a=3a-p-o-p3/i/each_mail.html">Net::POP3#each_mail</a> と
+<a href="../method/-net=3a=3a-p-o-p-mail/i/delete.html">Net::POPMail#delete</a> を併合できます。
+</p>
+<pre>
+require 'net/pop'
+
+Net::POP3.start('pop.example.com', 110,
+                'YourAccount', 'YourPassword') {|pop|
+  if pop.mails.empty?
+    $stderr.puts 'no mail.'
+  else
+    i = 0
+    pop.delete_all do |m|
+      File.open(&quot;inbox/#{i}&quot;, 'w') {|f|
+        f.write m.pop
+      }
+      i += 1
+    end
+  end
+}
+</pre>
+<p>
+クラスメソッドの <a href="../method/-net=3a=3a-p-o-p3/s/delete_all.html">Net::POP3.delete_all</a> を使うとさらに短くなります。
+</p>
+<pre>
+require 'net/pop'
+
+i = 0
+Net::POP3.delete_all('pop.example.com', 110,
+                     'YourAccount', 'YourPassword') do |m|
+  File.open(&quot;inbox/#{i}&quot;, 'w') {|f|
+    f.write m.pop
+  }
+  i += 1
+end
+</pre>
+<h3 >メモリ使用量を減らす</h3>
+<p>
+これまでの例では <a href="../method/-net=3a=3a-p-o-p-mail/i/pop.html">Net::POPMail#pop</a> を使い、メールをひとつの文字列としてうけとっていました。しかし、もしメールが 100MB を越えるような巨大なメールだった場合、この方法ではまずいかもしれません。そのような場合は以下のように <a href="../method/-net=3a=3a-p-o-p-mail/i/pop.html">Net::POPMail#pop</a> に
+File オブジェクトを与える手が使えます。
+</p>
+<pre>
+require 'net/pop'
+
+i = 0
+Net::POP3.delete_all('pop.example.com', 110,
+                     'YourAccount', 'YourPassword') do |m|
+  File.open('inbox/#{i}', 'w') {|f|
+      m.pop f
+  }
+  i += 1
+end
+</pre>
+<p>
+<a href="../method/-net=3a=3a-p-o-p-mail/i/pop.html">Net::POPMail#pop</a>にブロックを渡すと、メールデータを細かく分割してブロックを呼びだします。この機能を使って同様のことができます。
+</p>
+<pre>
+require 'net/pop'
+
+i = 0
+Net::POP3.delete_all('pop.example.com', 110,
+                     'YourAccount', 'YourPassword') do |m|
+  File.open('inbox/#{i}', 'w') {|f|
+    m.pop {|chunk|
+      f.write(chunk)
+    }
+  }
+  i += 1
+end
+</pre>
+<h3 >APOP を使う</h3>
+<p>
+Net::POP3 クラスのかわりに Net::APOP クラスを使うと、認証時に APOP を使うようになります。また動的にノーマル POP と APOP を選択するには、以下のように <a href="../method/-net=3a=3a-p-o-p3/s/-a-p-o-p.html">Net::POP3.APOP</a> メソッドを使うのが便利です。
+</p>
+<pre>
+require 'net/pop'
+
+# use APOP authentication if $isapop == true
+pop = Net::POP3.APOP($isapop).new('apop.example.com', 110)
+pop.start('YourAccount', 'YourPassword') {|pop|
+  # 残りのコードは同じ
+}
+</pre>
+<p>
+この方法はクラス自体を変えるので、クラスメソッドの start や foreach、
+delete_all、auth_only なども APOP とともに使えます。
+</p>
+<h3 >UIDL コマンドを使って特定のメールだけを取り出す</h3>
+<p>
+利用しているPOP3サーバが UIDL 機能を提供している場合には、以下のようにして特定のメールだけを取り出すことができます。
+</p>
+<pre>
+require 'net/pop'
+
+def need_pop?(id)
+  # 取り出したいメールの場合に真を返す
+end
+
+Net::POP3.start('pop.example.com', 110,
+                'Your account', 'Your password') do |pop|
+  pop.mails.select { |m| need_pop?(m.unique_id) }.each do |m|
+    do_something(m.pop)
+  end
+end
+</pre>
+<p>
+<a href="../method/-net=3a=3a-p-o-p-mail/i/unique_id.html">Net::POPMail#unique_id</a> はメッセージのユニークIDを文字列で返します。これは通常そのメッセージのハッシュ値です。
+</p>
+<h3 >SSL/TLS による暗号化</h3>
+<p>
+このライブラリは pop3s と呼ばれる、995番ポートを使いPOP3の通信全体を
+SSLで包む方法での通信の認証および暗号化が可能です。この方法は標準化されていません。
+</p>
+<p>
+<a class="external" href="https://tools.ietf.org/html/rfc2595">[RFC2595]</a> で定義されている STLS 拡張による TLS の利用はできません。
+</p>
+<p>
+<a href="../method/-net=3a=3a-p-o-p3/i/enable_ssl.html">Net::POP3#enable_ssl</a> でそのオブジェクトが SSL を利用するように設定します。
+</p>
+<p>
+また、<a href="../method/-net=3a=3a-p-o-p3/s/enable_ssl.html">Net::POP3.enable_ssl</a> で以降生成されるすべての
+<a href="../class/-net=3a=3a-p-o-p3.html">Net::POP3</a> オブジェクトで SSL を利用するように設定できます。グローバルに状態を変更するのであまり利用しないほうがよいでしょう。
+</p>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-p-o-p.html">Net::POP</a>
+</td>
+<td class="description"><p>
+Alias of <a href="../class/-net=3a=3a-p-o-p3.html">Net::POP3</a>
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-p-o-p3.html">Net::POP3</a>
+</td>
+<td class="description"><p>
+POP3 のセッションを表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-net=3a=3a-a-p-o-p.html">Net::APOP</a>
+</td>
+<td class="description"><p>
+このクラスでは新しいメソッドは導入していません。認証方式が APOP に変わるだけです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-net=3a=3a-a-p-o-p-session.html">Net::APOPSession</a>
+</td>
+<td class="description"><p>
+Alias of <a href="../class/-net=3a=3a-a-p-o-p.html">Net::APOP</a>
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-p-o-p-mail.html">Net::POPMail</a>
+</td>
+<td class="description"><p>
+POP サーバー上のメール一通を表現するクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-p-o-p-session.html">Net::POPSession</a>
+</td>
+<td class="description"><p>
+Alias of <a href="../class/-net=3a=3a-p-o-p3.html">Net::POP3</a>
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-p-o-p-authentication-error.html">Net::POPAuthenticationError</a>
+</td>
+<td class="description"><p>
+POP3 で認証に失敗したときに発生します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-net=3a=3a-p-o-p-error.html">Net::POPError</a>
+</td>
+<td class="description"><p>
+POP3 の、認証以外のエラーが起きたときに発生します。サーバからの &quot;-ERR&quot; 応答コードに対応します。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-net=3a=3a-p-o-p-bad-response.html">Net::POPBadResponse</a>
+</td>
+<td class="description"><p>
+サーバから予期しないレスポンスが帰ってきたときに発生します。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

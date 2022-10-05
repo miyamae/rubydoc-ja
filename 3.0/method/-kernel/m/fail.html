@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Kernel.#fail (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="例外を発生させます。
+発生した例外は変数 [[m:$!]] に格納されます。また例外が
+発生した時のスタックトレースは変数 [[m:$@]] に格納され
+ます。発生した例外は rescue 節で捕捉できます。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-kernel.html">Kernelモジュール</a>
+      </li>
+      <li>
+        fail 
+      </li>
+    </ol>
+  </nav>
+
+<h1>module function Kernel.#fail</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_FAIL"><code>raise -&gt; ()</code><span class="permalink">[<a href="../../../method/-kernel/m/fail.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Kernel.html#method-c-fail">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>fail -&gt; ()</code></dt>
+<dt class="method-heading"><code>raise(message, cause: $!) -&gt; ()</code></dt>
+<dt class="method-heading"><code>fail(message, cause: $!) -&gt; ()</code></dt>
+<dt class="method-heading"><code>raise(error_type, message = nil, backtrace = caller(0), cause: $!) -&gt; ()</code></dt>
+<dt class="method-heading"><code>fail(error_type, message = nil, backtrace = caller(0), cause: $!) -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+例外を発生させます。発生した例外は変数 <a href="../../../method/-kernel/v/=21.html">$!</a> に格納されます。また例外が発生した時のスタックトレースは変数 <a href="../../../method/-kernel/v/=40.html">$@</a> に格納されます。発生した例外は rescue 節で捕捉できます。
+</p>
+<p>
+引数無しの場合は、同スレッドの同じブロック内で最後に rescue された例外オブジェクト (<a href="../../../method/-kernel/v/=21.html">$!</a>) を再発生させます。そのような例外が存在しないが自身は捕捉されている時には例外 <a href="../../../class/-runtime-error.html">RuntimeError</a> を発生させます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">begin</span>
+  <span class="nb">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">nonexist</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">rescue</span>
+  <span class="nb">raise</span>   <span class="c1">#=&gt; `open': No such file or directory - &quot;nonexist&quot; (Errno::ENOENT)
+</span><span class="k">end</span>
+</code></pre>
+<p>
+引数を渡した場合は、例外メッセージ message を持った error_type の示す例外(省略時 RuntimeError)を発生させます。
+</p>
+<p>
+error_type として例外ではないクラスやオブジェクトを指定した場合、そのオブジェクトの exception メソッドが返す値を発生する例外にします。その際、exception メソッドに引数として変数 message を渡すことができます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] error_type:</dt>
+<dd>
+発生させる例外を例外クラスまたは例外クラスのインスタンスで指定します。
+</dd>
+<dt class='method-param'>[PARAM] message:</dt>
+<dd>
+例外のメッセージとなる文字列です。
+</dd>
+<dt class='method-param'>[PARAM] backtrace:</dt>
+<dd>
+例外発生時のスタックトレースで、<a href="../../../method/-kernel/m/caller.html">Kernel.#caller</a> の戻り値と同じ形式で指定しなければいけません。
+</dd>
+<dt class='method-param'>[PARAM] cause:</dt>
+<dd>
+現在の例外(<a href="../../../method/-kernel/v/=21.html">$!</a>)の代わりに <a href="../../../method/-exception/i/cause.html">Exception#cause</a> に設定する例外を指定します。
+<a href="../../../class/-exception.html">Exception</a> オブジェクトまたは nil を指定できます。
+</dd>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+exception メソッドが例外オブジェクトを返さなかった場合に発生します。
+</dd>
+</dl>
+<p>
+例外の捕捉の例を示します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例1</span>
+<code>
+<span class="k">begin</span>
+  <span class="nb">raise</span> <span class="no">NameError</span>,<span class="s2">"</span><span class="s2">!!error!!</span><span class="s2">"</span>
+<span class="k">rescue</span> <span class="no">ArgumentError</span> <span class="o">=&gt;</span> err
+<span class="k">rescue</span> <span class="no">NameError</span> <span class="o">=&gt;</span> err
+<span class="k">rescue</span> <span class="no">TypeError</span> <span class="o">=&gt;</span> err
+<span class="k">ensure</span>
+  <span class="nb">p</span> err <span class="c1">#=&gt; #&lt;NameError: !!error!!&gt;
+</span><span class="k">end</span>
+</code></pre>
+<pre class="highlight ruby">
+<span class="caption">例2</span>
+<code>
+<span class="k">def</span> <span class="nf">foo</span> num
+  <span class="nb">print</span> <span class="s1">'in method.'</span>
+  <span class="nb">raise</span> <span class="s2">"</span><span class="s2">error!!</span><span class="s2">"</span> <span class="k">if</span> num <span class="o">&lt;=</span> <span class="mi">9</span>
+<span class="k">rescue</span> <span class="no">RuntimeError</span>
+  num <span class="o">+=</span> <span class="mi">10</span>
+  <span class="nb">print</span> <span class="s1">'in rescue.'</span>
+  <span class="k">retry</span>
+<span class="k">else</span>
+  <span class="nb">print</span> <span class="s1">'in else.'</span>
+<span class="k">ensure</span>
+  <span class="nb">print</span> <span class="s2">"</span><span class="s2">in ensure.\n</span><span class="s2">"</span>
+<span class="k">end</span>
+
+foo<span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="c1">#=&gt; in method.in rescue.in method.in else.in ensure.
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例3</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">MyException</span>
+  <span class="k">def</span> <span class="nf">exception</span><span class="p">(</span>mesg<span class="o">=</span><span class="k">nil</span><span class="p">)</span>
+    <span class="no">SecurityError</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>mesg<span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">begin</span>
+  <span class="nb">raise</span> <span class="no">MyException</span><span class="p">.</span><span class="nf">new</span>
+<span class="k">rescue</span> <span class="no">SecurityError</span>
+  <span class="nb">p</span> <span class="vg">$!</span> <span class="c1">#=&gt; #&lt;SecurityError: SecurityError&gt;
+</span><span class="k">end</span>
+</code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/caller.html">Kernel.#caller</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

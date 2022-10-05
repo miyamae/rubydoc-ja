@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>NEWS for Ruby 3.1.0 (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="このドキュメントは前回リリース以降のバグ修正を除くユーザーに影響のある機能の変更のリストです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      
+        <li>
+          <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+        </li>
+        <li>
+          NEWS for Ruby 3.1.0
+        </li>
+      
+    </ol>
+  </nav>
+
+<h1>NEWS for Ruby 3.1.0</h1>
+</header>
+
+<main>
+
+<p>
+このドキュメントは前回リリース以降のバグ修正を除くユーザーに影響のある機能の変更のリストです。
+</p>
+<p>
+それぞれのエントリーは参照情報があるため短いです。十分な情報と共に書かれた全ての変更のリストはリンク先を参照してください。
+</p>
+<h1 >言語仕様の変更</h1>
+<ul>
+<li>The block argument can now be anonymous if the block will only be passed to another method. [[Feature #11256]]</li>
+</ul>
+<pre>
+def foo(&amp;)
+  bar(&amp;)
+end
+</pre>
+<ul>
+<li>Pin operator now takes an expression. [[Feature #17411]]</li>
+</ul>
+<pre>
+Prime.each_cons(2).lazy.find_all{_1 in [n, ^(n + 2)]}.take(3).to_a
+#=&gt; [[3, 5], [5, 7], [11, 13]]
+</pre>
+<ul>
+<li>Pin operator now supports instance, class, and global variables. [[Feature #17724]]</li>
+</ul>
+<pre>
+@n = 5
+Prime.each_cons(2).lazy.find{_1 in [n, ^@n]}
+#=&gt; [3, 5]
+</pre>
+<ul>
+<li>One-line pattern matching is no longer experimental.</li>
+</ul>
+<ul>
+<li>Parentheses can be omitted in one-line pattern matching. [[Feature #16182]]</li>
+</ul>
+<pre>
+[0, 1] =&gt; _, x
+{y: 2} =&gt; y:
+x #=&gt; 1
+y #=&gt; 2
+</pre>
+<ul>
+<li>Multiple assignment evaluation order has been made consistent with single assignment evaluation order. With single assignment, Ruby uses a left-to-right evaluation order.  With this code:</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+foo<span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> bar
+</code></pre>
+<p>
+The following evaluation order is used:
+</p>
+<pre>
+1. `foo`
+2. `bar`
+3. `[]=` called on the result of `foo`
+</pre>
+<p>
+In Ruby before 3.1.0, multiple assignment did not follow this evaluation order.  With this code:
+</p>
+<pre class="highlight ruby">
+<code>
+foo<span class="p">[</span><span class="mi">0</span><span class="p">]</span>, bar<span class="p">.</span><span class="nf">baz</span> <span class="o">=</span> a, b
+</code></pre>
+<p>
+Versions of Ruby before 3.1.0 would evaluate in the following order
+</p>
+<pre>
+1. `a`
+2. `b`
+3. `foo`
+4. `[]=` called on the result of `foo`
+5. `bar`
+6. `baz=` called on the result of `bar`
+</pre>
+<p>
+Starting in Ruby 3.1.0, the evaluation order is now consistent with single assignment, with the left-hand side being evaluated before the right-hand side:
+</p>
+<pre>
+1. `foo`
+2. `bar`
+3. `a`
+4. `b`
+5. `[]=` called on the result of `foo`
+6. `baz=` called on the result of `bar`
+
+  [[Bug #4443]]
+
+* Values in Hash literals and keyword arguments can be omitted. [[Feature #14579]]
+
+  For example,
+
+  * `{x:, y:}` is a syntax sugar of `{x: x, y: y}`.
+  * `foo(x:, y:)` is a syntax sugar of `foo(x: x, y: y)`.
+
+  Constant names, local variable names, and method names are allowed as
+  key names.  Note that a reserved word is considered as a local
+  variable or method name even if it's a pseudo variable name such as
+  `self`.
+
+* Non main-Ractors can get instance variables (ivars) of classes/modules if ivars refer to shareable objects. [[Feature #17592]]
+
+* A command syntax is allowed in endless method definitions, i.e., you can now write `def foo = puts &quot;Hello&quot;`. Note that `private def foo = puts &quot;Hello&quot;` does not parse. [[Feature #17398]]
+</pre>
+<h1 >コマンドラインオプション</h1>
+<ul>
+<li>`--disable-gems` is now explicitly declared as &quot;just for debugging&quot;. Never use it in any real-world codebase. [[Feature #17684]]</li>
+</ul>
+<h1 >主要クラスの更新</h1>
+<p>
+Note: We're only listing outstanding class updates.
+</p>
+<ul>
+<li>Array<ul>
+<li>Array#intersect? is added. [[Feature #15198]]</li>
+</ul>
+</li>
+<li>Class<ul>
+<li>Class#subclasses, which returns an array of classes
+directly inheriting from the receiver, not
+including singleton classes.
+[[Feature #18273]]</li>
+</ul>
+</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> ;<span class="nn"></span><span class="o"></span><span class="nc">A</span> <span class="k">end</span>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">B</span> <span class="o">&lt;</span> <span class="no">A</span>; <span class="k">end</span>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">C</span> <span class="o">&lt;</span> <span class="no">B</span>; <span class="k">end</span>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">D</span> <span class="o">&lt;</span> <span class="no">A</span>; <span class="k">end</span>
+<span class="no">A</span><span class="p">.</span><span class="nf">subclasses</span>    <span class="c1">#=&gt; [D, B]
+</span><span class="no">B</span><span class="p">.</span><span class="nf">subclasses</span>    <span class="c1">#=&gt; [C]
+</span><span class="no">C</span><span class="p">.</span><span class="nf">subclasses</span>    <span class="c1">#=&gt; []
+</span></code></pre>
+<ul>
+<li>Enumerable<ul>
+<li>Enumerable#compact is added. [[Feature #17312]]</li>
+<li>Enumerable#tally now accepts an optional hash to count. [[Feature #17744]]</li>
+<li>Enumerable#each_cons and each_slice to return a receiver. [[GH-1509]]</li>
+</ul>
+</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span><span class="p">.</span><span class="nf">each_cons</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="p">{</span><span class="p">}</span>
+<span class="c1"># 3.0 =&gt; nil
+</span><span class="c1"># 3.1 =&gt; [1, 2, 3]
+</span>
+<span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span><span class="p">.</span><span class="nf">each_slice</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="p">{</span><span class="p">}</span>
+<span class="c1"># 3.0 =&gt; nil
+</span><span class="c1"># 3.1 =&gt; [1, 2, 3]
+</span></code></pre>
+<ul>
+<li>Enumerator::Lazy<ul>
+<li>Enumerator::Lazy#compact is added. [[Feature #17312]]</li>
+</ul>
+</li>
+<li>File<ul>
+<li>File.dirname now accepts an optional argument for the level to strip path components. [[Feature #12194]]</li>
+</ul>
+</li>
+<li>GC<ul>
+<li>&quot;GC.measure_total_time = true&quot; enables the measurement of GC.
+Measurement can introduce overhead. It is enabled by default.
+GC.measure_total_time returns the current setting.
+GC.stat[:time] or GC.stat(:time) returns measured time
+in milli-seconds. [[[Feature #10917]]]</li>
+<li>GC.total_time returns measured time in nano-seconds. [[[Feature #10917]]]</li>
+</ul>
+</li>
+<li>Integer<ul>
+<li>Integer.try_convert is added. [[Feature #15211]]</li>
+</ul>
+</li>
+<li>Kernel<ul>
+<li>Kernel#load now accepts a module as the second argument, and will load the file using the given module as the top-level module. [[Feature #6210]]</li>
+</ul>
+</li>
+<li>Marshal<ul>
+<li>Marshal.load now accepts a `freeze: true` option. All returned objects are frozen except for `Class` and `Module` instances. Strings are deduplicated. [[Feature #18148]]</li>
+</ul>
+</li>
+<li>MatchData<ul>
+<li>MatchData#match is added [[Feature #18172]]</li>
+<li>MatchData#match_length is added [[Feature #18172]]</li>
+</ul>
+</li>
+<li>Method / UnboundMethod<ul>
+<li>Method#public?, Method#private?, Method#protected?, UnboundMethod#public?, UnboundMethod#private?, UnboundMethod#protected? have been added. [[Feature #11689]]</li>
+</ul>
+</li>
+<li>Module<ul>
+<li>Module#prepend now modifies the ancestor chain if the receiver already includes the argument. Module#prepend still does not modify the ancestor chain if the receiver has already prepended the argument. [[Bug #17423]]</li>
+<li>Module#private, #public, #protected, and #module_function will now return their arguments.  If a single argument is given, it is returned. If no arguments are given, nil is returned.  If multiple arguments are given, they are returned as an array. [[Feature #12495]]</li>
+</ul>
+</li>
+<li>Process<ul>
+<li>Process.\_fork is added. This is a core method for fork(2). Do not call this method directly; it is called by existing fork methods: Kernel.#fork, Process.fork, and IO.popen(&quot;-&quot;). Application monitoring libraries can overwrite this method to hook fork events. [[Feature #17795]]</li>
+</ul>
+</li>
+<li>Struct<ul>
+<li>Passing only keyword arguments to Struct#initialize is warned. You need to use a Hash literal to set a Hash to a first member. [[Feature #16806]]</li>
+<li>StructClass#keyword_init? is added [[Feature #18008]]</li>
+</ul>
+</li>
+<li>String<ul>
+<li>Update Unicode version to 13.0.0 [[Feature #17750]] and Emoji version to 13.0 [[Feature #18029]]</li>
+<li>String#unpack and String#unpack1 now accept an `offset:` keyword argument to start the unpacking after an arbitrary number of bytes have been skipped. If `offset` is outside of the string bounds `ArgumentError` is raised. [[Feature #18254]]</li>
+</ul>
+</li>
+<li>Thread<ul>
+<li>Thread#native_thread_id is added. [[Feature #17853]]</li>
+</ul>
+</li>
+<li>Thread::Backtrace<ul>
+<li>Thread::Backtrace.limit, which returns the value to limit backtrace length set by `--backtrace-limit` command line option, is added. [[Feature #17479]]</li>
+</ul>
+</li>
+<li>Thread::Queue<ul>
+<li>Thread::Queue.new now accepts an Enumerable of initial values. [[Feature #17327]]</li>
+</ul>
+</li>
+<li>Time<ul>
+<li>Time.new now accepts optional `in:` keyword argument for the timezone, as well as `Time.at` and `Time.now`, so that is now you can omit minor arguments to `Time.new`. [[Feature #17485]]</li>
+</ul>
+</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2021</span>, <span class="mi">12</span>, <span class="mi">25</span>, <span class="ss">in:</span> <span class="s2">"</span><span class="s2">+07:00</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1">#=&gt; 2021-12-25 00:00:00 +0700
+</span></code></pre>
+<pre>
+At the same time, time component strings are converted to integers more strictly now.
+</pre>
+<pre class="highlight ruby">
+<code>
+<span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2021</span>, <span class="mi">12</span>, <span class="mi">25</span>, <span class="s2">"</span><span class="s2">+07:30</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1">#=&gt; invalid value for Integer(): &quot;+07:30&quot; (ArgumentError)
+</span></code></pre>
+<pre>
+    Ruby 3.0 or earlier returned probably unexpected result `2021-12-25 07:00:00`, not `2021-12-25 07:30:00` nor `2021-12-25 00:00:00 +07:30`.
+
+  * Time#strftime supports RFC 3339 UTC for unknown offset local time, `-0000`, as `%-z`. [[Feature #17544]]
+
+* TracePoint
+  * TracePoint.allow_reentry is added to allow reenter while TracePoint callback. [[Feature #15912]]
+* $LOAD_PATH
+  * $LOAD_PATH.resolve_feature_path does not raise. [[Feature #16043]]
+* Fiber Scheduler
+  * Add support for `Addrinfo.getaddrinfo` using `address_resolve` hook. [[Feature #17370]]
+  * Introduce non-blocking `Timeout.timeout` using `timeout_after` hook. [[Feature #17470]]
+  * Introduce new scheduler hooks `io_read` and `io_write` along with a low level `IO::Buffer` for zero-copy read/write. [[Feature #18020]]
+  * IO hooks `io_wait`, `io_read`, `io_write`, receive the original IO object where possible. [[Bug #18003]]
+  * Make `Monitor` fiber-safe. [[Bug #17827]]
+  * Replace copy coroutine with pthread implementation. [[Feature #18015]]
+* Refinement
+  * New class which represents a module created by Module#refine. `include` and `prepend` are deprecated, and `import_methods` is added instead. [[Bug #17429]]
+</pre>
+<h1 >標準添付ライブラリの更新</h1>
+<ul>
+<li>The following default gem are updated.<ul>
+<li>RubyGems 3.3.3</li>
+<li>base64 0.1.1</li>
+<li>benchmark 0.2.0</li>
+<li>bigdecimal 3.1.1</li>
+<li>bundler 2.3.3</li>
+<li>cgi 0.3.1</li>
+<li>csv 3.2.2</li>
+<li>date 3.2.2</li>
+<li>did_you_mean 1.6.1</li>
+<li>digest 3.1.0</li>
+<li>drb 2.1.0</li>
+<li>erb 2.2.3</li>
+<li>error_highlight 0.3.0</li>
+<li>etc 1.3.0</li>
+<li>fcntl 1.0.1</li>
+<li>fiddle 1.1.0</li>
+<li>fileutils 1.6.0</li>
+<li>find 0.1.1</li>
+<li>io-console 0.5.10</li>
+<li>io-wait 0.2.1</li>
+<li>ipaddr 1.2.3</li>
+<li>irb 1.4.1</li>
+<li>json 2.6.1</li>
+<li>logger 1.5.0</li>
+<li>net-http 0.2.0</li>
+<li>net-protocol 0.1.2</li>
+<li>nkf 0.1.1</li>
+<li>open-uri 0.2.0</li>
+<li>openssl 3.0.0</li>
+<li>optparse 0.2.0</li>
+<li>ostruct 0.5.2</li>
+<li>pathname 0.2.0</li>
+<li>pp 0.3.0</li>
+<li>prettyprint 0.1.1</li>
+<li>psych 4.0.3</li>
+<li>racc 1.6.0</li>
+<li>rdoc 6.4.0</li>
+<li>readline 0.0.3</li>
+<li>readline-ext 0.1.4</li>
+<li>reline 0.3.0</li>
+<li>resolv 0.2.1</li>
+<li>rinda 0.1.1</li>
+<li>ruby2_keywords 0.0.5</li>
+<li>securerandom 0.1.1</li>
+<li>set 1.0.2</li>
+<li>stringio 3.0.1</li>
+<li>strscan 3.0.1</li>
+<li>tempfile 0.1.2</li>
+<li>time 0.2.0</li>
+<li>timeout 0.2.0</li>
+<li>tmpdir 0.1.2</li>
+<li>un 0.2.0</li>
+<li>uri 0.11.0</li>
+<li>yaml 0.2.0</li>
+<li>zlib 2.1.1</li>
+</ul>
+</li>
+<li>The following bundled gems are updated.<ul>
+<li>minitest 5.15.0</li>
+<li>power_assert 2.0.1</li>
+<li>rake 13.0.6</li>
+<li>test-unit 3.5.3</li>
+<li>rexml 3.2.5</li>
+<li>rbs 2.0.0</li>
+<li>typeprof 0.21.1</li>
+</ul>
+</li>
+<li>The following default gems are now bundled gems.<ul>
+<li>net-ftp 0.1.3</li>
+<li>net-imap 0.2.2</li>
+<li>net-pop 0.1.1</li>
+<li>net-smtp 0.3.1</li>
+<li>matrix 0.4.2</li>
+<li>prime 0.1.2</li>
+<li>debug 1.4.0</li>
+</ul>
+</li>
+<li>The following gems has been removed from the Ruby standard library.<ul>
+<li>dbm</li>
+<li>gdbm</li>
+<li>tracer</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>Coverage measurement now supports suspension. You can use `Coverage.suspend` to stop the measurement temporarily, and `Coverage.resume` to restart it. See [[Feature #18176]] in detail.</li>
+<li>Random::Formatter is moved to random/formatter.rb, so that you can use `Random#hex`, `Random#base64`, and so on without SecureRandom. [[Feature #18190]]</li>
+</ul>
+<h1 >互換性</h1>
+<p>
+Note: Excluding feature bug fixes.
+</p>
+<p>
+* `rb_io_wait_readable`, `rb_io_wait_writable` and `rb_wait_for_single_fd` are deprecated in favour of `rb_io_maybe_wait_readable`, `rb_io_maybe_wait_writable` and `rb_io_maybe_wait` respectively. `rb_thread_wait_fd` and `rb_thread_fd_writable` are deprecated. [[Bug #18003]]
+</p>
+<h1 >標準添付ライブラリの互換性</h1>
+<ul>
+<li>`ERB#initialize` warns `safe_level` and later arguments even without -w. [[Feature #14256]]</li>
+<li>`lib/debug.rb` is replaced with `debug.gem`</li>
+<li>`Kernel#pp` in `lib/pp.rb` uses the width of `IO#winsize` by default. This means that the output width is automatically changed depending on your terminal size. [[Feature #12913]]</li>
+<li>Psych 4.0 changes `Psych.load` as `safe_load` by the default. You may need to use Psych 3.3.2 for migrating to this behavior. [[Bug #17866]]</li>
+</ul>
+<h1 >C API の更新</h1>
+<ul>
+<li>Documented. [[GH-4815]]</li>
+<li>`rb_gc_force_recycle` is deprecated and has been changed to a no-op. [[Feature #18290]]</li>
+</ul>
+<h1 >実装の改善</h1>
+<ul>
+<li>Inline cache mechanism is introduced for reading class variables. [[Feature #17763]]</li>
+<li>`instance_eval` and `instance_exec` now only allocate a singleton class when required, avoiding extra objects and improving performance. [[GH-5146]]</li>
+<li>The performance of `Struct` accessors is improved. [[GH-5131]]</li>
+<li>`mandatory_only?` builtin special form to improve performance on builtin methods. [[GH-5112]]</li>
+<li>Experimental feature Variable Width Allocation in the garbage collector. This feature is turned off by default and can be enabled by compiling Ruby with flag `USE_RVARGC=1` set. [[Feature #18045]] [[Feature #18239]]</li>
+</ul>
+<h1 >JIT</h1>
+<ul>
+<li>Rename Ruby 3.0's `--jit` to `--mjit`, and alias `--jit` to `--yjit` on non-Windows x86-64 platforms and to `--mjit` on others.</li>
+</ul>
+<h2 >MJIT</h2>
+<ul>
+<li>The default `--mjit-max-cache` is changed from 100 to 10000.</li>
+<li>JIT-ed code is no longer cancelled when a TracePoint for class events is enabled.</li>
+<li>The JIT compiler no longer skips compilation of methods longer than 1000 instructions.</li>
+<li>`--mjit-verbose` and `--mjit-warning` output &quot;JIT cancel&quot; when JIT-ed code is disabled because TracePoint or GC.compact is used.</li>
+</ul>
+<h2 >YJIT: New experimental in-process JIT compiler</h2>
+<p>
+New JIT compiler available as an experimental feature. [[Feature #18229]]
+</p>
+<p>
+See [this blog post](https://shopify.engineering/yjit-just-in-time-compiler-cruby) introducing the project.
+</p>
+<ul>
+<li>Disabled by default, use `--yjit` command-line option to enable YJIT.</li>
+<li>Performance improvements on benchmarks based on real-world software, up to 22% on railsbench, 39% on liquid-render.</li>
+<li>Fast warm-up times.</li>
+<li>Limited to Unix-like x86-64 platforms for now.</li>
+</ul>
+<h1 >静的解析</h1>
+<h2 >RBS</h2>
+<ul>
+<li>Generics type parameters can be bounded ([PR](https://github.com/ruby/rbs/pull/844)).</li>
+</ul>
+<pre>
+# `T` must be compatible with the `_Output` interface.
+# `PrettyPrint[String]` is ok, but `PrettyPrint[Integer]` is a type error.
+class PrettyPrint[T &lt; _Output]
+  interface _Output
+    def &lt;&lt;: (String) -&gt; void
+  end
+
+  attr_reader output: T
+
+  def initialize: (T output) -&gt; void
+end
+</pre>
+<ul>
+<li>Type aliases can be generic. ([PR](https://github.com/ruby/rbs/pull/823))</li>
+</ul>
+<pre>
+# Defines a generic type `list`.
+type list[T] = [ T, list[T] ]
+             | nil
+
+type str_list = list[String]
+type int_list = list[Integer]
+</pre>
+<ul>
+<li>[rbs collection](https://github.com/ruby/rbs/blob/cdd6a3a896001e25bd1feda3eab7f470bae935c1/docs/collection.md) has been introduced to manage gems’ RBSs.</li>
+<li>Many signatures for built-in and standard libraries have been added/updated.</li>
+<li>It includes many bug fixes and performance improvements too.</li>
+</ul>
+<p>
+See the [CHANGELOG.md](https://github.com/ruby/rbs/blob/cdd6a3a896001e25bd1feda3eab7f470bae935c1/CHANGELOG.md) for more information.
+</p>
+<h2 >TypeProf</h2>
+<ul>
+<li>[Experimental IDE support](https://github.com/ruby/typeprof/blob/ca15c5dae9bd62668463165f8409bd66ce7de223/doc/ide.md) has been implemented.</li>
+<li>Many bug fixes and performance improvements since Ruby 3.0.0.</li>
+</ul>
+<h1 >Debugger</h1>
+<ul>
+<li>A new debugger [debug.gem](https://github.com/ruby/debug) is bundled. debug.gem is a fast debugger implementation, and it provides many features like remote debugging, colorful REPL, IDE (VSCode) integration, and more. It replaces `lib/debug.rb` standard library.</li>
+<li>`rdbg` command is also installed into `bin/` directory to start and control debugging execution.</li>
+</ul>
+<h1 >error_highlight</h1>
+<p>
+A built-in gem called error_highlight has been introduced.
+It shows fine-grained error locations in the backtrace.
+</p>
+<p>
+Example: `title = json[:article][:title]`
+</p>
+<p>
+If `json` is nil, it shows:
+</p>
+<pre>
+$ ruby test.rb
+test.rb:2:in `&lt;main&gt;': undefined method `[]' for nil:NilClass (NoMethodError)
+
+title = json[:article][:title]
+            ^^^^^^^^^^
+</pre>
+<p>
+If `json[:article]` returns nil, it shows:
+</p>
+<pre>
+$ ruby test.rb
+test.rb:2:in `&lt;main&gt;': undefined method `[]' for nil:NilClass (NoMethodError)
+
+title = json[:article][:title]
+                      ^^^^^^^^
+</pre>
+<p>
+This feature is enabled by default.
+You can disable it by using a command-line option `--disable-error_highlight`.
+See [the repository](https://github.com/ruby/error_highlight) in detail.
+</p>
+<h1 >IRB Autocomplete and Document Display</h1>
+<p>
+The IRB now has an autocomplete feature, where you can just type in the code, and the completion candidates dialog will appear. You can use Tab and Shift+Tab to move up and down.
+</p>
+<p>
+If documents are installed when you select a completion candidate, the documentation dialog will appear next to the completion candidates dialog, showing part of the content. You can read the full document by pressing Alt+d.
+</p>
+<h1 >その他の変更</h1>
+<ul>
+<li>lib/objspace/trace.rb is added, which is a tool for tracing the object
+allocation. Just by requiring this file, tracing is started *immediately*.
+Just by `Kernel#p`, you can investigate where an object was created.
+Note that just requiring this file brings a large performance overhead.
+This is only for debugging purposes. Do not use this in production.
+[[Feature #17762]]</li>
+</ul>
+<ul>
+<li>Now exceptions raised in finalizers will be printed to `STDERR`, unless
+`$VERBOSE` is `nil`.  [[Feature #17798]]</li>
+</ul>
+<ul>
+<li>`ruby -run -e httpd` displays URLs to access.  [[Feature #17847]]</li>
+</ul>
+<ul>
+<li>Add `ruby -run -e colorize` to colorize Ruby code using
+`IRB::Color.colorize_code`.</li>
+</ul>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class ThreadGroup (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="スレッドグループを表すクラスです。グループに属する [[c:Thread]] をまとめて
+操作することができます。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        ThreadGroupクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class ThreadGroup</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+      <li>
+        ThreadGroup
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+スレッドグループを表すクラスです。グループに属する <a href="../class/-thread.html">Thread</a> をまとめて操作することができます。
+</p>
+<p>
+<a href="../class/-thread.html">Thread</a> は必ずいずれかひとつのスレッドグループに属します。生成されたばかりの Thread は、生成した Thread のグループを引き継ぎます。メインスレッドはデフォルトでは <a href="../method/-thread-group/c/-default.html">ThreadGroup::Default</a> に属します。
+</p>
+<dl>
+<dt>例:</dt>
+<dd>
+</dd>
+</dl>
+<p>
+生成したすべてのThreadが終了するのを待つ
+</p>
+<pre>
+5.times {
+   Thread.new { sleep 1; puts &quot;#{Thread.current} finished&quot; }
+}
+
+(ThreadGroup::Default.list - [Thread.current]).each {|th| th.join}
+
+puts &quot;all threads finished&quot;
+</pre>
+<p>
+対象の Thread が Thread を起こす可能性がある場合
+(<a href="../method/-thread/s/exclusive.html">Thread.exclusive</a>参照)
+</p>
+<pre>
+Thread.exclusive do
+  (ThreadGroup::Default.list - [Thread.current]).each {|th| th.join}
+end
+</pre>
+<h2 >ThreadGroup#freeze と ThreadGroup#enclose の違い</h2>
+<p>
+どちらのメソッドでも <a href="../method/-thread-group/i/add.html">ThreadGroup#add</a> によるスレッドの追加ができなくなる点は同じですが、
+<a href="../method/-thread/s/new.html">Thread.new</a> に関して違いがあります。現在のスレッドが属する ThreadGroup が freeze
+されている場合、Thread.new{ ... } はエラーになります。ThreadGroup が enclose されているだけでは、
+Thread.new{ ... } はエラーになりません。生成されたスレッドは従来通り 親スレッドの ThreadGroup に属します。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_NEW">new</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_ADD">add</a></li>
+
+<li><a href="#I_ENCLOSE">enclose</a></li>
+
+<li><a href="#I_ENCLOSED--3F">enclosed?</a></li>
+
+<li><a href="#I_LIST">list</a></li>
+
+</ul>
+</dd>
+
+<dt>定数</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#C_-DEFAULT">Default</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new -&gt; ThreadGroup</code><span class="permalink">[<a href="../method/-thread-group/s/new.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/ThreadGroup.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+新たな ThreadGroup を生成して返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+thread_group <span class="o">=</span> <span class="no">ThreadGroup</span><span class="p">.</span><span class="nf">new</span>
+thread_group<span class="p">.</span><span class="nf">add</span> <span class="no">Thread</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="nb">sleep</span> <span class="mf">0.1</span>; <span class="no">Thread</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="nb">sleep</span> <span class="mi">1</span> <span class="p">}</span>; <span class="nb">sleep</span> <span class="mi">1</span> <span class="p">}</span>
+thread_group<span class="p">.</span><span class="nf">add</span> <span class="no">Thread</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="nb">sleep</span> <span class="mi">2</span> <span class="p">}</span>
+<span class="nb">sleep</span> <span class="mf">0.5</span>
+thread_group<span class="p">.</span><span class="nf">list</span> <span class="c1"># =&gt; [#&lt;Thread:0x007fc6f1842d70 sleep&gt;, #&lt;Thread:0x007fc6f1842c80 sleep&gt;, #&lt;Thread:0x007fc6f080dba8 sleep&gt;]
+</span></code></pre>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_ADD"><code>add(thread) -&gt; self</code><span class="permalink">[<a href="../method/-thread-group/i/add.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/ThreadGroup.html#method-i-add">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+スレッド thread が属するグループを自身に変更します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] thread:</dt>
+<dd>
+自身に加えたいスレッドを指定します。
+</dd>
+<dt>[EXCEPTION] ThreadError:</dt>
+<dd>
+自身が freeze されているか enclose されている場合に、発生します。また引数 thread が属する ThreadGroup が freeze されているか enclose されている場合にも発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">puts</span> <span class="s2">"</span><span class="s2">Initial group is </span><span class="si">#{</span><span class="no">ThreadGroup</span><span class="o">::</span><span class="no">Default</span><span class="p">.</span><span class="nf">list</span><span class="si">}</span><span class="s2">"</span>
+<span class="c1"># =&gt; Initial group is [#&lt;Thread:0x4a49168 run&gt;]
+</span>
+tg <span class="o">=</span> <span class="no">ThreadGroup</span><span class="p">.</span><span class="nf">new</span>
+t1 <span class="o">=</span> <span class="no">Thread</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="nb">sleep</span> <span class="p">}</span>
+t2 <span class="o">=</span> <span class="no">Thread</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="nb">sleep</span> <span class="p">}</span>
+<span class="nb">puts</span> <span class="s2">"</span><span class="s2">t1 is </span><span class="si">#{</span><span class="n">t1</span><span class="si">}</span><span class="s2">"</span> <span class="c1"># =&gt; t1 is #&lt;Thread:0x50bef60&gt;
+</span><span class="nb">puts</span> <span class="s2">"</span><span class="s2">t2 is </span><span class="si">#{</span><span class="n">t2</span><span class="si">}</span><span class="s2">"</span> <span class="c1"># =&gt; t2 is #&lt;Thread:0x50beed0&gt;
+</span>tg<span class="p">.</span><span class="nf">add</span><span class="p">(</span>t1<span class="p">)</span>
+<span class="nb">puts</span> <span class="s2">"</span><span class="s2">Initial group now </span><span class="si">#{</span><span class="no">ThreadGroup</span><span class="o">::</span><span class="no">Default</span><span class="p">.</span><span class="nf">list</span><span class="si">}</span><span class="s2">"</span>
+<span class="c1"># =&gt; Initial group now [#&lt;Thread:0x3039168 run&gt;, #&lt;Thread:0x50beed0 run&gt;]
+</span><span class="nb">puts</span> <span class="s2">"</span><span class="s2">tg group now </span><span class="si">#{</span><span class="n">tg</span><span class="p">.</span><span class="nf">list</span><span class="si">}</span><span class="s2">"</span>
+<span class="c1"># =&gt; tg group now [#&lt;Thread:0x50bef60 run&gt;]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ENCLOSE"><code>enclose -&gt; self</code><span class="permalink">[<a href="../method/-thread-group/i/enclose.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/ThreadGroup.html#method-i-enclose">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身への <a href="../method/-thread-group/i/add.html">ThreadGroup#add</a> によるスレッドの追加・削除を禁止します。
+enclose された ThreadGroup に追加や削除を行うと例外 <a href="../class/-thread-error.html">ThreadError</a> が発生します。
+</p>
+<p>
+ただし、<a href="../method/-thread/s/new.html">Thread.new</a> によるスレッドの追加は禁止されません。enclose されたスレッドグループ A に属するスレッドが新たにスレッドを生成した場合、生成されたスレッドはスレッドグループ A に属します。
+</p>
+<p>
+追加の例:
+</p>
+<pre>
+thg = ThreadGroup.new.enclose
+thg.add Thread.new {}
+
+=&gt; -:2:in `add': can't move to the enclosed thread group (ThreadError)
+</pre>
+<p>
+削除の例:
+</p>
+<pre>
+thg1 = ThreadGroup.new
+thg2 = ThreadGroup.new
+
+th = Thread.new {sleep 1}
+
+thg1.add th
+thg1.enclose
+thg2.add th
+
+=&gt; -:8:in `add': can't move from the enclosed thread group (ThreadError)
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ENCLOSED--3F"><code>enclosed? -&gt; bool</code><span class="permalink">[<a href="../method/-thread-group/i/enclosed=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/ThreadGroup.html#method-i-enclosed-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身が enclose されているなら true を返します。そうでないなら false を返します。デフォルトは false です。
+</p>
+<p>
+freeze された ThreadGroup には Thread の追加/削除ができませんが、enclosed? は false を返します。
+</p>
+<pre>
+thg = ThreadGroup.new
+p thg.enclosed?         # =&gt; false
+thg.enclose
+p thg.enclosed?         # =&gt; true
+
+thg = ThreadGroup.new
+p thg.enclosed?         # =&gt; false
+thg.freeze
+p thg.enclosed?         # =&gt; false
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-thread-group/i/enclose.html">ThreadGroup#enclose</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LIST"><code>list -&gt; [Thread]</code><span class="permalink">[<a href="../method/-thread-group/i/list.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/ThreadGroup.html#method-i-list">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self に属するスレッドの配列を返します。
+version 1.8 では、aborting 状態であるスレッドも要素に含まれます。つまり「生きている」スレッドの配列を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">ThreadGroup</span><span class="o">::</span><span class="no">Default</span><span class="p">.</span><span class="nf">list</span>   <span class="c1"># =&gt; [#&lt;Thread:0x00007f8f13867078 run&gt;]
+</span></code></pre>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-DEFAULT"><code>Default -&gt; ThreadGroup</code><span class="permalink">[<a href="../method/-thread-group/c/-default.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/ThreadGroup.html#method-c-Default">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+デフォルトで定義されている <a href="../class/-thread-group.html">ThreadGroup</a> です。メインスレッドは最初このグループに属します。
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

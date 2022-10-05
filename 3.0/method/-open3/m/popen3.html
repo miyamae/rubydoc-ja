@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Open3.#popen3 (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="外部プログラム cmd を実行し、そのプロセスの標準入力、標準出力、標準エラー
+出力に接続されたパイプと実行したプロセスを待つためのスレッドを 4 要素の
+配列で返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/open3.html">open3ライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-open3.html">Open3モジュール</a>
+      </li>
+      <li>
+        popen3 
+      </li>
+    </ol>
+  </nav>
+
+<h1>module function Open3.#popen3</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_POPEN3"><code>popen3(*cmd) -&gt; [IO, IO, IO, Thread]</code><span class="permalink">[<a href="../../../method/-open3/m/popen3.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Open3.html#method-c-popen3">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>popen3(*cmd) {|stdin, stdout, stderr, wait_thr| ... } -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+外部プログラム cmd を実行し、そのプロセスの標準入力、標準出力、標準エラー出力に接続されたパイプと実行したプロセスを待つためのスレッドを 4 要素の配列で返します。
+</p>
+<pre>
+require 'open3'
+stdin, stdout, stderr, wait_thr = *Open3.popen3(&quot;/usr/bin/nroff -man&quot;)
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] cmd:</dt>
+<dd>
+実行するコマンドを指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+ブロックを指定した場合はブロックの最後に評価された値を返します。ブロックを指定しなかった場合は標準入力、標準出力、標準エラー出力と実行したプロセスを待つためのスレッドに接続されたパイプを返します。
+</dd>
+</dl>
+<p>
+ブロックを指定するとパイプの配列を引数にブロックを実行し、最後にパイプを close します。この場合はブロックの最後の式の結果を返します。
+</p>
+<pre>
+require 'open3'
+
+Open3.popen3(&quot;read stdin; echo stdout; echo stderr &gt;&amp;2&quot;) {|stdin, stdout, stderr, wait_thr|
+  stdin.puts &quot;stdin&quot;
+  stdin.close     # または close_write
+  p stdout.read
+  p stderr.read
+}
+#=&gt; &quot;stdout\n&quot;
+    &quot;stderr\n&quot;
+</pre>
+<p>
+stdin への入力が終わったらできる限り早く close か close_write
+で閉じるべきです。
+</p>
+<p>
+[UNIX系OS固有の注意] Open3 で作成した子プロセスは
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/wait.html">wait(2)</a> しなくてもゾンビになりません。
+</p>
+<p>
+引数 cmd はそのまま <a href="../../../method/-kernel/m/spawn.html">Kernel.#spawn</a> に渡されます。
+<a href="../../../method/-kernel/m/spawn.html">Kernel.#spawn</a>と同様に、引数リストの最初に環境変数をハッシュ形式で指定する事ができます。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'open3'
+
+Open3.popen3({&quot;foo&quot; =&gt; &quot;1&quot;, &quot;bar&quot; =&gt; &quot;2&quot;}, &quot;env&quot;) {|i, o, e, t|
+  i.close
+  print o.read
+}
+#=&gt; ...
+    foo=1
+    bar=2
+</pre>
+<p>
+<a href="../../../method/-kernel/m/spawn.html">Kernel.#spawn</a>と同様に、引数リストの最後にオプションをハッシュ形式で指定する事ができます。
+</p>
+<p>
+例:
+</p>
+<pre>
+require &quot;open3&quot;
+
+# オプションを指定した場合。
+Dir.chdir(&quot;/tmp&quot;)
+Open3.popen3(&quot;pwd&quot;, :chdir=&gt; &quot;/&quot;) {|i,o,e,t|
+  p o.read.chomp #=&gt; &quot;/&quot;
+}
+
+# オプションを指定しない場合。
+Dir.chdir(&quot;/tmp&quot;)
+Open3.popen3(&quot;pwd&quot;) {|i,o,e,t|
+  p o.read.chomp #=&gt; &quot;/tmp&quot;
+}
+</pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/spawn.html">Kernel.#spawn</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>ERB.new (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="@param str eRubyスクリプトを表す文字列
+@param safe_level eRubyスクリプトが実行されるときのセーフレベル
+@param trim_mode 整形の挙動を変更するオプション">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/erb.html">erbライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-e-r-b.html">ERBクラス</a>
+      </li>
+      <li>
+        new 
+      </li>
+    </ol>
+  </nav>
+
+<h1>singleton method ERB.new</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_NEW"><code>new(str, safe_level=NOT_GIVEN, trim_mode=NOT_GIVEN, eoutvar=NOT_GIVEN, trim_mode: nil, eoutvar: '_erbout') -&gt; ERB</code><span class="permalink">[<a href="../../../method/-e-r-b/s/new.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/ERB.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+eRubyスクリプト から ERB オブジェクトを生成して返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+eRubyスクリプトを表す文字列
+</dd>
+<dt class='method-param'>[PARAM] safe_level:</dt>
+<dd>
+eRubyスクリプトが実行されるときのセーフレベル
+</dd>
+<dt class='method-param'>[PARAM] trim_mode:</dt>
+<dd>
+整形の挙動を変更するオプション
+</dd>
+<dt class='method-param'>[PARAM] eoutvar:</dt>
+<dd>
+eRubyスクリプトの中で出力をためていく変数の名前を表す文字列。eRuby スクリプトの中でさらに ERB を使うときに変更します。通常は指定する必要はありません。
+</dd>
+</dl>
+<p>
+Ruby 2.6.0 から位置引数での safe_level, trim_mode, eoutvar の指定は非推奨です。
+Ruby 3.2 で削除されました。
+trim_mode と eoutvar の指定はキーワード引数に移行してください。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">erb</span><span class="s2">"</span>
+
+<span class="c1"># build data class
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Listings</span>
+  <span class="no">PRODUCT</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s2">"</span><span class="s2">Chicken Fried Steak</span><span class="s2">"</span>,
+              <span class="ss">:desc</span> <span class="o">=&gt;</span> <span class="s2">"</span><span class="s2">A well messages pattie, breaded and fried.</span><span class="s2">"</span>,
+              <span class="ss">:cost</span> <span class="o">=&gt;</span> <span class="mf">9.95</span> <span class="p">}</span>
+
+  <span class="nb">attr_reader</span> <span class="ss">:product</span>, <span class="ss">:price</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span> product <span class="o">=</span> <span class="s2">"</span><span class="s2">"</span>, price <span class="o">=</span> <span class="s2">"</span><span class="s2">"</span> <span class="p">)</span>
+    <span class="vi">@product</span> <span class="o">=</span> product
+    <span class="vi">@price</span> <span class="o">=</span> price
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">build</span>
+    b <span class="o">=</span> <span class="nb">binding</span>
+    <span class="c1"># create and run templates, filling member data variables
+</span>    <span class="no">ERB</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">&lt;&lt;~'END_PRODUCT'</span>, <span class="ss">eoutvar:</span> <span class="s2">"</span><span class="s2">@product</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">result</span> <span class="no">b
+      <span class="sh">&lt;%= PRODUCT[:name] %&gt;
+</span>      <span class="sh">&lt;%= PRODUCT[:desc] %&gt;
+</span><span class="no">    END_PRODUCT
+</span>    <span class="no">ERB</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">&lt;&lt;~'END_PRICE'</span>, <span class="ss">eoutvar:</span> <span class="s2">"</span><span class="s2">@price</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">result</span> <span class="no">b
+      <span class="sh">&lt;%= PRODUCT[:name] %&gt; -- &lt;%= PRODUCT[:cost] %&gt;
+</span>      <span class="sh">&lt;%= PRODUCT[:desc] %&gt;
+</span><span class="no">    END_PRICE
+</span>  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># setup template data
+</span>listings <span class="o">=</span> <span class="no">Listings</span><span class="p">.</span><span class="nf">new</span>
+listings<span class="p">.</span><span class="nf">build</span>
+
+<span class="nb">puts</span> listings<span class="p">.</span><span class="nf">product</span> <span class="o">+</span> <span class="s2">"</span><span class="s2">\n</span><span class="s2">"</span> <span class="o">+</span> listings<span class="p">.</span><span class="nf">price</span>
+
+<span class="c1"># Chicken Fried Steak
+</span><span class="c1"># A well messages pattie, breaded and fried.
+</span><span class="c1"># 
+</span><span class="c1"># Chicken Fried Steak -- 9.95
+</span><span class="c1"># A well messages pattie, breaded and fried.
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>library rexml/parsers/pullparser (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="プル方式の XML パーサ。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        rexml/parsers/pullparserライブラリ
+      </li>
+    </ol>
+  </nav>
+
+<h1>library rexml/parsers/pullparser</h1>
+</header>
+
+<main>
+
+
+
+<h2>要約</h2>
+<p>
+プル方式の XML パーサ。
+</p>
+<p>
+<a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-stream-parser.html">REXML::Parsers::StreamParser</a> はパースした結果をコールバックによって受動的に受け取りますが、このパーサは <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser/i/pull.html">REXML::Parsers::PullParser#pull</a>
+によってパーサから結果をイベントという形で順に能動的に取り出します。外部的にはこのクラスのオブジェクトはイベントのキューと見なせます。
+pull はそのキューの先頭を取り出し、キューから取り除きます。
+</p>
+<p>
+pull は <a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event.html">REXML::Parsers::PullEvent</a> オブジェクトを返します。このオブジェクトの
+<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event/i/event_type.html">REXML::Parsers::PullEvent#event_type</a> で「開始タグ」「終了タグ」といったイベントの種類を取得します。
+<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event/i/=5b=5d.html">REXML::Parsers::PullEvent#[]</a> でそのイベントのパラメータ
+(例えば開始タグなら要素名と属性)を得ることができます。
+</p>
+<h2 id='event_type'>イベントの種類とパラメータ</h2>
+<p>
+<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event/i/event_type.html">REXML::Parsers::PullEvent#event_type</a> で得られるイベントの種類のシンボルを列挙しています。
+</p>
+<p>
+これらのうちのいくつかは、
+<a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event/i/start_element=3f.html">REXML::Parsers::PullEvent#start_element?</a> などのメソッドで判定することが可能です。
+</p>
+<dl>
+<dt>start_element (要素名, 属性)</dt>
+<dd>
+<p>
+XML要素の開始タグ。属性は { 属性名文字列 =&gt; 属性値文字列 } という <a href="../class/-hash.html">Hash</a>
+</p>
+</dd>
+<dt>end_element (要素名)</dt>
+<dd>
+<p>
+XML要素の終了タグ
+</p>
+</dd>
+<dt>text (正規化文字列, 非正規化文字列)</dt>
+<dd>
+<p>
+テキストノード
+</p>
+</dd>
+<dt>processing_instruction (ターゲット文字列, 内容文字列 | nil)</dt>
+<dd>
+<p>
+XML処理命令(Processing Instruction, PI)
+</p>
+</dd>
+<dt>comment (コメント文字列)</dt>
+<dd>
+<p>
+コメント
+</p>
+</dd>
+<dt>start_doctype (ルート要素名, &quot;SYSTEM&quot; | &quot;PUBLIC&quot; | nil, システム識別子 | nil, 公開識別子 | nil)</dt>
+<dd>
+<p>
+DTD 開始。判定は <a href="../method/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event/i/doctype=3f.html">REXML::Parsers::PullEvent#doctype?</a> メソッドで、
+start_doctype? ではない
+</p>
+</dd>
+<dt>end_doctype ()</dt>
+<dd>
+<p>
+DTD 終了
+</p>
+</dd>
+<dt>attlistdecl (要素名, 属性名とデフォルト値, 宣言文字列)</dt>
+<dd>
+<p>
+DTDの属性リスト宣言。属性名とデフォルト値 は { 属性名文字列 =&gt; デフォルト値文字列(なければnil) } という <a href="../class/-hash.html">Hash</a>
+</p>
+</dd>
+<dt>elementdecl (宣言文字列)</dt>
+<dd>
+<p>
+DTDの要素宣言
+</p>
+</dd>
+<dt>entitydecl</dt>
+<dd>
+<p>
+DTDの実体宣言
+</p>
+</dd>
+<dt>notationdecl (記法名文字列, &quot;PUBLIC&quot; | &quot;SYSTEM&quot; | nil, 公開識別子文字列 | nil, URI文字列 | nil)</dt>
+<dd>
+<p>
+DTDの記法宣言
+</p>
+</dd>
+<dt>cdata (テキスト文字列)</dt>
+<dd>
+<p>
+cdata セクション
+</p>
+</dd>
+<dt>xmldecl (バージョン文字列, エンコーディング文字列 | nil, standalone (&quot;yes&quot; | &quot;no&quot; | nil))</dt>
+<dd>
+<p>
+XML宣言
+</p>
+</dd>
+<dt>externalentity (エンティティ文字列)</dt>
+<dd>
+<p>
+doctype内のパラメータ実体参照。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'rexml/parsers/pullparser'</span>
+xml <span class="o">=</span> <span class="no">&lt;&lt;EOS</span>
+<span class="sh">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;?xml-stylesheet type=&quot;text/css&quot; href=&quot;style.css&quot;?&gt;
+&lt;!DOCTYPE root SYSTEM &quot;foo&quot; [
+  &lt;!ELEMENT root (a+)&gt;
+  &lt;!ELEMENT a&gt;
+  &lt;!ENTITY bar &quot;barbarbarbar&quot;&gt;
+  &lt;!ATTLIST a att CDATA #REQUIRED xyz CDATA &quot;foobar&quot;&gt;
+  &lt;!NOTATION foobar SYSTEM &quot;http://example.org/foobar.dtd&quot;&gt;
+  &lt;!ENTITY % HTMLsymbol PUBLIC
+      &quot;-//W3C//ENTITIES Symbols for XHTML//EN&quot;
+      &quot;xhtml-symbol.ent&quot;&gt;
+  %HTMLsymbol;
+]&gt;
+&lt;root xmlns:foo=&quot;http://example.org/foo&quot;
+      xmlns:bar=&quot;http://example.org/bar&quot;&gt;&lt;![CDATA[cdata is here]]&gt;
+  &lt;a foo:att='1' bar:att='2' att='&amp;lt;'/&gt;
+  &amp;amp;&amp;amp; &lt;!-- comment here--&gt; &amp;bar;
+&lt;/root&gt;
+</span><span class="no">EOS
+</span>
+parser <span class="o">=</span> <span class="no">REXML</span><span class="o">::</span><span class="no">Parsers</span><span class="o">::</span><span class="no">PullParser</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span>xml<span class="p">)</span>
+<span class="k">while</span> parser<span class="p">.</span><span class="nf">has_next?</span>
+  <span class="nb">p</span> parser<span class="p">.</span><span class="nf">pull</span>
+<span class="k">end</span>
+<span class="c1"># &gt;&gt; xmldecl: [&quot;1.0&quot;, &quot;UTF-8&quot;, nil]
+</span><span class="c1"># &gt;&gt; text: [&quot;\n&quot;, &quot;\n&quot;]
+</span><span class="c1"># &gt;&gt; processing_instruction: [&quot;xml-stylesheet&quot;, &quot; type=\&quot;text/css\&quot; href=\&quot;style.css\&quot;&quot;]
+</span><span class="c1"># &gt;&gt; text: [&quot;\n&quot;, &quot;\n&quot;]
+</span><span class="c1"># &gt;&gt; start_doctype: [&quot;root&quot;, &quot;SYSTEM&quot;, &quot;foo&quot;, nil]
+</span><span class="c1"># &gt;&gt; elementdecl: [&quot;&lt;!ELEMENT root (a+)&quot;]
+</span><span class="c1"># &gt;&gt; elementdecl: [&quot;&lt;!ELEMENT a&quot;]
+</span><span class="c1"># &gt;&gt; entitydecl: [&quot;bar&quot;, &quot;barbarbarbar&quot;]
+</span><span class="c1"># &gt;&gt; attlistdecl: [&quot;a&quot;, {&quot;att&quot;=&gt;nil, &quot;xyz&quot;=&gt;&quot;foobar&quot;}, &quot; \n  &lt;!ATTLIST a att CDATA #REQUIRED xyz CDATA \&quot;foobar\&quot;&gt;&quot;]
+</span><span class="c1"># &gt;&gt; notationdecl: [&quot;foobar&quot;, &quot;SYSTEM&quot;, nil, &quot;http://example.org/foobar.dtd&quot;]
+</span><span class="c1"># &gt;&gt; entitydecl: [&quot;HTMLsymbol&quot;, &quot;PUBLIC&quot;, &quot;-//W3C//ENTITIES Symbols for XHTML//EN&quot;, &quot;xhtml-symbol.ent&quot;, &quot;%&quot;]
+</span><span class="c1"># &gt;&gt; externalentity: [&quot;%HTMLsymbol;&quot;]
+</span><span class="c1"># &gt;&gt; end_doctype: []
+</span><span class="c1"># &gt;&gt; text: [&quot;\n&quot;, &quot;\n&quot;]
+</span><span class="c1"># &gt;&gt; start_element: [&quot;root&quot;, {&quot;xmlns:foo&quot;=&gt;&quot;http://example.org/foo&quot;, &quot;xmlns:bar&quot;=&gt;&quot;http://example.org/bar&quot;}]
+</span><span class="c1"># &gt;&gt; cdata: [&quot;cdata is here&quot;]
+</span><span class="c1"># &gt;&gt; text: [&quot;\n  &quot;, &quot;\n  &quot;]
+</span><span class="c1"># &gt;&gt; start_element: [&quot;a&quot;, {&quot;foo:att&quot;=&gt;&quot;1&quot;, &quot;bar:att&quot;=&gt;&quot;2&quot;, &quot;att&quot;=&gt;&quot;&amp;lt;&quot;}]
+</span><span class="c1"># &gt;&gt; end_element: [&quot;a&quot;]
+</span><span class="c1"># &gt;&gt; text: [&quot;\n  &amp;amp;&amp;amp; &quot;, &quot;\n  &amp;&amp; &quot;]
+</span><span class="c1"># &gt;&gt; comment: [&quot; comment here&quot;]
+</span><span class="c1"># &gt;&gt; text: [&quot; &amp;bar;\n&quot;, &quot; barbarbarbar\n&quot;]
+</span><span class="c1"># &gt;&gt; end_element: [&quot;root&quot;]
+</span><span class="c1"># &gt;&gt; text: [&quot;\n&quot;, &quot;\n&quot;]
+</span></code></pre>
+</dd>
+</dl>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-event.html">REXML::Parsers::PullEvent</a>
+</td>
+<td class="description"><p>
+<a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser.html">REXML::Parsers::PullParser</a> で使われるパース結果を表すイベントクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-r-e-x-m-l=3a=3a-parsers=3a=3a-pull-parser.html">REXML::Parsers::PullParser</a>
+</td>
+<td class="description"><p>
+プル方式の XML パーサクラス。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

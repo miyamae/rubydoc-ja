@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>Marshal フォーマット (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="フォーマットバージョン 4.8 を元に記述しています。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      
+        <li>
+          <a href="../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+        </li>
+        <li>
+          Marshal フォーマット
+        </li>
+      
+    </ol>
+  </nav>
+
+<h1>Marshal フォーマット</h1>
+</header>
+
+<main>
+
+<p>
+フォーマットバージョン 4.8 を元に記述しています。
+</p>
+<h2 >nil, true, false</h2>
+<p>
+それぞれ、'0', 'T', 'F' になります。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="k">nil</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack1</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a*</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;0&quot;
+</span><span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="k">true</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack1</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;T&quot;
+</span><span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="k">false</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack1</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;F&quot;
+</span></code></pre>
+<p>
+Ruby 2.1 以前では、インスタンス変数を設定しても dump されません。
+Ruby 2.2 以降は freeze されているので、インスタンス変数は設定できません。
+</p>
+<h2 >Fixnum</h2>
+<p>
+'i' に続けて Fixnum を表すデータ構造が続きます。
+</p>
+<p>
+数値部分を表す形式(これは Fixnum に限らず他の箇所でも使われます)は、
+2種類の形式があります。
+</p>
+<h3 >形式 1</h3>
+<p>
+数値 n に対して
+</p>
+<pre>
+n == 0:       0
+0 &lt; n &lt; 123:  n + 5
+-124 &lt; n &lt; 0: n - 5
+</pre>
+<p>
+という数値(1 byte)を格納します。5 を足したり引いたりするのは下記の形式 2 との区別のためです。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack1</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;i\xFA&quot;
+</span><span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack1</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;i\x00&quot;
+</span><span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack1</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;i\x06&quot;
+</span><span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack1</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; &quot;i\a&quot;   (&quot;i\x07&quot;)
+</span></code></pre>
+<p>
+形式 1 の範囲を超える数値 N に対しては、以下の形式になります。
+</p>
+<h3 >形式 2</h3>
+<pre>
+| len | n_1 | n_2 | n_3 | n_4 |
+&lt;-1-&gt;  &lt;-       len         -&gt;
+byte            bytes
+</pre>
+<p>
+len の値は -4 〜 -1, 1 〜 4 で。符号と後続のデータが n1 〜 n_len
+まであることを示します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>len, n1, n2 <span class="o">=</span> <span class="mi">0</span>, n3 <span class="o">=</span> <span class="mi">0</span>, n4 <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">case</span> len
+    <span class="k">when</span> <span class="o">-</span><span class="mi">3</span>;           n4 <span class="o">=</span> <span class="mi">255</span>
+    <span class="k">when</span> <span class="o">-</span><span class="mi">2</span>;      n3 <span class="o">=</span> n4 <span class="o">=</span> <span class="mi">255</span>
+    <span class="k">when</span> <span class="o">-</span><span class="mi">1</span>; n2 <span class="o">=</span> n3 <span class="o">=</span> n4 <span class="o">=</span> <span class="mi">255</span>
+    <span class="k">end</span>
+
+    n <span class="o">=</span> <span class="p">(</span><span class="mi">0xffffff00</span> <span class="o">|</span> n1<span class="p">)</span> <span class="o">&amp;</span>
+        <span class="p">(</span><span class="mi">0xffff00ff</span> <span class="o">|</span> n2 <span class="o">*</span> <span class="mi">0x100</span><span class="p">)</span> <span class="o">&amp;</span>
+        <span class="p">(</span><span class="mi">0xff00ffff</span> <span class="o">|</span> n3 <span class="o">*</span> <span class="mi">0x10000</span><span class="p">)</span> <span class="o">&amp;</span>
+        <span class="p">(</span><span class="mi">0x00ffffff</span> <span class="o">|</span> n4 <span class="o">*</span> <span class="mi">0x1000000</span><span class="p">)</span>
+    <span class="c1"># p &quot;%x&quot; % n
+</span>    n <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="p">(</span>n <span class="o">^</span> <span class="mi">0xffff_ffff</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> len <span class="o">&lt;</span> <span class="mi">0</span>
+    n
+<span class="k">end</span>
+
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="o">-</span><span class="mi">125</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 acC*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;i&quot;, -1, 131]
+</span><span class="nb">p</span> foo<span class="p">(</span><span class="o">-</span><span class="mi">1</span>, <span class="mi">131</span><span class="p">)</span>                         <span class="c1"># =&gt; -125
+</span><span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="o">-</span><span class="mi">255</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 acC*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;i&quot;, -1, 1]
+</span><span class="nb">p</span> foo<span class="p">(</span><span class="o">-</span><span class="mi">1</span>, <span class="mi">1</span><span class="p">)</span>                           <span class="c1"># =&gt; -255
+</span><span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="o">-</span><span class="mi">256</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 acC*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;i&quot;, -1, 0]
+</span><span class="nb">p</span> foo<span class="p">(</span><span class="o">-</span><span class="mi">1</span>, <span class="mi">0</span><span class="p">)</span>                           <span class="c1"># =&gt; -256
+</span><span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="o">-</span><span class="mi">257</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 acC*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;i&quot;, -2, 255, 254]
+</span><span class="nb">p</span> foo<span class="p">(</span><span class="o">-</span><span class="mi">2</span>, <span class="mi">255</span>, <span class="mi">254</span><span class="p">)</span>                    <span class="c1"># =&gt; -257
+</span><span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="mi">124</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 acC*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; [&quot;i&quot;, 1, 124]
+</span><span class="nb">p</span> foo<span class="p">(</span><span class="mi">1</span>, <span class="mi">124</span><span class="p">)</span>                          <span class="c1"># =&gt; 124
+</span><span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="mi">256</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 acC*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; [&quot;i&quot;, 2, 0, 1]
+</span><span class="nb">p</span> foo<span class="p">(</span><span class="mi">2</span>, <span class="mi">0</span>, <span class="mi">1</span><span class="p">)</span>                         <span class="c1"># =&gt; 256
+</span></code></pre>
+<p>
+Ruby 1.9.3 以前では、インスタンス変数を設定しても dump されません。
+Ruby 2.0 以降は freeze されているので、インスタンス変数は設定できません。
+</p>
+<h2 >instance of the user class</h2>
+<h3 >String, Regexp, Array, Hash のサブクラス (インスタンス変数なし)</h3>
+<p>
+'C' で始まるデータ構造になります。
+</p>
+<pre>
+| 'C' | クラス名(Symbol)の dump | 親クラスのインスタンスの dump |
+</pre>
+<pre class="highlight ruby">
+<span class="caption">例 1</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span> <span class="o">&lt;</span> <span class="no">Array</span> <span class="c1"># (or String, Regexp, Hash)
+</span><span class="k">end</span>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="p">[</span><span class="k">nil</span><span class="p">]</span><span class="p">)</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a a c a3 aca*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;C&quot;, &quot;:&quot;, 8, &quot;Foo&quot;, &quot;[&quot;, 6, &quot;0&quot;]
+</span><span class="c1">#                         ^^^ (or '&quot;', '/', '{')
+</span></code></pre>
+<h3 >String, Regexp, Array, Hash のサブクラス (インスタンス変数あり)</h3>
+<p>
+'I' で始まるデータ構造になります。
+<a href="../doc/marshal_format.html#instance_variable">Marshal フォーマット/instance variable</a>も参照してください。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例 2: インスタンス変数あり</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span> <span class="o">&lt;</span> <span class="no">Array</span> <span class="c1"># (or String, Regexp, Hash)
+</span>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span>obj<span class="p">)</span>
+    <span class="vi">@foo</span> <span class="o">=</span> <span class="k">false</span>
+    <span class="k">super</span><span class="p">(</span>obj<span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="p">[</span><span class="k">true</span><span class="p">]</span><span class="p">)</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a a a c a3 aca caca4 a</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;I&quot;, &quot;C&quot;, &quot;:&quot;, 8, &quot;Foo&quot;, &quot;[&quot;, 6, &quot;T&quot;, 6, &quot;:&quot;, 9, &quot;@foo&quot;, &quot;F&quot;]
+</span></code></pre>
+<h3 >その他</h3>
+<p>
+実装上内部構造が異なるため、上記以外では、'o' になります。
+(<a href="../doc/marshal_format.html#Object">Marshal フォーマット/Object</a> 参照)
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+<span class="k">end</span>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a a c a*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;o&quot;, &quot;:&quot;, 8, &quot;Foo\x00&quot;]
+</span></code></pre>
+<h2 >'u'</h2>
+<p>
+_dump、_load を定義していれば 'u' になります。インスタンス変数は dump されなくなるので、_dump/_load で対応する必要があります。
+</p>
+<pre>
+| 'u' | クラス名(Symbol)の dump | _dump の結果の長さ(Fixnum形式) | _dump が返す値 |
+</pre>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># coding: ascii-8bit
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="p">.</span><span class="nf">_load</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">_dump</span><span class="p">(</span><span class="nf">obj</span><span class="p">)</span>
+    <span class="s2">"</span><span class="s2">hogehoge</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a aca3 c a*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;u&quot;, &quot;:&quot;, 8, &quot;Foo&quot;, 13, &quot;hogehoge&quot;]
+</span></code></pre>
+<h2 >'U'</h2>
+<p>
+marshal_dump、marshal_load を定義していれば 'U' になります。インスタンス変数は dump されなくなるので、marshal_dump/marshal_load
+で対応する必要があります。
+</p>
+<pre>
+| 'U' | クラス名(Symbol)の dump | marshal_dump メソッドの戻り値の dump |
+</pre>
+<pre class="highlight ruby">
+<code>
+<span class="c1"># coding: ascii-8bit
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">marshal_dump</span>
+    <span class="s2">"</span><span class="s2">hogehoge</span><span class="s2">"</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">marshal_load</span><span class="p">(</span>obj<span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a aca3 a c a*</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="c1"># =&gt; [&quot;U&quot;, &quot;:&quot;, 8, &quot;Foo&quot;, &quot;\&quot;&quot;, 13, &quot;hogehoge&quot;]
+</span></code></pre>
+<h2 id='Object'>Object</h2>
+<p>
+'o' で始まるデータ構造になります。
+</p>
+<pre>
+| 'o' | クラス名(Symbol)のdump | インスタンス変数の数(Fixnum形式) |
+| インスタンス変数名(Symbol)のdump(1) | 値(1) |
+          :
+          :
+| インスタンス変数名(Symbol)のdump(n) | 値(n) |
+</pre>
+<pre class="highlight ruby">
+<span class="caption">例 1</span>
+<code>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="no">Object</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a a c a6 c</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;o&quot;, &quot;:&quot;, 11, &quot;Object&quot;, 0]
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例 2: インスタンス変数あり</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">initialize</span>
+    <span class="vi">@foo</span> <span class="o">=</span> <span class="ss">:bar</span>
+    <span class="vi">@one</span> <span class="o">=</span> <span class="mi">1</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a a c a3 c aca4 aca3 aca4 ac</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;o&quot;, &quot;:&quot;, 8, &quot;Foo&quot;, 7,
+</span><span class="c1">#     &quot;:&quot;, 9, &quot;@foo&quot;, &quot;:&quot;, 8, &quot;bar&quot;,
+</span><span class="c1">#     &quot;:&quot;, 9, &quot;@one&quot;, &quot;i&quot;, 6]
+</span></code></pre>
+<h2 >Float</h2>
+<p>
+'f' で始まるデータ構造になります。
+</p>
+<pre>
+ | 'f' | 数値列の長さ(Fixnum形式) | &quot;%.16g&quot; の文字列 |
+</pre>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="no">Math</span><span class="o">::</span><span class="no">PI</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a c a*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;f&quot;, 22, &quot;3.141592653589793&quot;]
+</span>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="mf">0.0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a c a*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; [&quot;f&quot;, 8, &quot;nan&quot;]
+</span><span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a c a*</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; [&quot;f&quot;, 8, &quot;inf&quot;]
+</span><span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a c a*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;f&quot;, 9, &quot;-inf&quot;]
+</span><span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="o">-</span><span class="mf">0.0</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a c a*</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; [&quot;f&quot;, 9, &quot;-0&quot;]
+</span></code></pre>
+<h3 >ruby 1.7 feature</h3>
+<p>
+Ruby 1.6 では、nan などの出力は <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/sprintf.html">sprintf(3)</a> に依存していて、読み込みは
+&quot;nan&quot;, &quot;inf&quot;, &quot;-inf&quot; 以外は <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/strtod.html">strtod(3)</a> に依存していました。
+Ruby 1.7 から、sprintf(3)/strtod(3) への依存はなくなりました。
+</p>
+<h2 >Bignum</h2>
+<p>
+'l' で始まるデータ構造になります。
+</p>
+<p>
+32ビット環境で内部的に Bignum になる Integer は
+64ビット環境で Marshal.dump しても、この形式になります。
+</p>
+<pre>
+| 'l' | '+'/'-' | shortの個数(Fixnum形式) | ... |
+</pre>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">32</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a a c a*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;l&quot;, &quot;+&quot;, 8, &quot;\x00\x00\x00\x00\x01\x00&quot;]
+</span></code></pre>
+<p>
+ruby 1.6.3 では [&quot;l&quot;, &quot;+&quot;, 8, &quot;\000\000\001\000&quot;] になるバグがありました。
+</p>
+<h2 >String</h2>
+<p>
+'&quot;' で始まるデータ構造になります。
+</p>
+<pre>
+| '&quot;' | 長さ(Fixnum形式) | 文字列 |
+</pre>
+<pre class="highlight ruby">
+<span class="caption">例: ascii-8bit の時 (1.8 以前と同じ)</span>
+<code>
+<span class="c1"># coding: ascii-8bit
+</span><span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="s2">"</span><span class="s2">hogehoge</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a c a*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;\&quot;&quot;, 13, &quot;hogehoge&quot;]
+</span></code></pre>
+<p>
+ruby 1.9.0 以降では encoding が 'encoding' という「@」のつかない内部的なインスタンス変数としてダンプされます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例: euc-jp の時</span>
+<code>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="s2">"</span><span class="s2">hogehoge</span><span class="s2">"</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="s2">"</span><span class="s2">euc-jp</span><span class="s2">"</span><span class="p">)</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a a c a8 c a ca8 aca*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;I&quot;, &quot;\&quot;&quot;, 13, &quot;hogehoge&quot;, 6, &quot;:&quot;, 13, &quot;encoding&quot;, &quot;\&quot;&quot;, 11, &quot;EUC-JP&quot;]
+</span></code></pre>
+<p>
+ruby 1.9.2 以降では US-ASCII と UTF-8 が 'E' という内部的なインスタンス変数として、それぞれ false と true という値でダンプされます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例: us-ascii の時</span>
+<code>
+<span class="c1"># coding: us-ascii
+</span><span class="nb">p</span> <span class="s2">"</span><span class="s2">hogehoge</span><span class="s2">"</span><span class="p">.</span><span class="nf">encoding</span> <span class="c1"># =&gt; #&lt;Encoding:US-ASCII&gt;
+</span><span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="s2">"</span><span class="s2">hogehoge</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a a c a8 c acaa*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;I&quot;, &quot;\&quot;&quot;, 13, &quot;hogehoge&quot;, 6, &quot;:&quot;, 6, &quot;E&quot;, &quot;F&quot;]
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例: utf-8 の時</span>
+<code>
+<span class="c1"># coding: utf-8
+</span><span class="nb">p</span> <span class="s2">"</span><span class="s2">hogehoge</span><span class="s2">"</span><span class="p">.</span><span class="nf">encoding</span> <span class="c1"># =&gt; #&lt;Encoding:UTF-8&gt;
+</span><span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="s2">"</span><span class="s2">hogehoge</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a a c a8 c acaa*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;I&quot;, &quot;\&quot;&quot;, 13, &quot;hogehoge&quot;, 6, &quot;:&quot;, 6, &quot;E&quot;, &quot;T&quot;]
+</span></code></pre>
+<h2 >Regexp</h2>
+<p>
+'/' で始まるデータ構造になります。
+</p>
+<pre>
+| '/' | 長さ(Fixnum形式) | ソース文字列 | オプション |
+</pre>
+<p>
+オプションは、<a href="../method/-regexp/i/options.html">Regexp#options</a>の結果 + 漢字コードのフラグ値です。
+</p>
+<p>
+ruby 1.9 以降では隠しインスタンス変数として String と同様に
+encoding が付いています。
+</p>
+<pre class="highlight ruby">
+<span class="caption">1.9.2 以降での例</span>
+<code>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="sr">/(hoge)*/</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a a c a7 c cacaa</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;I&quot;, &quot;/&quot;, 12, &quot;(hoge)*&quot;, 0, 6, &quot;:&quot;, 6, &quot;E&quot;, &quot;F&quot;]
+</span>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="sr">/hogehoge/m</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a a c a8 c cacaa</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;I&quot;, &quot;/&quot;, 13, &quot;hogehoge&quot;, 4, 6, &quot;:&quot;, 6, &quot;E&quot;, &quot;F&quot;]
+</span>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="sr">/hogehoge/e</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a a c a8 c caca8aca*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;I&quot;, &quot;/&quot;, 13, &quot;hogehoge&quot;, 16, 6, &quot;:&quot;, 13, &quot;encoding&quot;, &quot;\&quot;&quot;, 11, &quot;EUC-JP&quot;]
+</span></code></pre>
+<h2 >Array</h2>
+<p>
+'[' で始まるデータ構造になります。
+</p>
+<pre>
+| '[' | 要素数(Fixnum形式) | 要素の dump | ... |
+</pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="p">[</span><span class="k">true</span>, <span class="k">false</span>, <span class="k">nil</span><span class="p">]</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a c a a a</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;[&quot;, 8, &quot;T&quot;, &quot;F&quot;, &quot;0&quot;]
+</span></code></pre>
+<h2 >Hash</h2>
+<h3 >Hash without default value</h3>
+<p>
+'{' で始まるデータ構造になります。
+</p>
+<pre>
+| '{' | 要素数(Fixnum形式) | キーの dump | 値の dump | ... |
+</pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="p">{</span><span class="k">true</span> <span class="o">=&gt;</span> <span class="k">false</span>, <span class="k">false</span> <span class="o">=&gt;</span> <span class="k">true</span>, <span class="k">nil</span> <span class="o">=&gt;</span> <span class="k">nil</span><span class="p">}</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a c aa aa aa</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;{&quot;, 8, &quot;T&quot;, &quot;F&quot;, &quot;F&quot;, &quot;T&quot;, &quot;0&quot;, &quot;0&quot;]
+</span></code></pre>
+<h3 >Hash with default value (not Proc)</h3>
+<p>
+'}' で始まるデータ構造になります。
+</p>
+<pre>
+| '}' | 要素数(Fixnum形式) | キーの dump | 値の dump | ... | デフォルト値 |
+</pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+h <span class="o">=</span> <span class="no">Hash</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+h<span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span>h<span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a c ac ac ac</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;}&quot;, 6, &quot;i&quot;, 15, &quot;i&quot;, 25, &quot;i&quot;, 0]
+</span></code></pre>
+<h3 >Hash with default_proc</h3>
+<p>
+default_proc が設定されている Hash は dump できません。
+</p>
+<pre class="highlight ruby">
+<code>
+h <span class="o">=</span> <span class="no">Hash</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="p">}</span>
+<span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span>h<span class="p">)</span>
+<span class="c1"># =&gt; TypeError (can't dump hash with default proc)
+</span></code></pre>
+<h2 >Struct</h2>
+<p>
+構造体クラスのインスタンスのダンプは 'S' で始まるデータ構造になります。
+</p>
+<pre>
+| 'S' | クラス名(Symbol) の dump | メンバの数(Fixnum形式) |
+| メンバ名(Symbol) の dump | 値 | ... |
+</pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">Struct</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">XXX</span><span class="s2">"</span>, <span class="ss">:foo</span>, <span class="ss">:bar</span><span class="p">)</span>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="no">Struct</span><span class="o">::</span><span class="no">XXX</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a ac a11 c aca3a aca3a</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;S&quot;, &quot;:&quot;, 16, &quot;Struct::XXX&quot;, 7,
+</span><span class="c1">#     &quot;:&quot;, 8, &quot;foo&quot;, &quot;0&quot;,
+</span><span class="c1">#     &quot;:&quot;, 8, &quot;bar&quot;, &quot;0&quot;]
+</span></code></pre>
+<h2 >Class/Module (old format)</h2>
+<p>
+'M' で始まるデータ構造です。
+</p>
+<pre>
+| 'M' | 長さ(Fixnum形式) | モジュール/クラス名 |
+</pre>
+<p>
+今ではこの形式を dump することはできないので load で例を示しています。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Mod</span>
+<span class="k">end</span>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="p">[</span><span class="mi">4</span>,<span class="mi">7</span>, <span class="s1">'M'</span>, <span class="mi">3</span><span class="o">+</span><span class="mi">5</span>, <span class="s1">'Mod'</span><span class="p">]</span><span class="p">.</span><span class="nf">pack</span><span class="p">(</span><span class="s2">"</span><span class="s2">ccaca*</span><span class="s2">"</span><span class="p">)</span><span class="p">)</span>
+<span class="c1"># =&gt; Mod
+</span></code></pre>
+<h2 id='class_module'>Class/Module</h2>
+<p>
+'c', 'm' で始まるデータ構造です。
+</p>
+<pre>
+| 'c'/'m' | クラス名の長さ(Fixnum 形式) | クラス名 |
+</pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+<span class="k">end</span>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="no">Foo</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a c a*</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; [&quot;c&quot;, 8, &quot;Foo&quot;]
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例 2: クラス/モジュールのインスタンス変数は dump されない</span>
+<code>
+<span class="k">module</span> <span class="nn">Bar</span>
+  <span class="vi">@bar</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="k">end</span>
+<span class="nb">p</span> <span class="no">Bar</span><span class="p">.</span><span class="nf">instance_eval</span> <span class="p">{</span> <span class="vi">@bar</span> <span class="p">}</span> <span class="c1"># =&gt; 1
+</span><span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s1">'testfile'</span>, <span class="s1">'wb'</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="no">Bar</span>, f<span class="p">)</span>
+<span class="k">end</span>
+
+<span class="c1"># 別プログラム相当にするため remove_const
+</span><span class="no">Object</span><span class="p">.</span><span class="nf">send</span> <span class="ss">:remove_const</span>, <span class="ss">:Bar</span>
+
+<span class="k">module</span> <span class="nn">Bar</span>
+<span class="k">end</span>
+
+<span class="nb">p</span> bar <span class="o">=</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="no">File</span><span class="p">.</span><span class="nf">binread</span><span class="p">(</span><span class="s1">'testfile'</span><span class="p">)</span><span class="p">)</span>
+<span class="nb">p</span> bar<span class="p">.</span><span class="nf">instance_eval</span> <span class="p">{</span> <span class="vi">@bar</span> <span class="p">}</span>
+<span class="c1"># =&gt; nil
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例 3: クラス変数は dump されない</span>
+<code>
+<span class="k">module</span> <span class="nn">Baz</span>
+  <span class="vc">@@baz</span> <span class="o">=</span> <span class="mi">1</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="p">.</span><span class="nf">baz</span>
+    <span class="vc">@@baz</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="nf">p</span> <span class="no">Baz</span><span class="p">.</span><span class="nf">baz</span>
+<span class="c1"># =&gt; 1
+</span><span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s1">'testfile'</span>, <span class="s1">'wb'</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="no">Baz</span>, f<span class="p">)</span>
+<span class="k">end</span>
+
+<span class="c1"># 別プログラム相当にするため remove_const
+</span><span class="no">Object</span><span class="p">.</span><span class="nf">send</span> <span class="ss">:remove_const</span>, <span class="ss">:Baz</span>
+
+<span class="k">module</span> <span class="nn">Baz</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="p">.</span><span class="nf">baz</span>
+    <span class="vc">@@baz</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="nf">p</span> baz <span class="o">=</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="no">File</span><span class="p">.</span><span class="nf">binread</span><span class="p">(</span><span class="s1">'testfile'</span><span class="p">)</span><span class="p">)</span>
+<span class="c1"># =&gt; Baz
+</span>baz<span class="p">.</span><span class="nf">baz</span>
+<span class="c1"># =&gt; uninitialized class variable @@baz in Baz (NameError)
+</span></code></pre>
+<h2 >Symbol</h2>
+<p>
+':' で始まるデータ構造になります。
+</p>
+<pre>
+| ':' | シンボル名の長さ(Fixnum形式) | シンボル名 |
+</pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a c a*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;:&quot;, 8, &quot;foo&quot;]
+</span></code></pre>
+<h2 >Symbol (link)</h2>
+<p>
+';' で始まるデータ構造は、対応するシンボル名が既に
+dump/load されている場合に使用されます。番号は内部管理のもので、dump/load 時に Symbol 管理用にハッシュテーブルが作られていて、そのレコード位置です。
+</p>
+<pre>
+| ';' | Symbolの実体を指す番号(Fixnum形式) |
+</pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="p">[</span><span class="ss">:foo</span>, <span class="ss">:foo</span><span class="p">]</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 ac aca3 aC*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;[&quot;, 7, &quot;:&quot;, 8, &quot;foo&quot;, &quot;;&quot;, 0]
+</span>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="p">[</span><span class="ss">:foo</span>, <span class="ss">:foo</span>, <span class="ss">:bar</span>, <span class="ss">:bar</span><span class="p">]</span><span class="p">)</span><span class="p">.</span>
+    <span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 ac aca3 aC aca3 aC*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;[&quot;, 9, &quot;:&quot;, 8, &quot;foo&quot;, &quot;;&quot;, 0, &quot;:&quot;, 8, &quot;bar&quot;, &quot;;&quot;, 6]
+</span></code></pre>
+<h2 id='instance_variable'>instance variable</h2>
+<p>
+インスタンス変数を持つ Object, Class, Module のインスタンス以外は
+'I' で始まるデータ構造になります。
+</p>
+<pre>
+| 'I' | オブジェクトの dump | インスタンス変数の数(Fixnum形式) |
+| インスタンス変数名(Symbol) のdump(1) | 値(1) |
+          :
+          :
+| インスタンス変数名(Symbol) のdump(n) | 値(n) |
+</pre>
+<p>
+Object のインスタンスはそれ自身がインスタンス変数を含む構造を持つので別形式で dump されます。
+(<a href="../doc/marshal_format.html#Object">Marshal フォーマット/Object</a> 参照)
+</p>
+<p>
+この形式は、Array や String のインスタンス用です。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+obj <span class="o">=</span> <span class="no">String</span><span class="p">.</span><span class="nf">new</span>
+obj<span class="p">.</span><span class="nf">instance_eval</span> <span class="p">{</span> <span class="vi">@foo</span> <span class="o">=</span> <span class="ss">:bar</span> <span class="p">}</span>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span>obj<span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 a ac c a c a4 aca*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;I&quot;, &quot;\&quot;&quot;, 0, 6, &quot;:&quot;, 9, &quot;@foo&quot;, &quot;:&quot;, 8, &quot;bar&quot;]
+</span></code></pre>
+<p>
+クラスやモジュール(Class/Module のインスタンス)は、インスタンス変数の情報を dump しません。
+(<a href="../doc/marshal_format.html#class_module">Marshal フォーマット/Class/Module</a> 参照)
+</p>
+<h2 >link</h2>
+<p>
+'@' で始まるデータ構造は、対応するオブジェクトが既に
+dump/load されている場合に使用されます。番号は内部管理のもので、dump/load 時にオブジェクト管理用にハッシュテーブルが作られていて、そのレコード位置です。
+</p>
+<pre>
+| '@' | オブジェクトの実体を指す番号(Fixnum形式) |
+</pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+obj <span class="o">=</span> <span class="no">Object</span><span class="p">.</span><span class="nf">new</span>
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="p">[</span>obj, obj<span class="p">]</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 ac aaca6c aca*</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;[&quot;, 7, &quot;o&quot;, &quot;:&quot;, 11, &quot;Object&quot;, 0, &quot;@&quot;, 6, &quot;&quot;]
+</span>
+ary <span class="o">=</span> <span class="p">[</span><span class="p">]</span>
+ary<span class="p">.</span><span class="nf">push</span> ary
+<span class="nb">p</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span>ary<span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s2">"</span><span class="s2">x2 acac</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; [&quot;[&quot;, 6, &quot;@&quot;, 0]
+</span></code></pre>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

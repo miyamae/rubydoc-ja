@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Object#initialize_copy (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="(拡張ライブラリによる) ユーザ定義クラスのオブジェクトコピーの初期化メソッド。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-object.html">Objectクラス</a>
+      </li>
+      <li>
+        initialize_copy (private)
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Object#initialize_copy</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_INITIALIZE_COPY"><code>initialize_copy(obj) -&gt; object</code><span class="permalink">[<a href="../../../method/-object/i/initialize_copy.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Object.html#method-i-initialize_copy">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+(拡張ライブラリによる) ユーザ定義クラスのオブジェクトコピーの初期化メソッド。
+</p>
+<p>
+このメソッドは self を obj の内容で置き換えます。ただし、self のインスタンス変数や特異メソッドは変化しません。
+<a href="../../../method/-object/i/clone.html">Object#clone</a>, <a href="../../../method/-object/i/dup.html">Object#dup</a>の内部で使われています。
+</p>
+<p>
+initialize_copy は、Ruby インタプリタが知り得ない情報をコピーするために使用(定義)されます。例えば C 言語でクラスを実装する場合、情報をインスタンス変数に保持させない場合がありますが、そういった内部情報を initialize_copy でコピーするよう定義しておくことで、dup や clone
+を再定義する必要がなくなります。
+</p>
+<p>
+デフォルトの Object#initialize_copy は、 freeze チェックおよび型のチェックを行い self
+を返すだけのメソッドです。
+</p>
+<p>
+initialize_copy という名前のメソッドは自動的に private に設定されます。
+</p>
+<dl>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+レシーバが freeze されているか、obj のクラスがレシーバのクラスと異なる場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-object/i/clone.html">Object#clone</a>,<a href="../../../method/-object/i/dup.html">Object#dup</a>
+</p>
+<p>
+以下に例として、dup や clone がこのメソッドをどのように利用しているかを示します。
+</p>
+<p>
+obj.dup は、新たに生成したオブジェクトに対して
+initialize_copy を呼び
+</p>
+<pre class="highlight ruby">
+<code>
+obj2 <span class="o">=</span> obj<span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">allocate</span>
+obj2<span class="p">.</span><span class="nf">initialize_copy</span><span class="p">(</span>obj<span class="p">)</span>
+</code></pre>
+<p>
+obj2 に対してさらに obj の汚染状態、インスタンス変数、ファイナライザをコピーすることで複製を作ります。 obj.clone は、さらに特異メソッドのコピーも行います。
+</p>
+<pre class="highlight ruby">
+<code>
+obj <span class="o">=</span> <span class="no">Object</span><span class="p">.</span><span class="nf">new</span>
+<span class="k">class</span> <span class="o">&lt;&lt;</span>obj
+  <span class="nb">attr_accessor</span> <span class="ss">:foo</span>
+  <span class="k">def</span> <span class="nf">bar</span>
+    <span class="ss">:bar</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">check</span><span class="p">(</span>obj<span class="p">)</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">instance variables: </span><span class="si">#{</span><span class="n">obj</span><span class="p">.</span><span class="nf">inspect</span><span class="si">}</span><span class="s2">"</span>
+  <span class="nb">puts</span> <span class="s2">"</span><span class="s2">tainted?: </span><span class="si">#{</span><span class="n">obj</span><span class="p">.</span><span class="nf">tainted?</span><span class="si">}</span><span class="s2">"</span>
+  <span class="nb">print</span> <span class="s2">"</span><span class="s2">singleton methods: </span><span class="s2">"</span>
+  <span class="k">begin</span>
+    <span class="nb">p</span> obj<span class="p">.</span><span class="nf">bar</span>
+  <span class="k">rescue</span> <span class="no">NameError</span>
+    <span class="nb">p</span> <span class="vg">$!</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+obj<span class="p">.</span><span class="nf">foo</span> <span class="o">=</span> <span class="mi">1</span>
+obj<span class="p">.</span><span class="nf">taint</span>
+
+check <span class="no">Object</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="ss">:initialize_copy</span>, obj<span class="p">)</span>
+        <span class="c1">#=&gt; instance variables: #&lt;Object:0x4019c9d4&gt;
+</span>        <span class="c1">#   tainted?: false
+</span>        <span class="c1">#   singleton methods: #&lt;NoMethodError: ...&gt;
+</span>check obj<span class="p">.</span><span class="nf">dup</span>
+        <span class="c1">#=&gt; instance variables: #&lt;Object:0x4019c9c0 @foo=1&gt;
+</span>        <span class="c1">#   tainted?: true
+</span>        <span class="c1">#   singleton methods: #&lt;NoMethodError: ...&gt;
+</span>check obj<span class="p">.</span><span class="nf">clone</span>
+        <span class="c1">#=&gt; instance variables: #&lt;Object:0x4019c880 @foo=1&gt;
+</span>        <span class="c1">#   tainted?: true
+</span>        <span class="c1">#   singleton methods: :bar
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

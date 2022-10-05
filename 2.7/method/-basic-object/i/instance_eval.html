@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>BasicObject#instance_eval (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="オブジェクトのコンテキストで文字列 expr またはオブジェクト自身をブロックパラメータとするブロックを
+評価してその結果を返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-basic-object.html">BasicObjectクラス</a>
+      </li>
+      <li>
+        instance_eval 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method BasicObject#instance_eval</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_INSTANCE_EVAL"><code>instance_eval(expr, filename = &quot;(eval)&quot;, lineno = 1) -&gt; object</code><span class="permalink">[<a href="../../../method/-basic-object/i/instance_eval.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/BasicObject.html#method-i-instance_eval">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>instance_eval {|obj| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+オブジェクトのコンテキストで文字列 expr またはオブジェクト自身をブロックパラメータとするブロックを評価してその結果を返します。
+</p>
+<p>
+オブジェクトのコンテキストで評価するとは評価中の self をそのオブジェクトにして実行するということです。また、文字列 expr やブロック中でメソッドを定義すればそのオブジェクトの特異メソッドが定義されます。
+</p>
+<p>
+ただし、ローカル変数だけは、文字列 expr の評価では instance_eval の外側のスコープと、ブロックの評価ではそのブロックの外側のスコープと、共有します。
+</p>
+<p>
+メソッド定義の中で instance_eval でメソッドを定義した場合は、囲むメソッドが実行されたときに初めて instance_eval 内のメソッドが定義されます。これはメソッド定義のネストと同じです。
+<a href="../../../doc/spec=2fdef.html#nest_method">クラス／メソッドの定義/メソッド定義のネスト</a> を参照してください。
+</p>
+<p>
+BasicObject を継承して作ったクラス内で instance_eval する場合はトップレベルの定数や Kernel モジュールに定義されているメソッドは見えません。これは、トップレベルの定数が Object 以下に作成されるためです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] expr:</dt>
+<dd>
+評価する文字列です。
+</dd>
+<dt class='method-param'>[PARAM] filename:</dt>
+<dd>
+文字列を指定します。ファイル filename に文字列 expr が書かれているかのように実行されます。スタックトレースの表示などを差し替えることができます。
+</dd>
+<dt class='method-param'>[PARAM] lineno:</dt>
+<dd>
+整数を指定します。行番号 lineno から文字列 expr が書かれているかのように実行されます。スタックトレースの表示などを差し替えることができます。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">initialize</span> data
+    <span class="vi">@key</span> <span class="o">=</span> data
+  <span class="k">end</span>
+  private
+  <span class="k">def</span> <span class="nf">do_fuga</span>
+    <span class="nb">p</span> <span class="s1">'secret'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+some <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span> <span class="s1">'XXX'</span>
+some<span class="p">.</span><span class="nf">instance_eval</span><span class="p">{</span><span class="nb">p</span> <span class="vi">@key</span><span class="p">}</span> <span class="c1">#=&gt; &quot;XXX&quot;
+</span>some<span class="p">.</span><span class="nf">instance_eval</span><span class="p">{</span>do_fuga <span class="p">}</span> <span class="c1">#=&gt; &quot;secret&quot; # private メソッドも呼び出せる
+</span>
+some<span class="p">.</span><span class="nf">instance_eval</span> <span class="s1">'raise'</span> <span class="c1"># ..:10: (eval):1:  (RuntimeError)
+</span>messg <span class="o">=</span> <span class="s1">'unknown'</span>
+some<span class="p">.</span><span class="nf">instance_eval</span> <span class="s1">'raise messg'</span>,<span class="s1">'file.rb'</span>,<span class="mi">999</span> <span class="c1"># file.rb:999: unknown (RuntimeError)
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span> <span class="o">&lt;</span> <span class="no">BasicObject</span>
+  <span class="k">def</span> <span class="nf">call1</span>
+    <span class="nb">instance_eval</span><span class="p">(</span><span class="s2">"</span><span class="s2">::ENV.class</span><span class="s2">"</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">call2</span>
+    <span class="nb">instance_eval</span><span class="p">(</span><span class="s2">"</span><span class="s2">ENV.class</span><span class="s2">"</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+bar <span class="o">=</span> <span class="no">Bar</span><span class="p">.</span><span class="nf">new</span>
+bar<span class="p">.</span><span class="nf">call1</span> <span class="c1"># =&gt; Object
+</span>bar<span class="p">.</span><span class="nf">call2</span> <span class="c1"># raise NameError
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-module/i/module_eval.html">Module#module_eval</a>, <a href="../../../method/-kernel/m/eval.html">Kernel.#eval</a>, <a href="../../../method/-basic-object/i/instance_exec.html">BasicObject#instance_exec</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

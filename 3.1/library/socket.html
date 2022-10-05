@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>library socket (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="socket はプロセス外部との通信 (プロセス間通信、ホスト間通信) を実現します。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        socketライブラリ
+      </li>
+    </ol>
+  </nav>
+
+<h1>library socket</h1>
+</header>
+
+<main>
+
+
+
+<h2>要約</h2>
+<p>
+socket はプロセス外部との通信 (プロセス間通信、ホスト間通信) を実現します。
+</p>
+<h2 >ソケットアドレス</h2>
+<p>
+ソケットというのは通信路の末端です。たとえば 1対1 の通信では、まず通信路の両端にひとつずつソケットをつくり、それらのソケットを接続することによって通信路が確立し、相互に通信できるようになります。この接続時に、一方のソケットにもう一方のソケットの場所を教えてやる必要がありますが、この場所を指定するものがソケットアドレスです。
+</p>
+<p>
+ソケットアドレスはソケットの種類によって中身が異なります。たとえば TCP では IP アドレスとポート番号ですし、
+Unix ドメインソケットではソケットファイルを指すパス名です。
+</p>
+<p>
+ソケットアドレスを取り扱うための便利で高水準なクラスとして <a href="../class/-addrinfo.html">Addrinfo</a> があります。
+</p>
+<p>
+<a href="../class/-i-p-socket.html">IPSocket</a> および <a href="../class/-u-n-i-x-socket.html">UNIXSocket</a> 以下のクラス階層では、わざわざソケットアドレスという形式にまとめなくてもよいよう、ソケットアドレスの中身を直接扱えるメソッドが用意されています。
+</p>
+<p>
+また、<a href="../class/-i-p-socket.html">IPSocket</a> 以下での IP アドレスとポート番号の指定は、数値で表現するだけでなく、ホスト名やサービス名が使えます。これについては以下の「ホスト指定形式」と「サービス指定形式」を参照してください。
+</p>
+<p>
+また、C のレベルの「ソケットアドレス構造体を pack した文字列」も使用できます。これは主に低レベルソケットインターフェース (<a href="../class/-socket.html">Socket</a>) で用いられます。
+</p>
+<h3 id='host_format'>ホスト指定形式</h3>
+<p>
+AF_INET なソケットにおいてホストを指定するには以下のいずれかの形式を指定します。
+</p>
+<ul>
+<li>ホスト名 (例: &quot;localhost&quot;)</li>
+<li>octet decimalによるIPアドレス(文字列) (例: &quot;127.0.0.1&quot;)</li>
+<li>空文字列 (&quot;&quot;), 文字列 &quot;&lt;any&gt;&quot; - INADDR_ANYに相当</li>
+<li>文字列 &quot;::&quot; - IN6ADDR_ANY_INIT に相当</li>
+<li>文字列 &quot;&lt;broadcast&gt;&quot; - INADDR_BROADCASTに相当</li>
+<li>IPアドレスを表す 32bit の整数 (例: 0x7f000001)</li>
+</ul>
+<h3 id='service_format'>サービス指定形式</h3>
+<p>
+サービスを指定するには以下のいずれかの形式を指定します。
+</p>
+<ul>
+<li>ポート番号(整数または文字列) (例: 21, &quot;21&quot;)</li>
+<li>サービス名 (例: &quot;ftp&quot;)</li>
+</ul>
+<h3 id='pack_string'>ソケットアドレス構造体を pack した文字列</h3>
+<p>
+ソケットアドレス構造体とは、C 言語の構造体 struct sockaddr_in (IPv4)
+や struct sockaddr_un (Unix ドメイン)を指します。
+<a href="../class/-socket.html">Socket</a> クラスなどソケットの低レベルインタフェースで利用されます。
+</p>
+<p>
+<a href="../method/-socket/s/pack_sockaddr_in.html">Socket.pack_sockaddr_in</a>,
+<a href="../method/-socket/s/unpack_sockaddr_in.html">Socket.unpack_sockaddr_in</a> といったメソッドにより、例えば、以下のようにしてこの文字列を得ることが出来ます
+</p>
+<pre>
+require 'socket'
+p Socket.pack_sockaddr_in(&quot;echo&quot;, &quot;127.0.0.1&quot;)
+=&gt; &quot;\002\000\000\a\177\000\000\001\000\000\000\000\000\000\000\000&quot;
+</pre>
+<h2 >ホスト名と IP アドレスの変換</h2>
+<p>
+ホスト名から IP アドレスへの変換 (正引き) を行うメソッドは以下のものが用意されています。
+</p>
+<ul>
+<li><a href="../method/-addrinfo/s/getaddrinfo.html">Addrinfo.getaddrinfo</a>(&quot;www.ruby-lang.org&quot;, &quot;http&quot;) =&gt;  [#&lt;Addrinfo: 221.186.184.68:80 TCP (www.ruby-lang.org:http)&gt;]</li>
+<li><a href="../method/-i-p-socket/s/getaddress.html">IPSocket.getaddress</a>(&quot;www.ruby-lang.org&quot;) =&gt; &quot;210.163.138.100&quot;</li>
+<li><a href="../method/-t-c-p-socket/s/gethostbyname.html">TCPSocket.gethostbyname</a>(&quot;www.ruby-lang.org&quot;) =&gt; [&quot;beryllium.ruby-lang.org&quot;, [], 2, &quot;210.163.138.100&quot;]</li>
+<li><a href="../method/-socket/s/gethostbyname.html">Socket.gethostbyname</a>(&quot;www.ruby-lang.org&quot;) =&gt; [&quot;beryllium.ruby-lang.org&quot;, [], 2, &quot;\322\243\212d&quot;]</li>
+<li><a href="../method/-socket/s/getaddrinfo.html">Socket.getaddrinfo</a>(&quot;www.ruby-lang.org&quot;, &quot;http&quot;) =&gt; [[&quot;AF_INET&quot;, 80, &quot;beryllium.ruby-lang.org&quot;, &quot;210.163.138.100&quot;, 2, 1, 6]]</li>
+</ul>
+<p>
+逆に IP アドレスからホスト名への変換 (逆引き) を行うメソッドは以下のものが用意されています。
+</p>
+<ul>
+<li><a href="../method/-socket/s/getnameinfo.html">Socket.getnameinfo</a>([nil, nil, nil, &quot;210.163.138.100&quot;]) =&gt; [&quot;beryllium.ruby-lang.org&quot;, 0]</li>
+<li><a href="../method/-addrinfo/i/getnameinfo.html">Addrinfo#getnameinfo</a> Addrinfo.ip(&quot;127.0.0.1&quot;).getnameinfo =&gt; [&quot;localhost&quot;, &quot;0&quot;]</li>
+</ul>
+<p>
+また、<a href="../library/resolv.html">resolv</a> ライブラリも使用できます。
+</p>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-addrinfo.html">Addrinfo</a>
+</td>
+<td class="description"><p>
+ソケットのアドレス情報を保持するクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-socket=3a=3a-ancillary-data.html">Socket::AncillaryData</a>
+</td>
+<td class="description"><p>
+<a href="../method/-basic-socket/i/sendmsg.html">BasicSocket#sendmsg</a> や <a href="../method/-basic-socket/i/recvmsg.html">BasicSocket#recvmsg</a>
+で用いる ancillary data (補助データ、制御情報)
+を表すクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-socket=3a=3a-option.html">Socket::Option</a>
+</td>
+<td class="description"><p>
+<a href="../method/-basic-socket/i/getsockopt.html">BasicSocket#getsockopt</a>、<a href="../method/-basic-socket/i/setsockopt.html">BasicSocket#setsockopt</a> で使うソケットオプションの値を表すクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-socket=3a=3a-u-d-p-source.html">Socket::UDPSource</a>
+</td>
+<td class="description"><p>
+<a href="../method/-socket/s/udp_server_loop.html">Socket.udp_server_loop</a> で使われるアドレス情報を保持するクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-basic-socket.html">BasicSocket</a>
+</td>
+<td class="description"><p>
+ソケットを表す抽象クラスです。具体的なソケット操作はサブクラスで定義されます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-i-p-socket.html">IPSocket</a>
+</td>
+<td class="description"><p>
+インターネットドメインソケットの抽象クラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-t-c-p-socket.html">TCPSocket</a>
+</td>
+<td class="description"><p>
+インターネットドメインのストリーム型ソケットのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 3.0em;">
+<span style="display:none">&nbsp;&nbsp;&nbsp;</span>
+<a href="../class/-s-o-c-k-s-socket.html">SOCKSSocket</a>
+</td>
+<td class="description"><p>
+<a href="../class/-t-c-p-socket.html">TCPSocket</a> を SOCKS(<a class="external" href="http://www.sw.nec.co.jp/middle/socks/">http://www.sw.nec.co.jp/middle/socks/</a>) 対応したクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 3.0em;">
+<span style="display:none">&nbsp;&nbsp;&nbsp;</span>
+<a href="../class/-t-c-p-server.html">TCPServer</a>
+</td>
+<td class="description"><p>
+TCP/IP ストリーム型接続のサーバ側のソケットのクラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-u-d-p-socket.html">UDPSocket</a>
+</td>
+<td class="description"><p>
+UDP/IPデータグラム型ソケットのクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-socket.html">Socket</a>
+</td>
+<td class="description"><p>
+汎用ソケットクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-u-n-i-x-socket.html">UNIXSocket</a>
+</td>
+<td class="description"><p>
+UNIX ドメインのストリーム型ソケットのクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 2.0em;">
+<span style="display:none">&nbsp;&nbsp;</span>
+<a href="../class/-u-n-i-x-server.html">UNIXServer</a>
+</td>
+<td class="description"><p>
+UNIXストリーム型接続のサーバ側のソケットのクラス。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-socket=3a=3a-ifaddr.html">Socket::Ifaddr</a>
+</td>
+<td class="description"><p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/getifaddrs.html">getifaddrs(3)</a> の結果を表すクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>モジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-socket=3a=3a-constants.html">Socket::Constants</a>
+</td>
+<td class="description"><p>
+ソケット操作の指定のための定数を定義したモジュール。このモジュールをインクルードすれば、定数 (AF_INETなど) を直接参照できます。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-socket-error.html">SocketError</a>
+</td>
+<td class="description"><p>
+<a href="../library/socket.html">socket</a> ライブラリに関する例外クラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

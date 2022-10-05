@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Fiddle::Importer#bind (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="これでインポートされた関数はモジュール関数として定義されます。
+また、[[m:Fiddle::Importer#[] ]] で [[c:Fiddle::Function]] オブジェクトとして
+取り出すことができます。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/fiddle=2fimport.html">fiddle/importライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-fiddle=3a=3a-importer.html">Fiddle::Importerモジュール</a>
+      </li>
+      <li>
+        bind 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Fiddle::Importer#bind</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_BIND"><code>bind(signature, *opts) { ... } -&gt; Fiddle::Function</code><span class="permalink">[<a href="../../../method/-fiddle=3a=3a-importer/i/bind.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/Fiddle/Importer.html#method-i-bind">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Ruby のブロックを C の関数で wrap し、その関数をモジュールにインポートします。
+</p>
+<p>
+これでインポートされた関数はモジュール関数として定義されます。また、<a href="../../../method/-fiddle=3a=3a-importer/i/=5b=5d.html">Fiddle::Importer#[]</a> で <a href="../../../class/-fiddle=3a=3a-function.html">Fiddle::Function</a> オブジェクトとして取り出すことができます。
+</p>
+<p>
+signature で関数の名前とシネグチャを指定します。例えば
+&quot;int compare(void*, void*)&quot; のように指定します。
+</p>
+<p>
+opts には :stdcall もしくは :cdecl を渡すことができ、呼出規約を明示することができます。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+インポートした関数を表す <a href="../../../class/-fiddle=3a=3a-function.html">Fiddle::Function</a> オブジェクトを返します。
+</dd>
+<dt class='method-param'>[PARAM] signature:</dt>
+<dd>
+関数の名前とシネグチャ
+</dd>
+<dt class='method-param'>[PARAM] opts:</dt>
+<dd>
+オプション
+</dd>
+</dl>
+<p>
+例
+</p>
+<pre>
+require 'fiddle/import'
+
+module M
+  extend Fiddle::Importer
+  dlload &quot;libc.so.6&quot;
+  typealias &quot;size_t&quot;, &quot;unsigned long&quot;
+  extern &quot;int qsort(void*, size_t, size_t, void*)&quot;
+
+  bind(&quot;int compare(void*, void*)&quot;){|px, py|
+    x = px.to_s(Fiddle::SIZEOF_INT).unpack(&quot;i!&quot;)
+    y = py.to_s(Fiddle::SIZEOF_INT).unpack(&quot;i!&quot;)
+
+    x &lt;=&gt; y
+  }
+end
+
+data = [32, 180001, -13, -1, 0, 49].pack(&quot;i!*&quot;)
+M.qsort(Fiddle::Pointer[data], 6, Fiddle::SIZEOF_INT, M[&quot;compare&quot;])
+p data.unpack(&quot;i!*&quot;) # =&gt; [-13, -1, 0, 32, 49, 180001]
+</pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

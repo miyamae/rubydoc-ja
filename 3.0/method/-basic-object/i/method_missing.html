@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>BasicObject#method_missing (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="呼びだされたメソッドが定義されていなかった時、Rubyインタプリタがこのメソッド
+を呼び出します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-basic-object.html">BasicObjectクラス</a>
+      </li>
+      <li>
+        method_missing (private)
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method BasicObject#method_missing</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_METHOD_MISSING"><code>method_missing(name, *args) -&gt; object</code><span class="permalink">[<a href="../../../method/-basic-object/i/method_missing.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/BasicObject.html#method-i-method_missing">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+呼びだされたメソッドが定義されていなかった時、Rubyインタプリタがこのメソッドを呼び出します。
+</p>
+<p>
+呼び出しに失敗したメソッドの名前 (<a href="../../../class/-symbol.html">Symbol</a>) が name にその時の引数が第二引数以降に渡されます。
+</p>
+<p>
+デフォルトではこのメソッドは例外 <a href="../../../class/-no-method-error.html">NoMethodError</a> を発生させます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+未定義メソッドの名前（シンボル）です。
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+未定義メソッドに渡された引数です。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+ユーザー定義の method_missing メソッドの返り値が未定義メソッドの返り値であるかのように見えます。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span>data<span class="p">)</span>
+    <span class="vi">@data</span> <span class="o">=</span> data
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">method_missing</span><span class="p">(</span><span class="nb">name</span>, lang<span class="p">)</span>
+    <span class="k">if</span> <span class="nb">name</span><span class="p">.</span><span class="nf">to_s</span> <span class="o">=~</span> <span class="sr">/\Afind_(\d+)_in\z/</span>
+      <span class="k">if</span> <span class="vi">@data</span><span class="p">[</span>lang<span class="p">]</span>
+        <span class="nb">p</span> <span class="vi">@data</span><span class="p">[</span>lang<span class="p">]</span><span class="p">[</span><span class="vg">$1</span><span class="p">.</span><span class="nf">to_i</span><span class="p">]</span>
+      <span class="k">else</span>
+        <span class="nb">raise</span> <span class="s2">"</span><span class="si">#{</span><span class="n">lang</span><span class="si">}</span><span class="s2"> unknown</span><span class="s2">"</span>
+      <span class="k">end</span>
+    <span class="k">else</span>
+      <span class="k">super</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+dic <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="p">{</span><span class="ss">:English</span> <span class="o">=&gt;</span> <span class="sx">%w(zero one two)</span>, <span class="ss">:Esperanto</span> <span class="o">=&gt;</span> <span class="sx">%w(nulo unu du)</span><span class="p">}</span><span class="p">)</span>
+dic<span class="p">.</span><span class="nf">find_2_in</span> <span class="ss">:Esperanto</span> <span class="c1">#=&gt; &quot;du&quot;
+</span></code></pre>
+<p>
+[注意] このメソッドを override する場合は対象のメソッド名に対して
+<a href="../../../method/-object/i/respond_to=3f.html">Object#respond_to?</a> が真を返すようにしてください。そのためには、<a href="../../../method/-object/i/respond_to_missing=3f.html">Object#respond_to_missing?</a> も同様に override する必要があります。
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-object/i/respond_to=3f.html">Object#respond_to?</a>, <a href="../../../method/-object/i/respond_to_missing=3f.html">Object#respond_to_missing?</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

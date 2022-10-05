@@ -29,7 +29,7 @@ Find.find(html_dir) do |file|
 
   if file !~ /\/(function|doc)\// && FileTest.file?(file) && File.extname(file) == '.html'
     html = File.read(file)
-    item = {:path=>file.gsub(/^.*[1-2]\.[0-9]\.[0-9]/, ''), :key=>''}
+    item = {:path=>file.gsub(/^.*[1-3]\.[0-9]{1,2}\.[0-9]{1,2}/, ''), :key=>''}
     id += 1
 
     # method

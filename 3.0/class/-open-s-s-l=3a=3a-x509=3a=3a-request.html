@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class OpenSSL::X509::Request (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="X.509 の証明書署名要求(Certificate Signing Request, CSR)を表わす
+クラスです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/openssl.html">opensslライブラリ</a>
+      </li>
+      <li>
+        OpenSSL::X509::Requestクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class OpenSSL::X509::Request</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+      <li>
+        OpenSSL::X509::Request
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+X.509 の証明書署名要求(Certificate Signing Request, CSR)を表わすクラスです。
+</p>
+<p>
+X.509 CSR については <a class="external" href="https://tools.ietf.org/html/rfc2986">[RFC2986]</a> などを参照してください。
+</p>
+<h2 >例</h2>
+<p>
+CSR を生成する例。
+</p>
+<pre>
+require 'openssl'
+# ファイルから秘密鍵を読み込む
+rsa = OpenSSL::PKey::RSA.new(File.read(&quot;privkey.pem&quot;))
+# 新しい CSR オブジェクトを生成
+csr = OpenSSL::X509::Request.new
+# DN を生成
+name = OpenSSL::X509::Name.new
+name.add_entry('C', 'JP')
+name.add_entry('ST', 'Osaka')
+name.add_entry('CN', 'Example Name')
+csr.subject = name
+# バージョンを 0 (v1.7) に
+csr.version = 0
+# 公開鍵を CSR に設定
+csr.public_key = rsa.public_key
+# attribute を設定
+factory = OpenSSL::X509::ExtensionFactory.new
+exts = [ factory.create_ext(&quot;subjectAltName&quot;, &quot;DNS:foo.example.com&quot;) ]
+asn1exts = OpenSSL::ASN1::Set([OpenSSL::ASN1::Sequence(exts)])
+csr.add_attribute(OpenSSL::X509::Attribute.new(&quot;extReq&quot;, asn1exts))
+# 署名
+csr.sign(rsa, &quot;sha1&quot;)
+# PEM 形式で標準出力に出力
+puts csr.to_pem
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_NEW">new</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_ADD_ATTRIBUTE">add_attribute</a></li>
+
+<li><a href="#I_ATTRIBUTES">attributes</a></li>
+
+<li><a href="#I_ATTRIBUTES--3D">attributes=</a></li>
+
+<li><a href="#I_PUBLIC_KEY">public_key</a></li>
+
+<li><a href="#I_PUBLIC_KEY--3D">public_key=</a></li>
+
+<li><a href="#I_SIGN">sign</a></li>
+
+<li><a href="#I_SIGNATURE_ALGORITHM">signature_algorithm</a></li>
+
+<li><a href="#I_SUBJECT">subject</a></li>
+
+<li><a href="#I_SUBJECT--3D">subject=</a></li>
+
+<li><a href="#I_TO_DER">to_der</a></li>
+
+<li><a href="#I_TO_PEM">to_pem</a></li>
+
+<li><a href="#I_TO_PEM">to_s</a></li>
+
+<li><a href="#I_TO_TEXT">to_text</a></li>
+
+<li><a href="#I_VERIFY">verify</a></li>
+
+<li><a href="#I_VERSION">version</a></li>
+
+<li><a href="#I_VERSION--3D">version=</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new -&gt; OpenSSL::X509::Request</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/s/new.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/X509/Request.html#method-c-new">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>new(obj) -&gt; OpenSSL::X509::Request</code></dt>
+<dd class="method-description">
+<p>
+新しい OpenSSL::X509::Request オブジェクトを生成します。
+</p>
+<p>
+引数なしの場合は空の OpenSSL::X509::Request オブジェクトを生成します。
+</p>
+<p>
+引数が文字列の場合は、PEM 形式もしくは DER 形式であるとみなしてオブジェクトを生成します。
+</p>
+<p>
+引数が <a href="../class/-i-o.html">IO</a> オブジェクトである場合は、そのファイルの中身からオブジェクトを生成します。
+</p>
+<p>
+引数が OpenSSL::X509::Request である場合には、その内容をコピーしたオブジェクトを生成します。
+</p>
+<p>
+引数が to_der メソッドを持つ場合は、そのメソッドによって
+DER 形式の文字列に変換してからオブジェクトを生成します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+CSR のデータ
+</dd>
+<dt>[EXCEPTION] OpenSSL::X509::RequestError:</dt>
+<dd>
+CSR のフォーマットが不正であるなど、読み込みに失敗した場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_ADD_ATTRIBUTE"><code>add_attribute(attr) -&gt; OpenSSL::X509::Attribute</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/add_attribute.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/X509/Request.html#method-i-add_attribute">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+新たな attribute を CSR に追加します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] attr:</dt>
+<dd>
+追加する attribute(<a href="../class/-open-s-s-l=3a=3a-x509=3a=3a-attribute.html">OpenSSL::X509::Attribute</a> のインスタンス)
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+渡した attribute オブジェクトを返します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/attribute.html">OpenSSL::X509::Request#attribute</a>,
+<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/attribute=3d.html">OpenSSL::X509::Request#attribute=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ATTRIBUTES"><code>attributes -&gt; [OpenSSL::X509::Attribute]</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/attributes.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/X509/Request.html#method-i-attributes">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+CSR が保持している attribute を <a href="../class/-open-s-s-l=3a=3a-x509=3a=3a-attribute.html">OpenSSL::X509::Attribute</a>
+の配列で返します。
+</p>
+<p>
+attribute とは X.509 証明書署名要求 に含まれる申請者に関する追加的な情報です。必須ではありません。X.509v3 拡張領域を
+CSR に含めるときは &quot;reqExt&quot; という oid の attribute を追加します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/attribute=3d.html">OpenSSL::X509::Request#attribute=</a>,
+<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/add_attribute.html">OpenSSL::X509::Request#add_attribute</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ATTRIBUTES--3D"><code>attributes=(attrs)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/attributes=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/X509/Request.html#method-i-attributes-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+CSR の attribute をクリアして新しい attribute を設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] attrs:</dt>
+<dd>
+新たに設定する attribute(<a href="../class/-open-s-s-l=3a=3a-x509=3a=3a-attribute.html">OpenSSL::X509::Attribute</a> のインスタンス)の配列
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/attribute.html">OpenSSL::X509::Request#attribute</a>
+<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/add_attribute.html">OpenSSL::X509::Request#add_attribute</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PUBLIC_KEY"><code>public_key -&gt; OpenSSL::PKey::PKey</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/public_key.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/X509/Request.html#method-i-public_key">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+申請者の公開鍵を返します。
+</p>
+<p>
+実際には <a href="../class/-open-s-s-l=3a=3a-p-key=3a=3a-p-key.html">OpenSSL::PKey::PKey</a> 自体のインスタンスでなく、そのサブクラスを返します。
+</p>
+<dl>
+<dt>[EXCEPTION] OpenSSL::X509::RequestError:</dt>
+<dd>
+公開鍵の取得に失敗した場合に発生します
+</dd>
+<dt>[EXCEPTION] OpenSSL::PKey::PKeyError:</dt>
+<dd>
+鍵の形式が不正であった場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_PUBLIC_KEY--3D"><code>public_key=(pkey)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/public_key=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/X509/Request.html#method-i-public_key-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+申請者の公開鍵を設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pkey:</dt>
+<dd>
+設定する公開鍵を <a href="../class/-open-s-s-l=3a=3a-p-key=3a=3a-p-key.html">OpenSSL::PKey::PKey</a> のサブクラスのインスタンスで渡します
+</dd>
+<dt>[EXCEPTION] OpenSSL::X509::RequestError:</dt>
+<dd>
+公開鍵の設定に失敗した場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_SIGN"><code>sign(key, digest) -&gt; self</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/sign.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/X509/Request.html#method-i-sign">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+証明書署名要求に秘密鍵で署名をします。
+</p>
+<p>
+通常、証明書署名要求は申請者の秘密鍵で署名されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+秘密鍵(<a href="../class/-open-s-s-l=3a=3a-p-key=3a=3a-p-key.html">OpenSSL::PKey::PKey</a> のサブクラスのオブジェクト)
+</dd>
+<dt class='method-param'>[PARAM] digest:</dt>
+<dd>
+ハッシュ関数を表す文字列(&quot;sha1&quot; など)
+</dd>
+<dt>[EXCEPTION] OpenSSL::X509::RequestError:</dt>
+<dd>
+署名に失敗した場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/verify.html">OpenSSL::X509::Request#verify</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SIGNATURE_ALGORITHM"><code>signature_algorithm -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/signature_algorithm.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/X509/Request.html#method-i-signature_algorithm">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+証明書署名要求の署名に使われているアルゴリズム名を文字列で返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SUBJECT"><code>subject -&gt; OpenSSL::X509::Name</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/subject.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/X509/Request.html#method-i-subject">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+証明書署名要求の申請者名を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] OpenSSL::X509::RequestError:</dt>
+<dd>
+名前の取得に失敗した場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/subject=3d.html">OpenSSL::X509::Request#subject=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SUBJECT--3D"><code>subject=(subject)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/subject=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/X509/Request.html#method-i-subject-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+証明書署名要求の申請者名を設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] subject:</dt>
+<dd>
+設定する名前を <a href="../class/-open-s-s-l=3a=3a-x509=3a=3a-name.html">OpenSSL::X509::Name</a> で渡します
+</dd>
+<dt>[EXCEPTION] OpenSSL::X509::RequestError:</dt>
+<dd>
+名前の設定に失敗した場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/subject.html">OpenSSL::X509::Request#subject</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_DER"><code>to_der -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/to_der.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/X509/Request.html#method-i-to_der">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+DER 形式の文字列に変換して返します。
+</p>
+<dl>
+<dt>[EXCEPTION] OpenSSL::X509::RequestError:</dt>
+<dd>
+変換に失敗した場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_PEM"><code>to_pem -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/to_pem.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/X509/Request.html#method-i-to_pem">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_s -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+PEM 形式の文字列に変換して返します。
+</p>
+<dl>
+<dt>[EXCEPTION] OpenSSL::X509::RequestError:</dt>
+<dd>
+変換に失敗した場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_TEXT"><code>to_text -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/to_text.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/X509/Request.html#method-i-to_text">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+人間が読める形式の文字列に変換して返します。
+</p>
+<dl>
+<dt>[EXCEPTION] OpenSSL::X509::RequestError:</dt>
+<dd>
+変換に失敗した場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_VERIFY"><code>verify(key) -&gt; bool</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/verify.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/X509/Request.html#method-i-verify">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+署名を検証します。
+</p>
+<p>
+検証に成功した場合には true を、失敗した場合には false を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+検証に利用する公開鍵(<a href="../class/-open-s-s-l=3a=3a-p-key=3a=3a-p-key.html">OpenSSL::PKey::PKey</a> のサブクラスのインスタンス)
+</dd>
+<dt>[EXCEPTION] OpenSSL::X509::RequestError:</dt>
+<dd>
+検証時にエラーが生じた場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/sign.html">OpenSSL::X509::Request#sign</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_VERSION"><code>version -&gt; Integer</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/version.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/X509/Request.html#method-i-version">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+バージョンを返します。
+</p>
+<p>
+PKCS#10 v1.7(<a class="external" href="https://tools.ietf.org/html/rfc2986">[RFC2986]</a>)では0を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/version=3d.html">OpenSSL::X509::Request#version=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_VERSION--3D"><code>version=(version)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/version=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/X509/Request.html#method-i-version-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+バージョンを設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] version:</dt>
+<dd>
+設定するバージョンの整数
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-x509=3a=3a-request/i/version.html">OpenSSL::X509::Request#version</a>
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

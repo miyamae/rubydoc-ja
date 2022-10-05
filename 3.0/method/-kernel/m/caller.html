@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Kernel.#caller (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="start 段上の呼び出し元の情報を [[m:$@]]
+の形式のバックトレース(文字列の配列)として返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-kernel.html">Kernelモジュール</a>
+      </li>
+      <li>
+        caller 
+      </li>
+    </ol>
+  </nav>
+
+<h1>module function Kernel.#caller</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_CALLER"><code>caller(start = 1) -&gt; [String] | nil</code><span class="permalink">[<a href="../../../method/-kernel/m/caller.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Kernel.html#method-c-caller">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>caller(start, length) -&gt; [String] | nil</code></dt>
+<dt class="method-heading"><code>caller(range) -&gt; [String] | nil</code></dt>
+<dd class="method-description">
+<p>
+start 段上の呼び出し元の情報を <a href="../../../method/-kernel/v/=40.html">$@</a>
+の形式のバックトレース(文字列の配列)として返します。
+</p>
+<p>
+トップレベルでは空の配列を返します。caller の戻り値を <a href="../../../method/-kernel/v/=40.html">$@</a> に代入することで例外の発生位置を設定できます。
+</p>
+<p>
+引数で指定した値が範囲外の場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] start:</dt>
+<dd>
+long の範囲を超えない正の整数でスタックレベルを指定します。
+</dd>
+<dt class='method-param'>[PARAM] length:</dt>
+<dd>
+取得するスタックの個数を指定します。
+</dd>
+<dt class='method-param'>[PARAM] range:</dt>
+<dd>
+取得したいスタックの範囲を示す <a href="../../../class/-range.html">Range</a> オブジェクトを指定します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/set_trace_func.html">Kernel.#set_trace_func</a>,<a href="../../../method/-kernel/m/raise.html">Kernel.#raise</a>,
+<a href="../../../method/-kernel/m/caller_locations.html">Kernel.#caller_locations</a>
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">foo</span>
+  <span class="nb">p</span> <span class="nb">caller</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+  <span class="nb">p</span> <span class="nb">caller</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  <span class="nb">p</span> <span class="nb">caller</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+  <span class="nb">p</span> <span class="nb">caller</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+  <span class="nb">p</span> <span class="nb">caller</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">bar</span>
+  foo
+<span class="k">end</span>
+
+bar
+
+<span class="c1">#=&gt; [&quot;-:2:in `foo'&quot;, &quot;-:10:in `bar'&quot;, &quot;-:13:in `&lt;main&gt;'&quot;]
+</span><span class="c1">#   [&quot;-:10:in `bar'&quot;, &quot;-:13:in `&lt;main&gt;'&quot;]
+</span><span class="c1">#   [&quot;-:13:in `&lt;main&gt;'&quot;]
+</span><span class="c1">#   []
+</span><span class="c1">#   nil
+</span></code></pre>
+<p>
+以下の関数は、caller の要素から [ファイル名, 行番号, メソッド名]
+を取り出して返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">parse_caller</span><span class="p">(</span>at<span class="p">)</span>
+  <span class="k">if</span> <span class="sr">/^(.+?):(\d+)(?::in `(.*)')?/</span> <span class="o">=~</span> at
+    file <span class="o">=</span> <span class="vg">$1</span>
+    line <span class="o">=</span> <span class="vg">$2</span><span class="p">.</span><span class="nf">to_i</span>
+    <span class="nb">method</span> <span class="o">=</span> <span class="vg">$3</span>
+    <span class="p">[</span>file, line, <span class="nb">method</span><span class="p">]</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">foo</span>
+  <span class="nb">p</span> parse_caller<span class="p">(</span><span class="nb">caller</span><span class="p">.</span><span class="nf">first</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">bar</span>
+  foo
+  <span class="nb">p</span> parse_caller<span class="p">(</span><span class="nb">caller</span><span class="p">.</span><span class="nf">first</span><span class="p">)</span>
+<span class="k">end</span>
+
+bar
+<span class="nb">p</span> parse_caller<span class="p">(</span><span class="nb">caller</span><span class="p">.</span><span class="nf">first</span><span class="p">)</span>
+
+<span class="c1">#=&gt; [&quot;-&quot;, 15, &quot;bar&quot;]
+</span><span class="c1">#   [&quot;-&quot;, 19, nil]
+</span><span class="c1">#   nil
+</span></code></pre>
+<p>
+以下は、<a href="../../../method/-kernel/v/-d-e-b-u-g.html">$DEBUG</a> が真の場合に役に立つ debug 関数のサンプルです。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="vg">$DEBUG</span> <span class="o">=</span> <span class="k">true</span>
+
+<span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="o">*</span>args<span class="p">)</span>
+  <span class="nb">p</span> <span class="p">[</span><span class="nb">caller</span><span class="p">.</span><span class="nf">first</span>, <span class="o">*</span>args<span class="p">]</span> <span class="k">if</span> <span class="vg">$DEBUG</span>
+<span class="k">end</span>
+
+debug <span class="s2">"</span><span class="s2">debug information</span><span class="s2">"</span>
+
+<span class="c1">#=&gt; [&quot;-:7&quot;, &quot;debug information&quot;]
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

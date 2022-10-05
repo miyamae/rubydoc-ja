@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Encoding::Converter#primitive_convert (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="エンコーディング変換のためのメソッドの中で、もっとも細かな扱いが可能なメソッドです。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-encoding=3a=3a-converter.html">Encoding::Converterクラス</a>
+      </li>
+      <li>
+        primitive_convert 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Encoding::Converter#primitive_convert</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_PRIMITIVE_CONVERT"><code>primitive_convert(source_buffer, destination_buffer) -&gt; Symbol</code><span class="permalink">[<a href="../../../method/-encoding=3a=3a-converter/i/primitive_convert.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Encoding/Converter.html#method-i-primitive_convert">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>primitive_convert(source_buffer, destination_buffer, destination_byteoffset) -&gt; Symbol</code></dt>
+<dt class="method-heading"><code>primitive_convert(source_buffer, destination_buffer, destination_byteoffset, destination_bytesize) -&gt; Symbol</code></dt>
+<dt class="method-heading"><code>primitive_convert(source_buffer, destination_buffer, destination_byteoffset, destination_bytesize, options) -&gt; Symbol</code></dt>
+<dd class="method-description">
+<p>
+エンコーディング変換のためのメソッドの中で、もっとも細かな扱いが可能なメソッドです。
+</p>
+<p>
+可搬性を確保しつつ、不正なバイトや変換先で未定義な文字の扱いを細かに指定したいときは、Encoding::Converter#primitive_convert が唯一の方法になります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] source_buffer:</dt>
+<dd>
+変換元文字列のバッファ
+</dd>
+<dt class='method-param'>[PARAM] destination_buffer:</dt>
+<dd>
+変換先文字列を格納するバッファ
+</dd>
+<dt class='method-param'>[PARAM] destination_byteoffset:</dt>
+<dd>
+変換先バッファでのオフセット
+</dd>
+<dt class='method-param'>[PARAM] destination_bytesize:</dt>
+<dd>
+変換先バッファの容量
+</dd>
+<dt class='method-param'>[PARAM] options:</dt>
+<dd>
+変換の詳細を指定する定数やハッシュ
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+変換結果を表す Symbol
+</dd>
+</dl>
+<p>
+options には以下が指定できます。
+</p>
+<dl>
+<dt>hash form</dt>
+<dd>
+<p>
+:partial_input =&gt; true           # source buffer may be part of larger source
+:after_output =&gt; true            # stop conversion after output before input
+</p>
+</dd>
+<dt>integer form</dt>
+<dd>
+<p>
+Encoding::Converter::PARTIAL_INPUT
+Encoding::Converter::AFTER_OUTPUT
+</p>
+</dd>
+</dl>
+<p>
+戻り値は以下のうちのどれかです。
+</p>
+<ul>
+<li>:invalid_byte_sequence</li>
+<li>:incomplete_input</li>
+<li>:undefined_conversion</li>
+<li>:after_output</li>
+<li>:destination_buffer_full</li>
+<li>:source_buffer_empty</li>
+<li>:finished</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+ec <span class="o">=</span> <span class="no">Encoding</span><span class="o">::</span><span class="no">Converter</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">UTF-8</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">EUC-JP</span><span class="s2">"</span><span class="p">)</span>
+src <span class="o">=</span> <span class="s2">"</span><span class="s2">abc\x81あいう\u{20bb7}\xe3</span><span class="s2">"</span>
+dst <span class="o">=</span> <span class="s1">''</span>
+
+<span class="k">begin</span>
+  ret <span class="o">=</span> ec<span class="p">.</span><span class="nf">primitive_convert</span><span class="p">(</span>src, dst<span class="p">)</span>
+  <span class="nb">p</span> <span class="p">[</span>ret, src, dst, ec<span class="p">.</span><span class="nf">primitive_errinfo</span><span class="p">]</span>
+  <span class="k">case</span> ret
+  <span class="k">when</span> <span class="ss">:invalid_byte_sequence</span>
+    ec<span class="p">.</span><span class="nf">insert_output</span><span class="p">(</span>ec<span class="p">.</span><span class="nf">primitive_errinfo</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="p">.</span><span class="nf">dump</span><span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="p">)</span>
+    <span class="k">redo</span>
+  <span class="k">when</span> <span class="ss">:undefined_conversion</span>
+    c <span class="o">=</span> ec<span class="p">.</span><span class="nf">primitive_errinfo</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="p">.</span><span class="nf">dup</span><span class="p">.</span><span class="nf">force_encoding</span><span class="p">(</span>ec<span class="p">.</span><span class="nf">primitive_errinfo</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="p">)</span>
+    ec<span class="p">.</span><span class="nf">insert_output</span><span class="p">(</span><span class="s1">'\x{%X:%s}'</span> <span class="o">%</span> <span class="p">[</span>c<span class="p">.</span><span class="nf">ord</span>, c<span class="p">.</span><span class="nf">encoding</span><span class="p">]</span><span class="p">)</span>
+    <span class="k">redo</span>
+  <span class="k">when</span> <span class="ss">:incomplete_input</span>
+    ec<span class="p">.</span><span class="nf">insert_output</span><span class="p">(</span>ec<span class="p">.</span><span class="nf">primitive_errinfo</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="p">.</span><span class="nf">dump</span><span class="p">[</span><span class="mi">1</span><span class="o">..</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="p">)</span>
+  <span class="k">when</span> <span class="ss">:finished</span>
+  <span class="k">end</span>
+  <span class="k">break</span>
+<span class="k">end</span> <span class="k">while</span> <span class="k">nil</span>
+</code></pre>
+<p>
+不正なバイトや変換先で未定義なバイトをエスケープしつつ変換する例です。以上のように、戻り値で分岐させつつ、<a href="../../../method/-encoding=3a=3a-converter/i/primitive_errinfo.html">Encoding::Converter#primitive_errinfo</a> の情報を参照して処理していくことになります。
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

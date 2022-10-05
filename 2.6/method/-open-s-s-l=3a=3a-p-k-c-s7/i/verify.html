@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>OpenSSL::PKCS7#verify (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="検証に成功した場合は真を、失敗した場合は偽を返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/openssl.html">opensslライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-open-s-s-l=3a=3a-p-k-c-s7.html">OpenSSL::PKCS7クラス</a>
+      </li>
+      <li>
+        verify 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method OpenSSL::PKCS7#verify</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_VERIFY"><code>verify(certs, store, indata = nil, flags = 0) -&gt; bool</code><span class="permalink">[<a href="../../../method/-open-s-s-l=3a=3a-p-k-c-s7/i/verify.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/PKCS7.html#method-i-verify">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+署名を検証します。
+</p>
+<p>
+検証に成功した場合は真を、失敗した場合は偽を返します。
+</p>
+<p>
+certs には署名者の証明書を含む配列を渡します。通常 S/MIME 署名には証明者の証明書が含まれていますが、
+<a href="../../../method/-open-s-s-l=3a=3a-p-k-c-s7/s/sign.html">OpenSSL::PKCS7.sign</a> で <a href="../../../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-c-e-r-t-s.html">OpenSSL::PKCS7::NOCERTS</a> を渡した場合には含まれていないので、明示的に渡す必要があります。このメソッドは配列から適切な証明書を自動的に選択します。
+</p>
+<p>
+store には検証に用いる証明書ストアを渡します。検証に必要な信頼できる CA 証明書をあらかじめ証明書ストアに含めておく必要があります。
+</p>
+<p>
+indata は署名の対象となった文字列を渡します。
+nil を渡すと <a href="../../../method/-open-s-s-l=3a=3a-p-k-c-s7/i/data.html">OpenSSL::PKCS7#data</a> で得られる文字列を用います。通常は nil を渡すべきです。
+</p>
+<p>
+flags には以下の値の OR を渡します。
+</p>
+<ul>
+<li><a href="../../../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-i-n-t-e-r-n.html">OpenSSL::PKCS7::NOINTERN</a>
+メッセージに添付された証明書を探索しません。
+これを指定した場合は、必要な証明書をすべて certs から渡す必要が
+あります。ある特定の証明書による署名のみを検証したい場合などに
+用います。</li>
+<li><a href="../../../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-t-e-x-t.html">OpenSSL::PKCS7::TEXT</a>
+署名対象のデータに含まれる text/plain タイプの MIME ヘッダを取り除きます。
+もしヘッダがない場合はエラーとなります。</li>
+<li><a href="../../../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-v-e-r-i-f-y.html">OpenSSL::PKCS7::NOVERIFY</a>
+署名者の証明書を検証しません。</li>
+<li><a href="../../../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-c-h-a-i-n.html">OpenSSL::PKCS7::NOCHAIN</a>
+メッセージに含まれる証明書を中間 CA として利用しません。</li>
+<li><a href="../../../method/-open-s-s-l=3a=3a-p-k-c-s7/c/-n-o-s-i-g-s.html">OpenSSL::PKCS7::NOSIGS</a>
+署名を検証しません。</li>
+</ul>
+<p>
+通常、これらのフラグを渡さなかった場合、
+</p>
+<ul>
+<li>(もし存在するならば)メッセージに含まれる中間 CA 証明書の検証を行う</li>
+<li>その中間 CA 証明書を用いて、署名者の証明書の検証を行う</li>
+<li>署名者の証明書を用いて署名の検証を行う</li>
+</ul>
+<p>
+という順で検証が行われます。
+</p>
+<p>
+この検証は署名者証明書の持ち主が署名したという事実のみを検証します。署名者証明書の持ち主が本当に意図した相手であるかどうかは保証されません。証明書の内容から(ユーザに確認を取るなど)適切に判断する必要があります。
+</p>
+<p>
+検証に失敗した場合は <a href="../../../method/-open-s-s-l=3a=3a-p-k-c-s7/i/error_string.html">OpenSSL::PKCS7#error_string</a> に失敗した理由を表す文字列がセットされます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] certs:</dt>
+<dd>
+証明書(<a href="../../../class/-open-s-s-l=3a=3a-x509=3a=3a-certificate.html">OpenSSL::X509::Certificate</a> オブジェクト)の配列
+</dd>
+<dt class='method-param'>[PARAM] store:</dt>
+<dd>
+証明書ストア(<a href="../../../class/-open-s-s-l=3a=3a-x509=3a=3a-store.html">OpenSSL::X509::Store</a> オブジェクト)
+</dd>
+<dt class='method-param'>[PARAM] indata:</dt>
+<dd>
+署名対象の文字列
+</dd>
+<dt class='method-param'>[PARAM] flags:</dt>
+<dd>
+フラグ
+</dd>
+<dt>[EXCEPTION] OpenSSL::PKCS7::PKCS7Error:</dt>
+<dd>
+検証に失敗した場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

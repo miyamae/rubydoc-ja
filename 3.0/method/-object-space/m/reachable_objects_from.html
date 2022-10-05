@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>ObjectSpace.#reachable_objects_from (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="obj から到達可能なすべてのオブジェクトを返します。マーク不能なオブジェ
+クトを指定した場合は nil を返します。本メソッドを使う事でメモリリークの
+調査が行えます。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/objspace.html">objspaceライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-object-space.html">ObjectSpaceモジュール</a>
+      </li>
+      <li>
+        reachable_objects_from 
+      </li>
+    </ol>
+  </nav>
+
+<h1>module function ObjectSpace.#reachable_objects_from</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="M_REACHABLE_OBJECTS_FROM"><code>reachable_objects_from(obj) -&gt; Array | nil</code><span class="permalink">[<a href="../../../method/-object-space/m/reachable_objects_from.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/ObjectSpace.html#method-c-reachable_objects_from">rdoc</a>]</span> <span class="kindinfo">[added by <a href="../../../library/objspace.html">objspace</a>]</span>
+</dt>
+<dd class="method-description">
+<p>
+obj から到達可能なすべてのオブジェクトを返します。マーク不能なオブジェクトを指定した場合は nil を返します。本メソッドを使う事でメモリリークの調査が行えます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># 配列クラス(Array)と 'a'、'b'、'c' に到達可能。
+</span><span class="no">ObjectSpace</span><span class="p">.</span><span class="nf">reachable_objects_from</span><span class="p">(</span><span class="p">[</span><span class="s1">'a'</span>, <span class="s1">'b'</span>, <span class="s1">'c'</span><span class="p">]</span><span class="p">)</span>
+<span class="c1"># =&gt; [Array, 'a', 'b', 'c']
+</span></code></pre>
+<p>
+obj が 2 つ以上の同じオブジェクト x への参照を持つ場合、戻り値に含まれるオブジェクト x は 1 つだけです。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># 配列クラス(Array)と v に到達可能。
+</span><span class="no">ObjectSpace</span><span class="p">.</span><span class="nf">reachable_objects_from</span><span class="p">(</span><span class="p">[</span>v <span class="o">=</span> <span class="s1">'a'</span>, v, v<span class="p">]</span><span class="p">)</span>
+<span class="c1"># =&gt; [Array, 'a']
+</span>
+<span class="c1"># 配列クラス(Array)と 3 つの異なる 'a' オブジェクトに到達可能。
+</span><span class="no">ObjectSpace</span><span class="p">.</span><span class="nf">reachable_objects_from</span><span class="p">(</span><span class="p">[</span><span class="s1">'a'</span>, <span class="s1">'a'</span>, <span class="s1">'a'</span><span class="p">]</span><span class="p">)</span>
+<span class="c1"># =&gt; [Array, 'a', 'a', 'a']
+</span></code></pre>
+<p>
+obj にマーク不能なオブジェクト(true、false、nil、<a href="../../../class/-symbol.html">Symbol</a>、
+<a href="../../../class/-fixnum.html">Fixnum</a>、Flonum(即値の <a href="../../../class/-float.html">Float</a> オブジェクト))を指定した場合は
+nil を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># 1 はマーク不能
+</span><span class="no">ObjectSpace</span><span class="p">.</span><span class="nf">reachable_objects_from</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># =&gt; nil
+</span></code></pre>
+<p>
+obj が内部でオブジェクトへの参照を持つ場合、
+ObjectSpace::InternalObjectWrapper オブジェクトが戻り値に含まれます。このオブジェクトは obj が内部で持っているオブジェクトを持ちます。内部のオブジェクトの型を確認する場合は ObjectSpace::InternalObjectWrapper#type
+を参照してください。:T_CLASS のような <a href="../../../class/-symbol.html">Symbol</a> を返します。
+</p>
+<p>
+obj が ObjectSpace::InternalObjectWrapper オブジェクトであった場合、そのオブジェクトから参照される全てのオブジェクトを返します。
+</p>
+<p>
+本メソッドは C Ruby 以外では動作しません。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="https://www.atdot.net/~ko1/diary/201212.html#d8">https://www.atdot.net/~ko1/diary/201212.html#d8</a>,
+<a class="external" href="https://www.atdot.net/~ko1/diary/201212.html#d9">https://www.atdot.net/~ko1/diary/201212.html#d9</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

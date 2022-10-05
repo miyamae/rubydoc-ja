@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Object::DATA (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="[[ref:d:spec/program#terminate]]も参照。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-object.html">Objectクラス</a>
+      </li>
+      <li>
+        DATA (private)
+      </li>
+    </ol>
+  </nav>
+
+<h1>constant Object::DATA</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="C_-D-A-T-A"><code>DATA -&gt; File</code><span class="permalink">[<a href="../../../method/-object/c/-d-a-t-a.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Object.html#method-c-DATA">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+スクリプトの __END__
+プログラムの終り以降をアクセスする <a href="../../../class/-file.html">File</a> オブジェクト。
+</p>
+<p>
+<a href="../../../doc/spec=2fprogram.html#terminate">プログラム・文・式/プログラムの終り</a>も参照。
+</p>
+<p>
+ソースファイルの __END__ 以降は解析・実行の対象にならないのでその部分にプログラムが利用するためのデータを書き込んでおくことができます。
+DATA 定数はそのデータ部分にアクセスするための <a href="../../../class/-file.html">File</a> オブジェクトを保持しています。
+</p>
+<p>
+__END__ を含まないプログラムにおいては DATA は定義されません。
+</p>
+<h2 >注意</h2>
+<ul>
+<li>DATA.rewind で移動する読みとり位置は __END__ 直後ではなく、
+スクリプトファイルの先頭です。</li>
+<li>スクリプトが標準入力から読みこまれた場合は標準入力になります。</li>
+<li>スクリプトがファイルや標準入力から読みこまれなかった場合や、
+__END__ で終っていない場合には定義されません。</li>
+<li><a href="../../../method/-kernel/m/require.html">Kernel.#require</a> や <a href="../../../method/-kernel/m/load.html">Kernel.#load</a> で
+読み込まれたファイルの中であってもそのファイル (__FILE__, <a href="../../../doc/spec=2fvariables.html#pseudo">変数と定数/擬似変数</a>)
+ではなく実行されたファイル (<a href="../../../method/-kernel/v/0.html">$0</a>) を指します。</li>
+</ul>
+<h2 >例1</h2>
+<pre>
+print DATA.gets # =&gt; 故人西辞黄鶴楼
+print DATA.gets # =&gt; 烟花三月下揚州
+print DATA.gets # =&gt; 孤帆遠影碧空尽
+print DATA.gets # =&gt; 唯見長江天際流
+DATA.gets       # =&gt; nil
+
+__END__
+故人西辞黄鶴楼
+烟花三月下揚州
+孤帆遠影碧空尽
+唯見長江天際流
+</pre>
+<h2 >例2</h2>
+<pre>
+sum = 0
+DATA.each_line do |line|
+  sum += line.to_i
+end
+
+DATA.rewind
+p DATA.gets    # =&gt; &quot;sum = 0¥n&quot;
+
+__END__
+17
+19
+23
+29
+31
+</pre>
+<h2 >例3</h2>
+<pre>
+DATA.gets    # =&gt; uninitialized constant DATA (NameError)
+</pre>
+<h2 >例4</h2>
+<p>
+ファイル library.rb と app.rb の内容が以下であったとします。
+</p>
+<p>
+library.rb:
+</p>
+<pre>
+print DATA.gets
+
+__END__
+data from library
+</pre>
+<p>
+app.rb:
+</p>
+<pre>
+require 'library.rb'
+
+__END__
+data from app
+</pre>
+<p>
+このときシェルから次を実行すると
+</p>
+<pre>
+$ ruby app.rb
+</pre>
+<p>
+結果は以下のように出力されます。
+</p>
+<pre>
+data from app
+</pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

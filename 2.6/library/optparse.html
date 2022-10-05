@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>library optparse (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="コマンドラインのオプションを取り扱うためのライブラリです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        optparseライブラリ
+      </li>
+    </ol>
+  </nav>
+
+<h1>library optparse</h1>
+</header>
+
+<main>
+
+
+
+<h2>要約</h2>
+<p>
+コマンドラインのオプションを取り扱うためのライブラリです。
+</p>
+<h2 >チュートリアル</h2>
+<p>
+optparse を使う場合、基本的には
+</p>
+<ol>
+<li>OptionParser オブジェクト opt を生成する。</li>
+<li>オプションを取り扱うブロックを opt に登録する。</li>
+<li>opt.parse(ARGV) でコマンドラインを実際に parse する。</li>
+</ol>
+<p>
+というような流れになります。
+</p>
+<ul>
+<li><a href="#optiondef">オプションの定義</a></li>
+<li><a href="#optionarg">オプションの引数</a></li>
+<li><a href="#longoption">ロングオプション</a></li>
+<li><a href="#help">ヘルプ</a></li>
+<li><a href="#subcmd">サブコマンド</a></li>
+<li><a href="#argv">ARGV の機能</a></li>
+<li><a href="#hyphen_start_file">'-'で始まるファイル名</a></li>
+</ul>
+<h3 id='optiondef'>オプションの定義</h3>
+<p>
+以下はオプション -a, -b を受け付けるコマンドを作成する例です。
+</p>
+<pre class="highlight ruby">
+<span class="caption">sample.rb</span>
+<code>
+<span class="nb">require</span> <span class="s1">'optparse'</span>
+opt <span class="o">=</span> <span class="no">OptionParser</span><span class="p">.</span><span class="nf">new</span>
+
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-a'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v <span class="p">}</span>
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-b'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v <span class="p">}</span>
+
+opt<span class="p">.</span><span class="nf">parse!</span><span class="p">(</span><span class="no">ARGV</span><span class="p">)</span>
+<span class="nb">p</span> <span class="no">ARGV</span>
+</code></pre>
+<p>
+↓
+</p>
+<pre>
+ruby sample.rb -a foo bar -b baz
+# =&gt; true
+     true
+     [&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;]
+</pre>
+<p>
+<a href="../method/-option-parser/i/on.html">OptionParser#on</a> メソッドの引数でオプションを定義し、引数が指定された時の処理をブロックで記述します。ブロックの引数にはオプションが指定されたことを示す true が渡されます(<a href="#optionarg">オプションの引数</a>の項も参照)。
+</p>
+<p>
+<a href="../method/-enumerator/i/each.html">Enumerator#each</a> などと違い、<a href="../method/-option-parser/i/on.html">OptionParser#on</a>
+メソッドが呼ばれた時点ではブロックは実行されません。あくまで登録されるだけです。<a href="../method/-option-parser/i/parse.html">OptionParser#parse</a> が呼ばれた時に、コマンドラインにオプションが指定されていれば実行されます。
+</p>
+<p>
+オプションの指定はコマンドの直後である必要はありません(上の例で、-b はオプションとして認識されている)。ただし、環境変数 POSIXLY_CORRECT が定義してあるとこの挙動は変更されます。
+</p>
+<pre>
+env POSIXLY_CORRECT=1 ruby ./sample.rb -a foo bar -b baz
+# =&gt; true                               # -a はオプションと解釈
+     [&quot;foo&quot;, &quot;bar&quot;, &quot;-b&quot;, &quot;baz&quot;]        # -b は非オプションと解釈
+</pre>
+<p>
+<a href="../method/-option-parser/i/parse=21.html">OptionParser#parse!</a> により、コマンドライン(ARGV)の解析を行います。
+<a href="../method/-option-parser/i/parse=21.html">OptionParser#parse!</a> では、ARGV からオプションが取り除かれます。これを避けるには <a href="../method/-option-parser/i/parse.html">OptionParser#parse</a> を使います。
+</p>
+<pre class="highlight ruby">
+<span class="caption">sample.rb</span>
+<code>
+<span class="nb">require</span> <span class="s1">'optparse'</span>
+opt <span class="o">=</span> <span class="no">OptionParser</span><span class="p">.</span><span class="nf">new</span>
+
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-a'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v <span class="p">}</span>
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-b'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v <span class="p">}</span>
+
+<span class="c1"># parse() の場合、ARGVは変更されない。
+</span><span class="c1"># オプションを取り除いた結果は argv に設定される。
+</span>argv <span class="o">=</span> opt<span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="no">ARGV</span><span class="p">)</span>
+
+<span class="nb">p</span> argv
+</code></pre>
+<p>
+定義していないオプションを指定すると例外
+<a href="../class/-option-parser=3a=3a-invalid-option.html">OptionParser::InvalidOption</a> が発生します。
+</p>
+<pre>
+ruby ./sample.rb -c
+/usr/local/lib/ruby/1.9/optparse.rb:1428:in `complete': invalid option: -c (OptionParser::InvalidOption)
+        from /usr/local/lib/ruby/1.9/optparse.rb:1426:in `catch'
+        from /usr/local/lib/ruby/1.9/optparse.rb:1426:in `complete'
+        from /usr/local/lib/ruby/1.9/optparse.rb:1287:in `order!'
+        from /usr/local/lib/ruby/1.9/optparse.rb:1256:in `catch'
+        from /usr/local/lib/ruby/1.9/optparse.rb:1256:in `order!'
+        from /usr/local/lib/ruby/1.9/optparse.rb:1336:in `permute!'
+        from /usr/local/lib/ruby/1.9/optparse.rb:1363:in `parse!'
+        from /usr/local/lib/ruby/1.9/optparse.rb:1356:in `parse'
+        from ./sample.rb:9
+</pre>
+<p>
+<a href="../class/-option-parser.html">OptionParser</a> 自体は、どのオプションが指定されたかを記憶しません。後の処理の方で、オプションによる条件判断を加えるには、他のコンテナに格納します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">sample.rb</span>
+<code>
+<span class="nb">require</span> <span class="s1">'optparse'</span>
+opt <span class="o">=</span> <span class="no">OptionParser</span><span class="p">.</span><span class="nf">new</span>
+
+params <span class="o">=</span> <span class="p">{</span><span class="p">}</span>
+
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-a'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> params<span class="p">[</span><span class="ss">:a</span><span class="p">]</span> <span class="o">=</span> v <span class="p">}</span>
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-b'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> params<span class="p">[</span><span class="ss">:b</span><span class="p">]</span> <span class="o">=</span> v <span class="p">}</span>
+
+opt<span class="p">.</span><span class="nf">parse!</span><span class="p">(</span><span class="no">ARGV</span><span class="p">)</span>
+<span class="nb">p</span> <span class="no">ARGV</span>
+<span class="nb">p</span> params
+</code></pre>
+<p>
+↓
+</p>
+<pre>
+ruby sample.rb -a foo bar -b baz
+# =&gt; [&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;]
+     {:a=&gt;true, :b=&gt;true}
+</pre>
+<p>
+明示的にコンテナへ格納する以外に、parse（及びparse!）メソッドの引数に
+:into オプションを指定することでハッシュへ自動的に値を格納することができます。この時ハッシュのキーとして利用される名前はロングオプションが定義されていればロングオプションの値を、ショートオプションのみの場合はショートオプションの値から、先頭の &quot;-&quot; を除いてシンボル化した値が使用されます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">sample.rb</span>
+<code>
+<span class="nb">require</span> <span class="s1">'optparse'</span>
+opt <span class="o">=</span> <span class="no">OptionParser</span><span class="p">.</span><span class="nf">new</span>
+
+params <span class="o">=</span> <span class="p">{</span><span class="p">}</span>
+
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-a'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> v <span class="p">}</span>
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-b'</span>, <span class="s1">'--bbb'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> v <span class="p">}</span>
+
+opt<span class="p">.</span><span class="nf">parse!</span><span class="p">(</span><span class="no">ARGV</span>, <span class="ss">into:</span> params<span class="p">)</span> <span class="c1"># intoオプションにハッシュを渡す
+</span><span class="nb">p</span> <span class="no">ARGV</span>
+<span class="nb">p</span> params
+</code></pre>
+<p>
+↓
+</p>
+<pre>
+ruby sample.rb -a foo bar -b baz
+# =&gt; [&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;]
+     {:a=&gt;true, :bbb=&gt;true}
+</pre>
+<h3 id='optionarg'>オプションの引数</h3>
+<p>
+<a href="../method/-option-parser/i/on.html">OptionParser#on</a> メソッドのオプション定義で末尾に何かを書くと、そのオプションは引数を受け付けることの指定となります。
+</p>
+<pre class="highlight ruby">
+<span class="caption">sample.rb</span>
+<code>
+<span class="nb">require</span> <span class="s1">'optparse'</span>
+opt <span class="o">=</span> <span class="no">OptionParser</span><span class="p">.</span><span class="nf">new</span>
+
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-a VAL'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v <span class="p">}</span>         <span class="c1"># &lt;- &quot; VAL&quot; を追加
+</span>opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-b'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v <span class="p">}</span>
+
+opt<span class="p">.</span><span class="nf">parse!</span><span class="p">(</span><span class="no">ARGV</span><span class="p">)</span>
+<span class="nb">p</span> <span class="no">ARGV</span>
+</code></pre>
+<pre>
+ruby sample.rb -a foo bar -b baz
+
+# =&gt; &quot;foo&quot;
+     true
+     [&quot;bar&quot;, &quot;baz&quot;]
+</pre>
+<p>
+オプションの末尾の書き方の基準は、「ヘルプの見栄えが良くなるように書く」です。オプションの引数を省略すると例外 <a href="../class/-option-parser=3a=3a-missing-argument.html">OptionParser::MissingArgument</a> が発生します。
+</p>
+<pre>
+ruby ./sample.rb -a
+/usr/local/lib/ruby/1.9/optparse.rb:455:in `parse': missing argument: -a (OptionParser::MissingArgument)
+        from /usr/local/lib/ruby/1.9/optparse.rb:1295:in `order!'
+        from /usr/local/lib/ruby/1.9/optparse.rb:1256:in `catch'
+        from /usr/local/lib/ruby/1.9/optparse.rb:1256:in `order!'
+        from /usr/local/lib/ruby/1.9/optparse.rb:1336:in `permute!'
+        from /usr/local/lib/ruby/1.9/optparse.rb:1363:in `parse!'
+        from ./sample.rb:7
+</pre>
+<p>
+オプションの引数が必須でないことを示すには、&quot; [&quot; を付けます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">sample.rb</span>
+<code>
+<span class="nb">require</span> <span class="s1">'optparse'</span>
+opt <span class="o">=</span> <span class="no">OptionParser</span><span class="p">.</span><span class="nf">new</span>
+
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-a [VAL]'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v <span class="p">}</span>          <span class="c1"># &lt;- [VAL] を追加
+</span>opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-b'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v <span class="p">}</span>
+
+opt<span class="p">.</span><span class="nf">parse!</span><span class="p">(</span><span class="no">ARGV</span><span class="p">)</span>
+<span class="nb">p</span> <span class="no">ARGV</span>
+</code></pre>
+<p>
+↓
+</p>
+<pre>
+ruby sample.rb -a
+
+# =&gt; nil
+     []
+</pre>
+<p>
+同様に、ヘルプの見栄えが良いように &quot;VAL]&quot; を付加しています。
+</p>
+<p>
+ショートオプションの引数指定は使いにくいので、このような場合はロングオプションの方が使う方もわかりやすいです。例えば、上記の場合、-ab を指定すると -a b と解釈されます。-a が引数を持たない最初の例なら -a -b と解釈されます。
+</p>
+<h3 id='longoption'>ロングオプション</h3>
+<p>
+ロングオプションは <a href="../method/-option-parser/i/on.html">OptionParser#on</a> の引数に '--'で始まるオプションを指定します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">sample.rb</span>
+<code>
+<span class="nb">require</span> <span class="s1">'optparse'</span>
+opt <span class="o">=</span> <span class="no">OptionParser</span><span class="p">.</span><span class="nf">new</span>
+
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-a'</span>, <span class="s1">'--foo'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v <span class="p">}</span>
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'--bar'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v <span class="p">}</span>
+
+opt<span class="p">.</span><span class="nf">parse!</span><span class="p">(</span><span class="no">ARGV</span><span class="p">)</span>
+<span class="nb">p</span> <span class="no">ARGV</span>
+</code></pre>
+<p>
+↓
+</p>
+<pre>
+ruby sample.rb -a foo bar --bar baz
+# =&gt; true
+     true
+     [&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;]
+</pre>
+<p>
+--[no-]...などとすることで、否定型のオプションを指定することができます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">sample.rb</span>
+<code>
+<span class="nb">require</span> <span class="s1">'optparse'</span>
+opt <span class="o">=</span> <span class="no">OptionParser</span><span class="p">.</span><span class="nf">new</span>
+
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-a'</span>, <span class="s1">'--foo'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v <span class="p">}</span>
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'--[no-]bar'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v <span class="p">}</span>
+
+opt<span class="p">.</span><span class="nf">parse!</span><span class="p">(</span><span class="no">ARGV</span><span class="p">)</span>
+<span class="nb">p</span> <span class="no">ARGV</span>
+</code></pre>
+<p>
+↓
+</p>
+<pre>
+ruby sample.rb -a foo bar --bar baz --no-bar
+# =&gt; true
+     true
+     false                              # &lt;- --no-bar の指定による。
+     [&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;]
+</pre>
+<p>
+オプションに対する引数も指定できます。ショートオプションと同じだが、
+GNUの慣習にあわせて
+</p>
+<pre class="highlight ruby">
+<code>
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-a'</span>, <span class="s1">'--foo=VAL'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v <span class="p">}</span>
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'--[no-]bar[=VAL]'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v <span class="p">}</span>
+</code></pre>
+<p>
+と &quot;=&quot; を使うのが良いと思われます。
+</p>
+<p>
+オプションを指定する時は、どのオプションか一意に決まる長さまで指定すれば良いです。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'optparse'</span>
+opt <span class="o">=</span> <span class="no">OptionParser</span><span class="p">.</span><span class="nf">new</span>
+
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-a'</span>, <span class="s1">'--foo'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v <span class="p">}</span>
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'--[no-]bar'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v <span class="p">}</span>
+
+opt<span class="p">.</span><span class="nf">parse!</span><span class="p">(</span><span class="no">ARGV</span><span class="p">)</span>
+<span class="nb">p</span> <span class="no">ARGV</span>
+</code></pre>
+<p>
+↓
+</p>
+<pre>
+ruby sample.rb --fo
+</pre>
+<p>
+この例では、--fo は、--foo を指定したのと同じになります。この例なら --f
+まで省略できます。
+</p>
+<h3 id='help'>ヘルプ</h3>
+<p>
+デフォルトで --help と --version オプションを認識します。
+</p>
+<pre>
+ruby ./sample.rb --help
+# =&gt; Usage: sample [options]
+
+ruby ./sample.rb --version
+# =&gt; *出力なし*
+</pre>
+<p>
+--version は、トップレベルに Version 定数が定義されていると出力されます。
+(優先度は低いが VERSION 定数も参照します。Ruby のバージョンを示す VERSION
+定数が ruby 1.8 までは定義されているので注意)
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'optparse'</span>
+opt <span class="o">=</span> <span class="no">OptionParser</span><span class="p">.</span><span class="nf">new</span>
+<span class="no">Version</span> <span class="o">=</span> <span class="s2">"</span><span class="s2">1.2.3</span><span class="s2">"</span>       <span class="c1"># opt.version = &quot;1.2.3&quot;
+</span>opt<span class="p">.</span><span class="nf">parse!</span><span class="p">(</span><span class="no">ARGV</span><span class="p">)</span>
+</code></pre>
+<p>
+↓
+</p>
+<pre>
+ruby ./sample.rb --version
+# =&gt; sample 1.2.3
+</pre>
+<p>
+<a href="../method/-option-parser/i/on.html">OptionParser#on</a> の引数にそのオプションの説明を加えると --help の出力に反映されます。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s1">'optparse'</span>
+opt <span class="o">=</span> <span class="no">OptionParser</span><span class="p">.</span><span class="nf">new</span>
+
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-a'</span>, <span class="s1">'description of -a'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v <span class="p">}</span>
+opt<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-b'</span>, <span class="s1">'description of -b'</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="nb">p</span> v <span class="p">}</span>
+
+opt<span class="p">.</span><span class="nf">parse!</span><span class="p">(</span><span class="no">ARGV</span><span class="p">)</span>
+<span class="nb">p</span> <span class="no">ARGV</span>
+</code></pre>
+<p>
+↓
+</p>
+<pre>
+ruby ./sample.rb --help
+# =&gt; Usage: sample [options]
+        -a                               description of -a
+        -b                               description of -b
+</pre>
+<h3 id='subcmd'>サブコマンド</h3>
+<p>
+以下は cvs や svn のようにサブコマンドを解釈する例です。
+</p>
+<pre class="highlight ruby">
+<span class="caption">subcom.rb</span>
+<code>
+<span class="c1">#! /usr/bin/ruby
+</span><span class="c1"># contributed by Minero Aoki.
+</span>
+<span class="nb">require</span> <span class="s1">'optparse'</span>
+
+parser <span class="o">=</span> <span class="no">OptionParser</span><span class="p">.</span><span class="nf">new</span>
+parser<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-i'</span><span class="p">)</span> <span class="p">{</span> <span class="nb">puts</span> <span class="s2">"</span><span class="s2">-i</span><span class="s2">"</span> <span class="p">}</span>
+parser<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-o'</span><span class="p">)</span> <span class="p">{</span> <span class="nb">puts</span> <span class="s1">'-o'</span> <span class="p">}</span>
+
+subparsers <span class="o">=</span> <span class="no">Hash</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span><span class="o">|</span>h,k<span class="o">|</span>
+  <span class="vg">$stderr</span><span class="p">.</span><span class="nf">puts</span> <span class="s2">"</span><span class="s2">no such subcommand: </span><span class="si">#{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span>
+  <span class="nb">exit</span> <span class="mi">1</span>
+<span class="p">}</span>
+subparsers<span class="p">[</span><span class="s1">'add'</span><span class="p">]</span> <span class="o">=</span> <span class="no">OptionParser</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-i'</span><span class="p">)</span> <span class="p">{</span> <span class="nb">puts</span> <span class="s2">"</span><span class="s2">add -i</span><span class="s2">"</span> <span class="p">}</span>
+subparsers<span class="p">[</span><span class="s1">'del'</span><span class="p">]</span> <span class="o">=</span> <span class="no">OptionParser</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-i'</span><span class="p">)</span> <span class="p">{</span> <span class="nb">puts</span> <span class="s2">"</span><span class="s2">del -i</span><span class="s2">"</span> <span class="p">}</span>
+subparsers<span class="p">[</span><span class="s1">'list'</span><span class="p">]</span> <span class="o">=</span> <span class="no">OptionParser</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s1">'-i'</span><span class="p">)</span> <span class="p">{</span> <span class="nb">puts</span> <span class="s2">"</span><span class="s2">list -i</span><span class="s2">"</span> <span class="p">}</span>
+
+parser<span class="p">.</span><span class="nf">order!</span><span class="p">(</span><span class="no">ARGV</span><span class="p">)</span>
+subparsers<span class="p">[</span><span class="no">ARGV</span><span class="p">.</span><span class="nf">shift</span><span class="p">]</span><span class="p">.</span><span class="nf">parse!</span><span class="p">(</span><span class="no">ARGV</span><span class="p">)</span> <span class="k">unless</span> <span class="no">ARGV</span><span class="p">.</span><span class="nf">empty?</span>
+</code></pre>
+<p>
+実行すると以下のようになります。
+</p>
+<pre>
+$ ruby subcom.rb -i add -i
+-i
+add -i
+
+$ ruby subcom.rb list -i
+list -i
+</pre>
+<p>
+<a href="../method/-option-parser/i/order=21.html">OptionParser#order!</a> がオプションではないコマンドの引数に出会うとそこでパースを中断することを利用しています。
+</p>
+<h3 id='argv'>ARGV の機能</h3>
+<p>
+optparse を require すると ARGV に <a href="../class/-option-parser=3a=3a-arguable.html">OptionParser::Arguable</a> の機能が加わります。以下の書き方ができるようになります。
+<a href="../method/-option-parser=3a=3a-arguable/i/getopts.html">OptionParser::Arguable#getopts</a> はオプションを保持した Hash を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">sample.rb</span>
+<code>
+<span class="nb">require</span> <span class="s1">'optparse'</span>
+params <span class="o">=</span> <span class="no">ARGV</span><span class="p">.</span><span class="nf">getopts</span><span class="p">(</span><span class="s2">"</span><span class="s2">a:b:</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">bar:</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">p</span> params
+</code></pre>
+<p>
+この sample.rb を実行すると
+</p>
+<pre>
+$ ruby sample.rb -a 1 --foo --bar xxx
+{&quot;a&quot;=&gt;&quot;1&quot;, &quot;b&quot;=&gt;nil, &quot;foo&quot;=&gt;true, &quot;bar&quot;=&gt;&quot;xxx&quot;}
+</pre>
+<p>
+のようになります。
+</p>
+<h3 id='hyphen_start_file'>'-'で始まるファイル名</h3>
+<p>
+'-'で始まるファイル名をコマンドに渡したい場合は以下のように間に&quot;--&quot;を挟みます。
+</p>
+<pre>
+$ ruby sample.rb -- -file
+</pre>
+<p>
+&quot;-file&quot; がオプションではない引数として解釈されます。これは POSIX.2 の <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/getopt.html">getopt(3)</a> に由来します。&quot;--&quot; 以降はすべてオプションではない引数として解釈されます。
+</p>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-option-parser.html">OptionParser</a>
+</td>
+<td class="description"><p>
+コマンドラインのオプションを取り扱うためのクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>モジュール</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-option-parser=3a=3a-arguable.html">OptionParser::Arguable</a>
+</td>
+<td class="description"><p>
+主に <a href="../method/-object/c/-a-r-g-v.html">Object::ARGV</a> を拡張するために用意されたモジュールです。
+<a href="../library/optparse.html">optparse</a> を require することにより、ARGV は
+OptionParser::Arguable を <a href="../method/-object/i/extend.html">Object#extend</a> します。
+</p>
+</td>
+</tr>
+
+</table>
+
+<h2>例外クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-option-parser=3a=3a-parse-error.html">OptionParser::ParseError</a>
+</td>
+<td class="description"><p>
+OptionParser の例外クラスの基底クラスです。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-option-parser=3a=3a-ambiguous-argument.html">OptionParser::AmbiguousArgument</a>
+</td>
+<td class="description"><p>
+オプションの引数が曖昧にしか補完できない場合に投げられます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-option-parser=3a=3a-ambiguous-option.html">OptionParser::AmbiguousOption</a>
+</td>
+<td class="description"><p>
+補完が曖昧にしかできないオプションがあった場合に投げられます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-option-parser=3a=3a-invalid-argument.html">OptionParser::InvalidArgument</a>
+</td>
+<td class="description"><p>
+オプションの引数が指定されたパターンにマッチしない時に投げられます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-option-parser=3a=3a-invalid-option.html">OptionParser::InvalidOption</a>
+</td>
+<td class="description"><p>
+定義されていないオプションが与えられた場合に投げられます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-option-parser=3a=3a-missing-argument.html">OptionParser::MissingArgument</a>
+</td>
+<td class="description"><p>
+引数が必要なオプションに引数が与えられなかった場合に投げられます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature" style="text-indent: 1.0em;">
+<span style="display:none">&nbsp;</span>
+<a href="../class/-option-parser=3a=3a-needless-argument.html">OptionParser::NeedlessArgument</a>
+</td>
+<td class="description"><p>
+引数を取らないはずのオプションに引数が与えられた場合に投げられます。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>サブライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/optparse=2fdate.html">optparse/date</a></td>
+<td class="description"><p>
+<a href="../method/-option-parser/i/on.html">OptionParser#on</a> で使用可能なクラスに <a href="../class/-date.html">Date</a> と <a href="../class/-date-time.html">DateTime</a> が追加されます。オプションの引数はそれぞれのクラスのインスタンスに変換されてから、
+<a href="../method/-option-parser/i/on.html">OptionParser#on</a> のブロックに渡されます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/optparse=2fshellwords.html">optparse/shellwords</a></td>
+<td class="description"><p>
+<a href="../method/-option-parser/i/on.html">OptionParser#on</a> で使用可能な引数に <a href="../class/-shellwords.html">Shellwords</a>
+追加されます。オプションの引数は <a href="../method/-shellwords/m/shellwords.html">Shellwords.#shellwords</a> によって配列に変換されてから、
+<a href="../method/-option-parser/i/on.html">OptionParser#on</a> のブロックに渡されます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/optparse=2ftime.html">optparse/time</a></td>
+<td class="description"><p>
+<a href="../method/-option-parser/i/on.html">OptionParser#on</a> で使用可能なクラスに <a href="../class/-time.html">Time</a> が追加されます。オプションの引数は <a href="../class/-time.html">Time</a> クラスのインスタンスに変換されてから、
+<a href="../method/-option-parser/i/on.html">OptionParser#on</a> のブロックに渡されます。
+</p>
+</td>
+</tr>
+
+<tr>
+<td class="signature"><a href="../library/optparse=2furi.html">optparse/uri</a></td>
+<td class="description"><p>
+<a href="../method/-option-parser/i/on.html">OptionParser#on</a> で使用可能なクラスに <a href="../class/-u-r-i.html">URI</a> が追加されます。オプションの引数は <a href="../class/-u-r-i.html">URI</a> クラスのインスタンスに変換されてから、
+<a href="../method/-option-parser/i/on.html">OptionParser#on</a> のブロックに渡されます。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>追加・再定義されるメソッド</h2>
+<p><code>
+
+<a href="../method/-object/c/-a-r-g-v.html">Object::ARGV</a>
+
+</code></p>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

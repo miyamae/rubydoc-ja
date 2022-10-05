@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class OpenStruct (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="要素を動的に追加・削除できる手軽な構造体を提供するクラスです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/ostruct.html">ostructライブラリ</a>
+      </li>
+      <li>
+        OpenStructクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class OpenStruct</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+      <li>
+        OpenStruct
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+要素を動的に追加・削除できる手軽な構造体を提供するクラスです。
+</p>
+<p>
+OpenStruct のインスタンスに対して未定義なメソッド x= を呼ぶと、
+OpenStruct クラスの <a href="../method/-basic-object/i/method_missing.html">BasicObject#method_missing</a> で捕捉され、そのインスタンスにインスタンスメソッド x, x= が定義されます。この挙動によって要素を動的に変更できる構造体として働きます。
+</p>
+<pre>
+require 'ostruct'
+ab = OpenStruct.new
+ab.foo = 25
+p ab.foo          # =&gt; 25
+ab.bar = 2
+p ab.bar          # =&gt; 2
+p ab              # =&gt; &lt;OpenStruct foo=25, bar=2&gt;
+ab.delete_field(&quot;foo&quot;)
+p ab.foo          # =&gt; nil
+p ab              # =&gt; &lt;OpenStruct bar=2&gt;
+</pre>
+<p>
+初期化にハッシュを使用することもできます。
+</p>
+<pre>
+require 'ostruct'
+son = OpenStruct.new({ :name =&gt; &quot;Thomas&quot;, :age =&gt; 3 })
+p son.name        # =&gt; &quot;Thomas&quot;
+p son.age         # =&gt; 3
+son.age += 1
+p son.age         # =&gt; 4
+son.items = [&quot;candy&quot;,&quot;toy&quot;]
+p son.items       # =&gt; [&quot;candy&quot;,&quot;toy&quot;]
+p son             # =&gt; #&lt;OpenStruct name=&quot;Thomas&quot;, age=4, items=[&quot;candy&quot;, &quot;toy&quot;]&gt;
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_NEW">new</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_--3D--3D">==</a></li>
+
+<li><a href="#I_--5B--5D">[]</a></li>
+
+<li><a href="#I_--5B--5D--3D">[]=</a></li>
+
+<li><a href="#I_DELETE_FIELD">delete_field</a></li>
+
+<li><a href="#I_DIG">dig</a></li>
+
+<li><a href="#I_EACH_PAIR">each_pair</a></li>
+
+<li><a href="#I_EQL--3F">eql?</a></li>
+
+<li><a href="#I_HASH">hash</a></li>
+
+<li><a href="#I_INSPECT">inspect</a></li>
+
+<li><a href="#I_TO_H">to_h</a></li>
+
+<li><a href="#I_INSPECT">to_s</a></li>
+
+</ul>
+</dd>
+
+<dt>protectedメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_MODIFIABLE">modifiable</a></li>
+
+<li><a href="#I_NEW_OSTRUCT_MEMBER">new_ostruct_member</a></li>
+
+</ul>
+</dd>
+
+<dt>定数</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#C_-INSPECT-KEY">InspectKey</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(hash = nil) -&gt; OpenStruct</code><span class="permalink">[<a href="../method/-open-struct/s/new.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/OpenStruct.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+OpenStruct オブジェクトを生成します。
+</p>
+<p>
+ハッシュが与えられたとき、それぞれのキーを生成したオブジェクトの要素にし、値をセットします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] hash:</dt>
+<dd>
+設定する要素とその値を指定します。
+hash には <a href="../class/-hash.html">Hash</a> クラスのインスタンス、または each_pair メソッドを持つオブジェクトを用いる事ができます。
+</dd>
+<dt>[EXCEPTION] NoMethodError:</dt>
+<dd>
+hash のキーが to_sym メソッドを持たないときに発生します。
+</dd>
+</dl>
+<pre>
+require 'ostruct'
+some1 = OpenStruct.new({:a =&gt;&quot;a&quot;,:b =&gt;&quot;b&quot;}) # =&gt; #&lt;OpenStruct b=&quot;b&quot;, a=&quot;a&quot;&gt;
+</pre>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--3D--3D"><code>self == other -&gt; bool</code><span class="permalink">[<a href="../method/-open-struct/i/=3d=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/OpenStruct.html#method-i-3D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身と比較対象のオブジェクトが等しい場合に真を返します。そうでない場合は、偽を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+比較対象のオブジェクトを指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_--5B--5D"><code>self[name] -&gt; object</code><span class="permalink">[<a href="../method/-open-struct/i/=5b=5d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/OpenStruct.html#method-i-5B-5D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数 name で指定した要素に対応する値を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+要素の名前を文字列か <a href="../class/-symbol.html">Symbol</a> オブジェクトで指定します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'ostruct'
+person = OpenStruct.new('name' =&gt; 'John Smith', 'age' =&gt; 70)
+person[:age] # =&gt; 70, person.age と同じ
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--5B--5D--3D"><code>self[name] = value</code><span class="permalink">[<a href="../method/-open-struct/i/=5b=5d=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/OpenStruct.html#method-i-5B-5D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数 name で指定した要素に対応する値に value をセットします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+要素の名前を文字列か <a href="../class/-symbol.html">Symbol</a> オブジェクトで指定します。
+</dd>
+<dt class='method-param'>[PARAM] value:</dt>
+<dd>
+セットする値を指定します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+require 'ostruct'
+person = OpenStruct.new('name' =&gt; 'John Smith', 'age' =&gt; 70)
+person[:age] = 42 # person.age = 42 と同じ
+person.age # =&gt; 42
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_DELETE_FIELD"><code>delete_field(name) -&gt; object</code><span class="permalink">[<a href="../method/-open-struct/i/delete_field.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/OpenStruct.html#method-i-delete_field">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+nameで指定された要素を削除します。
+</p>
+<p>
+その後その要素を参照したら nil が返ります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+削除する要素を文字列かシンボルで指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+削除前の要素の値を返します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_DIG"><code>dig(key, ...) -&gt; object | nil</code><span class="permalink">[<a href="../method/-open-struct/i/dig.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/OpenStruct.html#method-i-dig">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self 以下のネストしたオブジェクトを dig メソッドで再帰的に参照して返します。途中のオブジェクトが nil であった場合は nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+キーを任意個指定します。
+</dd>
+</dl>
+<pre>
+require 'ostruct'
+address = OpenStruct.new('city' =&gt; &quot;Anytown NC&quot;, 'zip' =&gt; 12345)
+person = OpenStruct.new('name' =&gt; 'John Smith', 'address' =&gt; address)
+person.dig(:address, 'zip')          # =&gt; 12345
+person.dig(:business_address, 'zip') # =&gt; nil
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-array/i/dig.html">Array#dig</a>, <a href="../method/-hash/i/dig.html">Hash#dig</a>, <a href="../method/-struct/i/dig.html">Struct#dig</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_PAIR"><code>each_pair -&gt; Enumerator</code><span class="permalink">[<a href="../method/-open-struct/i/each_pair.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/OpenStruct.html#method-i-each_pair">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_pair { |key, value| } -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+self の各要素の名前と要素を引数としてブロックを評価します。
+</p>
+<p>
+ブロックを指定した場合は self を返します。そうでない場合は
+<a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<p>
+例:
+</p>
+<pre>
+require 'ostruct'
+data = OpenStruct.new(&quot;country&quot; =&gt; &quot;Australia&quot;, :population =&gt; 20_000_000)
+data.each_pair.to_a  # =&gt; [[:country, &quot;Australia&quot;], [:population, 20000000]]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_EQL--3F"><code>eql?(other) -&gt; bool</code><span class="permalink">[<a href="../method/-open-struct/i/eql=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/OpenStruct.html#method-i-eql-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self と other が等しい場合に true を返します。そうでない場合は false を返します。
+</p>
+<p>
+具体的には other が <a href="../class/-open-struct.html">OpenStruct</a> オブジェクトかそのサブクラスでかつ、
+self の各要素を保持した内部の <a href="../class/-hash.html">Hash</a> が eql? で比較して等しい場合に
+true を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+比較対象のオブジェクトを指定します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_HASH"><code>hash -&gt; Integer</code><span class="permalink">[<a href="../method/-open-struct/i/hash.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/OpenStruct.html#method-i-hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self のハッシュ値を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-open-struct/i/inspect.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/OpenStruct.html#method-i-inspect">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_s -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+オブジェクトを人間が読める形式に変換した文字列を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-object/i/inspect.html">Object#inspect</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_H"><code>to_h -&gt; { Symbol =&gt; object }</code><span class="permalink">[<a href="../method/-open-struct/i/to_h.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/OpenStruct.html#method-i-to_h">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_h {|name, value| block } -&gt; Hash</code></dt>
+<dd class="method-description">
+<p>
+self を各要素の名前をキー(<a href="../class/-symbol.html">Symbol</a>)、要素が値のハッシュに変換して返します。
+</p>
+<p>
+ブロックを指定すると各ペアでブロックを呼び出し、その結果をペアとして使います。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'ostruct'</span>
+data <span class="o">=</span> <span class="no">OpenStruct</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">country</span><span class="s2">"</span> <span class="o">=&gt;</span> <span class="s2">"</span><span class="s2">Australia</span><span class="s2">"</span>, <span class="ss">:capital</span> <span class="o">=&gt;</span> <span class="s2">"</span><span class="s2">Canberra</span><span class="s2">"</span><span class="p">)</span>
+data<span class="p">.</span><span class="nf">to_h</span>   <span class="c1"># =&gt; {:country =&gt; &quot;Australia&quot;, :capital =&gt; &quot;Canberra&quot; }
+</span>data<span class="p">.</span><span class="nf">to_h</span> <span class="p">{</span><span class="o">|</span><span class="nb">name</span>, value<span class="o">|</span> <span class="p">[</span><span class="nb">name</span><span class="p">.</span><span class="nf">to_s</span>, value<span class="p">.</span><span class="nf">upcase</span><span class="p">]</span> <span class="p">}</span>
+            <span class="c1"># =&gt; {&quot;country&quot; =&gt; &quot;AUSTRALIA&quot;, &quot;capital&quot; =&gt; &quot;CANBERRA&quot; }
+</span></code></pre>
+</dd>
+
+
+</dl>
+
+<h2>protectedメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_MODIFIABLE"><code>modifiable -&gt; Hash</code><span class="permalink">[<a href="../method/-open-struct/i/modifiable.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/OpenStruct.html#method-i-modifiable">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このメソッドは内部的に使用されます。
+</p>
+<p>
+自身が <a href="../method/-object/i/freeze.html">Object#freeze</a> されている場合にこのメソッドを呼び出すと例外が発生します。
+</p>
+<dl>
+<dt>[EXCEPTION] TypeError:</dt>
+<dd>
+自身が <a href="../method/-object/i/freeze.html">Object#freeze</a> されている場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_NEW_OSTRUCT_MEMBER"><code>new_ostruct_member(name) -&gt; Symbol</code><span class="permalink">[<a href="../method/-open-struct/i/new_ostruct_member.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/OpenStruct.html#method-i-new_ostruct_member">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+与えられた名前のアクセサメソッドを自身に定義します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+文字列かシンボルで定義するアクセサの名前を指定します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-INSPECT-KEY"><code>InspectKey -&gt; :__inspect_key__</code><span class="permalink">[<a href="../method/-open-struct/c/-inspect-key.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/OpenStruct.html#method-c-InspectKey">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+内部的に使用する定数です。
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

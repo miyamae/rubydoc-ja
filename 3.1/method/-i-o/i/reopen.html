@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>IO#reopen (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="自身を指定された io に繋ぎ換えます。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-i-o.html">IOクラス</a>
+      </li>
+      <li>
+        reopen 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method IO#reopen</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_REOPEN"><code>reopen(io) -&gt; self</code><span class="permalink">[<a href="../../../method/-i-o/i/reopen.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-reopen">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を指定された io に繋ぎ換えます。
+</p>
+<p>
+クラスも io に等しくなることに注意してください。
+<a href="../../../method/-i-o/i/pos.html">IO#pos</a>, <a href="../../../method/-i-o/i/lineno.html">IO#lineno</a> などは指定された io と等しくなります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] io:</dt>
+<dd>
+自身を繋ぎ換えたい IO オブジェクトを指定します。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+指定された io が close されている場合に発生します。
+</dd>
+</dl>
+</dd>
+<dt class="method-heading" id="I_REOPEN"><code>reopen(path) -&gt; self</code><span class="permalink">[<a href="../../../method/-i-o/i/reopen.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-reopen">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>reopen(path, mode) -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+path で指定されたファイルにストリームを繋ぎ換えます。
+</p>
+<p>
+第二引数を省略したとき self のモードをそのまま引き継ぎます。
+<a href="../../../method/-i-o/i/pos.html">IO#pos</a>, <a href="../../../method/-i-o/i/lineno.html">IO#lineno</a> などはリセットされます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+パスを表す文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+パスを開く際のモードを文字列で指定します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+失敗した場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">This is line one\nThis is line two\n</span><span class="s2">"</span><span class="p">)</span>
+f1 <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">a+</span><span class="s2">"</span><span class="p">)</span>
+f2 <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span>
+f1<span class="p">.</span><span class="nf">print</span><span class="p">(</span><span class="s2">"</span><span class="s2">This is line three\n</span><span class="s2">"</span><span class="p">)</span>
+f2<span class="p">.</span><span class="nf">readlines</span>                <span class="c1"># =&gt; [&quot;This is line one\n&quot;, &quot;This is line two\n&quot;]
+</span>f1<span class="p">.</span><span class="nf">close</span>
+f2<span class="p">.</span><span class="nf">reopen</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">r</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; #&lt;File:testfile&gt;
+</span>f2<span class="p">.</span><span class="nf">readlines</span>                <span class="c1"># =&gt; [&quot;This is line one\n&quot;, &quot;This is line two\n&quot;, &quot;This is line three\n&quot;]
+</span>f2<span class="p">.</span><span class="nf">close</span>
+</code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/open.html">Kernel.#open</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

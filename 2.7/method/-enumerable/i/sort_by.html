@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Enumerable#sort_by (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="ブロックの評価結果を &lt;=&gt; メソッドで比較することで、self を昇
+順にソートします。ソートされた配列を新たに生成して返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-enumerable.html">Enumerableモジュール</a>
+      </li>
+      <li>
+        sort_by 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Enumerable#sort_by</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_SORT_BY"><code>sort_by -&gt; Enumerator</code><span class="permalink">[<a href="../../../method/-enumerable/i/sort_by.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Enumerable.html#method-i-sort_by">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>sort_by {|item| ... } -&gt; [object]</code></dt>
+<dd class="method-description">
+<p>
+ブロックの評価結果を &lt;=&gt; メソッドで比較することで、self を昇順にソートします。ソートされた配列を新たに生成して返します。
+</p>
+<p>
+つまり、以下とほぼ同じ動作をします。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Array</span>
+  <span class="k">def</span> <span class="nf">sort_by</span>
+    <span class="nc">self</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span><span class="o">|</span>i<span class="o">|</span> <span class="p">[</span><span class="k">yield</span><span class="p">(</span>i<span class="p">)</span>, i<span class="p">]</span> <span class="p">}</span><span class="p">.</span>
+       <span class="nf">sort</span> <span class="p">{</span><span class="o">|</span>a, b<span class="o">|</span> a<span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=&gt;</span> b<span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">}</span><span class="p">.</span>
+       <span class="nf">map</span> <span class="p">{</span><span class="o">|</span>i<span class="o">|</span> i<span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+<a href="../../../method/-enumerable/i/sort.html">Enumerable#sort</a> と比較して sort_by が優れている点として、比較条件が複雑な場合の速度が挙げられます。
+sort_by を使わない以下の例では比較を行う度に downcase が実行されます。従って downcase の実行速度が遅ければ sort の速度が致命的に低下します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="p">[</span><span class="s2">"</span><span class="s2">BAR</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">FOO</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">sort</span> <span class="p">{</span><span class="o">|</span>a, b<span class="o">|</span> a<span class="p">.</span><span class="nf">downcase</span> <span class="o">&lt;=&gt;</span> b<span class="p">.</span><span class="nf">downcase</span> <span class="p">}</span>
+</code></pre>
+<p>
+一方、次のように sort_by を使うと downcase の実行回数は要素数と同じです。つまり、その部分の実行時間は O(n) のオーダーです。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">p</span> <span class="p">[</span><span class="s2">"</span><span class="s2">BAR</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">FOO</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">sort_by</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> v<span class="p">.</span><span class="nf">downcase</span> <span class="p">}</span>
+</code></pre>
+<p>
+以下の、実行回数の検証結果を参照してみてください。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Integer</span>
+  <span class="k">def</span> <span class="nf">count</span>
+    <span class="vg">$n</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="nc">self</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+ary <span class="o">=</span> <span class="p">[</span><span class="p">]</span>
+<span class="mi">1</span><span class="p">.</span><span class="nf">upto</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> ary <span class="o">&lt;&lt;</span> <span class="nb">rand</span><span class="p">(</span>v<span class="p">)</span> <span class="p">}</span>
+
+<span class="vg">$n</span> <span class="o">=</span> <span class="mi">0</span>
+ary<span class="p">.</span><span class="nf">sort</span> <span class="p">{</span><span class="o">|</span>a,b<span class="o">|</span> a<span class="p">.</span><span class="nf">count</span> <span class="o">&lt;=&gt;</span> b<span class="p">.</span><span class="nf">count</span> <span class="p">}</span>
+<span class="nb">p</span> <span class="vg">$n</span>          <span class="c1"># =&gt; 18200
+</span>
+<span class="vg">$n</span> <span class="o">=</span> <span class="mi">0</span>
+ary<span class="p">.</span><span class="nf">sort_by</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> v<span class="p">.</span><span class="nf">count</span> <span class="p">}</span>
+<span class="nb">p</span> <span class="vg">$n</span>          <span class="c1"># =&gt; 1000
+</span></code></pre>
+<p>
+Enumerable#sort_by は安定ではありません (unstable sort)。ただし、sort_by を以下のように使うと安定なソートを実装できます。
+</p>
+<pre class="highlight ruby">
+<code>
+i <span class="o">=</span> <span class="mi">0</span>
+ary<span class="p">.</span><span class="nf">sort_by</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="p">[</span>v, i <span class="o">+=</span> <span class="mi">1</span><span class="p">]</span> <span class="p">}</span>
+</code></pre>
+<p>
+※ 比較結果が同じ要素は元の順序通りに並ぶソートを「安定なソート (stable sort)」と言います。
+</p>
+<p>
+ブロックを省略した場合は <a href="../../../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-enumerable/i/sort.html">Enumerable#sort</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

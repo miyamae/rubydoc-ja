@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Object#clone (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="オブジェクトの複製を作成して返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-object.html">Objectクラス</a>
+      </li>
+      <li>
+        clone 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Object#clone</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_CLONE"><code>clone(freeze: true) -&gt; object</code><span class="permalink">[<a href="../../../method/-object/i/clone.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Object.html#method-i-clone">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>dup -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+オブジェクトの複製を作成して返します。
+</p>
+<p>
+dup はオブジェクトの内容, taint 情報をコピーし、
+clone はそれに加えて freeze, 特異メソッドなどの情報も含めた完全な複製を作成します。
+</p>
+<p>
+clone や dup は浅い(shallow)コピーであることに注意してください。後述。
+</p>
+<p>
+<a href="../../../class/-true-class.html">TrueClass</a>, <a href="../../../class/-false-class.html">FalseClass</a>, <a href="../../../class/-nil-class.html">NilClass</a>, <a href="../../../class/-symbol.html">Symbol</a>, そして <a href="../../../class/-numeric.html">Numeric</a> クラスのインスタンスなど一部のオブジェクトは複製ではなくインスタンス自身を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] freeze:</dt>
+<dd>
+false を指定すると freeze されていないコピーを返します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+<a href="../../../class/-true-class.html">TrueClass</a> などの常に freeze されているオブジェクトの freeze されていないコピーを作成しようとしたときに発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+obj <span class="o">=</span> <span class="s2">"</span><span class="s2">string</span><span class="s2">"</span>
+obj<span class="p">.</span><span class="nf">taint</span>
+<span class="k">def</span> <span class="nf">obj</span><span class="p">.</span><span class="nf">fuga</span>
+<span class="k">end</span>
+obj<span class="p">.</span><span class="nf">freeze</span>
+
+<span class="nb">p</span><span class="p">(</span>obj<span class="p">.</span><span class="nf">equal?</span><span class="p">(</span>obj<span class="p">)</span><span class="p">)</span>          <span class="c1">#=&gt; true
+</span><span class="nb">p</span><span class="p">(</span>obj <span class="o">==</span> obj<span class="p">)</span>               <span class="c1">#=&gt; true
+</span><span class="nb">p</span><span class="p">(</span>obj<span class="p">.</span><span class="nf">tainted?</span><span class="p">)</span>             <span class="c1">#=&gt; true
+</span><span class="nb">p</span><span class="p">(</span>obj<span class="p">.</span><span class="nf">frozen?</span><span class="p">)</span>              <span class="c1">#=&gt; true
+</span><span class="nb">p</span><span class="p">(</span>obj<span class="p">.</span><span class="nf">respond_to?</span><span class="p">(</span><span class="ss">:fuga</span><span class="p">)</span><span class="p">)</span>   <span class="c1">#=&gt; true
+</span>
+obj_c <span class="o">=</span> obj<span class="p">.</span><span class="nf">clone</span>
+
+<span class="nb">p</span><span class="p">(</span>obj<span class="p">.</span><span class="nf">equal?</span><span class="p">(</span>obj_c<span class="p">)</span><span class="p">)</span>        <span class="c1">#=&gt; false
+</span><span class="nb">p</span><span class="p">(</span>obj <span class="o">==</span> obj_c<span class="p">)</span>             <span class="c1">#=&gt; true
+</span><span class="nb">p</span><span class="p">(</span>obj_c<span class="p">.</span><span class="nf">tainted?</span><span class="p">)</span>           <span class="c1">#=&gt; true
+</span><span class="nb">p</span><span class="p">(</span>obj_c<span class="p">.</span><span class="nf">frozen?</span><span class="p">)</span>            <span class="c1">#=&gt; true
+</span><span class="nb">p</span><span class="p">(</span>obj_c<span class="p">.</span><span class="nf">respond_to?</span><span class="p">(</span><span class="ss">:fuga</span><span class="p">)</span><span class="p">)</span> <span class="c1">#=&gt; true
+</span>
+obj_d <span class="o">=</span> obj<span class="p">.</span><span class="nf">dup</span>
+
+<span class="nb">p</span><span class="p">(</span>obj<span class="p">.</span><span class="nf">equal?</span><span class="p">(</span>obj_d<span class="p">)</span><span class="p">)</span>        <span class="c1">#=&gt; false
+</span><span class="nb">p</span><span class="p">(</span>obj <span class="o">==</span> obj_d<span class="p">)</span>             <span class="c1">#=&gt; true
+</span><span class="nb">p</span><span class="p">(</span>obj_d<span class="p">.</span><span class="nf">tainted?</span><span class="p">)</span>           <span class="c1">#=&gt; true
+</span><span class="nb">p</span><span class="p">(</span>obj_d<span class="p">.</span><span class="nf">frozen?</span><span class="p">)</span>            <span class="c1">#=&gt; false
+</span><span class="nb">p</span><span class="p">(</span>obj_d<span class="p">.</span><span class="nf">respond_to?</span><span class="p">(</span><span class="ss">:fuga</span><span class="p">)</span><span class="p">)</span> <span class="c1">#=&gt; false
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-object/i/initialize_copy.html">Object#initialize_copy</a>
+</p>
+<h2 >深いコピーと浅いコピー</h2>
+<p>
+clone や dup はオブジェクト自身を複製するだけで、オブジェクトの指している先(たとえば配列の要素など)までは複製しません。これを浅いコピー(shallow copy)といいます。
+</p>
+<p>
+深い(deep)コピーが必要な場合には、
+<a href="../../../class/-marshal.html">Marshal</a>モジュールを利用して
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="no">Marshal</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span>obj<span class="p">)</span><span class="p">)</span>
+</code></pre>
+<p>
+このように複製を作成する方法があります。ただしMarshal出来ないオブジェクトが含まれている場合には使えません。
+</p>
+<pre class="highlight ruby">
+<code>
+obj <span class="o">=</span> <span class="p">[</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span>,<span class="s2">"</span><span class="s2">b</span><span class="s2">"</span>,<span class="s2">"</span><span class="s2">c</span><span class="s2">"</span><span class="p">]</span>
+
+obj_d <span class="o">=</span> obj<span class="p">.</span><span class="nf">dup</span>
+obj_d<span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="s2">"</span><span class="s2">PLUS</span><span class="s2">"</span>
+
+<span class="nb">p</span> obj   <span class="c1">#=&gt; [&quot;aPLUS&quot;, &quot;b&quot;, &quot;c&quot;]
+</span><span class="nb">p</span> obj_d <span class="c1">#=&gt; [&quot;aPLUS&quot;, &quot;b&quot;, &quot;c&quot;]
+</span>
+obj_m <span class="o">=</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span>obj<span class="p">)</span><span class="p">)</span>
+obj_m<span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="s2">"</span><span class="s2">PLUS</span><span class="s2">"</span>
+
+<span class="nb">p</span> obj   <span class="c1">#=&gt; [&quot;aPLUS&quot;, &quot;b&quot;, &quot;c&quot;]
+</span><span class="nb">p</span> obj_m <span class="c1">#=&gt; [&quot;aPLUS&quot;, &quot;bPLUS&quot;, &quot;c&quot;]
+</span></code></pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

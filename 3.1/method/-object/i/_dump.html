@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Object#_dump (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="[[m:Marshal.#dump]] において出力するオブジェクトがメソッド _dump
+を定義している場合には、そのメソッドの結果が書き出されます。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-object.html">Objectクラス</a>
+      </li>
+      <li>
+        _dump 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Object#_dump</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I__DUMP"><code>_dump(limit) -&gt; String</code><span class="permalink">[<a href="../../../method/-object/i/_dump.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Object.html#method-i-_dump">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../../../method/-marshal/m/dump.html">Marshal.#dump</a> において出力するオブジェクトがメソッド _dump
+を定義している場合には、そのメソッドの結果が書き出されます。
+</p>
+<p>
+バージョン1.8.0以降では<a href="../../../method/-object/i/marshal_dump.html">Object#marshal_dump</a>, <a href="../../../method/-object/i/marshal_load.html">Object#marshal_load</a>の使用が推奨されます。 Marshal.dump するオブジェクトが _dump と marshal_dump の両方のメソッドを持つ場合は marshal_dump が優先されます。
+</p>
+<p>
+メソッド _dump は引数として再帰を制限するレベル limit を受け取り、オブジェクトを文字列化したものを返します。
+</p>
+<p>
+インスタンスがメソッド _dump を持つクラスは必ず同じフォーマットを読み戻すクラスメソッド _load を定義する必要があります。_load はオブジェクトを表現した文字列を受け取り、それをオブジェクトに戻したものを返す必要があります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] limit:</dt>
+<dd>
+再帰の制限レベルを表す整数です。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+オブジェクトを文字列化したものを返すように定義すべきです。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span>arg<span class="p">)</span>
+    <span class="vi">@foo</span> <span class="o">=</span> arg
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">_dump</span><span class="p">(</span>limit<span class="p">)</span>
+    <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="vi">@foo</span>, limit<span class="p">)</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="p">.</span><span class="nf">_load</span><span class="p">(</span><span class="nf">obj</span><span class="p">)</span>
+    <span class="nb">p</span> obj
+    <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">Marshal</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span>obj<span class="p">)</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+foo <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="p">[</span><span class="s1">'foo'</span>, <span class="s1">'bar'</span><span class="p">]</span><span class="p">)</span>
+<span class="nb">p</span> foo                      <span class="c1">#=&gt; #&lt;Foo:0xbaf234 @foo=[&quot;foo&quot;, &quot;bar&quot;]&gt;
+</span>dms <span class="o">=</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span>foo<span class="p">)</span>
+<span class="nb">p</span> dms                      <span class="c1">#=&gt; &quot;\004\bu:\bFoo\023\004\b[\a\&quot;\bfoo\&quot;\bbar&quot;
+</span>result <span class="o">=</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span>dms<span class="p">)</span> <span class="c1">#=&gt; &quot;\004\b[\a\&quot;\bfoo\&quot;\bbar&quot; # self._load の引数
+</span><span class="nb">p</span> result                   <span class="c1">#=&gt; #&lt;Foo:0xbaf07c @foo=[&quot;foo&quot;, &quot;bar&quot;]&gt;
+</span></code></pre>
+<p>
+インスタンス変数の情報は普通マーシャルデータに含まれるので、上例のように _dump を定義する必要はありません(ただし _dump を定義するとインスタンス変数の情報は dump されなくなります)。
+_dump/_load はより高度な制御を行いたい場合や拡張ライブラリで定義したクラスのインスタンスがインスタンス変数以外に情報を保持する場合に利用します。(例えば、クラス <a href="../../../class/-time.html">Time</a> は、_dump/_load を定義しています)
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-object/i/marshal_dump.html">Object#marshal_dump</a>, <a href="../../../method/-object/i/marshal_load.html">Object#marshal_load</a>, <a href="../../../method/-class/i/_load.html">Class#_load</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

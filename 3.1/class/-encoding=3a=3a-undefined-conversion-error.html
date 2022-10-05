@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class Encoding::UndefinedConversionError (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="エンコーディング変換後の文字が存在しない場合に発生する例外。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        Encoding::UndefinedConversionErrorクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class Encoding::UndefinedConversionError</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-exception.html">Exception</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-standard-error.html">StandardError</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-encoding-error.html">EncodingError</a>
+        </li>
+        
+      
+      <li>
+        Encoding::UndefinedConversionError
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+エンコーディング変換後の文字が存在しない場合に発生する例外。
+</p>
+<p>
+UTF-8 にしかない文字を EUC-JP に変換しようとした場合などに発生します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="s2">"</span><span class="s2">\u2603</span><span class="s2">"</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="no">Encoding</span><span class="o">::</span><span class="no">EUC_JP</span><span class="p">)</span>
+<span class="c1">#=&gt; Encoding::UndefinedConversionError: U+2603 from UTF-8 to EUC-JP
+</span></code></pre>
+<p>
+変換が多段階でなされ、その途中で例外が生じた場合は、例外オブジェクトが保持するエラー情報はその中間のものになります。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+ec <span class="o">=</span> <span class="no">Encoding</span><span class="o">::</span><span class="no">Converter</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">ISO-8859-1</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">EUC-JP</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># ISO-8859-1 -&gt; UTF-8 -&gt; EUC-JP
+</span><span class="k">begin</span>
+  ec<span class="p">.</span><span class="nf">convert</span><span class="p">(</span><span class="s2">"</span><span class="s2">\xa0</span><span class="s2">"</span><span class="p">)</span>
+  <span class="c1"># NO-BREAK SPACE, which is available in UTF-8 but not in EUC-JP.
+</span><span class="k">rescue</span> <span class="no">Encoding</span><span class="o">::</span><span class="no">UndefinedConversionError</span>
+  <span class="nb">p</span> <span class="vg">$!</span><span class="p">.</span><span class="nf">source_encoding</span>              <span class="c1">#=&gt; #&lt;Encoding:UTF-8&gt;
+</span>  <span class="nb">p</span> <span class="vg">$!</span><span class="p">.</span><span class="nf">destination_encoding</span>         <span class="c1">#=&gt; #&lt;Encoding:EUC-JP&gt;
+</span>  <span class="nb">p</span> <span class="vg">$!</span><span class="p">.</span><span class="nf">source_encoding_name</span>         <span class="c1">#=&gt; &quot;UTF-8&quot;
+</span>  <span class="nb">p</span> <span class="vg">$!</span><span class="p">.</span><span class="nf">destination_encoding_name</span>    <span class="c1">#=&gt; &quot;EUC-JP&quot;
+</span>  <span class="nb">puts</span> <span class="vg">$!</span><span class="p">.</span><span class="nf">error_char</span><span class="p">.</span><span class="nf">dump</span>   <span class="c1">#=&gt; &quot;\u{a0}&quot;
+</span>  <span class="nb">p</span> <span class="vg">$!</span><span class="p">.</span><span class="nf">error_char</span><span class="p">.</span><span class="nf">encoding</span>  <span class="c1">#=&gt; #&lt;Encoding:UTF-8&gt;
+</span><span class="k">end</span>
+</code></pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_DESTINATION_ENCODING">destination_encoding</a></li>
+
+<li><a href="#I_DESTINATION_ENCODING_NAME">destination_encoding_name</a></li>
+
+<li><a href="#I_ERROR_CHAR">error_char</a></li>
+
+<li><a href="#I_SOURCE_ENCODING">source_encoding</a></li>
+
+<li><a href="#I_SOURCE_ENCODING_NAME">source_encoding_name</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+  <h2>継承しているメソッド</h2>
+<dl>
+  
+<dt>Exceptionから継承しているメソッド</dt>
+<dd>
+  <ul class="class-toc">
+    
+      <li><a href="../method/-exception/i/=3d=3d.html">==</a></li>
+      
+    
+      <li><a href="../method/-exception/i/backtrace.html">backtrace</a></li>
+      
+    
+      <li><a href="../method/-exception/i/backtrace_locations.html">backtrace_locations</a></li>
+      
+    
+      <li><a href="../method/-exception/i/cause.html">cause</a></li>
+      
+    
+      <li><a href="../method/-exception/i/exception.html">exception</a></li>
+      
+    
+      <li><a href="../method/-exception/i/full_message.html">full_message</a></li>
+      
+    
+      <li><a href="../method/-exception/i/inspect.html">inspect</a></li>
+      
+    
+      <li><a href="../method/-exception/i/message.html">message</a></li>
+      
+    
+      <li><a href="../method/-exception/i/set_backtrace.html">set_backtrace</a></li>
+      
+    
+      <li><a href="../method/-exception/i/message.html">to_s</a></li>
+      
+    
+  </ul>
+</dd>
+
+</dl>
+
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_DESTINATION_ENCODING"><code>destination_encoding -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding=3a=3a-undefined-conversion-error/i/destination_encoding.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Encoding/UndefinedConversionError.html#method-i-destination_encoding">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+エラーを発生させた変換の変換先のエンコーディングを <a href="../class/-encoding.html">Encoding</a>
+オブジェクトで返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding=3a=3a-undefined-conversion-error/i/source_encoding.html">Encoding::UndefinedConversionError#source_encoding</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DESTINATION_ENCODING_NAME"><code>destination_encoding_name -&gt; String</code><span class="permalink">[<a href="../method/-encoding=3a=3a-undefined-conversion-error/i/destination_encoding_name.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Encoding/UndefinedConversionError.html#method-i-destination_encoding_name">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+エラーを発生させた変換の変換先のエンコーディングを文字列で返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding=3a=3a-undefined-conversion-error/i/destination_encoding.html">Encoding::UndefinedConversionError#destination_encoding</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ERROR_CHAR"><code>error_char -&gt; String</code><span class="permalink">[<a href="../method/-encoding=3a=3a-undefined-conversion-error/i/error_char.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Encoding/UndefinedConversionError.html#method-i-error_char">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+エラーを発生させた1文字を文字列で返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+ec <span class="o">=</span> <span class="no">Encoding</span><span class="o">::</span><span class="no">Converter</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">UTF-8</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">EUC-JP</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">begin</span>
+  ec<span class="p">.</span><span class="nf">convert</span><span class="p">(</span><span class="s2">"</span><span class="s2">\u{a0}</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">rescue</span> <span class="no">Encoding</span><span class="o">::</span><span class="no">UndefinedConversionError</span>
+  <span class="nb">puts</span> <span class="vg">$!</span><span class="p">.</span><span class="nf">error_char</span><span class="p">.</span><span class="nf">dump</span>   <span class="c1">#=&gt; &quot;\u{a0}&quot;
+</span><span class="k">end</span>
+</code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SOURCE_ENCODING"><code>source_encoding -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding=3a=3a-undefined-conversion-error/i/source_encoding.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Encoding/UndefinedConversionError.html#method-i-source_encoding">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+エラーを発生させた変換の変換元のエンコーディングを <a href="../class/-encoding.html">Encoding</a>
+オブジェクトで返します。
+</p>
+<p>
+変換が多段階になされる場合は元の文字列のものではないエンコーディングが返される場合があることに注意してください。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding=3a=3a-undefined-conversion-error/i/destination_encoding.html">Encoding::UndefinedConversionError#destination_encoding</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SOURCE_ENCODING_NAME"><code>source_encoding_name -&gt; Encoding</code><span class="permalink">[<a href="../method/-encoding=3a=3a-undefined-conversion-error/i/source_encoding_name.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/Encoding/UndefinedConversionError.html#method-i-source_encoding_name">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+エラーを発生させた変換の変換元のエンコーディングを文字列で返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-encoding=3a=3a-undefined-conversion-error/i/source_encoding.html">Encoding::UndefinedConversionError#source_encoding</a>
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

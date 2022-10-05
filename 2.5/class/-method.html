@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class Method (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="[[m:Object#method]] によりオブジェクト化され
+たメソッドオブジェクトのクラスです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        Methodクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class Method</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+      <li>
+        Method
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+<a href="../method/-object/i/method.html">Object#method</a> によりオブジェクト化されたメソッドオブジェクトのクラスです。
+</p>
+<p>
+メソッドの実体（名前でなく）とレシーバの組を封入します。
+<a href="../class/-proc.html">Proc</a> オブジェクトと違ってコンテキストを保持しません。
+</p>
+<h2 >Proc との差</h2>
+<p>
+<a href="../class/-method.html">Method</a> は取り出しの対象であるメソッドがなければ作れませんが、<a href="../class/-proc.html">Proc</a> は準備なしに作れます。その点から
+<a href="../class/-proc.html">Proc</a> は使い捨てに向き、<a href="../class/-method.html">Method</a> は何度も繰り返し生成する場合に向くと言えます。また内包するコードの大きさという点では
+<a href="../class/-proc.html">Proc</a> は小規模、<a href="../class/-method.html">Method</a> は大規模コードに向くと言えます。
+</p>
+<p>
+既存のメソッドを <a href="../class/-method.html">Method</a> オブジェクト化する。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>arg<span class="p">)</span>
+    <span class="s2">"</span><span class="s2">foo called with arg </span><span class="si">#{</span><span class="n">arg</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+m <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span>
+
+<span class="nb">p</span> m             <span class="c1"># =&gt; #&lt;Method: Foo#foo&gt;
+</span><span class="nb">p</span> m<span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>     <span class="c1"># =&gt; &quot;foo called with arg 1&quot;
+</span></code></pre>
+<p>
+名前のないメソッド(の代わり)が必要なら <a href="../class/-proc.html">Proc</a> を使うと良い。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+pr <span class="o">=</span> <span class="no">Proc</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span><span class="o">|</span>arg<span class="o">|</span>
+  <span class="s2">"</span><span class="s2">proc called with arg </span><span class="si">#{</span><span class="n">arg</span><span class="si">}</span><span class="s2">"</span>
+<span class="p">}</span>
+
+<span class="nb">p</span> pr            <span class="c1"># =&gt; #&lt;Proc:0x401b1fcc&gt;
+</span><span class="nb">p</span> pr<span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;proc called with arg 1&quot;
+</span></code></pre>
+<p>
+<a href="../class/-method.html">Method</a> オブジェクトが有用なのは以下のような場合。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="p">)</span> <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span> <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">bar</span><span class="p">(</span><span class="p">)</span> <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span> <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">baz</span><span class="p">(</span><span class="p">)</span> <span class="s2">"</span><span class="s2">baz</span><span class="s2">"</span> <span class="k">end</span>
+<span class="k">end</span>
+
+obj <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span>
+
+<span class="c1"># 任意のキーとメソッドの関係をハッシュに保持しておく
+</span><span class="nb">methods</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span> <span class="o">=&gt;</span> obj<span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span>,
+           <span class="mi">2</span> <span class="o">=&gt;</span> obj<span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:bar</span><span class="p">)</span>,
+           <span class="mi">3</span> <span class="o">=&gt;</span> obj<span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:baz</span><span class="p">)</span><span class="p">}</span>
+
+<span class="c1"># キーを使って関連するメソッドを呼び出す
+</span><span class="nb">p</span> <span class="nb">methods</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="p">.</span><span class="nf">call</span>       <span class="c1"># =&gt; &quot;foo&quot;
+</span><span class="nb">p</span> <span class="nb">methods</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="p">.</span><span class="nf">call</span>       <span class="c1"># =&gt; &quot;bar&quot;
+</span><span class="nb">p</span> <span class="nb">methods</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="p">.</span><span class="nf">call</span>       <span class="c1"># =&gt; &quot;baz&quot;
+</span></code></pre>
+<p>
+しかし、レシーバを固定させる(Method オブジェクトはレシーバを保持する)必要がないなら <a href="../method/-object/i/public_send.html">Object#public_send</a>を使う方法も有用。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="p">)</span> <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span> <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">bar</span><span class="p">(</span><span class="p">)</span> <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span> <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">baz</span><span class="p">(</span><span class="p">)</span> <span class="s2">"</span><span class="s2">baz</span><span class="s2">"</span> <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># 任意のキーとメソッド(の名前)の関係をハッシュに保持しておく
+</span><span class="c1"># レシーバの情報がここにはないことに注意
+</span><span class="nb">methods</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span> <span class="o">=&gt;</span> <span class="ss">:foo</span>,
+           <span class="mi">2</span> <span class="o">=&gt;</span> <span class="ss">:bar</span>,
+           <span class="mi">3</span> <span class="o">=&gt;</span> <span class="ss">:baz</span><span class="p">}</span>
+
+<span class="c1"># キーを使って関連するメソッドを呼び出す
+</span><span class="c1"># レシーバは任意(Foo クラスのインスタンスである必要もない)
+</span><span class="nb">p</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">public_send</span><span class="p">(</span><span class="nb">methods</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="p">)</span>      <span class="c1"># =&gt; &quot;foo&quot;
+</span><span class="nb">p</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">public_send</span><span class="p">(</span><span class="nb">methods</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="p">)</span>      <span class="c1"># =&gt; &quot;bar&quot;
+</span><span class="nb">p</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">public_send</span><span class="p">(</span><span class="nb">methods</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="p">)</span>      <span class="c1"># =&gt; &quot;baz&quot;
+</span></code></pre>
+<p>
+@see <a href="../method/-object/i/method.html">Object#method</a>
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_--3D--3D">==</a></li>
+
+<li><a href="#I_--3D--3D--3D">===</a></li>
+
+<li><a href="#I_--3D--3D--3D">[]</a></li>
+
+<li><a href="#I_ARITY">arity</a></li>
+
+<li><a href="#I_--3D--3D--3D">call</a></li>
+
+<li><a href="#I_CLONE">clone</a></li>
+
+<li><a href="#I_CURRY">curry</a></li>
+
+<li><a href="#I_--3D--3D">eql?</a></li>
+
+<li><a href="#I_HASH">hash</a></li>
+
+<li><a href="#I_INSPECT">inspect</a></li>
+
+<li><a href="#I_NAME">name</a></li>
+
+<li><a href="#I_ORIGINAL_NAME">original_name</a></li>
+
+<li><a href="#I_OWNER">owner</a></li>
+
+<li><a href="#I_PARAMETERS">parameters</a></li>
+
+<li><a href="#I_RECEIVER">receiver</a></li>
+
+<li><a href="#I_SOURCE_LOCATION">source_location</a></li>
+
+<li><a href="#I_SUPER_METHOD">super_method</a></li>
+
+<li><a href="#I_TO_PROC">to_proc</a></li>
+
+<li><a href="#I_INSPECT">to_s</a></li>
+
+<li><a href="#I_UNBIND">unbind</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--3D--3D"><code>self == other -&gt; bool</code><span class="permalink">[<a href="../method/-method/i/=3d=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Method.html#method-i-3D-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>eql?(other) -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+自身と other が同じインスタンスの同じメソッドを表す場合に
+true を返します。そうでない場合に false を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] other:</dt>
+<dd>
+自身と比較したいオブジェクトを指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+s <span class="o">=</span> <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span>
+a <span class="o">=</span> s<span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:size</span><span class="p">)</span>
+b <span class="o">=</span> s<span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:size</span><span class="p">)</span>
+<span class="nb">p</span> a <span class="o">==</span> b                            <span class="c1">#=&gt; true
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_--3D--3D--3D"><code>self[*args] -&gt; object</code><span class="permalink">[<a href="../method/-method/i/=3d=3d=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Method.html#method-i-3D-3D-3D">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>call(*args) -&gt; object</code></dt>
+<dt class="method-heading"><code>call(*args) { ... } -&gt; object</code></dt>
+<dt class="method-heading"><code>self === *args -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+メソッドオブジェクトに封入されているメソッドを起動します。
+</p>
+<p>
+引数やブロックはそのままメソッドに渡されます。
+</p>
+<p>
+self[] の形の呼び出しは通常のメソッド呼び出しに見た目を近付けるためだけに用意されたもので、Array#[]のような他の [] メソッドとの意味的な関連性はありません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+self に渡される引数。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../doc/spec=2fsafelevel.html">セキュリティモデル</a>
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>arg<span class="p">)</span>
+    <span class="s2">"</span><span class="s2">foo called with arg </span><span class="si">#{</span><span class="n">arg</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+m <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;Method: Foo#foo&gt;
+</span>m<span class="p">[</span><span class="mi">1</span><span class="p">]</span>      <span class="c1"># =&gt; &quot;foo called with arg 1&quot;
+</span>m<span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># =&gt; &quot;foo called with arg 2&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ARITY"><code>arity -&gt; Integer</code><span class="permalink">[<a href="../method/-method/i/arity.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Method.html#method-i-arity">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+メソッドが受け付ける引数の数を返します。
+</p>
+<p>
+ただし、メソッドが可変長引数を受け付ける場合、負の整数
+</p>
+<pre>
+-(必要とされる引数の数 + 1)
+</pre>
+<p>
+を返します。C 言語レベルで実装されたメソッドが可変長引数を受け付ける場合、-1 を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">C</span>
+  <span class="k">def</span> <span class="nf">u</span>;               <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">v</span><span class="p">(</span>a<span class="p">)</span>;            <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">w</span><span class="p">(</span><span class="o">*</span>a<span class="p">)</span>;           <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">x</span><span class="p">(</span>a, b<span class="p">)</span>;         <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">y</span><span class="p">(</span>a, b, <span class="o">*</span>c<span class="p">)</span>;     <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">z</span><span class="p">(</span>a, b, <span class="o">*</span>c, <span class="o">&amp;</span>d<span class="p">)</span>; <span class="k">end</span>
+<span class="k">end</span>
+
+c <span class="o">=</span> <span class="no">C</span><span class="p">.</span><span class="nf">new</span>
+<span class="nb">p</span> c<span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:u</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>     <span class="c1">#=&gt; 0
+</span><span class="nb">p</span> c<span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:v</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>     <span class="c1">#=&gt; 1
+</span><span class="nb">p</span> c<span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:w</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>     <span class="c1">#=&gt; -1
+</span><span class="nb">p</span> c<span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:x</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>     <span class="c1">#=&gt; 2
+</span><span class="nb">p</span> c<span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:y</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>     <span class="c1">#=&gt; -3
+</span><span class="nb">p</span> c<span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:z</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>     <span class="c1">#=&gt; -3
+</span>
+s <span class="o">=</span> <span class="s2">"</span><span class="s2">xyz</span><span class="s2">"</span>
+s<span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:size</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>      <span class="c1">#=&gt; 0
+</span>s<span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:replace</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>   <span class="c1">#=&gt; 1
+</span>s<span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:squeeze</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>   <span class="c1">#=&gt; -1
+</span>s<span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:count</span><span class="p">)</span><span class="p">.</span><span class="nf">arity</span>     <span class="c1">#=&gt; -1
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CLONE"><code>clone -&gt; Method</code><span class="permalink">[<a href="../method/-method/i/clone.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Method.html#method-i-clone">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を複製した <a href="../class/-method.html">Method</a> オブジェクトを作成して返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+    <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+m <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;Method: Foo#foo&gt;
+</span>m<span class="p">.</span><span class="nf">call</span> <span class="c1"># =&gt; &quot;foo&quot;
+</span>
+m<span class="p">.</span><span class="nf">clone</span> <span class="c1"># =&gt; #&lt;Method: Foo#foo&gt;
+</span>m<span class="p">.</span><span class="nf">clone</span><span class="p">.</span><span class="nf">call</span> <span class="c1"># =&gt; &quot;foo&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CURRY"><code>curry -&gt; Proc</code><span class="permalink">[<a href="../method/-method/i/curry.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Method.html#method-i-curry">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>curry(arity) -&gt; Proc</code></dt>
+<dd class="method-description">
+<p>
+self を元にカリー化した <a href="../class/-proc.html">Proc</a> を返します。
+</p>
+<p>
+カリー化した <a href="../class/-proc.html">Proc</a> はいくつかの引数をとります。十分な数の引数が与えられると、元の <a href="../class/-proc.html">Proc</a> に引数を渡し て実行し、結果を返します。引数の個数が足りないときは、部分適用したカリー化 <a href="../class/-proc.html">Proc</a> を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] arity:</dt>
+<dd>
+引数の個数を指定します。可変長の引数を指定できるメソッドをカリー化する際には必ず指定する必要があります。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>a,b,c<span class="p">)</span>
+  <span class="p">[</span>a, b, c<span class="p">]</span>
+<span class="k">end</span>
+
+<span class="nb">proc</span>  <span class="o">=</span> <span class="nc">self</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span><span class="p">.</span><span class="nf">curry</span>
+proc2 <span class="o">=</span> <span class="nb">proc</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">)</span>          <span class="c1">#=&gt; #&lt;Proc&gt;
+</span>proc2<span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>                    <span class="c1">#=&gt; [1,2,3]
+</span>
+<span class="k">def</span> <span class="nf">vararg</span><span class="p">(</span><span class="o">*</span>args<span class="p">)</span>
+  args
+<span class="k">end</span>
+
+<span class="nb">proc</span> <span class="o">=</span> <span class="nc">self</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:vararg</span><span class="p">)</span><span class="p">.</span><span class="nf">curry</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+proc2 <span class="o">=</span> <span class="nb">proc</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="ss">:x</span><span class="p">)</span>      <span class="c1">#=&gt; #&lt;Proc&gt;
+</span>proc3 <span class="o">=</span> proc2<span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="ss">:y</span>, <span class="ss">:z</span><span class="p">)</span> <span class="c1">#=&gt; #&lt;Proc&gt;
+</span>proc3<span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="ss">:a</span><span class="p">)</span>             <span class="c1">#=&gt; [:x, :y, :z, :a]
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-proc/i/curry.html">Proc#curry</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_HASH"><code>hash -&gt; Integer</code><span class="permalink">[<a href="../method/-method/i/hash.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Method.html#method-i-hash">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身のハッシュ値を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+a <span class="o">=</span> <span class="nb">method</span><span class="p">(</span><span class="ss">:<span class="o">==</span><span class="p">)</span>
+b</span> <span class="o">=</span> <span class="nb">method</span><span class="p">(</span><span class="ss">:eql?</span><span class="p">)</span>
+<span class="nb">p</span> a<span class="p">.</span><span class="nf">eql?</span> b          <span class="c1"># =&gt; true
+</span><span class="nb">p</span> a<span class="p">.</span><span class="nf">hash</span> <span class="o">==</span> b<span class="p">.</span><span class="nf">hash</span>  <span class="c1"># =&gt; true
+</span><span class="nb">p</span> <span class="p">[</span>a, b<span class="p">]</span><span class="p">.</span><span class="nf">uniq</span><span class="p">.</span><span class="nf">size</span>  <span class="c1"># =&gt; 1
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_INSPECT"><code>inspect -&gt; String</code><span class="permalink">[<a href="../method/-method/i/inspect.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Method.html#method-i-inspect">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_s -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+self を読みやすい文字列として返します。
+</p>
+<p>
+以下の形式の文字列を返します。
+</p>
+<pre>
+#&lt;Method: klass1(klass2)#method&gt;                (形式1)
+</pre>
+<p>
+klass1 は、<a href="../method/-method/i/inspect.html">Method#inspect</a> では、レシーバのクラス名、
+<a href="../method/-unbound-method/i/inspect.html">UnboundMethod#inspect</a> では、<a href="../class/-unbound-method.html">UnboundMethod</a> オブジェクトの生成元となったクラス／モジュール名です。
+</p>
+<p>
+klass2 は、実際にそのメソッドを定義しているクラス／モジュール名、
+method は、メソッド名を表します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">module</span> <span class="nn">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+    <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span>
+  include <span class="no">Foo</span>
+  <span class="k">def</span> <span class="nf">bar</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="nb">p</span> <span class="no">Bar</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span>        <span class="c1"># =&gt; #&lt;Method: Bar(Foo)#foo&gt;
+</span><span class="nb">p</span> <span class="no">Bar</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:bar</span><span class="p">)</span>        <span class="c1"># =&gt; #&lt;Method: Bar#bar&gt;
+</span></code></pre>
+<p>
+klass1 と klass2 が同じ場合は以下の形式になります。
+</p>
+<pre>
+#&lt;Method: klass1#method&gt;                        (形式2)
+</pre>
+<p>
+特異メソッドに対しては、
+</p>
+<pre>
+#&lt;Method: obj.method&gt;                           (形式3)
+#&lt;Method: klass1(klass2).method&gt;                (形式4)
+</pre>
+<p>
+という形式の文字列を返します。二番目の形式では klass1 はレシーバ、
+klass2 は実際にそのメソッドを定義しているオブジェクトになります。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># オブジェクトの特異メソッド
+</span>obj <span class="o">=</span> <span class="s2">"</span><span class="s2">"</span>
+<span class="k">class</span> <span class="o">&lt;&lt;</span>obj
+  <span class="k">def</span> <span class="nf">foo</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="nb">p</span> obj<span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span>      <span class="c1"># =&gt; #&lt;Method: &quot;&quot;.foo&gt;
+</span>
+<span class="c1"># クラスメソッド(クラスの特異メソッド)
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">foo</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="nf">p</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span>      <span class="c1"># =&gt; #&lt;Method: Foo.foo&gt;
+</span>
+<span class="c1"># スーパークラスのクラスメソッド
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span> <span class="o">&lt;</span> <span class="no">Foo</span>
+<span class="k">end</span>
+<span class="nb">p</span> <span class="no">Bar</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span>      <span class="c1"># =&gt; #&lt;Method: Bar.foo&gt;
+</span>
+<span class="c1"># 以下は(形式1)の出力になる
+</span><span class="k">module</span> <span class="nn">Baz</span>
+  <span class="k">def</span> <span class="nf">baz</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="o">&lt;&lt;</span>obj
+  include <span class="no">Baz</span>
+<span class="k">end</span>
+<span class="nb">p</span> obj<span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:baz</span><span class="p">)</span>      <span class="c1"># =&gt; #&lt;Method: Object(Baz)#baz&gt;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-object/i/inspect.html">Object#inspect</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_NAME"><code>name -&gt; Symbol</code><span class="permalink">[<a href="../method/-method/i/name.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Method.html#method-i-name">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このメソッドの名前を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>arg<span class="p">)</span>
+    <span class="s2">"</span><span class="s2">foo called with arg </span><span class="si">#{</span><span class="n">arg</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+m <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;Method: Foo#foo&gt;
+</span>m<span class="p">.</span><span class="nf">name</span> <span class="c1"># =&gt; :foo
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_ORIGINAL_NAME"><code>original_name -&gt; Symbol</code><span class="permalink">[<a href="../method/-method/i/original_name.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Method.html#method-i-original_name">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+オリジナルのメソッド名を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">C</span>
+  <span class="k">def</span> <span class="nf">foo</span>; <span class="k">end</span>
+  <span class="k">alias</span> bar foo
+<span class="k">end</span>
+<span class="no">C</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:bar</span><span class="p">)</span><span class="p">.</span><span class="nf">original_name</span> <span class="c1"># =&gt; :foo
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-unbound-method/i/original_name.html">UnboundMethod#original_name</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_OWNER"><code>owner -&gt; Class | Module</code><span class="permalink">[<a href="../method/-method/i/owner.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Method.html#method-i-owner">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このメソッドが定義されている class か module を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>arg<span class="p">)</span>
+    <span class="s2">"</span><span class="s2">foo called with arg </span><span class="si">#{</span><span class="n">arg</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+m <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;Method: Foo#foo&gt;
+</span>m<span class="p">.</span><span class="nf">owner</span> <span class="c1"># =&gt; Foo
+</span>
+m <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:puts</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;Method: Foo(Kernel)#puts&gt;
+</span>m<span class="p">.</span><span class="nf">owner</span> <span class="c1"># =&gt; Kernel
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_PARAMETERS"><code>parameters -&gt; [object]</code><span class="permalink">[<a href="../method/-method/i/parameters.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Method.html#method-i-parameters">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+Method オブジェクトの引数の情報を返します。
+</p>
+<p>
+Method オブジェクトが引数を取らなければ空の配列を返します。引数を取る場合は、配列の配列を返し、各配列の要素は引数の種類に応じた以下のような Symbol と、仮引数の名前を表す Symbol の 2 要素です。組み込みのメソッドでは、仮引数の名前が取れません。
+</p>
+<dl>
+<dt>:req</dt>
+<dd>
+<p>
+必須の引数
+</p>
+</dd>
+<dt>:opt</dt>
+<dd>
+<p>
+デフォルト値が指定されたオプショナルな引数
+</p>
+</dd>
+<dt>:rest</dt>
+<dd>
+<p>
+* で指定された残りすべての引数
+</p>
+</dd>
+<dt>:keyreq</dt>
+<dd>
+<p>
+必須のキーワード引数
+</p>
+</dd>
+<dt>:key</dt>
+<dd>
+<p>
+デフォルト値が指定されたオプショナルなキーワード引数
+</p>
+</dd>
+<dt>:keyrest</dt>
+<dd>
+<p>
+** で指定された残りのキーワード引数
+</p>
+</dd>
+<dt>:block</dt>
+<dd>
+<p>
+&amp; で指定されたブロック引数
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+m <span class="o">=</span> <span class="no">Class</span><span class="p">.</span><span class="nf">new</span><span class="p">{</span>define_method<span class="p">(</span><span class="ss">:m</span><span class="p">)</span><span class="p">{</span><span class="o">|</span>x, y<span class="o">=</span><span class="mi">42</span>, <span class="o">*</span>other, <span class="ss">k_x:</span>, <span class="ss">k_y:</span> <span class="mi">42</span>, <span class="o">**</span>k_other, <span class="o">&amp;</span>b<span class="o">|</span><span class="p">}</span><span class="p">}</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:m</span><span class="p">)</span>
+m<span class="p">.</span><span class="nf">parameters</span> <span class="c1">#=&gt; [[:req, :x], [:opt, :y], [:rest, :other], [:keyreq, :k_x], [:key, :k_y], [:keyrest, :k_other], [:block, :b]]
+</span><span class="no">File</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:symlink</span><span class="p">)</span><span class="p">.</span><span class="nf">parameters</span> <span class="c1">#=&gt; [[:req], [:req]]
+</span></code></pre>
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-proc/i/parameters.html">Proc#parameters</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_RECEIVER"><code>receiver -&gt; object</code><span class="permalink">[<a href="../method/-method/i/receiver.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Method.html#method-i-receiver">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+このメソッドオブジェクトのレシーバを返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>arg<span class="p">)</span>
+    <span class="s2">"</span><span class="s2">foo called with arg </span><span class="si">#{</span><span class="n">arg</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+m <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;Method: Foo#foo&gt;
+</span>m<span class="p">.</span><span class="nf">receiver</span> <span class="c1"># =&gt; #&lt;Foo:0x007fb39203eb78&gt;
+</span>m<span class="p">.</span><span class="nf">receiver</span><span class="p">.</span><span class="nf">foo</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># =&gt; &quot;foo called with arg 1&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SOURCE_LOCATION"><code>source_location -&gt; [String, Integer] | nil</code><span class="permalink">[<a href="../method/-method/i/source_location.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Method.html#method-i-source_location">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ソースコードのファイル名と行番号を配列で返します。
+</p>
+<p>
+その手続オブジェクトが ruby で定義されていない(つまりネイティブである)場合は nil を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-proc/i/source_location.html">Proc#source_location</a>
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># ------- /tmp/foo.rb ---------
+</span><span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span>; <span class="k">end</span>
+<span class="k">end</span>
+<span class="c1"># ----- end of /tmp/foo.rb ----
+</span>
+<span class="nb">require</span> <span class="s1">'/tmp/foo'</span>
+
+m <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;Method: Foo#foo&gt;
+</span>m<span class="p">.</span><span class="nf">source_location</span> <span class="c1"># =&gt; [&quot;/tmp/foo.rb&quot;, 2]
+</span>
+<span class="nb">method</span><span class="p">(</span><span class="ss">:puts</span><span class="p">)</span><span class="p">.</span><span class="nf">source_location</span> <span class="c1"># =&gt; nil
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SUPER_METHOD"><code>super_method -&gt; Method | nil</code><span class="permalink">[<a href="../method/-method/i/super_method.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Method.html#method-i-super_method">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self 内で super を実行した際に実行されるメソッドを <a href="../class/-method.html">Method</a> オブジェクトにして返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-unbound-method/i/super_method.html">UnboundMethod#super_method</a>
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Super</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+    <span class="s2">"</span><span class="s2">superclass method</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Sub</span> <span class="o">&lt;</span> <span class="no">Super</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+    <span class="s2">"</span><span class="s2">subclass method</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+m <span class="o">=</span> <span class="no">Sub</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;Method: Sub#foo&gt;
+</span>m<span class="p">.</span><span class="nf">call</span> <span class="c1"># =&gt; &quot;subclass method&quot;
+</span>m<span class="p">.</span><span class="nf">super_method</span> <span class="c1"># =&gt; #&lt;Method: Super#foo&gt;
+</span>m<span class="p">.</span><span class="nf">super_method</span><span class="p">.</span><span class="nf">call</span> <span class="c1"># =&gt; &quot;superclass method&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_PROC"><code>to_proc -&gt; Proc</code><span class="permalink">[<a href="../method/-method/i/to_proc.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Method.html#method-i-to_proc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self を call する <a href="../class/-proc.html">Proc</a> オブジェクトを生成して返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+    <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+m <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;Method: Foo#foo&gt;
+</span>pr <span class="o">=</span> m<span class="p">.</span><span class="nf">to_proc</span> <span class="c1"># =&gt; #&lt;Proc:0x007f874d026008 (lambda)&gt;
+</span>pr<span class="p">.</span><span class="nf">call</span> <span class="c1"># =&gt; &quot;foo&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_UNBIND"><code>unbind -&gt; UnboundMethod</code><span class="permalink">[<a href="../method/-method/i/unbind.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Method.html#method-i-unbind">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self のレシーバとの関連を取り除いた <a href="../class/-unbound-method.html">UnboundMethod</a> オブジェクトを生成して返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">foo</span>
+    <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+m <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">method</span><span class="p">(</span><span class="ss">:foo</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;Method: Foo#foo&gt;
+</span>unbound_method <span class="o">=</span> m<span class="p">.</span><span class="nf">unbind</span> <span class="c1"># =&gt; #&lt;UnboundMethod: Foo#foo&gt;
+</span>unbound_method<span class="p">.</span><span class="nf">bind</span><span class="p">(</span><span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;Method: Foo#foo&gt;
+</span></code></pre>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

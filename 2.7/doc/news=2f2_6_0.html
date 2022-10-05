@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>NEWS for Ruby 2.6.0 (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="このドキュメントは前回リリース以降のバグ修正を除くユーザーに影響のある機能の変更のリストです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      
+        <li>
+          <a href="../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+        </li>
+        <li>
+          NEWS for Ruby 2.6.0
+        </li>
+      
+    </ol>
+  </nav>
+
+<h1>NEWS for Ruby 2.6.0</h1>
+</header>
+
+<main>
+
+<p>
+このドキュメントは前回リリース以降のバグ修正を除くユーザーに影響のある機能の変更のリストです。
+</p>
+<p>
+それぞれのエントリーは参照情報があるため短いです。十分な情報と共に書かれた全ての変更のリストは ChangeLog ファイルか bugs.ruby-lang.org の issue を参照してください。
+</p>
+<h1 >2.5.0 以降の変更</h1>
+<h2 >言語仕様の変更</h2>
+<ul>
+<li>$SAFE はプロセスグローバルで扱われることになると共に、0以外を設定した後に0に戻せるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14250">[feature#14250]</a></li>
+</ul>
+<ul>
+<li>Refinements がブロック引数にも反映されるようになりました。  <a class="external" href="https://bugs.ruby-lang.org/issues/14223">[feature#14223]</a></li>
+</ul>
+<ul>
+<li>Refinements が <a href="../method/-object/i/public_send.html">Object#public_send</a> にも反映されるようになりました。  <a class="external" href="https://bugs.ruby-lang.org/issues/15326">[feature#15326]</a></li>
+</ul>
+<ul>
+<li>Refinements が <a href="../method/-object/i/respond_to=3f.html">Object#respond_to?</a> にも反映されるようになりました。  <a class="external" href="https://bugs.ruby-lang.org/issues/15327">[feature#15327]</a></li>
+</ul>
+<ul>
+<li>rescue 節なしの else 節がシンタックスエラーを発生するようになりました。 [実験的] <a class="external" href="https://bugs.ruby-lang.org/issues/14606">[feature#14606]</a></li>
+</ul>
+<ul>
+<li>定数名の先頭の文字に ASCII 以外の大文字も使えるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/13770">[feature#13770]</a></li>
+</ul>
+<ul>
+<li>終端なし <a href="../class/-range.html">Range</a> が導入されました。 終端なし <a href="../class/-range.html">Range</a> は (0..) や (0...) のように使うことができます。  <a class="external" href="https://bugs.ruby-lang.org/issues/12912">[feature#12912]</a>
+典型的なユースケースは以下の通りです:</li>
+</ul>
+<pre>
+      ary[1..]                              # ary[1..-1] と同じ
+      (1...).each {|index| block }          # index が 1 から始まる無限ループ
+      ary.zip(1..) {|elem, index| block }   # ary.each.with_index(1) { }
+</pre>
+<ul>
+<li>キーワード引数のハッシュに Symbol 以外のキーが含まれると例外が発生するようになりました。</li>
+</ul>
+<ul>
+<li>&quot;shadowing outer local variable&quot; という警告が削除されました。  <a class="external" href="https://bugs.ruby-lang.org/issues/12490">[feature#12490]</a>
+以下のようなコードを警告なしに書くことができます:</li>
+</ul>
+<pre>
+      user = users.find {|user| cond(user) }
+</pre>
+<ul>
+<li>例外が捕捉されず、バックトレースとエラーメッセージが表示されるときに、
+例外の <a href="../method/-exception/i/cause.html">Exception#cause</a> も表示されるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/8257">[feature#8257]</a></li>
+</ul>
+<ul>
+<li>フリップフロップが非推奨になりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/5400">[feature#5400]</a></li>
+</ul>
+<h2 >組み込みクラスの更新</h2>
+<ul>
+<li><a href="../class/-array.html">Array</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-array/i/union.html">Array#union</a> と <a href="../method/-array/i/difference.html">Array#difference</a> <a class="external" href="https://bugs.ruby-lang.org/issues/14097">[feature#14097]</a></li>
+</ul>
+</li>
+<li>変更されたメソッド<ul>
+<li><a href="../method/-array/i/to_h.html">Array#to_h</a> はブロックを受け取りキーと値のペアを新しいキーと値に変換できるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15143">[feature#15143]</a></li>
+</ul>
+</li>
+<li>別名<ul>
+<li><a href="../method/-array/i/filter.html">Array#filter</a> が <a href="../method/-array/i/select.html">Array#select</a> の別名として追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/13784">[feature#13784]</a></li>
+<li><a href="../method/-array/i/filter=21.html">Array#filter!</a> が <a href="../method/-array/i/select=21.html">Array#select!</a> の別名として追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/13784">[feature#13784]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-binding.html">Binding</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-binding/i/source_location.html">Binding#source_location</a> 追加 <a class="external" href="https://bugs.ruby-lang.org/issues/14230">[feature#14230]</a><ul>
+<li>bindingのソースコード上の位置を __FILE__ と __LINE__ の二要素配列として返します。
+従来でも eval(&quot;[__FILE__, __LINE__]&quot;, binding) とすることでこれらの情報は得られましたが、
+将来的に <a href="../method/-kernel/m/eval.html">Kernel.#eval</a> は binding のソースコード行を無視する変更を予定しているため <a class="external" href="https://bugs.ruby-lang.org/issues/4352">[bug#4352]</a>、
+この新しいメソッドを用いることが今後は推奨されます。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-dir.html">Dir</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-dir/i/each_child.html">Dir#each_child</a> と <a href="../method/-dir/i/children.html">Dir#children</a> 追加 <a class="external" href="https://bugs.ruby-lang.org/issues/13969">[feature#13969]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-enumerable.html">Enumerable</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-enumerable/i/chain.html">Enumerable#chain</a> はレシーバと引数のそれぞれの要素を順番にイテレートする
+<a href="../class/-enumerator=3a=3a-chain.html">Enumerator::Chain</a> オブジェクトを返します。 <a class="external" href="https://bugs.ruby-lang.org/issues/15144">[feature#15144]</a></li>
+</ul>
+</li>
+<li>変更されたメソッド<ul>
+<li><a href="../method/-enumerable/i/to_h.html">Enumerable#to_h</a> はブロックを受け取りキーと値のペアを新しいキーと値に変換できるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15143">[feature#15143]</a></li>
+</ul>
+</li>
+<li>別名<ul>
+<li><a href="../method/-enumerable/i/filter.html">Enumerable#filter</a> が <a href="../method/-enumerable/i/select.html">Enumerable#select</a> の別名として追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/13784">[feature#13784]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-enumerator=3a=3a-arithmetic-sequence.html">Enumerator::ArithmeticSequence</a><ul>
+<li>等差数列(隣接する項が共通の差(公差)を持つ数列)のジェネレーターを表現する新しいクラスです。
+Python のスライスのようなものを表現するために使えます。
+このクラスのインスタンスは <a href="../method/-numeric/i/step.html">Numeric#step</a> や <a href="../method/-range/i/step.html">Range#step</a> で得られます。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-enumerator=3a=3a-chain.html">Enumerator::Chain</a><ul>
+<li>1個の Enumerator で複数の Enumerable の連鎖を表現する新しいクラスです。
+<a href="../method/-enumerable/i/chain.html">Enumerable#chain</a> や <a href="../method/-enumerator/i/=2b.html">Enumerator#+</a> で生成されます。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-enumerator=3a=3a-lazy.html">Enumerator::Lazy</a><ul>
+<li>別名<ul>
+<li><a href="../method/-enumerator=3a=3a-lazy/i/filter.html">Enumerator::Lazy#filter</a> が <a href="../method/-enumerator=3a=3a-lazy/i/select.html">Enumerator::Lazy#select</a> の別名として追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/13784">[feature#13784]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-enumerator.html">Enumerator</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-enumerator/i/=2b.html">Enumerator#+</a> はレシーバの要素とオペランドの要素を順番にイテレートする
+Enumerator オブジェクトを返します。 <a class="external" href="https://bugs.ruby-lang.org/issues/15144">[feature#15144]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-e-n-v.html">ENV</a><ul>
+<li>変更されたメソッド<ul>
+<li><a href="../method/-e-n-v/s/to_h.html">ENV.to_h</a> はブロックを受け取り、環境変数名と値のペアを新しいキーと値に変換できるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15143">[feature#15143]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-exception.html">Exception</a><ul>
+<li>新規オプション<ul>
+<li><a href="../method/-exception/i/full_message.html">Exception#full_message</a> が :highlight と :order を受け付けるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14324">[bug#14324]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-hash.html">Hash</a><ul>
+<li>変更されたメソッド<ul>
+<li><a href="../method/-hash/i/merge.html">Hash#merge</a>, <a href="../method/-hash/i/merge=21.html">Hash#merge!</a>, <a href="../method/-hash/i/update.html">Hash#update</a> が引数を複数受け付けるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15111">[feature#15111]</a></li>
+<li><a href="../method/-hash/i/to_h.html">Hash#to_h</a> はブロックを受け取りキーと値のペアを新しいキーと値に変換できるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15143">[feature#15143]</a></li>
+</ul>
+</li>
+<li>別名<ul>
+<li><a href="../method/-hash/i/filter.html">Hash#filter</a> が <a href="../method/-hash/i/select.html">Hash#select</a> の別名として追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/13784">[feature#13784]</a></li>
+<li><a href="../method/-hash/i/filter=21.html">Hash#filter!</a> が <a href="../method/-hash/i/select=21.html">Hash#select!</a> の別名として追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/13784">[feature#13784]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-i-o.html">IO</a><ul>
+<li>新規オプション<ul>
+<li>排他的ファイルオープンを表すモード文字 'x' が追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/11258">[feature#11258]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-kernel.html">Kernel</a><ul>
+<li>別名<ul>
+<li><a href="../method/-object/i/then.html">Object#then</a> が <a href="../method/-object/i/yield_self.html">Object#yield_self</a> の別名として追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14594">[feature#14594]</a></li>
+</ul>
+</li>
+<li>新規オプション<ul>
+<li><a href="../method/-kernel/m/-complex.html">Kernel.#Complex</a>, <a href="../method/-kernel/m/-float.html">Kernel.#Float</a>, <a href="../method/-kernel/m/-integer.html">Kernel.#Integer</a>,
+<a href="../method/-kernel/m/-rational.html">Kernel.#Rational</a> にエラー処理方法を指定する :exception オプションが
+追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/12732">[feature#12732]</a></li>
+<li><a href="../method/-kernel/m/system.html">Kernel.#system</a> に失敗時に例外を発生する :exception オプションが
+追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14386">[feature#14386]</a></li>
+</ul>
+</li>
+<li>非互換な変更<ul>
+<li><a href="../method/-kernel/m/system.html">Kernel.#system</a> と <a href="../method/-kernel/m/exec.html">Kernel.#exec</a> が非標準にファイルディスクリプタを閉じなくなりました。
+(:close_others オプションのデフォルトが false になりまりました。
+しかし、引き続き Ruby 自体が作成するディスクリプタに FD_CLOEXEC フラグは設定されます。) <a class="external" href="https://bugs.ruby-lang.org/issues/14907">[misc#14907]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-key-error.html">KeyError</a><ul>
+<li>新規オプション<ul>
+<li><a href="../method/-key-error/s/new.html">KeyError.new</a> に :receiver と :key にオプションが追加されて
+Ruby コードからも設定できるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14313">[feature#14313]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-method.html">Method</a><ul>
+<li>新規メソッド<ul>
+<li>関数合成用に <a href="../method/-method/i/=3c=3c.html">Method#&lt;&lt;</a> と <a href="../method/-method/i/=3e=3e.html">Method#&gt;&gt;</a> が追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/6284">[feature#6284]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-module.html">Module</a><ul>
+<li>変更されたメソッド<ul>
+<li><a href="../method/-module/i/method_defined=3f.html">Module#method_defined?</a>, <a href="../method/-module/i/private_method_defined=3f.html">Module#private_method_defined?</a>,
+<a href="../method/-module/i/protected_method_defined=3f.html">Module#protected_method_defined?</a> が省略可能な第2引数を受け取るように
+なりました。 true (デフォルト値) のとき、祖先のモジュールやクラスもチェックします。
+それ以外の場合はそのクラス自身のみチェックします。 <a class="external" href="https://bugs.ruby-lang.org/issues/14944">[feature#14944]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-name-error.html">NameError</a><ul>
+<li>新規オプション<ul>
+<li><a href="../method/-name-error/s/new.html">NameError.new</a> に :receiver オプションが追加されて
+Ruby コードからも設定できるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14313">[feature#14313]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-nil-class.html">NilClass</a><ul>
+<li>新規メソッド<ul>
+<li>互換性のため、<a href="../method/-nil-class/i/=3d=7e.html">NilClass#=~</a> が追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15231">[feature#15231]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-no-method-error.html">NoMethodError</a><ul>
+<li>新規オプション<ul>
+<li><a href="../method/-no-method-error/s/new.html">NoMethodError.new</a> に :receiver オプションが追加されて
+Ruby コードからも設定できるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14313">[feature#14313]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-numeric.html">Numeric</a><ul>
+<li>非互換な変更<ul>
+<li><a href="../method/-numeric/i/step.html">Numeric#step</a> が <a href="../class/-enumerator.html">Enumerator</a> クラスのインスタンスではなく
+<a href="../class/-enumerator=3a=3a-arithmetic-sequence.html">Enumerator::ArithmeticSequence</a> クラスのインスタンスを返すようになりました。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-open-struct.html">OpenStruct</a><ul>
+<li>変更されたメソッド<ul>
+<li><a href="../method/-open-struct/i/to_h.html">OpenStruct#to_h</a> はブロックを受け取りキーと値のペアを新しいキーと値に変換できるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15143">[feature#15143]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-proc.html">Proc</a><ul>
+<li>新規メソッド<ul>
+<li>関数合成用に <a href="../method/-proc/i/=3c=3c.html">Proc#&lt;&lt;</a> と <a href="../method/-proc/i/=3e=3e.html">Proc#&gt;&gt;</a> が追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/6284">[feature#6284]</a></li>
+</ul>
+</li>
+<li>非互換な変更<ul>
+<li><a href="../method/-proc/i/call.html">Proc#call</a> が <a href="../method/-kernel/v/-s-a-f-e.html">$SAFE</a> を変更しなくなりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14250">[feature#14250]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-random.html">Random</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-random/s/bytes.html">Random.bytes</a> が追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/4938">[feature#4938]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-range.html">Range</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-range/i/=25.html">Range#%</a> が追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14697">[feature#14697]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>非互換な変更<ul>
+<li><a href="../method/-range/i/=3d=3d=3d.html">Range#===</a> が <a href="../method/-range/i/include=3f.html">Range#include?</a> メソッドではなく <a href="../method/-range/i/cover=3f.html">Range#cover?</a> メソッドを使うようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14575">[feature#14575]</a></li>
+<li><a href="../method/-range/i/cover=3f.html">Range#cover?</a> が <a href="../class/-range.html">Range</a> オブジェクトを受け付けるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14473">[feature#14473]</a></li>
+<li><a href="../method/-range/i/step.html">Range#step</a> が <a href="../class/-enumerator.html">Enumerator</a> クラスのインスタンスではなく
+<a href="../class/-enumerator=3a=3a-arithmetic-sequence.html">Enumerator::ArithmeticSequence</a> クラスのインスタンスを返すようになりました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-regexp.html">Regexp</a>/<a href="../class/-string.html">String</a><ul>
+<li>Unicode のバージョンを 10.0.0 から 11.0.0 に更新しました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14802">[feature#14802]</a>
+これは書記素クラスタ (/\X/) アルゴリズムの書き換えと <a href="../method/-string/i/downcase.html">String#downcase</a> での
+Georgian MTAVRULI の special-casing を含みます。</li>
+<li>Update Emoji version from 5.0 to 11.0.0 <a class="external" href="https://bugs.ruby-lang.org/issues/14802">[feature#14802]</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-ruby-v-m=3a=3a-abstract-syntax-tree.html">RubyVM::AbstractSyntaxTree</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-ruby-v-m=3a=3a-abstract-syntax-tree/s/parse.html">RubyVM::AbstractSyntaxTree.parse</a> は文字列をパースして AST ノードを返します。 [実験的]</li>
+<li><a href="../method/-ruby-v-m=3a=3a-abstract-syntax-tree/s/parse_file.html">RubyVM::AbstractSyntaxTree.parse_file</a> はファイルをパースして AST ノードを返します。 [実験的]</li>
+<li><a href="../method/-ruby-v-m=3a=3a-abstract-syntax-tree/s/of.html">RubyVM::AbstractSyntaxTree.of</a> は proc やメソッドに対応する AST ノードを返します。 [実験的]</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-ruby-v-m.html">RubyVM</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-ruby-v-m/s/resolve_feature_path.html">RubyVM.resolve_feature_path</a> は &quot;require(feature)&quot; で読み込むファイルを
+特定します。 [実験的] <a class="external" href="https://bugs.ruby-lang.org/issues/15230">[feature#15230]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-string.html">String</a><ul>
+<li><a href="../method/-string/i/crypt.html">String#crypt</a> は非推奨になりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14915">[feature#14915]</a></li>
+<li>新機能<ul>
+<li><a href="../method/-string/i/split.html">String#split</a> はブロックが渡されていたら部分文字列ごとに呼び出すようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/4780">[feature#4780]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-struct.html">Struct</a><ul>
+<li>変更されたメソッド<ul>
+<li><a href="../method/-struct/i/to_h.html">Struct#to_h</a> はブロックを受け取りキーと値のペアを新しいキーと値に変換できるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15143">[feature#15143]</a></li>
+</ul>
+</li>
+<li>別名<ul>
+<li><a href="../method/-struct/i/filter.html">Struct#filter</a> が <a href="../method/-struct/i/select.html">Struct#select</a> の別名として追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/13784">[feature#13784]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-time.html">Time</a><ul>
+<li>新機能<ul>
+<li><a href="../method/-time/s/new.html">Time.new</a> と <a href="../method/-time/i/getlocal.html">Time#getlocal</a> が UTC オフセット文字列と同様に
+タイムゾーンオブジェクトを受け付けるようになりました。<a href="../method/-time/i/=2b.html">Time#+</a>,
+<a href="../method/-time/i/=2d.html">Time#-</a>, <a href="../method/-time/i/succ.html">Time#succ</a> もタイムゾーンを維持します。 <a class="external" href="https://bugs.ruby-lang.org/issues/14850">[feature#14850]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-trace-point.html">TracePoint</a><ul>
+<li>新機能<ul>
+<li>&quot;script_compiled&quot; イベントがサポートされました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15287">[feature#15287]</a></li>
+</ul>
+</li>
+<li>新規メソッド<ul>
+<li><a href="../method/-trace-point/i/parameters.html">TracePoint#parameters</a> <a class="external" href="https://bugs.ruby-lang.org/issues/14694">[feature#14694]</a></li>
+<li><a href="../method/-trace-point/i/instruction_sequence.html">TracePoint#instruction_sequence</a> <a class="external" href="https://bugs.ruby-lang.org/issues/15287">[feature#15287]</a></li>
+<li><a href="../method/-trace-point/i/eval_script.html">TracePoint#eval_script</a> <a class="external" href="https://bugs.ruby-lang.org/issues/15287">[feature#15287]</a></li>
+</ul>
+</li>
+<li>変更されたメソッド<ul>
+<li><a href="../method/-trace-point/i/enable.html">TracePoint#enable</a> がキーワード引数 &quot;target:&quot; と &quot;target_line:&quot; を
+受け付けるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15289">[feature#15289]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 >標準添付ライブラリの更新</h2>
+<ul>
+<li><a href="../class/-big-decimal.html">BigDecimal</a><ul>
+<li>バージョン 1.4.0 に更新されました。
+このバージョンは様々な非互換な点を含んでいます。
+詳細は下の互換性についてのセクションを参照してください。</li>
+<li>変更されたメソッド<ul>
+<li><a href="../method/-kernel/m/-big-decimal.html">Kernel.#BigDecimal</a>() は <a href="../method/-kernel/m/-float.html">Kernel.#Float</a>() のように
+キーワード引数 &quot;exception:&quot; を受け付けるようになりました。</li>
+</ul>
+</li>
+<li>最近のバージョンでの変更点に関する注意事項
+以下の情報を元に適切な bigdecimal のバージョンを選んでください。<ul>
+<li>1.3.5 の <a href="../method/-big-decimal/s/new.html">BigDecimal.new</a> は &quot;exception:&quot; キーワードをサポートしていません。
+&quot;-w&quot; オプションをつけた時に <a href="../method/-big-decimal/s/new.html">BigDecimal.new</a> は非推奨警告を表示します。</li>
+<li>1.4.0 の <a href="../method/-big-decimal/s/new.html">BigDecimal.new</a> は &quot;exception:&quot; キーワードをサポートしてます。
+<a href="../method/-big-decimal/s/new.html">BigDecimal.new</a> は常に非推奨警告を表示します。
+<a href="../method/-object/i/to_d.html">Object#to_d</a> メソッドは <a href="../method/-kernel/m/-big-decimal.html">Kernel.#BigDecimal</a>() や
+<a href="../method/-big-decimal/s/new.html">BigDecimal.new</a> とは違いがあります。</li>
+<li>2.0.0 は Ruby 2.6.0 のリリース後すぐにリリースされる予定です。
+このバージョンは <a href="../method/-big-decimal/s/new.html">BigDecimal.new</a> メソッドを含みません。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>Bundler<ul>
+<li>Bundler が標準添付ライブラリに追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/12733">[feature#12733]</a></li>
+<li>最新安定版の 1.17.2 が使われます。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-coverage.html">Coverage</a><ul>
+<li>oneshot_lines モードが追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15022">[feature#15022]</a><ul>
+<li>このモードは「各行が何回実行されたか」の代わりに
+「各行が少なくとも1回実行されたかどうか」をチェックします。
+行ごとのフックは少なくとも1回実行されて、実行後はフックフラグが削除されます。
+言い換えるとオーバーヘッドがなくなります。</li>
+</ul>
+</li>
+<li>新規オプション<ul>
+<li>:oneshot_lines キーワード引数が <a href="../method/-coverage/s/start.html">Coverage.start</a> に追加されました。</li>
+<li>:stop と :clear キーワード引数が <a href="../method/-coverage/s/result.html">Coverage.result</a> に追加されました。
+clear が真の時、カウンターが0クリアされます。
+stop が真の時、カバレッジ計測を停止します。</li>
+</ul>
+</li>
+<li>新規メソッド<ul>
+<li><a href="../method/-coverage/s/line_stub.html">Coverage.line_stub</a> はソースコードからラインカバレッジ用のスタブを
+作成するシンプルなヘルパー関数です。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-c-s-v.html">CSV</a><ul>
+<li>3.0.2 に更新されました。
+特に書き出しの高速化を含んでいます。
+書き出しは約2倍高速化しています。
+<a class="external" href="https://github.com/ruby/csv/blob/master/NEWS.md">https://github.com/ruby/csv/blob/master/NEWS.md</a> を参照してください。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-e-r-b.html">ERB</a><ul>
+<li>新規オプション<ul>
+<li>:trim_mode と :eoutvar キーワード引数が <a href="../method/-e-r-b/s/new.html">ERB.new</a> に追加されました。
+最初の引数以外のキーワード引数ではない引数はやんわりと非推奨になり、
+Ruby 2.5 が EOL になった時に削除される予定です。 <a class="external" href="https://bugs.ruby-lang.org/issues/14256">[feature#14256]</a></li>
+<li>erb コマンドの -S オプションは非推奨になりました。次のバージョンで削除予定です。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-file-utils.html">FileUtils</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-file-utils/m/cp_lr.html">FileUtils.#cp_lr</a> <a class="external" href="https://bugs.ruby-lang.org/issues/4189">[feature#4189]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-matrix.html">Matrix</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-matrix/i/antisymmetric=3f.html">Matrix#antisymmetric?</a>, <a href="../method/-matrix/i/skew_symmetric=3f.html">Matrix#skew_symmetric?</a></li>
+<li><a href="../method/-matrix/i/map=21.html">Matrix#map!</a>, <a href="../method/-matrix/i/collect=21.html">Matrix#collect!</a> <a class="external" href="https://bugs.ruby-lang.org/issues/14151">[feature#14151]</a></li>
+<li><a href="../method/-matrix/i/=5b=5d=3d.html">Matrix#[]=</a></li>
+<li><a href="../method/-vector/i/map=21.html">Vector#map!</a>, <a href="../method/-vector/i/collect=21.html">Vector#collect!</a></li>
+<li><a href="../method/-vector/i/=5b=5d=3d.html">Vector#[]=</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-net=3a=3a-h-t-t-p.html">Net::HTTP</a><ul>
+<li>新規オプション<ul>
+<li>:write_timeout キーワード引数が <a href="../method/-net=3a=3a-h-t-t-p/s/new.html">Net::HTTP.new</a> に追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/13396">[feature#13396]</a></li>
+</ul>
+</li>
+<li>新規メソッド<ul>
+<li><a href="../method/-net=3a=3a-h-t-t-p/i/write_timeout.html">Net::HTTP#write_timeout</a> と <a href="../method/-net=3a=3a-h-t-t-p/i/write_timeout=3d.html">Net::HTTP#write_timeout=</a> が追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/13396">[feature#13396]</a></li>
+</ul>
+</li>
+<li>新規定数<ul>
+<li><a href="../class/-net=3a=3a-h-t-t-p-client-exception.html">Net::HTTPClientException</a> が追加されて <a href="../class/-net=3a=3a-h-t-t-p-server-exception.html">Net::HTTPServerException</a> が非推奨になりました。
+誤解を招く名称だったため。 <a class="external" href="https://bugs.ruby-lang.org/issues/14688">[bug#14688]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-n-k-f.html">NKF</a><ul>
+<li>nkf v2.1.5 に更新されました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-psych.html">Psych</a><ul>
+<li>Psych 3.1.0 に更新されました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-r-doc.html">RDoc</a><ul>
+<li>約2倍高速化されました。</li>
+<li>ファイル生成に SOURCE_DATE_EPOCH を使うようになりました。</li>
+<li>メソッドの行番号がずれていたのを修正しました。</li>
+<li>無視されていた --width, --exclude, --line-numbers を有効にしました。</li>
+<li>デフォルトのマークアップ記法で &quot;&gt;&gt;&gt;&quot; による引用をサポートしました。</li>
+<li>TomDoc 記法で &quot;Raises&quot; 行をサポートしました。</li>
+<li>シンタックスエラー出力を修正しました。</li>
+<li>多数のパース中のバグを修正しました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-r-e-x-m-l.html">REXML</a><ul>
+<li>REXML 3.1.9 に更新されました。
+<a class="external" href="https://github.com/ruby/rexml/blob/master/NEWS.md">https://github.com/ruby/rexml/blob/master/NEWS.md</a> を参照してください。</li>
+<li>いくつかの XPath 実装を改善:<ul>
+<li>concat() 関数: 結合前に全ての引数を文字列化</li>
+<li>string() 関数: コンテキストノードをサポート</li>
+<li>string() 関数: 処理命令 (PI) ノードをサポート</li>
+<li>XPath 2.0 で&quot;*:#{ELEMENT_NAME}&quot; 記法をサポート</li>
+</ul>
+</li>
+<li>いくつかの XPath 実装を修正:<ul>
+<li>&quot;//#{ELEMENT_NAME}[#{POSITION}]&quot; の問題</li>
+<li>string() 関数: function(document) がルート要素の外のノードを返すのを修正</li>
+<li>&quot;/ #{ELEMENT_NAME} &quot; の問題</li>
+<li>&quot;/ #{ELEMENT_NAME} [ #{PREDICATE} ]&quot; の問題</li>
+<li>&quot;/ #{AXIS}::#{ELEMENT_NAME}&quot; の問題</li>
+<li>&quot;#{N}-#{M}&quot; の問題: 1個以上の空白が &quot;-&quot; の前に必要でした</li>
+<li>&quot;/child::node()&quot; の問題</li>
+<li>&quot;#{FUNCTION}()/#{PATH}&quot; の問題</li>
+<li>&quot;@#{ATTRIBUTE}/parent::&quot; の問題</li>
+<li>&quot;name(#{NODE_SET})&quot; の問題</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-r-s-s.html">RSS</a><ul>
+<li>新規オプション<ul>
+<li><a href="../method/-r-s-s=3a=3a-parser/s/parse.html">RSS::Parser.parse</a> が <a href="../class/-hash.html">Hash</a> としてオプションを受け付けるようになりました。
+:validate, :ignore_unknown_element, :parser_class オプションが利用可能です。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>RubyGems<ul>
+<li>RubyGems 3.0.1 に更新されました。</li>
+<li><a class="external" href="https://blog.rubygems.org/2018/12/19/3.0.0-released.html">https://blog.rubygems.org/2018/12/19/3.0.0-released.html</a></li>
+<li><a class="external" href="https://blog.rubygems.org/2018/12/23/3.0.1-released.html">https://blog.rubygems.org/2018/12/23/3.0.1-released.html</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-set.html">Set</a><ul>
+<li>別名<ul>
+<li><a href="../method/-set/i/filter=21.html">Set#filter!</a> が <a href="../method/-set/i/select=21.html">Set#select!</a> の別名として追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/13784">[feature#13784]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-u-r-i.html">URI</a><ul>
+<li>新規定数<ul>
+<li><a href="../class/-u-r-i=3a=3a-file.html">URI::File</a> が file URI スキームを扱うために追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14035">[feature#14035]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 >互換性 (機能追加とバグ修正を除く)</h2>
+<ul>
+<li><a href="../class/-dir.html">Dir</a><ul>
+<li><a href="../method/-dir/s/glob.html">Dir.glob</a> に '\0'区切りのパターンリストを渡すのは非推奨になる予定で、
+今は警告が出ます。 <a class="external" href="https://bugs.ruby-lang.org/issues/14643">[feature#14643]</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-file.html">File</a><ul>
+<li><a href="../method/-file/s/read.html">File.read</a>, <a href="../method/-file/s/binread.html">File.binread</a>, <a href="../method/-file/s/write.html">File.write</a>, <a href="../method/-file/s/binwrite.html">File.binwrite</a>,
+<a href="../method/-file/s/foreach.html">File.foreach</a>, <a href="../method/-file/s/readlines.html">File.readlines</a> はパスがパイプ文字 '|' で始まっていても
+外部コマンドを実行しなくなりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14245">[feature#14245]</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-object.html">Object</a><ul>
+<li><a href="../method/-object/i/=3d=7e.html">Object#=~</a> は非推奨になりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15231">[feature#15231]</a></li>
+</ul>
+</li>
+</ul>
+<h2 >標準添付ライブラリの互換性 (機能追加とバグ修正を除く)</h2>
+<ul>
+<li>以下の標準添付ライブラリがデフォルト gem になりました。<ul>
+<li>e2mmap</li>
+<li>forwardable</li>
+<li>irb</li>
+<li>logger</li>
+<li>matrix</li>
+<li>mutex_m</li>
+<li>ostruct</li>
+<li>prime</li>
+<li>rexml</li>
+<li>rss</li>
+<li>shell</li>
+<li>sync</li>
+<li>thwait</li>
+<li>tracer</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-big-decimal.html">BigDecimal</a><ul>
+<li>以下のメソッドが削除されました。<ul>
+<li>BigDecimal.allocate</li>
+<li>BigDecimal.ver</li>
+</ul>
+</li>
+<li>全ての BigDecimal オブジェクトが frozen になりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/13984">[feature#13984]</a></li>
+<li><a href="../method/-kernel/m/-big-decimal.html">Kernel.#BigDecimal</a>() が文字列を <a href="../method/-kernel/m/-float.html">Kernel.#Float</a>() のように
+パースするようになりました。</li>
+<li><a href="../method/-string/i/to_d.html">String#to_d</a> がレシーバの文字列を <a href="../method/-string/i/to_f.html">String#to_f</a> のように
+パースするようになりました。</li>
+<li><a href="../method/-big-decimal/s/new.html">BigDecimal.new</a> はバージョン 2.0 で削除予定です。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-pathname.html">Pathname</a><ul>
+<li><a href="../method/-pathname/i/read.html">Pathname#read</a>, <a href="../method/-pathname/i/binread.html">Pathname#binread</a>, <a href="../method/-pathname/i/write.html">Pathname#write</a>,
+<a href="../method/-pathname/i/binwrite.html">Pathname#binwrite</a>, <a href="../method/-pathname/i/each_line.html">Pathname#each_line</a>, <a href="../method/-pathname/i/readlines.html">Pathname#readlines</a> は
+パスがパイプ文字 '|' で始まっていても外部コマンドを実行しなくなりました。
+これは <a class="external" href="https://bugs.ruby-lang.org/issues/14245">[feature#14245]</a> の続きです。</li>
+</ul>
+</li>
+</ul>
+<h2 >実装の改善</h2>
+<ul>
+<li><a href="../method/-proc/i/call.html">Proc#call</a> が高速化しました。
+もう <a href="../method/-kernel/v/-s-a-f-e.html">$SAFE</a> を気にしなくてもよくなったためです。 <a class="external" href="https://bugs.ruby-lang.org/issues/14318">[feature#14318]</a><ul>
+<li><a href="../method/-proc/i/call.html">Proc#call</a> を何度も使っている lc_fizzbuzz ベンチマークで1.4倍の改善を
+計測できています。 <a class="external" href="https://bugs.ruby-lang.org/issues/10212">[bug#10212]</a></li>
+</ul>
+</li>
+<li>ブロックパラメーターとして渡された block に対する block.call が高速化されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14330">[feature#14330]</a><ul>
+<li>Ruby 2.5 ではブロック渡しのパフォーマンスを改善されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14045">[feature#14045]</a></li>
+<li>さらに Ruby 2.6 では渡されたブロックの呼び出しのパフォーマンスが改善されました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>JIT (Just-in-time) コンパイラの初期実装が導入されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14235">[feature#14235]</a> [実験的]<ul>
+<li>JIT を有効化する --jit コマンドラインオプションが追加されました。
+「--jit-verbose=1」が調査に有用です。
+他のオプションは「ruby --help」を参照してください。</li>
+<li>機械語を生成するため、この JIT コンパイラはインタプリタをビルドするのに使用した C コンパイラを使用します。
+現在は GCC, Clang, Microsoft Visual C++ をサポートしています。</li>
+<li>configure に「--disable-mjit-support」オプションが追加されました。
+これは JIT デバッグのために追加されましたが、JIT 用のヘッダファイルのビルドでエラーが発生した場合、
+回避策としてこのオプションを使うとビルドをスキップできます。</li>
+<li>JIT で作成されたプロセスとの互換性を維持するために Unix 系のプラットフォームで
+rb_waitpid が再実装されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14867">[bug#14867]</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>生成される VM をより最適化できるようにするために VM 生成スクリプトが一新されました。
+<a class="external" href="https://github.com/ruby/ruby/pull/1779">https://github.com/ruby/ruby/pull/1779</a></li>
+</ul>
+<ul>
+<li>pthread プラットフォームでスレッドキャッシュを有効にしました。
+(<a href="../method/-thread/s/new.html">Thread.new</a> と <a href="../method/-thread/s/start.html">Thread.start</a>) <a class="external" href="https://bugs.ruby-lang.org/issues/14757">[feature#14757]</a></li>
+</ul>
+<ul>
+<li>POSIX タイマーのあるプラットフォームでタイマースレッドが取り除かれました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14937">[misc#14937]</a></li>
+</ul>
+<ul>
+<li>Transient Heap (theap) がサポートされました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14858">[bug#14858]</a> <a class="external" href="https://bugs.ruby-lang.org/issues/14989">[feature#14989]</a><ul>
+<li>theap は短命なメモリオブジェクトのための管理されたヒープです。
+例えば小さくて短命の Hash オブジェクトは2倍高速化されました。</li>
+<li>rdoc ベンチマークでは 6から7%のパフォーマンスの改善を計測できました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>コルーチンのネイティブ実装(arm32, arm64, ppc64le, win32, win64, x86, amd64) により
+Fiber のパフォーマンスを大きく改善 <a class="external" href="https://bugs.ruby-lang.org/issues/14739">[feature#14739]</a></li>
+</ul>
+<h2 >その他の変更</h2>
+<ul>
+<li>macOS で共有ライブラリの名前に Ruby のフルバージョンを含めなくなりました。
+この変更によって macOS プラットフォームのユーザが teeny リリース毎に全ての
+拡張ライブラリをリビルドする必要がある負担がなくなります。<ul>
+<li>変更前:<ul>
+<li>libruby.2.6.0.dylib</li>
+<li>libruby.2.6.dylib -&gt; libruby.2.6.0.dylib</li>
+<li>libruby.dylib -&gt; libruby.2.6.0.dylib</li>
+</ul>
+</li>
+<li>変更後:<ul>
+<li>libruby.2.6.dylib</li>
+<li>libruby.dylib -&gt; libruby.2.6.dylib</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>misc/*.el ファイルが <a class="external" href="https://github.com/ruby/elisp">https://github.com/ruby/elisp</a> に分離されました。</li>
+</ul>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

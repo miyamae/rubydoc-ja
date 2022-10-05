@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>library pp (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="オブジェクトなどを見やすく出力するためのライブラリです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        ppライブラリ
+      </li>
+    </ol>
+  </nav>
+
+<h1>library pp</h1>
+</header>
+
+<main>
+
+
+
+<h2>要約</h2>
+<p>
+オブジェクトなどを見やすく出力するためのライブラリです。
+</p>
+<p>
+pp ライブラリは、ユーザがあたらしく定義したクラスに対しても見やすい表示をするように作られていますので、<a href="../method/-kernel/m/pp.html">Kernel.#pp</a> を使う上で余計な作業をする必要はありません。
+</p>
+<h2 >どちらが読みやすいでしょうか?</h2>
+<p>
+p による pretty-print されてない出力:
+</p>
+<pre>
+#&lt;PP:0x81a0d10 @stack=[], @genspace=#&lt;Proc:0x81a0cc0&gt;, @nest=[0], @newline=&quot;\n&quot;,
+ @buf=#&lt;PrettyPrint::Group:0x81a0c98 @group=0, @tail=0, @buf=[#&lt;PrettyPrint::Gro
+up:0x81a0ba8 @group=1, @tail=0, @buf=[#&lt;PrettyPrint::Text:0x81a0b30 @tail=2, @wi
+dth=1, @text=&quot;[&quot;&gt;, #&lt;PrettyPrint::Group:0x81a0a68 @group=2, @tail=1, @buf=[#&lt;Pre
+ttyPrint::Text:0x81a09f0 @tail=1, @width=1, @text=&quot;1&quot;&gt;], @singleline_width=1&gt;, #
+&lt;PrettyPrint::Text:0x81a0a7c @tail=0, @width=1, @text=&quot;,&quot;&gt;, #&lt;PrettyPrint::Break
+able:0x81a0a2c @group=2, @gensace=#&lt;Proc:0x81a0cc0&gt;, @newline=&quot;\n&quot;, @indent=1, @
+tail=2, @sep=&quot; &quot;, @width=1&gt;, #&lt;PrettyPrint::Group:0x81a09c8 @group=2, @tail=1, @
+buf=[#&lt;PrettyPrint::Text:0x81a0950 @tail=1, @width=1, @text=&quot;2&quot;&gt;], @singleline_w
+idth=1&gt;, #&lt;PrettyPrint::Text:0x81a0af4 @tail=0, @width=1, @text=&quot;]&quot;&gt;], @singleli
+ne_width=6&gt;], @singleline_width=6&gt;, @sharing_detection=false&gt;
+</pre>
+<p>
+pp による pretty-print された出力:
+</p>
+<pre>
+#&lt;PP:0x40d0688
+ @buf=
+  #&lt;PrettyPrint::Group:0x40d064c
+   @buf=
+    [#&lt;PrettyPrint::Group:0x40d05d4
+      @buf=
+       [#&lt;PrettyPrint::Text:0x40d0598 @tail=2, @text=&quot;[&quot;, @width=1&gt;,
+        #&lt;PrettyPrint::Group:0x40d0534
+         @buf=[#&lt;PrettyPrint::Text:0x40d04f8 @tail=1, @text=&quot;1&quot;, @width=1&gt;],
+         @group=2,
+         @singleline_width=1,
+         @tail=1&gt;,
+        #&lt;PrettyPrint::Text:0x40d053e @tail=0, @text=&quot;,&quot;, @width=1&gt;,
+        #&lt;PrettyPrint::Breakable:0x40d0516
+         @genspace=#&lt;Proc:0x40d0656&gt;,
+         @group=2,
+         @indent=1,
+         @newline=&quot;\n&quot;,
+         @sep=&quot; &quot;,
+         @tail=2,
+         @width=1&gt;,
+        #&lt;PrettyPrint::Group:0x40d04e4
+         @buf=[#&lt;PrettyPrint::Text:0x40d04a8 @tail=1, @text=&quot;2&quot;, @width=1&gt;],
+         @group=2,
+         @singleline_width=1,
+         @tail=1&gt;,
+        #&lt;PrettyPrint::Text:0x40d057a @tail=0, @text=&quot;]&quot;, @width=1&gt;],
+      @group=1,
+      @singleline_width=6,
+      @tail=0&gt;],
+   @group=0,
+   @singleline_width=6,
+   @tail=0&gt;,
+ @genspace=#&lt;Proc:0x40d0656&gt;,
+ @nest=[0],
+ @newline=&quot;\n&quot;,
+ @sharing_detection=false,
+ @stack=[]&gt;
+</pre>
+<h2 >出力のカスタマイズ</h2>
+<p>
+あるクラスの pp の出力をカスタマイズしたい場合は、そのクラスで pretty_print メソッドと pretty_print_cycle メソッドを再定義します。このメソッドは <a href="../class/-p-p.html">PP</a> オブジェクトを引数として pp 実行時に呼ばれます。ユーザは表示したい内容を表すツリーを、引数として与えられた <a href="../class/-p-p.html">PP</a> オブジェクトを使って以下のように作成します。
+</p>
+<ul>
+<li><a href="../method/-pretty-print/i/group.html">PrettyPrint#group</a> を使って子ノードをつくります。同時に子ノードのインデントの深さも決めます。</li>
+<li><a href="../method/-pretty-print/i/breakable.html">PrettyPrint#breakable</a> を使って改行しても良い場所を指定します。</li>
+<li><a href="../method/-p-p/i/pp.html">PP#pp</a> を使って出力したいインスタンス変数などを出力します。</li>
+<li><a href="../method/-pretty-print/i/text.html">PrettyPrint#text</a> を使って、出力が見やすくなるように「,」などの修飾文字を適宜挿入します。</li>
+</ul>
+<p>
+<a href="../class/-p-p.html">PP</a> は <a href="../class/-pretty-print.html">PrettyPrint</a> のサブクラスですので、上で PrettyPrint のメソッドとされているものは
+PP のメソッドでもあります。
+</p>
+<p>
+以下は Hash の pretty printing のカスタマイズの例です。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Hash</span>
+  <span class="k">def</span> <span class="nf">pretty_print</span><span class="p">(</span>q<span class="p">)</span>
+    q<span class="p">.</span><span class="nf">group</span><span class="p">(</span><span class="mi">2</span>, <span class="s2">"</span><span class="s2">&lt;hash&gt;</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span>
+      q<span class="p">.</span><span class="nf">breakable</span>
+      first <span class="o">=</span> <span class="k">true</span>
+      <span class="nc">self</span><span class="p">.</span><span class="nf">each</span><span class="p">{</span><span class="o">|</span>k, v<span class="o">|</span>
+        <span class="k">unless</span> first
+          q<span class="p">.</span><span class="nf">text</span><span class="p">(</span><span class="s1">','</span><span class="p">)</span>
+          q<span class="p">.</span><span class="nf">breakable</span>
+        <span class="k">end</span>
+        q<span class="p">.</span><span class="nf">pp</span> k
+        q<span class="p">.</span><span class="nf">text</span> <span class="s1">' =&gt; '</span>
+        q<span class="p">.</span><span class="nf">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span>
+          q<span class="p">.</span><span class="nf">breakable</span> <span class="s1">''</span>
+          <span class="k">if</span> v<span class="p">.</span><span class="nf">is_a?</span><span class="p">(</span><span class="no">String</span><span class="p">)</span> <span class="k">and</span> v<span class="p">.</span><span class="nf">size</span> <span class="o">&gt;</span> <span class="mi">10</span>
+            q<span class="p">.</span><span class="nf">pp</span><span class="p">(</span>v<span class="p">[</span><span class="mi">0</span><span class="o">..</span><span class="mi">9</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'...'</span><span class="p">)</span>
+          <span class="k">else</span>
+            q<span class="p">.</span><span class="nf">pp</span> v
+          <span class="k">end</span>
+        <span class="k">end</span>
+        first <span class="o">=</span> <span class="k">false</span>
+      <span class="p">}</span>
+    <span class="k">end</span>
+    q<span class="p">.</span><span class="nf">breakable</span>
+    q<span class="p">.</span><span class="nf">text</span> <span class="s2">"</span><span class="s2">&lt;/hash&gt;</span><span class="s2">"</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">pretty_print_cycle</span><span class="p">(</span>q<span class="p">)</span>
+    q<span class="p">.</span><span class="nf">text</span><span class="p">(</span>empty? <span class="o">?</span> <span class="s1">'{}'</span> <span class="o">:</span> <span class="s1">'{...}'</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+h <span class="o">=</span> <span class="p">{</span><span class="ss">:a</span> <span class="o">=&gt;</span> <span class="s1">'a'</span><span class="o">*</span><span class="mi">5</span>, <span class="ss">:b</span> <span class="o">=&gt;</span> <span class="s1">'b'</span><span class="o">*</span><span class="mi">10</span>, <span class="ss">:c</span> <span class="o">=&gt;</span> <span class="s1">'c'</span><span class="o">*</span><span class="mi">20</span>, <span class="ss">:d</span> <span class="o">=&gt;</span> <span class="s1">'d'</span><span class="o">*</span><span class="mi">30</span><span class="p">}</span>
+pp h
+
+<span class="c1">#=&gt;
+</span><span class="c1"># &lt;hash&gt;
+</span><span class="c1">#   :d =&gt; &quot;dddddddddd...&quot;,
+</span><span class="c1">#   :a =&gt; &quot;aaaaa&quot;,
+</span><span class="c1">#   :b =&gt; &quot;bbbbbbbbbb&quot;,
+</span><span class="c1">#   :c =&gt; &quot;cccccccccc...&quot;
+</span><span class="c1"># &lt;/hash&gt;
+</span></code></pre>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-p-p.html">PP</a>
+</td>
+<td class="description"><p>
+オブジェクトなどを見やすく出力するためのクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>同時にrequireされるライブラリ</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature"><a href="../library/prettyprint.html">prettyprint</a></td>
+<td class="description"><p>
+pretty printing アルゴリズムのためのライブラリです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+<h2>追加・再定義されるメソッド</h2>
+<p><code>
+
+<a href="../method/-object/i/pretty_inspect.html">Object#pretty_inspect</a>
+
+<a href="../method/-object/i/pretty_print.html">Object#pretty_print</a>
+
+<a href="../method/-object/i/pretty_print_cycle.html">Object#pretty_print_cycle</a>
+
+<a href="../method/-object/i/pretty_print_inspect.html">Object#pretty_print_inspect</a>
+
+<a href="../method/-object/i/pretty_print_instance_variables.html">Object#pretty_print_instance_variables</a>
+
+</code></p>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

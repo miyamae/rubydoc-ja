@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class OpenSSL::SSL::Session (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="SSL/TLS セッションを表すクラスです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/openssl.html">opensslライブラリ</a>
+      </li>
+      <li>
+        OpenSSL::SSL::Sessionクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class OpenSSL::SSL::Session</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+      <li>
+        OpenSSL::SSL::Session
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+SSL/TLS セッションを表すクラスです。
+</p>
+<p>
+セッションとは、SSL/TLS のハンドシェイクで確立される仮想的なオブジェクトであり、安全な通信路を実現するために必要な、クライアント側とサーバ側で共有される情報の集合体です。SSL/TLS ハンドシェイクで必要な計算(特に署名の検証)
+はかなり高コストであり、以前にそのような計算を済ませたという事実を利用してハンドシェイクの高速化を図ることができます。これがセッションの再利用です。
+</p>
+<p>
+より具体的には、以下のような手順で再利用が行われます。
+</p>
+<ul>
+<li>まずは普通にクライアントとサーバでハンドシェイクを行う</li>
+<li>クライアントとサーバの両側でハンドシェイクによって共有された
+情報をキャッシュしておく</li>
+<li>再びクライアントから SSL/TLS のハンドシェイク開始を要求する
+このときにクライアントはキャッシュしておいた
+セッションのセッション ID を渡す</li>
+<li>サーバ側は渡されたセッション ID に対応するセッションキャッシュ
+を自身が保持しているキャッシュ領域から探しだす</li>
+<li>以降のハンドシェイクは双方でキャッシュされた情報を利用して鍵合意
+などを行い、コネクションを確立する</li>
+</ul>
+<p>
+セッションキャッシュが利用されるかどうかはハンドシェークで決まった SSL/TLS 暗号スイートに依存します。
+</p>
+<h2 >クライアント側のセッションキャッシュ</h2>
+<p>
+クライアント側では OpenSSL はキャッシュの保持、管理のための機能を提供していません。コネクション確立後に
+<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-socket/i/session.html">OpenSSL::SSL::SSLSocket#session</a> でセッションを取り出し、次の <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-socket/i/connect.html">OpenSSL::SSL::SSLSocket#connect</a> によるハンドシェイク前に <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-socket/i/session=3d.html">OpenSSL::SSL::SSLSocket#session=</a> で再利用するセッションを設定してやることでセッションを再利用します。
+</p>
+<h2 >サーバ側のセッションキャッシュ</h2>
+<p>
+サーバ側では <a href="../class/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context.html">OpenSSL::SSL::SSLContext</a> によりセッションキャッシュの保持および管理が行われます。
+</p>
+<p>
+<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context/i/session_cache_mode=3d.html">OpenSSL::SSL::SSLContext#session_cache_mode=</a> でキャッシュの挙動を設定します。デフォルトで <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context/c/-s-e-s-s-i-o-n_-c-a-c-h-e_-s-e-r-v-e-r.html">OpenSSL::SSL::SSLContext::SESSION_CACHE_SERVER</a>
+フラグが立っているため、サーバ側のセッションキャッシュ機構はデフォルトで有効になっています。
+</p>
+<p>
+セッションキャッシュ機構が有効化されている場合、
+SSL/TLS ハンドシェイク終了時に <a href="../class/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context.html">OpenSSL::SSL::SSLContext</a> 内のキャッシュ保持領域にキャッシュが保持されます。クライアント側からセッション再利用要求に対してはキャッシュ保持領域の探索および外部キャッシュへの問合せを行い、再利用するセッションを特定します。キャッシュ保持領域の探索はライブラリが自動的にしますが、外部キャッシュの探索はアプリケーションプログラマによって実装する必要があります
+(<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context/i/session_get_cb=3d.html">OpenSSL::SSL::SSLContext#session_get_cb=</a> で設定したコールバックで対応するセッションを返します)。
+</p>
+<p>
+これらの挙動は
+<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context/c/-s-e-s-s-i-o-n_-c-a-c-h-e_-n-o_-i-n-t-e-r-n-a-l_-s-t-o-r-e.html">OpenSSL::SSL::SSLContext::SESSION_CACHE_NO_INTERNAL_STORE</a> や
+<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context/c/-s-e-s-s-i-o-n_-c-a-c-h-e_-n-o_-i-n-t-e-r-n-a-l_-l-o-o-k-u-p.html">OpenSSL::SSL::SSLContext::SESSION_CACHE_NO_INTERNAL_LOOKUP</a> を
+<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context/i/session_cache_mode=3d.html">OpenSSL::SSL::SSLContext#session_cache_mode=</a>に渡すことで変更できます。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_NEW">new</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_--3D--3D">==</a></li>
+
+<li><a href="#I_ID">id</a></li>
+
+<li><a href="#I_TIME">time</a></li>
+
+<li><a href="#I_TIME--3D">time=</a></li>
+
+<li><a href="#I_TIMEOUT">timeout</a></li>
+
+<li><a href="#I_TIMEOUT--3D">timeout=</a></li>
+
+<li><a href="#I_TO_DER">to_der</a></li>
+
+<li><a href="#I_TO_PEM">to_pem</a></li>
+
+<li><a href="#I_TO_TEXT">to_text</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_NEW"><code>new(obj) -&gt; OpenSSL::SSL::Session</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/s/new.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/SSL/Session.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+新しいセッションオブジェクトを生成します。
+</p>
+<p>
+引数に <a href="../class/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-socket.html">OpenSSL::SSL::SSLSocket</a> が渡された場合は、それに結び付けられたセッションを表すオブジェクトを返します。
+<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-socket/i/session.html">OpenSSL::SSL::SSLSocket#session</a> と同じ動作をします。
+</p>
+<p>
+引数が文字列の場合、 PEM 形式もしくは DER 形式で保存されたセッションデータであるとみなし、セッションオブジェクトを生成します。引数が <a href="../class/-i-o.html">IO</a> オブジェクトである場合は、データを読みだし
+PEM 形式もしくは DER 形式とみなしてセッションオブジェクトを生成します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+セッションオブジェクトの生成元オブジェクト
+</dd>
+<dt>[EXCEPTION] OpenSSL::SSL::Session::SessionError:</dt>
+<dd>
+オブジェクトの生成に失敗した場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--3D--3D"><code>self == other -&gt; bool</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/=3d=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/SSL/Session.html#method-i-3D-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+otherと自身が同一のセッションであれば真を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_ID"><code>id -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/id.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/SSL/Session.html#method-i-id">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+セッション ID を返します。
+</p>
+<p>
+SSL/TLS はこのセッション ID でセッションを識別します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TIME"><code>time -&gt; Time</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/time.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/SSL/Session.html#method-i-time">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+セッションが確立された時刻を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/time=3d.html">OpenSSL::SSL::Session#time=</a>,
+<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/timeout.html">OpenSSL::SSL::Session#timeout</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TIME--3D"><code>time=(t)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/time=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/SSL/Session.html#method-i-time-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+セッション確立時刻を <a href="../class/-time.html">Time</a> オブジェクトで更新します。
+</p>
+<p>
+これによってタイムアウト時刻が変更されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] t:</dt>
+<dd>
+更新する時刻
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/time.html">OpenSSL::SSL::Session#time</a>,
+<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/timeout.html">OpenSSL::SSL::Session#timeout</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TIMEOUT"><code>timeout -&gt; Integer</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/timeout.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/SSL/Session.html#method-i-timeout">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+セッションタイムアウトの時間(秒数)を整数で返します。
+</p>
+<p>
+デフォルト値は <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-context/i/timeout=3d.html">OpenSSL::SSL::SSLContext#timeout=</a>
+で設定されます。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/time.html">OpenSSL::SSL::Session#time</a>,
+<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/timeout=3d.html">OpenSSL::SSL::Session#timeout=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TIMEOUT--3D"><code>timeout=(t)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/timeout=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/SSL/Session.html#method-i-timeout-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+セッションタイムアウトの時間(秒数)を整数で設定します。
+</p>
+<p>
+これによってタイムアウト時刻が変更されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] t:</dt>
+<dd>
+タイムアウト時間
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/time.html">OpenSSL::SSL::Session#time</a>,
+<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/timeout.html">OpenSSL::SSL::Session#timeout</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_DER"><code>to_der -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/to_der.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/SSL/Session.html#method-i-to_der">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を DER 形式に変換します。
+</p>
+<p>
+これによってセッションキャッシュをディスク上に保持することができます。
+</p>
+<dl>
+<dt>[EXCEPTION] OpenSSL::SSL::Session::SessionError:</dt>
+<dd>
+変換に失敗した場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_PEM"><code>to_pem -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/to_pem.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/SSL/Session.html#method-i-to_pem">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を PEM 形式に変換します。
+</p>
+<p>
+これによってセッションキャッシュをディスク上に保持することができます。
+</p>
+<dl>
+<dt>[EXCEPTION] OpenSSL::SSL::Session::SessionError:</dt>
+<dd>
+変換に失敗した場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_TEXT"><code>to_text -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-session/i/to_text.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/OpenSSL/SSL/Session.html#method-i-to_text">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を可読な形式に変換します。
+</p>
+<dl>
+<dt>[EXCEPTION] OpenSSL::SSL::Session::SessionError:</dt>
+<dd>
+変換に失敗した場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

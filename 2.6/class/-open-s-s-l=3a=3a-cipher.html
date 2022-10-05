@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class OpenSSL::Cipher (Ruby 2.6.10 リファレンスマニュアル)</title>
+<meta name="description" content="共通鍵暗号のために抽象化されたインターフェースを提供するクラスです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.6.10 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/openssl.html">opensslライブラリ</a>
+      </li>
+      <li>
+        OpenSSL::Cipherクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class OpenSSL::Cipher</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+      <li>
+        OpenSSL::Cipher
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+共通鍵暗号のために抽象化されたインターフェースを提供するクラスです。
+</p>
+<p>
+基本的にこのクラスを直接使ってデータを暗号化することは避けてください。通常はより高水準なインターフェースが利用可能なはずです。必要なのは暗号アルゴリズムを指定するため
+<a href="../method/-open-s-s-l=3a=3a-cipher/s/new.html">OpenSSL::Cipher.new</a> で暗号オブジェクトを生成することだけでしょう。
+</p>
+<p>
+もし、このクラスを直接利用して暗号化する場合は、暗号の鍵や
+IV(Initialization Vector)の取り扱いについて正しく理解してからにしてください。
+</p>
+<p>
+以下の手順で利用します。
+</p>
+<ul>
+<li><a href="../method/-open-s-s-l=3a=3a-cipher/s/new.html">OpenSSL::Cipher.new</a> や <a href="../method/-open-s-s-l=3a=3a-cipher=3a=3a-a-e-s256/s/new.html">OpenSSL::Cipher::AES256.new</a>
+などで暗号オブジェクトを生成する</li>
+<li><a href="../method/-open-s-s-l=3a=3a-cipher/i/encrypt.html">OpenSSL::Cipher#encrypt</a>, <a href="../method/-open-s-s-l=3a=3a-cipher/i/decrypt.html">OpenSSL::Cipher#decrypt</a> で
+暗号、復号のいずれをするかを設定する</li>
+<li><a href="../method/-open-s-s-l=3a=3a-cipher/i/key=3d.html">OpenSSL::Cipher#key=</a>, <a href="../method/-open-s-s-l=3a=3a-cipher/i/iv=3d.html">OpenSSL::Cipher#iv=</a>,
+<a href="../method/-open-s-s-l=3a=3a-cipher/i/random_key.html">OpenSSL::Cipher#random_key</a>, <a href="../method/-open-s-s-l=3a=3a-cipher/i/random_iv.html">OpenSSL::Cipher#random_iv</a> などで
+鍵と IV(initialization vector) を設定する</li>
+<li><a href="../method/-open-s-s-l=3a=3a-cipher/i/update.html">OpenSSL::Cipher#update</a>, <a href="../method/-open-s-s-l=3a=3a-cipher/i/final.html">OpenSSL::Cipher#final</a> で
+暗号化/復号化をする</li>
+</ul>
+<p>
+ruby 1.8.3 から Cast5 と Idea が CAST5 と IDEA に改名されました。
+</p>
+<h2 >ブロック暗号モード</h2>
+<p>
+AES のようなブロック暗号では暗号方式を選択する際にモードを指定する必要があります。このライブラリでは以下のような文字列でモードを指定できます。
+</p>
+<ul>
+<li>&quot;CBC&quot;</li>
+<li>&quot;CFB&quot;</li>
+<li>&quot;ECB&quot;</li>
+<li>&quot;OFB&quot;</li>
+</ul>
+<p>
+これらの文字列の意味は
+<a href="../library/openssl.html#references">openssl/参考文献</a> などで調べてください。
+AES を用いる場合、通常は CBC を用いれば良いでしょう。選択肢によっては安全性に問題があるので気をつけてください。
+</p>
+<h2 >使用例</h2>
+<pre>
+require 'openssl'
+
+# 暗号化するデータ
+data = &quot;*secret data*&quot;
+# パスワード
+pass = &quot;**secret password**&quot;
+# salt
+salt = OpenSSL::Random.random_bytes(8)
+
+# 暗号化器を作成する
+enc = OpenSSL::Cipher.new(&quot;AES-256-CBC&quot;)
+enc.encrypt
+# 鍵とIV(Initialize Vector)を PKCS#5 に従ってパスワードと salt から生成する
+key_iv = OpenSSL::PKCS5.pbkdf2_hmac_sha1(pass, salt, 2000, enc.key_len + enc.iv_len)
+key = key_iv[0, enc.key_len]
+iv = key_iv[enc.key_len, enc.iv_len]
+# 鍵とIVを設定する
+enc.key = key
+enc.iv = iv
+
+# 暗号化する
+encrypted_data = &quot;&quot;
+encrypted_data &lt;&lt; enc.update(data)
+encrypted_data &lt;&lt; enc.final
+
+p encrypted_data
+
+# 復号化器を作成する
+dec = OpenSSL::Cipher.new(&quot;AES-256-CBC&quot;)
+dec.decrypt
+
+# 鍵とIVを設定する
+dec.key = key
+dec.iv = iv
+
+# 復号化する
+decrypted_data = &quot;&quot;
+decrypted_data &lt;&lt; dec.update(encrypted_data)
+decrypted_data &lt;&lt; dec.final
+
+p decrypted_data
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_CIPHERS">ciphers</a></li>
+
+<li><a href="#S_NEW">new</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_BLOCK_SIZE">block_size</a></li>
+
+<li><a href="#I_DECRYPT">decrypt</a></li>
+
+<li><a href="#I_ENCRYPT">encrypt</a></li>
+
+<li><a href="#I_FINAL">final</a></li>
+
+<li><a href="#I_IV--3D">iv=</a></li>
+
+<li><a href="#I_IV_LEN">iv_len</a></li>
+
+<li><a href="#I_KEY--3D">key=</a></li>
+
+<li><a href="#I_KEY_LEN">key_len</a></li>
+
+<li><a href="#I_KEY_LEN--3D">key_len=</a></li>
+
+<li><a href="#I_NAME">name</a></li>
+
+<li><a href="#I_PADDING--3D">padding=</a></li>
+
+<li><a href="#I_PKCS5_KEYIVGEN">pkcs5_keyivgen</a></li>
+
+<li><a href="#I_RANDOM_IV">random_iv</a></li>
+
+<li><a href="#I_RANDOM_KEY">random_key</a></li>
+
+<li><a href="#I_RESET">reset</a></li>
+
+<li><a href="#I_UPDATE">update</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_CIPHERS"><code>ciphers -&gt; [String]</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-cipher/s/ciphers.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/Cipher.html#method-c-ciphers">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+利用可能な暗号方式名を文字列の配列で返します。
+</p>
+<pre>
+require 'openssl'
+
+OpenSSL::Cipher.ciphers
+# =&gt; [&quot;AES-128-CBC&quot;, &quot;AES-128-CFB&quot;, &quot;AES-128-CFB1&quot;, &quot;AES-128-CFB8&quot;, &quot;AES-128-ECB&quot;, &quot;AES-128-OFB&quot;, &quot;AES-192-CBC&quot;, ... ]
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_NEW"><code>new(name) -&gt; OpenSSL::Cipher</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-cipher/s/new.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/Cipher.html#method-c-new">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+共通鍵暗号のアルゴリズム名を渡し、対応する暗号オブジェクトを生成します。
+</p>
+<p>
+利用できるアルゴリズムはシステムにインストールされている openssl に依存します。
+<a href="../method/-open-s-s-l=3a=3a-cipher/s/ciphers.html">OpenSSL::Cipher.ciphers</a> で利用可能な暗号のアルゴリズム名が得られます。
+</p>
+<p>
+さまざまな方式がありますが、2006年現在 aes256 (aes-256-cbc)
+を用いるのが安心でしょう。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] name:</dt>
+<dd>
+暗号化方式の名前
+</dd>
+<dt>[EXCEPTION] RuntimeError:</dt>
+<dd>
+利用可能でない暗号化方式名を指定した場合に発生します
+</dd>
+<dt>[EXCEPTION] OpenSSL::Cipher::CipherError:</dt>
+<dd>
+初期化に失敗した場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_BLOCK_SIZE"><code>block_size -&gt; Integer</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-cipher/i/block_size.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/Cipher.html#method-i-block_size">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+暗号化のブロックのサイズをバイト数で返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_DECRYPT"><code>decrypt -&gt; self</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-cipher/i/decrypt.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/Cipher.html#method-i-decrypt">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>decrypt(pass, iv = nil) -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+復号化の準備をします。
+</p>
+<p>
+暗号オブジェクトの内部状態を復号化のために初期化します。
+</p>
+<p>
+pass と iv が渡された場合、これらを用いて鍵を生成し、暗号オブジェクトに鍵と IV を設定します。このやりかたは非標準的であるため利用すべきではありません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pass:</dt>
+<dd>
+パスワード文字列
+</dd>
+<dt class='method-param'>[PARAM] iv:</dt>
+<dd>
+IV文字列
+</dd>
+<dt>[EXCEPTION] OpenSSL::Cipher::CipherError:</dt>
+<dd>
+準備に失敗した場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_ENCRYPT"><code>encrypt -&gt; self</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-cipher/i/encrypt.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/Cipher.html#method-i-encrypt">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>encrypt(pass, iv = nil) -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+暗号化の準備をします。
+</p>
+<p>
+暗号オブジェクトの内部状態を暗号化のために初期化します。
+</p>
+<p>
+pass と iv が渡された場合、これらを用いて鍵を生成し、暗号オブジェクトに鍵と IV を設定します。このやりかたは非標準的であるため利用すべきではありません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pass:</dt>
+<dd>
+パスワード文字列
+</dd>
+<dt class='method-param'>[PARAM] iv:</dt>
+<dd>
+IV文字列
+</dd>
+<dt>[EXCEPTION] OpenSSL::Cipher::CipherError:</dt>
+<dd>
+準備に失敗した場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_FINAL"><code>final -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-cipher/i/final.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/Cipher.html#method-i-final">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+暗号オブジェクト内部に残されたデータを暗号化/復号化し、文字列で返します。
+</p>
+<p>
+パディング(<a href="../method/-open-s-s-l=3a=3a-cipher/i/padding=3d.html">OpenSSL::Cipher#padding=</a>)を有効にしている場合は、残されたデータにパディングを付加した上で暗号化します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_IV--3D"><code>iv=(iv)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-cipher/i/iv=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/Cipher.html#method-i-iv-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IV(Initialization Vector) を設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] iv:</dt>
+<dd>
+IV文字列
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_IV_LEN"><code>iv_len -&gt; Integer</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-cipher/i/iv_len.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/Cipher.html#method-i-iv_len">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+必要な IV(Initialization Vector) の長さをバイト数で返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_KEY--3D"><code>key=(key)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-cipher/i/key=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/Cipher.html#method-i-key-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+暗号鍵を設定します。
+</p>
+<p>
+なお、ここでいう「暗号鍵」は各暗号アルゴリズムに渡される鍵であって、「パスワード」ではありません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_KEY_LEN"><code>key_len -&gt; Integer</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-cipher/i/key_len.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/Cipher.html#method-i-key_len">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+暗号鍵の長さをバイト数で返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_KEY_LEN--3D"><code>key_len=(length)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-cipher/i/key_len=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/Cipher.html#method-i-key_len-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+暗号鍵の長さを変更します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] length:</dt>
+<dd>
+新しく設定する長さ(バイト数)
+</dd>
+<dt>[EXCEPTION] OpenSSL::Cipher::CipherError:</dt>
+<dd>
+指定した長さが不適切である(暗号方式の規格上許されていない値である)場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_NAME"><code>name -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-cipher/i/name.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/Cipher.html#method-i-name">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+暗号化アルゴリズムの名前を文字列で返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PADDING--3D"><code>padding=(padding)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-cipher/i/padding=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/Cipher.html#method-i-padding-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+パディングを設定します。
+</p>
+<p>
+1 でパディングを有効に、0で無効にします。
+</p>
+<p>
+パディングを無効化した場合には、暗号化するデータのサイズはブロックサイズの倍数でなければなりません。
+</p>
+<p>
+暗号化する側と復号化する側でパディングの設定を一致させておかなければなりません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] padding:</dt>
+<dd>
+1でパディングを有効、0で無効
+</dd>
+<dt>[EXCEPTION] OpenSSL::Cipher::CipherError:</dt>
+<dd>
+設定に失敗した場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_PKCS5_KEYIVGEN"><code>pkcs5_keyivgen(pass, salt=nil, num=2048, digest=&quot;md5&quot;) -&gt; nil</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-cipher/i/pkcs5_keyivgen.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/Cipher.html#method-i-pkcs5_keyivgen">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+pass と salt から鍵と IV を生成し、暗号オブジェクトに設定します。
+</p>
+<p>
+このメソッドは PKCS#5 v1.5 で定義されている方法に従って鍵と IV を生成します。PKCS#5 v1.5 と正しく互換するには
+digest は md5 か sha1 を使い、暗号アルゴリズムは
+RC2, RC4-40, DES のいずれかを使わなければなりません。
+</p>
+<p>
+このメソッドの利用は推奨されません。これではなく
+PKCS#5 v2.0 に定義されている方法で鍵と IV を生成すべきです。
+</p>
+<p>
+salt が nil である場合には salt なしと見なします。
+</p>
+<p>
+num は必要なデータの生成でハッシュ関数を何回繰り返し適用するかを指定します。最低でも1000を使うべきです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pass:</dt>
+<dd>
+パスワード文字列
+</dd>
+<dt class='method-param'>[PARAM] salt:</dt>
+<dd>
+鍵と IV を生成するための salt 文字列、長さは 8 byte でなければならない
+</dd>
+<dt class='method-param'>[PARAM] num:</dt>
+<dd>
+ハッシュ関数の適用回数
+</dd>
+<dt class='method-param'>[PARAM] digest:</dt>
+<dd>
+ハッシュアルゴリズムを指定する文字列もしくは <a href="../class/-open-s-s-l=3a=3a-digest.html">OpenSSL::Digest</a> のオブジェクト
+</dd>
+<dt>[EXCEPTION] OpenSSL::Cipher::CipherError:</dt>
+<dd>
+saltが8 byte でない場合や、鍵と IV の設定に失敗した場合に発生します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../class/-open-s-s-l=3a=3a-p-k-c-s5.html">OpenSSL::PKCS5</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_RANDOM_IV"><code>random_iv -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-cipher/i/random_iv.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/Cipher.html#method-i-random_iv">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IV を乱数で生成し、暗号オブジェクトに設定します。
+</p>
+<p>
+生成した IV を文字列で返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_RANDOM_KEY"><code>random_key -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-cipher/i/random_key.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/Cipher.html#method-i-random_key">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+鍵を乱数で生成し、暗号オブジェクトに設定します。
+</p>
+<p>
+生成した鍵を文字列で返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_RESET"><code>reset -&gt; self</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-cipher/i/reset.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/Cipher.html#method-i-reset">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+内部状態をリセットします。
+</p>
+<p>
+鍵、IV、暗号化/復号化待ちデータなどがクリアされます。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_UPDATE"><code>update(data) -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-cipher/i/update.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.6.10/OpenSSL/Cipher.html#method-i-update">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+渡された文字列を暗号化もしくは復号化して文字列として返します。
+</p>
+<p>
+どちらがなされるかは直前に <a href="../method/-open-s-s-l=3a=3a-cipher/i/encrypt.html">OpenSSL::Cipher#encrypt</a> もしくは
+<a href="../method/-open-s-s-l=3a=3a-cipher/i/decrypt.html">OpenSSL::Cipher#decrypt</a> のいずれが呼びだされたかによって決まります。
+</p>
+<p>
+ブロック暗号を利用する場合は、暗号化/復号化はブロックサイズで規定されたバイト数ごとに行われます。そのため余ったデータは暗号オブジェクト内部に保存され、次の文字列が渡されたときに使われます。
+</p>
+<p>
+暗号化/復号化すべきデータを渡し終えた後は、
+<a href="../method/-open-s-s-l=3a=3a-cipher/i/final.html">OpenSSL::Cipher#final</a>
+を呼びだして暗号オブジェクト内部に残されたデータを暗号化/復号化する必要があります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] data:</dt>
+<dd>
+暗号化/復号化する文字列
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

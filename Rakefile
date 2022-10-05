@@ -23,7 +23,7 @@ file "build" do
 end
 
 task "#{version}" do
-  sh "mv #{version} #{version}_old"
+  #sh "mv #{version} #{version}_old"
   sh "mv build/rubydoc/refm/api/html/#{version} ."
   sh "cp -R resources/* #{version}"
 end

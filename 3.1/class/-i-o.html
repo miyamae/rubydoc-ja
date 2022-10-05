@@ -1,0 +1,3778 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class IO (Ruby 3.1.2 リファレンスマニュアル)</title>
+<meta name="description" content="基本的な入出力機能のためのクラスです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.1.2 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        IOクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class IO</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-file=3a=3a-constants.html">File::Constants</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-enumerable.html">Enumerable</a>
+        </li>
+        
+      
+      <li>
+        IO
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+基本的な入出力機能のためのクラスです。
+</p>
+<p>
+File::Constants は、<a href="../class/-file.html">File</a> から IO へ移動しました。
+</p>
+<h2 id='m17n'>多言語化と IO のエンコーディング</h2>
+<p>
+IO オブジェクトはエンコーディングを持ちます。エンコーディングの影響を受けるメソッドと受けないメソッドがあります。
+</p>
+<p>
+影響を受けるメソッドでは、IO のエンコーディングに従い読み込まれた文字列のエンコーディングが決定されます。また IO のエンコーディングを適切に設定することにより、読み込み時・書き込み時に文字列のエンコーディングを変換させることもできます。
+</p>
+<h3 >エンコーディングの影響を受けるメソッドと受けないメソッド</h3>
+<p>
+IO の読み込みメソッドは2種類存在します。テキスト読み込みメソッドとバイナリ読み込みメソッドです。
+</p>
+<p>
+テキスト読み込みメソッドは IO のエンコーディングの影響をうけます。詳しくは「<a href="#io_encoding">IO のエンコーディングとエンコーディングの変換</a>」を参照して下さい。以下がテキスト読み込みメソッドです。
+</p>
+<ul>
+<li><a href="../method/-i-o/s/foreach.html">IO.foreach</a></li>
+<li><a href="../method/-i-o/s/readlines.html">IO.readlines</a></li>
+<li><a href="../method/-i-o/i/each_line.html">IO#each_line</a></li>
+<li><a href="../method/-i-o/i/gets.html">IO#gets</a></li>
+<li><a href="../method/-i-o/i/getc.html">IO#getc</a></li>
+<li><a href="../method/-i-o/i/ungetc.html">IO#ungetc</a></li>
+<li><a href="../method/-i-o/i/read.html">IO#read</a></li>
+<li><a href="../method/-i-o/i/readchar.html">IO#readchar</a></li>
+<li><a href="../method/-i-o/i/readline.html">IO#readline</a></li>
+<li><a href="../method/-i-o/i/readlines.html">IO#readlines</a></li>
+</ul>
+<p>
+バイナリ読み込みメソッドは IO のエンコーディングの影響を受けません。返す文字列のエンコーディングは常に ASCII-8BIT になります。以下がバイナリ読み込みメソッドです。
+</p>
+<ul>
+<li><a href="../method/-i-o/i/read.html">IO#read</a>(size)</li>
+<li><a href="../method/-i-o/i/read_nonblock.html">IO#read_nonblock</a></li>
+<li><a href="../method/-i-o/i/readpartial.html">IO#readpartial</a></li>
+<li><a href="../method/-i-o/i/sysread.html">IO#sysread</a></li>
+</ul>
+<p>
+また書き込みメソッド <a href="../method/-i-o/i/write.html">IO#write</a> も IO のエンコーディングの影響を受けます。
+IO のすべての書き込みメソッドは内部で <a href="../method/-i-o/i/write.html">IO#write</a> を呼びますので、書き込みメソッドはすべて IO のエンコーディングの影響を受けます。
+</p>
+<p>
+シーク関連のメソッドはエンコーディングの影響を受けません。常に1バイトを単位として動作します。
+</p>
+<p>
+例:
+</p>
+<pre>
+f = File.open('t.txt', 'r+:euc-jp')
+p f.getc.encoding                             #=&gt; Encoding::EUC_JP
+p f.read(1).encoding                          #=&gt; Encoding::ASCII_8BIT
+</pre>
+<h3 id='io_encoding'>IO のエンコーディングとエンコーディングの変換</h3>
+<p>
+IO オブジェクトは外部エンコーディングと内部エンコーディングを持ちます。外部エンコーディングとは IO が表すファイルなどの文字エンコーディングです。内部エンコーディングとは IO から読み込まれた文字列、あるいは IO の書き込みメソッドへ渡す文字列の文字エンコーディングです。
+</p>
+<p>
+以下の三通りがあります。
+</p>
+<dl>
+<dt>IO のエンコーディングが指定されていない場合</dt>
+<dd>
+<p>
+IO からテキスト読み込みメソッドによって読み込まれた文字列のエンコーディングは <a href="../method/-encoding/s/default_external.html">Encoding.default_external</a>
+に設定されます。このとき実際の文字エンコーディングは検査されず、変換もされません。
+</p>
+</dd>
+<dt>外部エンコーディングのみが指定されている場合</dt>
+<dd>
+<p>
+IO からテキスト読み込みメソッドによって読み込まれた文字列のエンコーディングは外部エンコーディングに設定されます。このとき実際の文字エンコーディングは検査されず、変換もされません。
+</p>
+<p>
+IO へ書き込まれる文字列は外部エンコーディングへと変換されます。外部エンコーディングへの変換方法が分からない場合は例外が発生します。
+</p>
+</dd>
+<dt>外部エンコーディングと内部エンコーディング(あるいは default_internal)が指定されている場合</dt>
+<dd>
+<p>
+IO からテキスト読み込みメソッドによって読み込まれた文字列は、外部エンコーディングから内部エンコーディング(あるいは default_internal)へと変換されます。指定された文字エンコーディングと実際の文字エンコーディングが違っていた場合、例外が発生します。内部エンコーディングと  <a href="../method/-encoding/s/default_internal.html">Encoding.default_internal</a> が両方とも指定されている場合は、内部エンコーディングが優先されます。
+</p>
+<p>
+IO へ書き込まれる文字列は外部エンコーディングへと変換されます。外部エンコーディングへの変換方法が分からない場合は例外が発生します。
+</p>
+</dd>
+</dl>
+<p>
+IO に対してエンコーディングを指定する方法には、生成時に <a href="../method/-i-o/s/open.html">IO.open</a> や <a href="../method/-file/s/open.html">File.open</a>
+に渡すモードとともに指定するものと生成後に <a href="../method/-i-o/i/set_encoding.html">IO#set_encoding</a> を使って指定するものの二通りがあります。詳しくはそれぞれのメソッドの項を参照して下さい。通常は前者の方法を使います。
+</p>
+<p>
+例1:
+</p>
+<pre>
+f = File.open('file1')
+p f.getc.encoding        #=&gt; Encoding::EUC_JP
+</pre>
+<p>
+例2:
+</p>
+<pre>
+f = File.open('t.txt', 'w+:shift_jis:euc-jp')
+f.write &quot;\xB4\xC1\xBB\xFA&quot;            # 文字列 &quot;漢字&quot; の EUC-JP リテラル
+f.rewind
+s = f.read(4)
+puts s.dump                           #=&gt; &quot;\x8A\xBF\x8E\x9A&quot;
+                                      # エンコーディングがSJISへ変換されていることが分かる。
+</pre>
+<h4 >まとめ</h4>
+<p>
+以上をまとめると以下の表のようになります。<a href="../method/-encoding/s/default_external.html">Encoding.default_external</a> は常に設定されているので、省略してあります。
+</p>
+<p>
+読み込んだ文字列のエンコーディング
+</p>
+<pre>
+                                                   バイナリ読み込みメソッド      テキスト読み込みメソッド
+----------------------------------------------------------------------------------------------------------
+                                        指定無し        ASCII-8BIT                   default_external
+
+                           default_internal のみ        ASCII-8BIT                   default_internal
+
+                        外部エンコーディングのみ        ASCII-8BIT                 外部エンコーディング
+
+                    内部エンコーディング指定あり        ASCII-8BIT                 内部エンコーディング
+
+    内部エンコーディングと default_internal 両方        ASCII-8BIT                 内部エンコーディング
+</pre>
+<p>
+エンコーディングの変換
+</p>
+<pre>
+                                              バイナリ読み込みメソッド   テキスト読み込みメソッド   書き込みメソッド
+---------------------------------------------------------------------------------------------------------------------
+                                  指定無し           変換なし                 変換なし                   変換なし
+
+                  外部エンコーディングのみ           変換なし                 変換なし                   変換あり
+
+                     default_internal のみ           変換なし                 変換あり                   変換あり
+
+                  内部エンコーディングのみ           変換なし                 変換あり                   変換あり
+
+外部エンコーディングと内部エンコーディング           変換なし                 変換あり                   変換あり
+
+   外部エンコーディングと default_internal           変換なし                 変換あり                   変換あり
+</pre>
+<h3 >デフォルトの外部エンコーディングの指定</h3>
+<p>
+<a href="../method/-encoding/s/default_external.html">Encoding.default_external</a> はコマンドオプション -E で指定します。
+-E が指定されなかった場合は次のような優先順位で決定されます。
+</p>
+<pre>
+-E (最優先) &gt; -K &gt; locale
+</pre>
+<h3 >ファイル名のエンコーディング</h3>
+<p>
+ファイル名の文字エンコーディングはプラットフォームに依存します。ファイル名の文字エンコーディングが固定されているプラットフォーム(Win, Mac)では、エンコーディングは暗黙に変換されます(予定)。UNIX では変換されずそのままシステムコールに渡されます。
+</p>
+<p>
+<a href="../method/-dir/s/glob.html">Dir.glob</a>, <a href="../method/-dir/s/foreach.html">Dir.foreach</a> などが返すファイル名のエンコーディングも同様にプラットフォーム依存です。
+UNIX では ASCII-8BIT です。
+</p>
+<h3 id='io_binmode'>バイナリモード</h3>
+<p>
+Windows の IO にはテキストモードとバイナリモードという2種類のモードが存在します。これらのモードは上で説明した IO のエンコーディングとは独立です。改行の変換にしか影響しません。
+</p>
+<h2 >EOF での読み込みメソッドの振る舞いの違い</h2>
+<p>
+空ファイルや EOF での各読み込みメソッドの振る舞いは以下のとおりです。ただし、length を指定できるメソッドに関しては、length に nil または 0 を指定した場合、
+EOF であっても常に空文字列 &quot;&quot; を返します。
+</p>
+<pre>
+メソッド                      空のファイルに対して
+
+IO.read(空ファイル)           &quot;&quot;
+IO.read(空ファイル, length)   nil
+IO.readlines(空ファイル)      []
+IO.foreach(空ファイル)        何もしない
+</pre>
+<pre>
+メソッド                      既にEOFだったら
+
+IO#each_byte                  何もしない
+IO#getc                       nil
+IO#gets                       nil
+IO#read()                     &quot;&quot;
+IO#read(length)               nil
+IO#read_nonblock              EOFError
+IO#readchar                   EOFError
+IO#readline                   EOFError
+IO#readlines                  []
+IO#readpartial                EOFError
+IO#sysread                    EOFError
+IO#bytes                      通常どおり
+IO#lines                      通常どおり
+</pre>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_BINREAD">binread</a></li>
+
+<li><a href="#S_BINWRITE">binwrite</a></li>
+
+<li><a href="#S_COPY_STREAM">copy_stream</a></li>
+
+<li><a href="#S_FOR_FD">for_fd</a></li>
+
+<li><a href="#S_FOREACH">foreach</a></li>
+
+<li><a href="#S_FOR_FD">new</a></li>
+
+<li><a href="#S_FOR_FD">open</a></li>
+
+<li><a href="#S_PIPE">pipe</a></li>
+
+<li><a href="#S_POPEN">popen</a></li>
+
+<li><a href="#S_READ">read</a></li>
+
+<li><a href="#S_READLINES">readlines</a></li>
+
+<li><a href="#S_SELECT">select</a></li>
+
+<li><a href="#S_SYSOPEN">sysopen</a></li>
+
+<li><a href="#S_TRY_CONVERT">try_convert</a></li>
+
+<li><a href="#S_WRITE">write</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_--3C--3C">&lt;&lt;</a></li>
+
+<li><a href="#I_ADVISE">advise</a></li>
+
+<li><a href="#I_AUTOCLOSE--3D">autoclose=</a></li>
+
+<li><a href="#I_AUTOCLOSE--3F">autoclose?</a></li>
+
+<li><a href="#I_BINMODE">binmode</a></li>
+
+<li><a href="#I_BINMODE--3F">binmode?</a></li>
+
+<li><a href="#I_CLONE">clone</a></li>
+
+<li><a href="#I_CLOSE">close</a></li>
+
+<li><a href="#I_CLOSE_ON_EXEC--3D">close_on_exec=</a></li>
+
+<li><a href="#I_CLOSE_ON_EXEC--3F">close_on_exec?</a></li>
+
+<li><a href="#I_CLOSE_READ">close_read</a></li>
+
+<li><a href="#I_CLOSE_WRITE">close_write</a></li>
+
+<li><a href="#I_CLOSED--3F">closed?</a></li>
+
+<li><a href="#I_CLONE">dup</a></li>
+
+<li><a href="#I_EACH">each</a></li>
+
+<li><a href="#I_EACH_BYTE">each_byte</a></li>
+
+<li><a href="#I_EACH_CHAR">each_char</a></li>
+
+<li><a href="#I_EACH_CODEPOINT">each_codepoint</a></li>
+
+<li><a href="#I_EACH">each_line</a></li>
+
+<li><a href="#I_EOF">eof</a></li>
+
+<li><a href="#I_EOF">eof?</a></li>
+
+<li><a href="#I_EXTERNAL_ENCODING">external_encoding</a></li>
+
+<li><a href="#I_FCNTL">fcntl</a></li>
+
+<li><a href="#I_FDATASYNC">fdatasync</a></li>
+
+<li><a href="#I_FILENO">fileno</a></li>
+
+<li><a href="#I_FLUSH">flush</a></li>
+
+<li><a href="#I_FSYNC">fsync</a></li>
+
+<li><a href="#I_GETBYTE">getbyte</a></li>
+
+<li><a href="#I_GETC">getc</a></li>
+
+<li><a href="#I_GETS">gets</a></li>
+
+<li><a href="#I_INTERNAL_ENCODING">internal_encoding</a></li>
+
+<li><a href="#I_IOCTL">ioctl</a></li>
+
+<li><a href="#I_ISATTY">isatty</a></li>
+
+<li><a href="#I_LINENO">lineno</a></li>
+
+<li><a href="#I_LINENO--3D">lineno=</a></li>
+
+<li><a href="#I_PID">pid</a></li>
+
+<li><a href="#I_POS">pos</a></li>
+
+<li><a href="#I_POS--3D">pos=</a></li>
+
+<li><a href="#I_PREAD">pread</a></li>
+
+<li><a href="#I_PRINT">print</a></li>
+
+<li><a href="#I_PRINTF">printf</a></li>
+
+<li><a href="#I_PUTC">putc</a></li>
+
+<li><a href="#I_PUTS">puts</a></li>
+
+<li><a href="#I_PWRITE">pwrite</a></li>
+
+<li><a href="#I_READ">read</a></li>
+
+<li><a href="#I_READ_NONBLOCK">read_nonblock</a></li>
+
+<li><a href="#I_READBYTE">readbyte</a></li>
+
+<li><a href="#I_READCHAR">readchar</a></li>
+
+<li><a href="#I_READLINE">readline</a></li>
+
+<li><a href="#I_READLINES">readlines</a></li>
+
+<li><a href="#I_READPARTIAL">readpartial</a></li>
+
+<li><a href="#I_REOPEN">reopen</a></li>
+
+<li><a href="#I_REWIND">rewind</a></li>
+
+<li><a href="#I_SEEK">seek</a></li>
+
+<li><a href="#I_SET_ENCODING">set_encoding</a></li>
+
+<li><a href="#I_SET_ENCODING_BY_BOM">set_encoding_by_bom</a></li>
+
+<li><a href="#I_STAT">stat</a></li>
+
+<li><a href="#I_SYNC">sync</a></li>
+
+<li><a href="#I_SYNC--3D">sync=</a></li>
+
+<li><a href="#I_SYSREAD">sysread</a></li>
+
+<li><a href="#I_SYSSEEK">sysseek</a></li>
+
+<li><a href="#I_SYSWRITE">syswrite</a></li>
+
+<li><a href="#I_POS">tell</a></li>
+
+<li><a href="#I_FILENO">to_i</a></li>
+
+<li><a href="#I_TO_IO">to_io</a></li>
+
+<li><a href="#I_ISATTY">tty?</a></li>
+
+<li><a href="#I_UNGETBYTE">ungetbyte</a></li>
+
+<li><a href="#I_UNGETC">ungetc</a></li>
+
+<li><a href="#I_WRITE">write</a></li>
+
+<li><a href="#I_WRITE_NONBLOCK">write_nonblock</a></li>
+
+</ul>
+</dd>
+
+<dt>定数</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#C_-S-E-E-K_-C-U-R">SEEK_CUR</a></li>
+
+<li><a href="#C_-S-E-E-K_-D-A-T-A">SEEK_DATA</a></li>
+
+<li><a href="#C_-S-E-E-K_-E-N-D">SEEK_END</a></li>
+
+<li><a href="#C_-S-E-E-K_-H-O-L-E">SEEK_HOLE</a></li>
+
+<li><a href="#C_-S-E-E-K_-S-E-T">SEEK_SET</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+  <h2>継承しているメソッド</h2>
+<dl>
+  
+<dt>Enumerableから継承しているメソッド</dt>
+<dd>
+  <ul class="class-toc">
+    
+      <li><a href="../method/-enumerable/i/all=3f.html">all?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/any=3f.html">any?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/chain.html">chain</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/chunk.html">chunk</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/chunk_while.html">chunk_while</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/collect.html">collect</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/collect_concat.html">collect_concat</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/compact.html">compact</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/count.html">count</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/cycle.html">cycle</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/detect.html">detect</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/drop.html">drop</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/drop_while.html">drop_while</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_cons.html">each_cons</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_entry.html">each_entry</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_slice.html">each_slice</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_with_index.html">each_with_index</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/each_with_object.html">each_with_object</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/entries.html">entries</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/filter.html">filter</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/filter_map.html">filter_map</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/detect.html">find</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/filter.html">find_all</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/find_index.html">find_index</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/first.html">first</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/collect_concat.html">flat_map</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/grep.html">grep</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/grep_v.html">grep_v</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/group_by.html">group_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/include=3f.html">include?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/inject.html">inject</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/lazy.html">lazy</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/collect.html">map</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/max.html">max</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/max_by.html">max_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/include=3f.html">member?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/min.html">min</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/min_by.html">min_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/minmax.html">minmax</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/minmax_by.html">minmax_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/none=3f.html">none?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/one=3f.html">one?</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/partition.html">partition</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/inject.html">reduce</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/reject.html">reject</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/reverse_each.html">reverse_each</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/filter.html">select</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/slice_after.html">slice_after</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/slice_before.html">slice_before</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/slice_when.html">slice_when</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/sort.html">sort</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/sort_by.html">sort_by</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/sum.html">sum</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/take.html">take</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/take_while.html">take_while</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/tally.html">tally</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/entries.html">to_a</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/to_h.html">to_h</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/uniq.html">uniq</a></li>
+      
+    
+      <li><a href="../method/-enumerable/i/zip.html">zip</a></li>
+      
+    
+  </ul>
+</dd>
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_BINREAD"><code>binread(path, length = nil, offset = 0) -&gt; String | nil</code><span class="permalink">[<a href="../method/-i-o/s/binread.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-binread">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+path で指定したファイルを open し、offset の所まで seek し、
+length バイト読み込みます。
+</p>
+<p>
+<a href="../method/-kernel/m/open.html">Kernel.#open</a> と同様 path の先頭が &quot;|&quot; ならば、&quot;|&quot; に続くコマンドの出力を読み取ります。
+</p>
+<p>
+length を省略するとファイルの末尾まで読み込みます。
+</p>
+<p>
+ファイルを開くときの mode は &quot;rb:ASCII-8BIT&quot; です。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">This is line one\nThis is line two\nThis is line three\nAnd so on...\n</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">IO</span><span class="p">.</span><span class="nf">binread</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span>           <span class="c1"># =&gt; &quot;This is line one\nThis is line two\nThis is line three\nAnd so on...\n&quot;
+</span><span class="no">IO</span><span class="p">.</span><span class="nf">binread</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="mi">20</span><span class="p">)</span>       <span class="c1"># =&gt; &quot;This is line one\nThi&quot;
+</span><span class="no">IO</span><span class="p">.</span><span class="nf">binread</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="mi">20</span>, <span class="mi">10</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;ne one\nThis is line &quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/s/read.html">IO.read</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_BINWRITE"><code>binwrite(path, string, offset=nil) -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/s/binwrite.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-binwrite">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+path で指定されるファイルを開き、string を書き込み、閉じます。
+</p>
+<p>
+ファイルを開くときの mode が &quot;rb:ASCII-8BIT&quot; で、バイナリモードが有効である点以外は <a href="../method/-i-o/s/write.html">IO.write</a> と同じです。
+</p>
+<p>
+<a href="../method/-kernel/m/open.html">Kernel.#open</a> と同様 path の先頭が &quot;|&quot; ならば、&quot;|&quot; に続くコマンドを実行し、コマンドの出力を標準出力に書き込みます。
+</p>
+<p>
+offset を指定するとその位置までシークします。
+</p>
+<p>
+offset を指定しないと、書き込みの末尾でファイルを切り捨てます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+ファイル名文字列
+</dd>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+書き込む文字列
+</dd>
+<dt class='method-param'>[PARAM] offset:</dt>
+<dd>
+書き込み開始位置
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># 8x8の真っ白なPNG画像データ。
+</span>png <span class="o">=</span> <span class="s1">'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAAAAADhZOFXAAAADklEQVQIW2P4DwUMlDEA98A/wTjP
+QBoAAAAASUVORK5CYII='</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s1">'m'</span><span class="p">)</span><span class="p">.</span><span class="nf">first</span>
+
+<span class="c1"># 期待する先頭16バイトの16進ダンプ: どの環境でも同じ。
+</span><span class="nb">puts</span> png<span class="p">[</span><span class="mi">0</span><span class="o">...</span><span class="mi">16</span><span class="p">]</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s1">'C*'</span><span class="p">)</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span><span class="o">|</span>c<span class="o">|</span> <span class="s1">'%02x'</span> <span class="o">%</span> c <span class="p">}</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s1">' '</span><span class="p">)</span>
+<span class="c1"># =&gt; 89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52
+</span>
+<span class="c1"># binwriteを使用した場合: どの環境でも正しく保存できる。
+</span><span class="no">IO</span><span class="p">.</span><span class="nf">binwrite</span><span class="p">(</span><span class="s1">'white.binmode.png'</span>, png<span class="p">)</span>
+<span class="nb">puts</span> <span class="no">IO</span><span class="p">.</span><span class="nf">binread</span><span class="p">(</span><span class="s1">'white.binmode.png'</span>, <span class="mi">16</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s1">'C*'</span><span class="p">)</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span><span class="o">|</span>c<span class="o">|</span> <span class="s1">'%02x'</span> <span class="o">%</span> c <span class="p">}</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s1">' '</span><span class="p">)</span>
+<span class="c1"># =&gt; 89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52
+</span>
+<span class="c1"># binwriteを使用しなかった場合: Windowsで改行文字(0x0a: &quot;\n&quot;)と同じビット列が変換されてしまう。
+</span><span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s1">'white.txtmode.png'</span>, png<span class="p">)</span>
+<span class="nb">puts</span> <span class="no">IO</span><span class="p">.</span><span class="nf">binread</span><span class="p">(</span><span class="s1">'white.txtmode.png'</span>, <span class="mi">16</span><span class="p">)</span><span class="p">.</span><span class="nf">unpack</span><span class="p">(</span><span class="s1">'C*'</span><span class="p">)</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span><span class="o">|</span>c<span class="o">|</span> <span class="s1">'%02x'</span> <span class="o">%</span> c <span class="p">}</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s1">' '</span><span class="p">)</span>
+<span class="c1"># =&gt; 89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52 (Linux/Macの場合
+</span><span class="c1"># =&gt; 89 50 4e 47 0d 0d 0a 1a 0d 0a 00 00 00 0d 49 48 (Windowsの場合
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../class/-i-o.html#io_binmode">IO/バイナリモード</a>, <a href="../method/-i-o/s/write.html">IO.write</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_COPY_STREAM"><code>copy_stream(src, dst, copy_length = nil) -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/s/copy_stream.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-copy_stream">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>copy_stream(src, dst, copy_length, src_offset) -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+指定された src から dst へコピーします。コピーしたバイト数を返します。
+</p>
+<p>
+コピー元の src が IO オブジェクトの場合は、src のオフセットからファイル名の場合はファイルの最初からコピーを開始します。コピー先の dst に関しても同様です。
+</p>
+<p>
+dst にファイル名を指定し、そのファイルが存在しない場合、ファイルは作成されます。ファイルが存在する場合は長さ 0 に切り詰められます。
+</p>
+<p>
+src が IO オブジェクトでかつ src_offset が指定されている場合、
+src のオフセット(src.pos)は変更されません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] src:</dt>
+<dd>
+コピー元となる IO オブジェクトかファイル名を指定します。
+</dd>
+<dt class='method-param'>[PARAM] dst:</dt>
+<dd>
+コピー先となる IO オブジェクトかファイル名を指定します。
+</dd>
+<dt class='method-param'>[PARAM] copy_length:</dt>
+<dd>
+コピーする長さをバイト単位で指定します。最大 copy_length までコピーされます。
+nil を指定した場合、コピーする長さに制限はありません。
+</dd>
+<dt class='method-param'>[PARAM] src_offset:</dt>
+<dd>
+コピーを始めるオフセットを数値で指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">filetest</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">abcdefghij</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">IO</span><span class="p">.</span><span class="nf">copy_stream</span><span class="p">(</span><span class="s2">"</span><span class="s2">filetest</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">filecopy</span><span class="s2">"</span>, <span class="mi">2</span><span class="p">)</span>     <span class="c1"># =&gt; 2
+</span><span class="no">IO</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"</span><span class="s2">filecopy</span><span class="s2">"</span><span class="p">)</span>                           <span class="c1"># =&gt; &quot;ab&quot;
+</span><span class="no">IO</span><span class="p">.</span><span class="nf">copy_stream</span><span class="p">(</span><span class="s2">"</span><span class="s2">filetest</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">filecopy</span><span class="s2">"</span>, <span class="mi">3</span>, <span class="mi">4</span><span class="p">)</span>  <span class="c1"># =&gt; 3
+</span><span class="no">IO</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"</span><span class="s2">filecopy</span><span class="s2">"</span><span class="p">)</span>                           <span class="c1"># =&gt; &quot;efg&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_FOR_FD"><code>new(fd, mode = &quot;r&quot;, opt={}) -&gt; IO</code><span class="permalink">[<a href="../method/-i-o/s/for_fd.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-for_fd">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>for_fd(fd, mode = &quot;r&quot;, opt={}) -&gt; IO</code></dt>
+<dt class="method-heading"><code>open(fd, mode = &quot;r&quot;, opt={}) -&gt; IO</code></dt>
+<dt class="method-heading"><code>open(fd, mode = &quot;r&quot; opt={}) {|io| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+オープン済みのファイルディスクリプタ fd に対する新しい
+IO オブジェクトを生成して返します。
+</p>
+<p>
+IO.open にブロックが与えられた場合、IO オブジェクトを生成しそれを引数としてブロックを実行します。ブロックの終了とともに fd はクローズされます。ブロックの結果を返します。
+IO.new, IO.for_fd はブロックを受け付けません。
+</p>
+<h3 >オプション引数</h3>
+<p>
+このメソッドは以下のオプションを利用できます。
+</p>
+<ul>
+<li>:mode mode引数と同じ意味です</li>
+<li>:external_encoding 外部エンコーディング。&quot;-&quot; はデフォルト外部エンコーディングの
+別名です。</li>
+<li>:internal_encoding 内部エンコーディング。&quot;-&quot; はデフォルト内部エンコーディングの
+別名です。nilなら変換しません。</li>
+<li>:encoding &quot;extenc:intenc&quot; の形で外部/内部エンコーディングを指定します。</li>
+<li>:textmode 真を渡すと mode の &quot;t&quot; と同じ意味になります。</li>
+<li>:binmode 真を渡すと mode の &quot;b&quot; と同じ意味になります。</li>
+<li>:autoclose 偽を渡すと close時/GCでのファイナライザ呼出時に fd を close しません。</li>
+</ul>
+<p>
+また、<a href="../method/-string/i/encode.html">String#encode</a> で説明されている :invalid =&gt; :replace などの変換オプションも指定することができます。外部エンコーディングから内部エンコーディングへの変換をするときに用いられます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] fd:</dt>
+<dd>
+ファイルディスクリプタである整数を指定します。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+<a href="../method/-kernel/m/open.html">Kernel.#open</a> と同じ形式で IO のモードを指定します。<a href="../method/-file=3a=3a-constants/c/-r-d-o-n-l-y.html">File::Constants::RDONLY</a> などの定数(数値)でモードを指定できます。詳細は組み込み関数 <a href="../method/-kernel/m/open.html">Kernel.#open</a> を参照してください。
+mode は省略可能で、省略時のデフォルトのモードは、
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fcntl.html">fcntl(2)</a> で F_GETFL フラグが利用できる環境では第一引数で指定した fd のモードを引き継ぎ、利用できない環境では &quot;r&quot; になります。
+</dd>
+<dt class='method-param'>[PARAM] opt:</dt>
+<dd>
+オプション引数
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+IO オブジェクトの生成に失敗した場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例:IO.new による読み込みモードでのファイルオープン</span>
+<code>
+io <span class="o">=</span> <span class="no">IO</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">IO</span><span class="p">.</span><span class="nf">sysopen</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span><span class="p">)</span>
+io<span class="p">.</span><span class="nf">class</span> <span class="c1"># =&gt; IO
+</span>io<span class="p">.</span><span class="nf">close</span>
+</code></pre>
+<pre class="highlight ruby">
+<span class="caption">例:IO.for_fd による読み込み・バイナリモードでのファイルオープン</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">binwrite</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">\xBF\xAA\x16\x04.\b\xCB\x12\xACoeQ\xFDv2\xCF9+\x81\x18</span><span class="s2">"</span><span class="p">)</span>
+io <span class="o">=</span> <span class="no">IO</span><span class="p">.</span><span class="nf">for_fd</span><span class="p">(</span><span class="no">IO</span><span class="p">.</span><span class="nf">sysopen</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span>, <span class="s2">"</span><span class="s2">r</span><span class="s2">"</span>, <span class="p">{</span> <span class="ss">binmode:</span> <span class="k">true</span> <span class="p">}</span><span class="p">)</span>
+io<span class="p">.</span><span class="nf">class</span> <span class="c1"># =&gt; IO
+</span>io<span class="p">.</span><span class="nf">binmode?</span> <span class="c1"># =&gt; true
+</span>io<span class="p">.</span><span class="nf">close</span>
+</code></pre>
+<pre class="highlight ruby">
+<span class="caption">例:IO.open によるファイルオープン</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="no">IO</span><span class="p">.</span><span class="nf">sysopen</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>io<span class="o">|</span> <span class="nb">p</span> io<span class="p">.</span><span class="nf">class</span> <span class="p">}</span> <span class="c1"># =&gt; IO
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_FOREACH"><code>foreach(path, rs = $/, chomp: false) {|line| ... } -&gt; nil</code><span class="permalink">[<a href="../method/-i-o/s/foreach.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-foreach">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>foreach(path, rs = $/, chomp: false) -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+path で指定されたファイルの各行を引数としてブロックを繰り返し実行します。
+path のオープンに成功すれば nil を返します。
+</p>
+<p>
+ブロックが与えられなかった場合は、path で指定されたファイルの各行を繰り返す
+<a href="../class/-enumerator.html">Enumerator</a> オブジェクトを生成して返します。
+</p>
+<p>
+テキスト読み込みメソッドとして動作します。
+</p>
+<p>
+path が空ファイルの場合、何もせずに nil を返します。
+<a href="../method/-kernel/m/open.html">Kernel.#open</a> と同様 path の先頭が &quot;|&quot; ならば、&quot;|&quot; に続くコマンドの出力を読み取ります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+ファイル名を表す文字列か &quot;|コマンド名&quot; を指定します。
+</dd>
+<dt class='method-param'>[PARAM] rs:</dt>
+<dd>
+行の区切りを文字列で指定します。rs に nil を指定すると行区切りなしとみなします。空文字列 &quot;&quot; を指定すると連続する改行を行の区切りとみなします(パラグラフモード)。
+</dd>
+<dt class='method-param'>[PARAM] chomp:</dt>
+<dd>
+true を指定すると各行の末尾から &quot;\n&quot;, &quot;\r&quot;, または &quot;\r\n&quot; を取り除きます。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+path のオープンに失敗した場合、発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例:rs 指定なし</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">line1\nline2,\nline3\n</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">IO</span><span class="p">.</span><span class="nf">foreach</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; #&lt;Enumerator: IO:foreach(&quot;testfile&quot;)&gt;
+</span><span class="no">IO</span><span class="p">.</span><span class="nf">foreach</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>x<span class="o">|</span> <span class="nb">print</span> <span class="s2">"</span><span class="s2">GOT </span><span class="s2">"</span>, x <span class="p">}</span>
+<span class="c1"># =&gt; GOT line1
+</span><span class="c1"># GOT line2,
+</span><span class="c1"># GOT line3
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例:カンマを行の区切りに指定（ rs = &quot;,&quot; ）</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">line1,line2,line3</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">IO</span><span class="p">.</span><span class="nf">foreach</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">,</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>x<span class="o">|</span> <span class="nb">puts</span> <span class="s2">"</span><span class="s2">GOT </span><span class="si">#{</span><span class="n">x</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
+<span class="c1"># =&gt; GOT line1,
+</span><span class="c1"># GOT line2,
+</span><span class="c1"># GOT line3
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例: 各行の末尾から &quot;\n&quot;, &quot;\r&quot;, または &quot;\r\n&quot; を取り除く（chomp = true）</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">line1\nline2,\nline3\n</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">IO</span><span class="p">.</span><span class="nf">foreach</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="ss">chomp:</span> <span class="k">true</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>x<span class="o">|</span> <span class="nb">print</span> <span class="s2">"</span><span class="s2">GOT </span><span class="s2">"</span>, x <span class="p">}</span>
+<span class="c1"># =&gt; GOT line1GOT line2,GOT line3
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/v/=2f.html">$/</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_PIPE"><code>pipe -&gt; [IO]</code><span class="permalink">[<a href="../method/-i-o/s/pipe.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-pipe">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>pipe(ext_enc) -&gt; [IO]</code></dt>
+<dt class="method-heading"><code>pipe(enc_str, opts={}) -&gt; [IO]</code></dt>
+<dt class="method-heading"><code>pipe(ext_enc, int_enc, opts={}) -&gt; [IO]</code></dt>
+<dt class="method-heading"><code>pipe {|read_io, write_io| ... } -&gt; object</code></dt>
+<dt class="method-heading"><code>pipe(ext_enc) {|read_io, write_io| ... } -&gt; object</code></dt>
+<dt class="method-heading"><code>pipe(enc_str, opt={}) {|read_io, write_io| ... } -&gt; object</code></dt>
+<dt class="method-heading"><code>pipe(ext_enc, int_enc, opt={}) {|read_io, write_io| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/pipe.html">pipe(2)</a> を実行して、相互につながった2つの
+<a href="../class/-i-o.html">IO</a> オブジェクトを要素とする配列を返します。
+</p>
+<p>
+戻り値の配列は最初の要素が読み込み側で、次の要素が書き込み側です。
+</p>
+<p>
+ブロックが渡された場合は、そのブロックに2つの IO オブジェクトが渡され、ブロックの返り値がこのメソッドの返り値となります。ブロック終了時に IO オブジェクトがもし close されていないならば
+close します(close されていてるオブジェクトはそのままです)。
+</p>
+<p>
+得られる2つの IO オブジェクトのエンコーディングを引数で指定することができます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] enc_str:</dt>
+<dd>
+読み込み側の外部エンコーディングを文字列で指定します。文字列がコロンを挟んだ二つのエンコーディング名 &quot;A:B&quot; である場合最初のものが外部エンコーディング、次が内部エンコーディングを意味します。
+</dd>
+<dt class='method-param'>[PARAM] ext_enc:</dt>
+<dd>
+読み込み側の外部エンコーディングを Encoding オブジェクトで指定します。
+</dd>
+<dt class='method-param'>[PARAM] int_enc:</dt>
+<dd>
+読み込み側の内部エンコーディングを Encoding オブジェクトで指定します。
+</dd>
+<dt class='method-param'>[PARAM] opt:</dt>
+<dd>
+エンコーディングなどを設定するオプション引数(see <a href="../method/-i-o/s/new.html">IO.new</a>)
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+IO オブジェクトの作成に失敗した場合に発生します。
+</dd>
+</dl>
+<pre>
+r, w = IO.pipe
+p [r, w]            # =&gt; [#&lt;IO:0x401b90f8&gt;, #&lt;IO:0x401b7718&gt;]
+Thread.new do
+  w.puts &quot;foo&quot;
+  w.close
+end
+p r.gets           # =&gt; &quot;foo\n&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_POPEN"><code>popen(env = {}, command, mode = &quot;r&quot;, opt={}) -&gt; IO</code><span class="permalink">[<a href="../method/-i-o/s/popen.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-popen">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>popen(env = {}, command, mode = &quot;r&quot;, opt={}) {|f| ... } -&gt; object</code></dt>
+<dt class="method-heading"><code>popen([env = {}, cmdname, *args, execopt={}], mode = &quot;r&quot;, opt={}) -&gt; IO</code></dt>
+<dt class="method-heading"><code>popen([env = {}, cmdname, *args, execopt={}], mode = &quot;r&quot;, opt={}) {|f| ... } -&gt; object</code></dt>
+<dt class="method-heading"><code>popen([env = {}, [cmdname, arg0], *args, execopt={}], mode = &quot;r&quot;, opt={}) -&gt; IO</code></dt>
+<dt class="method-heading"><code>popen([env = {}, [cmdname, arg0], *args, execopt={}], mode = &quot;r&quot;, opt={}) {|f| ... } -&gt; object</code></dt>
+<dt class="method-heading"><code>popen(env = {}, [cmdname, *args, execopt={}], mode = &quot;r&quot;, opt={}) -&gt; IO</code></dt>
+<dt class="method-heading"><code>popen(env = {}, [cmdname, *args, execopt={}], mode = &quot;r&quot;, opt={}) {|f| ... } -&gt; object</code></dt>
+<dt class="method-heading"><code>popen(env = {}, [[cmdname, arg0], *args, execopt={}], mode = &quot;r&quot;, opt={}) -&gt; IO</code></dt>
+<dt class="method-heading"><code>popen(env = {}, [[cmdname, arg0], *args, execopt={}], mode = &quot;r&quot;, opt={}) {|f| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+サブプロセスを実行し、そのプロセスの標準入出力との間にパイプラインを確立します。生成したパイプを <a href="../class/-i-o.html">IO</a> オブジェクトとして返します。
+</p>
+<pre>
+p io = IO.popen(&quot;cat&quot;, &quot;r+&quot;)  # =&gt; #&lt;IO:fd 4&gt;
+io.puts &quot;foo&quot;
+io.close_write
+p io.gets                     # =&gt; &quot;foo\n&quot;
+</pre>
+<p>
+サブプロセスを指定する方法は2通りあります。文字列を指定する場合と配列を指定する場合です。文字列の場合は、シェルを経由して子プロセスを実行し、配列の場合は、シェルを経由せずに子プロセスを実行します。
+</p>
+<p>
+シェルを経由しない場合(上のシグネチャで cmdname を含む場合)には *args
+がサブプロセスの引数として使われます。この場合には *args はシェルでのワイルドカード展開などはなされません。
+</p>
+<p>
+配列内に配列を指定することで、arg0(みせかけのプログラム名)を指定することができます。
+</p>
+<p>
+ブロックが与えられた場合は生成した IO オブジェクトを引数にブロックを実行し、ブロックの実行結果を返します。ブロックの実行後、生成したパイプは自動的にクローズされます。
+</p>
+<pre>
+p IO.popen(&quot;cat&quot;, &quot;r+&quot;) {|io|
+  io.puts &quot;foo&quot;
+  io.close_write
+  io.gets
+}
+# =&gt; &quot;foo\n&quot;
+</pre>
+<p>
+opt でプロセス起動のためのオプションや、パイプ IO オブジェクトの属性(エンコーディングや読み書き能力)を指定することができます。プロセス起動のためのオプションは <a href="../method/-kernel/m/spawn.html">Kernel.#spawn</a> と、パイプオブジェクトの属性の指定のオプションは <a href="../method/-i-o/s/new.html">IO.new</a> と共通です。つまり、 :external_encoding や :unsetenv_others が指定できます。オプションの詳しい意味は <a href="../method/-kernel/m/spawn.html">Kernel.#spawn</a> や <a href="../method/-i-o/s/new.html">IO.new</a> を参照してください。
+</p>
+<pre>
+# nkfプロセスから得られる文字列を EUC-JP と指定する
+# IO.new などと共通のオプションが指定できる
+IO.popen(&quot;nkf -e filename&quot;, external_encoding: &quot;EUC-JP&quot;){|nkf_io|
+  nkf_io.read
+}
+</pre>
+<p>
+これに加えて、プロセス起動のためのオプションを execopt で指定することもできます。
+execopt ではエンコーディングなどは指定できません。
+</p>
+<pre>
+# 標準エラー出力を子プロセス側で標準出力にリダイレクトする
+# 標準エラー出力と標準出力がマージされる
+# Kernel.#spawn と共通のオプション
+IO.popen([&quot;ls&quot;, &quot;/&quot;, :err=&gt;[:child, :out]]) {|ls_io|
+  ls_result_with_error = ls_io.read
+}
+
+# 上と同じ、配列の外側でもオプションが指定できる
+IO.popen([&quot;ls&quot;, &quot;/&quot;], :err=&gt;[:child, :out]) {|ls_io|
+  ls_result_with_error = ls_io.read
+}
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+環境変数を { 変数名 =&gt; 内容 } という形式の <a href="../class/-hash.html">Hash</a> で渡します。
+</dd>
+<dt class='method-param'>[PARAM] command:</dt>
+<dd>
+コマンド名を文字列で指定します。シェルを経由して実行されます。
+</dd>
+<dt class='method-param'>[PARAM] cmdname:</dt>
+<dd>
+コマンド名を文字列で指定します
+</dd>
+<dt class='method-param'>[PARAM] arg0:</dt>
+<dd>
+みせかけのコマンド名を指定します
+</dd>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+コマンドのパラメータを文字列で指定します
+</dd>
+<dt class='method-param'>[PARAM] execopt:</dt>
+<dd>
+プロセス実行に関するオプションを Hash で指定します。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+オープンする IO ポートのモードを指定します。mode の詳細は <a href="../method/-kernel/m/open.html">Kernel.#open</a> 参照して下さい。
+</dd>
+<dt class='method-param'>[PARAM] opt:</dt>
+<dd>
+プロセス実行やパイプのIOのエンコーディングなどを設定するオプションを指定します
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+パイプ、あるいは子プロセスの生成に失敗した場合に発生します。
+</dd>
+</dl>
+</dd>
+<dt class="method-heading" id="S_POPEN"><code>popen(&quot;-&quot;, mode = &quot;r&quot;, opt={}) -&gt; IO</code><span class="permalink">[<a href="../method/-i-o/s/popen.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-popen">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>popen(&quot;-&quot;, mode = &quot;r&quot;, opt={}) {|io| ... } -&gt; object</code></dt>
+<dt class="method-heading"><code>popen(env, &quot;-&quot;, mode = &quot;r&quot;, opt={}) -&gt; IO</code></dt>
+<dt class="method-heading"><code>popen(env, &quot;-&quot;, mode = &quot;r&quot;, opt={}) {|io| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+第一引数に文字列 &quot;-&quot; が指定された時、<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fork.html">fork(2)</a> を行い子プロセスの標準入出力との間にパイプラインを確立します。親プロセスでは IO オブジェクトを返し、子プロセスでは
+nil を返します。
+</p>
+<pre>
+io = IO.popen(&quot;-&quot;, &quot;r+&quot;)
+if io  # parent
+  io.puts &quot;foo&quot;
+  p io.gets                   # =&gt; &quot;child output: foo\n&quot;
+  io.close
+else   # child
+  s = gets
+  print &quot;child output: &quot; + s
+  exit
+end
+</pre>
+<p>
+ブロックを与えられた場合、親プロセスでは生成した IO オブジェクトを引数にブロックを実行し、その結果を返します。ブロックの実行後、生成したパイプは自動的にクローズされます。子プロセスでは nil を引数にブロックを実行し終了します。
+</p>
+<pre>
+p IO.popen(&quot;-&quot;, &quot;r+&quot;) {|io|
+  if io   # parent
+    io.puts &quot;foo&quot;
+    io.gets
+  else    # child
+    s = gets
+    puts &quot;child output: &quot; + s
+  end
+}
+# =&gt; &quot;child output: foo\n&quot;
+</pre>
+<p>
+opt ではエンコーディングの設定やプロセス起動のためのオプションが指定できます。
+<a href="../method/-i-o/s/new.html">IO.new</a> や <a href="../method/-kernel/m/spawn.html">Kernel.#spawn</a> で指定できるものと共通なので詳しくはそちらを見てください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] env:</dt>
+<dd>
+環境変数を { 変数名 =&gt; 内容 } という形式の <a href="../class/-hash.html">Hash</a> で渡します。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+オープンする IO ポートのモードを指定します。mode の詳細は <a href="../method/-kernel/m/open.html">Kernel.#open</a> 参照して下さい。
+</dd>
+<dt class='method-param'>[PARAM] opt:</dt>
+<dd>
+エンコーディングなどを設定するオプション引数(see <a href="../method/-i-o/s/new.html">IO.new</a>)
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+パイプ、あるいは子プロセスの生成に失敗した場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_READ"><code>read(path, opt = {}) -&gt; String | nil</code><span class="permalink">[<a href="../method/-i-o/s/read.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-read">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>read(path, length = nil, opt = {}) -&gt; String | nil</code></dt>
+<dt class="method-heading"><code>read(path, length = nil, offset = 0, opt = {}) -&gt; String | nil</code></dt>
+<dd class="method-description">
+<p>
+path で指定されたファイルを offset 位置から
+length バイト分読み込んで返します。
+</p>
+<p>
+既に EOF に達している場合は nil を返します。ただし、length に nil か 0 が指定されている場合は、空文字列 &quot;&quot; を返します。例えば、IO.read(空ファイル) は &quot;&quot; を返します。
+</p>
+<p>
+引数 length が指定された場合はバイナリ読み込みメソッド、そうでない場合はテキスト読み込みメソッドとして動作します。
+</p>
+<p>
+<a href="../method/-kernel/m/open.html">Kernel.#open</a> と同様 path の先頭が &quot;|&quot; ならば、&quot;|&quot; に続くコマンドの出力を読み取ります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+ファイル名を表す文字列か &quot;|コマンド名&quot; を指定します。
+</dd>
+<dt class='method-param'>[PARAM] length:</dt>
+<dd>
+読み込む長さを整数で指定します。nil であるか省略した場合には、EOF まで読み込みます。
+</dd>
+<dt class='method-param'>[PARAM] offset:</dt>
+<dd>
+読み込みを始めるオフセットを整数で指定します。
+</dd>
+<dt class='method-param'>[PARAM] opt:</dt>
+<dd>
+ファイル path を open する時に使われるオプションを Hash で指定します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+path のオープン、offset 位置への設定、ファイルの読み込みに失敗した場合に発生します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+length が負の場合に発生します。
+</dd>
+</dl>
+<p>
+引数 opt で有効なキーと値は以下のとおりです。キーはいずれも Symbol オブジェクトです。
+</p>
+<dl>
+<dt>:encoding</dt>
+<dd>
+<p>
+
+読み込んだ文字列のエンコーディングを指定します。読み込む長さを指定した場合はこれは無視されます。
+</p>
+</dd>
+<dt>:mode</dt>
+<dd>
+<p>
+
+<a href="../method/-i-o/s/open.html">IO.open</a> のモードを指定します。
+&quot;r&quot; で始まる文字列である必要があります。
+</p>
+</dd>
+<dt>:open_args</dt>
+<dd>
+<p>
+
+<a href="../method/-i-o/s/open.html">IO.open</a> に渡される引数を配列で指定します。
+</p>
+</dd>
+</dl>
+<p>
+これらの他、 :external_encoding など
+<a href="../method/-i-o/s/open.html">IO.open</a> のオプション引数が指定できます。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/s/binread.html">IO.binread</a>
+</p>
+<p>
+例:
+</p>
+<pre>
+IO.read(empty_file)             #=&gt; &quot;&quot;
+IO.read(empty_file, 1)          #=&gt; nil
+IO.read(one_byte_file, 0, 10)   #=&gt; &quot;&quot;
+IO.read(one_byte_file, nil, 10) #=&gt; &quot;&quot;
+IO.read(one_byte_file, 1, 10)   #=&gt; nil
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_READLINES"><code>readlines(path, rs = $/, chomp: false, opts={}) -&gt; [String]</code><span class="permalink">[<a href="../method/-i-o/s/readlines.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-readlines">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>readlines(path, limit, chomp: false, opts={}) -&gt; [String]</code></dt>
+<dt class="method-heading"><code>readlines(path, rs, limit, chomp: false, opts={}) -&gt; [String]</code></dt>
+<dd class="method-description">
+<p>
+path で指定されたファイルを全て読み込んで、その各行を要素としてもつ配列を返します。
+</p>
+<p>
+<a href="../method/-kernel/m/open.html">Kernel.#open</a> と同様 path の先頭が &quot;|&quot; ならば、&quot;|&quot; に続くコマンドの出力を読み取ります。
+</p>
+<p>
+テキスト読み込みメソッドとして動作します。
+</p>
+<p>
+limit で最大読み込みバイト数を指定します。ただしマルチバイト文字が途中で切れないように余分に読み込む場合があります。
+</p>
+<p>
+opts でファイルを開くときのオプションを指定します。エンコーディングなどを指定できます。
+<a href="../method/-file/s/open.html">File.open</a> と同様なのでそちらを参照してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+ファイル名を表す文字列か &quot;|コマンド名&quot; を指定します。
+</dd>
+<dt class='method-param'>[PARAM] rs:</dt>
+<dd>
+行の区切りを文字列で指定します。rs に nil を指定すると行区切りなしとみなします。空文字列 &quot;&quot; を指定すると連続する改行を行の区切りとみなします(パラグラフモード)。
+</dd>
+<dt class='method-param'>[PARAM] limit:</dt>
+<dd>
+最大の読み込みバイト数
+</dd>
+<dt class='method-param'>[PARAM] chomp:</dt>
+<dd>
+true を指定すると各行の末尾から rs を取り除きます。
+</dd>
+<dt class='method-param'>[PARAM] opts:</dt>
+<dd>
+ファイルを開くときのオプション引数
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+path のオープン、ファイルの読み込みに失敗した場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">line1\nline2,\nline3\n</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">IO</span><span class="p">.</span><span class="nf">readlines</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span>             <span class="c1"># =&gt; [&quot;line1\n&quot;, &quot;line2,\n&quot;, &quot;line3\n&quot;]
+</span><span class="no">IO</span><span class="p">.</span><span class="nf">readlines</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">,</span><span class="s2">"</span><span class="p">)</span>        <span class="c1"># =&gt; [&quot;line1\nline2,&quot;, &quot;\nline3\n&quot;]
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例: rs を取り除く（chomp = true）</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">line1,\rline2,\r\nline3,\n</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">IO</span><span class="p">.</span><span class="nf">readlines</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="ss">chomp:</span> <span class="k">true</span><span class="p">)</span>        <span class="c1"># =&gt; [&quot;line1,\rline2,&quot;, &quot;line3,&quot;]
+</span><span class="no">IO</span><span class="p">.</span><span class="nf">readlines</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">\r</span><span class="s2">"</span>, <span class="ss">chomp:</span> <span class="k">true</span><span class="p">)</span>  <span class="c1"># =&gt; [&quot;line1,&quot;, &quot;line2,&quot;, &quot;\nline3,\n&quot;]
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_SELECT"><code>select(reads, writes = [], excepts = [], timeout = nil) -&gt; [[IO]] | nil</code><span class="permalink">[<a href="../method/-i-o/s/select.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-select">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/select.html">select(2)</a> を実行します。
+</p>
+<p>
+与えられた入力/出力/例外待ちの  IO オブジェクトの中から準備ができたものをそれぞれ配列にして、配列の配列として返します。タイムアウトした時には nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] reads:</dt>
+<dd>
+入力待ちする <a href="../class/-i-o.html">IO</a> オブジェクトの配列を渡します。
+</dd>
+<dt class='method-param'>[PARAM] writes:</dt>
+<dd>
+出力待ちする <a href="../class/-i-o.html">IO</a> オブジェクトの配列を渡します。
+</dd>
+<dt class='method-param'>[PARAM] excepts:</dt>
+<dd>
+例外待ちする <a href="../class/-i-o.html">IO</a> オブジェクトの配列を渡します。
+</dd>
+<dt class='method-param'>[PARAM] timeout:</dt>
+<dd>
+タイムアウトまでの時間を表す数値または nil を指定します。数値で指定したときの単位は秒です。nil を指定した時には IO がどれかひとつレディ状態になるまで待ち続けます。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+与えられた IO オブジェクトが閉じられていた時に発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/select.html">select(2)</a> に失敗した場合に発生します。
+</dd>
+</dl>
+<pre>
+rp, wp = IO.pipe
+mesg = &quot;ping &quot;
+100.times{
+  rs, ws, = IO.select([rp], [wp])
+  if r = rs[0]
+    ret = r.read(5)
+    print ret
+    case ret
+    when /ping/
+      mesg = &quot;pong\n&quot;
+    when /pong/
+      mesg = &quot;ping &quot;
+    end
+  end
+  if w = ws[0]
+    w.write(mesg)
+  end
+}
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/m/select.html">Kernel.#select</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_SYSOPEN"><code>sysopen(path, mode = &quot;r&quot;, perm = 0666) -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/s/sysopen.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-sysopen">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+path で指定されるファイルをオープンし、ファイル記述子を返します。
+</p>
+<p>
+<a href="../method/-i-o/s/for_fd.html">IO.for_fd</a> などで IO オブジェクトにしない限り、このメソッドでオープンしたファイルをクローズする手段はありません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+ファイル名を表す文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+モードを文字列か定数の論理和で指定します。<a href="../method/-kernel/m/open.html">Kernel.#open</a> と同じです。
+</dd>
+<dt class='method-param'>[PARAM] perm:</dt>
+<dd>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/open.html">open(2)</a> の第 3 引数のように、ファイルを生成する場合のファイルのパーミッションを整数で指定します。<a href="../method/-kernel/m/open.html">Kernel.#open</a> と同じです。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+ファイルのオープンに失敗した場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">sysopen</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">w+</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># =&gt; 3
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/m/open.html">Kernel.#open</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_TRY_CONVERT"><code>try_convert(obj) -&gt; IO | nil</code><span class="permalink">[<a href="../method/-i-o/s/try_convert.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-try_convert">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+obj を to_io メソッドによって <a href="../class/-i-o.html">IO</a> オブジェクトに変換します。変換できなかった場合は nil を返します。
+</p>
+<pre>
+IO.try_convert(STDOUT)     # =&gt; STDOUT
+IO.try_convert(&quot;STDOUT&quot;)   # =&gt; nil
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="S_WRITE"><code>write(path, string, opt={}) -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/s/write.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-write">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>write(path, string, offset=nil, opt={}) -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+path で指定されるファイルを開き、string を書き込み、閉じます。
+</p>
+<p>
+<a href="../method/-kernel/m/open.html">Kernel.#open</a> と同様 path の先頭が &quot;|&quot; ならば、&quot;|&quot; に続くコマンドを実行し、コマンドの出力を標準出力に書き込みます。
+</p>
+<p>
+offset を指定するとその位置までシークします。
+</p>
+<p>
+offset を指定しないと、書き込みの末尾でファイルを切り捨てます。
+</p>
+<p>
+引数最後のハッシュはファイルを開くときに使われます。エンコーディングなどを指定することができます。詳しくは <a href="../method/-i-o/s/open.html">IO.open</a> を見てください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+ファイル名文字列
+</dd>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+書き込む文字列
+</dd>
+<dt class='method-param'>[PARAM] offset:</dt>
+<dd>
+書き込み開始位置
+</dd>
+<dt class='method-param'>[PARAM] opt:</dt>
+<dd>
+ファイルを開くときのオプション引数
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+text <span class="o">=</span> <span class="s2">"</span><span class="s2">This is line one\nThis is line two\nThis is line three\nAnd so on...\n</span><span class="s2">"</span>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, text<span class="p">)</span>              <span class="c1"># =&gt; 66
+</span><span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">0123456789</span><span class="s2">"</span>, <span class="mi">20</span><span class="p">)</span>  <span class="c1">#=&gt; 10
+</span><span class="no">IO</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># =&gt; &quot;This is line one\nThi0123456789two\nThis is line three\nAnd so on...\n&quot;
+</span><span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">0123456789</span><span class="s2">"</span><span class="p">)</span>      <span class="c1">#=&gt; 10
+</span><span class="no">IO</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span>                     <span class="c1"># =&gt; &quot;0123456789&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/s/binwrite.html">IO.binwrite</a>
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--3C--3C"><code>self &lt;&lt; object -&gt; self</code><span class="permalink">[<a href="../method/-i-o/i/=3c=3c.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-3C-3C">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+object を出力します。object が文字列でない時にはメソッド to_s を用いて文字列に変換します。
+</p>
+<p>
+以下のような &lt;&lt; の連鎖を使うことができます。
+</p>
+<pre>
+STDOUT &lt;&lt; 1 &lt;&lt; &quot; is a &quot; &lt;&lt; Integer &lt;&lt; &quot;\n&quot;
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] object:</dt>
+<dd>
+出力したいオブジェクトを与えます。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+出力に失敗した場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_ADVISE"><code>advise(advice, offset=0, len=0) -&gt; nil</code><span class="permalink">[<a href="../method/-i-o/i/advise.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-advise">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/posix_fadvise.html">posix_fadvise(2)</a> を呼びだし、ファイルへのアクセスパターンをOSに知らせます。
+</p>
+<p>
+advice には以下のいずれかのシンボルを指定します。
+</p>
+<ul>
+<li>:normal - デフォルト</li>
+<li>:sequential - データは前から順にアクセスされる</li>
+<li>:random - データはランダムアクセスされる</li>
+<li>:willneed - データはこの直後にアクセスされる</li>
+<li>:dontneed - データは直後にはアクセスしない</li>
+<li>:noreuse - データは一度しかアクセスされない</li>
+</ul>
+<p>
+これらの advice が具体的に何をするのかはプラットフォーム依存です。
+</p>
+<p>
+ここでいう「データ」は offset と len で特定することができます。
+len が 0 ならば、offset からファイル末尾までを指定したことになります。デフォルトでは offset と len がともに 0 なので、ファイル全体を指定したことになります。
+</p>
+<p>
+posix_fadvise をサポートしていないプラットフォーム上では何もしません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] advice:</dt>
+<dd>
+アクセスパターンを表すシンボル
+</dd>
+<dt class='method-param'>[PARAM] offset:</dt>
+<dd>
+パターンを指定するデータの先頭位置
+</dd>
+<dt class='method-param'>[PARAM] len:</dt>
+<dd>
+パターンを指定するデータの長さ
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+ストリームが既に閉じられているときに発生する例外
+</dd>
+<dt>[EXCEPTION] Errno::EBADF:</dt>
+<dd>
+ファイルデスクリプタが不正であるときに発生する例外
+</dd>
+<dt>[EXCEPTION] Errno::EINVAL:</dt>
+<dd>
+advice が不正
+</dd>
+<dt>[EXCEPTION] Errno::ESPIPE:</dt>
+<dd>
+ファイルデスクリプタが FIFO か pipe を指している場合に発生する例外(Linux はこの場合には Errno::EINVAL を発生する)
+</dd>
+<dt>[EXCEPTION] RangeError:</dt>
+<dd>
+offset,lenが有効範囲から出ている場合に発生する例外
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>f<span class="o">|</span> <span class="nb">p</span> f<span class="p">.</span><span class="nf">advise</span><span class="p">(</span><span class="ss">:sequential</span><span class="p">)</span> <span class="p">}</span> <span class="c1"># =&gt; nil
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_AUTOCLOSE--3D"><code>autoclose=(bool)</code><span class="permalink">[<a href="../method/-i-o/i/autoclose=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-autoclose-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+auto-close フラグを設定します。
+</p>
+<p>
+フラグが設定されているオブジェクトは
+close時/GCでのファイナライザ呼出時にファイルデスクリプタを close します。偽を設定すると close しません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] bool:</dt>
+<dd>
+真偽値でフラグを設定します
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/autoclose=3f.html">IO#autoclose?</a>
+</p>
+<pre>
+f = open(&quot;/dev/null&quot;)
+IO.for_fd(f.fileno)
+# ...
+f.gets # may cause Errno::EBADF
+
+f = open(&quot;/dev/null&quot;)
+IO.for_fd(f.fileno).autoclose = false
+# ...
+f.gets # won't cause Errno::EBADF
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_AUTOCLOSE--3F"><code>autoclose? -&gt; bool</code><span class="permalink">[<a href="../method/-i-o/i/autoclose=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-autoclose-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+auto-close フラグを返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="no">IO</span><span class="p">.</span><span class="nf">sysopen</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>io<span class="o">|</span>
+  io<span class="p">.</span><span class="nf">autoclose?</span>         <span class="c1"># =&gt; true
+</span>  io<span class="p">.</span><span class="nf">autoclose</span> <span class="o">=</span> <span class="k">false</span>
+  io<span class="p">.</span><span class="nf">autoclose?</span>         <span class="c1"># =&gt; false
+</span><span class="k">end</span>
+</code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/autoclose=3d.html">IO#autoclose=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_BINMODE"><code>binmode -&gt; self</code><span class="permalink">[<a href="../method/-i-o/i/binmode.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-binmode">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ストリームをバイナリモードにします。MSDOS などバイナリモードの存在する OS でのみ有効です。そうでない場合このメソッドは何もしません。
+</p>
+<p>
+バイナリモードから通常のモードに戻す方法は再オープンしかありません。
+</p>
+<dl>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+モードの変更に失敗した場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="no">IO</span><span class="p">.</span><span class="nf">sysopen</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">w+</span><span class="s2">"</span><span class="p">)</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>io<span class="o">|</span>
+  io<span class="p">.</span><span class="nf">binmode?</span> <span class="c1"># =&gt; false
+</span>  io<span class="p">.</span><span class="nf">binmode</span>  <span class="c1"># =&gt; #&lt;IO:fd 8&gt;
+</span>  io<span class="p">.</span><span class="nf">binmode?</span> <span class="c1"># =&gt; true
+</span><span class="k">end</span>
+</code></pre>
+<p>
+[SEE_ALSO] <a href="../class/-i-o.html#io_binmode">IO/バイナリモード</a>, <a href="../method/-i-o/i/binmode=3f.html">IO#binmode?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_BINMODE--3F"><code>binmode? -&gt; bool</code><span class="permalink">[<a href="../method/-i-o/i/binmode=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-binmode-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身がバイナリモードなら true を返します。そうでない場合、false を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../class/-i-o.html#io_binmode">IO/バイナリモード</a>, <a href="../method/-i-o/i/binmode.html">IO#binmode</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CLONE"><code>clone -&gt; IO</code><span class="permalink">[<a href="../method/-i-o/i/clone.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-clone">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>dup -&gt; IO</code></dt>
+<dd class="method-description">
+<p>
+レシーバと同じ IO を参照する新しい IO オブジェクトを返します。参照しているファイル記述子は <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/dup.html">dup(2)</a> されます。
+</p>
+<p>
+clone の際に self は一旦 <a href="../method/-i-o/i/flush.html">IO#flush</a> されます。フリーズした IO の clone は同様にフリーズされた IO を返しますが、
+dup は内容の等しいフリーズされていない IO を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に close されていた場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+clone_io <span class="o">=</span> <span class="k">nil</span>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">test</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>io<span class="o">|</span>
+  clone_io <span class="o">=</span> io<span class="p">.</span><span class="nf">clone</span>
+<span class="k">end</span>
+clone_io<span class="p">.</span><span class="nf">read</span> <span class="c1"># =&gt; &quot;test&quot;
+</span>clone_io<span class="p">.</span><span class="nf">close</span>
+</code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_CLOSE"><code>close -&gt; nil</code><span class="permalink">[<a href="../method/-i-o/i/close.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-close">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+入出力ポートをクローズします。
+</p>
+<p>
+以後このポートに対して入出力を行うと例外 <a href="../class/-i-o-error.html">IOError</a> が発生します。ガーベージコレクトの際にはクローズされていない IO ポートはクローズされます。
+self がパイプでプロセスにつながっていれば、そのプロセスの終了を待ち合わせます。
+</p>
+<p>
+既に close されていた場合には単に無視されます。
+</p>
+<dl>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+close に失敗した場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">test</span><span class="s2">"</span><span class="p">)</span>
+f <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span>
+f<span class="p">.</span><span class="nf">read</span>   <span class="c1"># =&gt; &quot;test&quot;
+</span>f<span class="p">.</span><span class="nf">close</span>
+<span class="c1"># f.read # =&gt; IOError (すでに close しているので read できない)
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/closed=3f.html">IO#closed?</a>, <a href="../method/-i-o/i/close_read.html">IO#close_read</a>, <a href="../method/-i-o/i/close_write.html">IO#close_write</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CLOSE_ON_EXEC--3D"><code>close_on_exec=(bool)</code><span class="permalink">[<a href="../method/-i-o/i/close_on_exec=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-close_on_exec-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身に close-on-exec フラグを設定します。
+</p>
+<p>
+このフラグをセットすると <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/exec.html">exec(2)</a> 時にそのファイルデスクリプタを
+close します。
+</p>
+<p>
+[SEE_ALSO] <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fcntl.html">fcntl(2)</a>
+</p>
+<dl>
+<dt class='method-param'>[PARAM] bool:</dt>
+<dd>
+自身の close-on-exec フラグを true か false で指定します。
+</dd>
+</dl>
+<pre>
+f = open(&quot;/dev/null&quot;)
+f.close_on_exec = true
+system(&quot;cat&quot;, &quot;/proc/self/fd/#{f.fileno}&quot;) # cat: /proc/self/fd/3: No such file or directory
+f.closed?                #=&gt; false
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/close_on_exec=3f.html">IO#close_on_exec?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CLOSE_ON_EXEC--3F"><code>close_on_exec? -&gt; bool</code><span class="permalink">[<a href="../method/-i-o/i/close_on_exec=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-close_on_exec-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身に close-on-exec フラグが設定されていた場合 true を返します。そうでない場合に false を返します。
+</p>
+<pre>
+f = open(&quot;/dev/null&quot;)
+f.close_on_exec?                 #=&gt; true
+f.close_on_exec = false
+f.close_on_exec?                 #=&gt; false
+f.close_on_exec = true
+f.close_on_exec?                 #=&gt; true
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/close_on_exec=3d.html">IO#close_on_exec=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CLOSE_READ"><code>close_read -&gt; nil</code><span class="permalink">[<a href="../method/-i-o/i/close_read.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-close_read">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+読み込み用の IO を close します。主にパイプや読み書き両用に作成した IO オブジェクトで使用します。
+</p>
+<p>
+既に close されていた場合には単に無視されます。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が読み込み用にオープンされていなければ発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+close に失敗した場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">popen</span><span class="p">(</span><span class="s2">"</span><span class="s2">/bin/sh</span><span class="s2">"</span>,<span class="s2">"</span><span class="s2">r+</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  f<span class="p">.</span><span class="nf">close_read</span>
+  <span class="c1"># f.readlines # =&gt; IOError: not opened for reading
+</span><span class="k">end</span>
+</code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/close.html">IO#close</a>, <a href="../method/-i-o/i/closed=3f.html">IO#closed?</a>, <a href="../method/-i-o/i/close_write.html">IO#close_write</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CLOSE_WRITE"><code>close_write -&gt; nil</code><span class="permalink">[<a href="../method/-i-o/i/close_write.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-close_write">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+書き込み用の IO を close します。
+</p>
+<p>
+既に close されていた場合には単に無視されます。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が書き込み用にオープンされていなければ発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+close に失敗した場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+f <span class="o">=</span> <span class="no">IO</span><span class="p">.</span><span class="nf">popen</span><span class="p">(</span><span class="s2">"</span><span class="s2">/bin/sh</span><span class="s2">"</span>,<span class="s2">"</span><span class="s2">r+</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  f<span class="p">.</span><span class="nf">close_write</span>
+  <span class="c1"># f.print &quot;nowhere&quot; # =&gt; IOError: not opened for writing
+</span><span class="k">end</span>
+</code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/close.html">IO#close</a>, <a href="../method/-i-o/i/closed=3f.html">IO#closed?</a>, <a href="../method/-i-o/i/close_read.html">IO#close_read</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_CLOSED--3F"><code>closed? -&gt; bool</code><span class="permalink">[<a href="../method/-i-o/i/closed=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-closed-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self が完全に(読み込み用と書き込み用の両方が)クローズされている場合に true を返します。そうでない場合は false を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">test</span><span class="s2">"</span><span class="p">)</span>
+f <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span>
+f<span class="p">.</span><span class="nf">close</span>         <span class="c1"># =&gt; nil
+</span>f<span class="p">.</span><span class="nf">closed?</span>       <span class="c1"># =&gt; true
+</span>f <span class="o">=</span> <span class="no">IO</span><span class="p">.</span><span class="nf">popen</span><span class="p">(</span><span class="s2">"</span><span class="s2">/bin/sh</span><span class="s2">"</span>,<span class="s2">"</span><span class="s2">r+</span><span class="s2">"</span><span class="p">)</span>
+f<span class="p">.</span><span class="nf">close_write</span>   <span class="c1"># =&gt; nil
+</span>f<span class="p">.</span><span class="nf">closed?</span>       <span class="c1"># =&gt; false
+</span>f<span class="p">.</span><span class="nf">close_read</span>    <span class="c1"># =&gt; nil
+</span>f<span class="p">.</span><span class="nf">closed?</span>       <span class="c1"># =&gt; true
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/close.html">IO#close</a>, <a href="../method/-i-o/i/close_read.html">IO#close_read</a>, <a href="../method/-i-o/i/close_write.html">IO#close_write</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH"><code>each(rs = $/, chomp: false) {|line| ... } -&gt; self</code><span class="permalink">[<a href="../method/-i-o/i/each.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-each">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each(limit, chomp: false) {|line| ... } -&gt; self</code></dt>
+<dt class="method-heading"><code>each(rs, limit, chomp: false) {|line| ... } -&gt; self</code></dt>
+<dt class="method-heading"><code>each(rs = $/, chomp: false) -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>each(limit, chomp: false) -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>each(rs, limit, chomp: false) -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>each_line(rs = $/, chomp: false) {|line| ... } -&gt; self</code></dt>
+<dt class="method-heading"><code>each_line(limit, chomp: false) {|line| ... } -&gt; self</code></dt>
+<dt class="method-heading"><code>each_line(rs, limit, chomp: false) {|line| ... } -&gt; self</code></dt>
+<dt class="method-heading"><code>each_line(rs = $/, chomp: false) -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>each_line(limit, chomp: false) -&gt; Enumerator</code></dt>
+<dt class="method-heading"><code>each_line(rs, limit, chomp: false) -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+IO の現在位置から 1 行ずつ文字列として読み込み、それを引数として与えられたブロックを実行します。
+</p>
+<p>
+ブロックが与えられなかった場合は、自身から生成した
+<a href="../class/-enumerator.html">Enumerator</a> オブジェクトを返します。
+</p>
+<p>
+テキスト読み込みメソッドとして動作します。
+</p>
+<p>
+limit で最大読み込みバイト数を指定します。ただしマルチバイト文字が途中で切れないように余分に読み込む場合があります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] rs:</dt>
+<dd>
+行の区切りを文字列で指定します。rs に nil を指定すると行区切りなしとみなします。空文字列 &quot;&quot; を指定すると連続する改行を行の区切りとみなします(パラグラフモード)。
+</dd>
+<dt class='method-param'>[PARAM] limit:</dt>
+<dd>
+最大の読み込みバイト数
+</dd>
+<dt class='method-param'>[PARAM] chomp:</dt>
+<dd>
+true を指定すると各行の末尾から &quot;\n&quot;, &quot;\r&quot;, または &quot;\r\n&quot; を取り除きます。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が読み込み用にオープンされていなければ発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例: 引数なし</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">This is line one,\nThis is line two,\nThis is line three,\nAnd so on...</span><span class="s2">"</span><span class="p">)</span>
+f <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span>
+f<span class="p">.</span><span class="nf">each</span> <span class="p">{</span> <span class="o">|</span>line<span class="o">|</span> <span class="nb">p</span> <span class="s2">"</span><span class="si">#{</span><span class="n">f</span><span class="p">.</span><span class="nf">lineno</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">line</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
+<span class="c1"># =&gt; &quot;1: This is line one,\n&quot;
+</span><span class="c1"># &quot;2: This is line two,\n&quot;
+</span><span class="c1"># &quot;3: This is line three,\n&quot;
+</span><span class="c1"># &quot;4: And so on...&quot;
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例: 行の区切りに半角カンマ、最大読み取りバイト数に 10 を指定</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">This is line one,This is line two,This is line three,And so on...</span><span class="s2">"</span><span class="p">)</span>
+f <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span>
+f<span class="p">.</span><span class="nf">each</span><span class="p">(</span><span class="s2">"</span><span class="s2">,</span><span class="s2">"</span>, <span class="mi">10</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>line<span class="o">|</span> <span class="nb">p</span> <span class="s2">"</span><span class="si">#{</span><span class="n">f</span><span class="p">.</span><span class="nf">lineno</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">line</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
+<span class="c1"># =&gt; &quot;0: This is li&quot;
+</span><span class="c1"># &quot;1: ne one,&quot;
+</span><span class="c1"># &quot;1: This is li&quot;
+</span><span class="c1"># &quot;2: ne two,&quot;
+</span><span class="c1"># &quot;2: This is li&quot;
+</span><span class="c1"># &quot;3: ne three,&quot;
+</span><span class="c1"># &quot;3: And so on.&quot;
+</span><span class="c1"># &quot;4: ..&quot;
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例: chomp = true</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">This is line one\nThis is line two\nThis is line three\nAnd so on...</span><span class="s2">"</span><span class="p">)</span>
+f <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span>
+f<span class="p">.</span><span class="nf">each</span><span class="p">(</span><span class="ss">chomp:</span> <span class="k">true</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>line<span class="o">|</span> <span class="nb">p</span> <span class="s2">"</span><span class="si">#{</span><span class="n">f</span><span class="p">.</span><span class="nf">lineno</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="n">line</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
+<span class="c1"># =&gt; &quot;1: This is line one&quot;
+</span><span class="c1"># &quot;2: This is line two&quot;
+</span><span class="c1"># &quot;3: This is line three&quot;
+</span><span class="c1"># &quot;4: And so on...&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/v/=2f.html">$/</a>, <a href="../method/-i-o/i/gets.html">IO#gets</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_BYTE"><code>each_byte {|ch| ... } -&gt; self</code><span class="permalink">[<a href="../method/-i-o/i/each_byte.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-each_byte">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_byte -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+IO の現在位置から 1 バイトずつ読み込み、それを整数として与え、ブロックを実行します。
+</p>
+<p>
+ブロックが与えられなかった場合は、自身から生成した
+<a href="../class/-enumerator.html">Enumerator</a> オブジェクトを返します。
+</p>
+<p>
+バイナリ読み込みメソッドとして動作します。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が読み込み用にオープンされていなければ発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">aあ</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>io<span class="o">|</span>
+  io<span class="p">.</span><span class="nf">each_byte</span> <span class="p">{</span> <span class="o">|</span>x<span class="o">|</span> <span class="nb">p</span> x <span class="p">}</span>
+  <span class="c1"># =&gt; 97
+</span>  <span class="c1"># 227
+</span>  <span class="c1"># 129
+</span>  <span class="c1"># 130
+</span><span class="k">end</span>
+</code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_CHAR"><code>each_char {|c| ... } -&gt; self</code><span class="permalink">[<a href="../method/-i-o/i/each_char.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-each_char">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_char -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+self に含まれる文字を一文字ずつブロックに渡して評価します。
+</p>
+<p>
+self は読み込み用にオープンされていなければなりません。
+</p>
+<p>
+ブロックを省略した場合は各文字について繰り返す <a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+self が読み込み用にオープンされていない場合に発生します。
+</dd>
+</dl>
+<pre>
+f = File.new(&quot;testfile&quot;)
+f.each_char {|c| print c, ' ' }   #=&gt; #&lt;File:testfile&gt;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_CODEPOINT"><code>each_codepoint {|c| ... } -&gt; self</code><span class="permalink">[<a href="../method/-i-o/i/each_codepoint.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-each_codepoint">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_codepoint -&gt; Enumerator</code></dt>
+<dd class="method-description">
+<p>
+IO の各コードポイントに対して繰り返しブロックを呼びだします。
+</p>
+<p>
+ブロックの引数にはコードポイントを表す整数が渡されます。
+</p>
+<p>
+ブロックを省略した場合には、<a href="../class/-enumerator.html">Enumerator</a> を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">abcdeあ</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  f<span class="p">.</span><span class="nf">each_codepoint</span> <span class="p">{</span> <span class="o">|</span>i<span class="o">|</span> <span class="nb">p</span> i <span class="p">}</span>
+<span class="k">end</span>
+<span class="c1"># =&gt; 97
+</span><span class="c1"># 98
+</span><span class="c1"># 99
+</span><span class="c1"># 100
+</span><span class="c1"># 101
+</span><span class="c1"># 12354
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_EOF"><code>eof -&gt; bool</code><span class="permalink">[<a href="../method/-i-o/i/eof.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-eof">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>eof? -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+ストリームがファイルの終端に達した場合、true を返します。そうでない場合、false を返します。
+</p>
+<pre>
+f = File.new(&quot;testfile&quot;)
+dummy = f.readlines
+f.eof   #=&gt; true
+</pre>
+<p>
+自身がパイプやソケットなどのストリームであった場合、相手がデータを送るか close するまでブロックします。
+</p>
+<pre>
+r, w = IO.pipe
+Thread.new { sleep 10; w.close }
+r.eof?  #=&gt; 10秒ブロックしてから true を返す。
+
+r, w = IO.pipe
+Thread.new { sleep 10; w.puts &quot;a&quot; }
+r.eof?  #=&gt; 10秒ブロックしてから false を返す。
+
+r, w = IO.pipe
+r.eof?  # 永久にブロックします。
+</pre>
+<p>
+eof, eof? は入力バッファにデータを読み込むので、<a href="../method/-i-o/i/sysread.html">IO#sysread</a> と同時に使うと正常に動作しません。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が読み込み用にオープンされていなければ発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_EXTERNAL_ENCODING"><code>external_encoding -&gt; Encoding | nil</code><span class="permalink">[<a href="../method/-i-o/i/external_encoding.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-external_encoding">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO の外部エンコーディングを返します。外部エンコーディングが指定されていない場合は nil を返します。ただし読み込み専用モードの場合は <a href="../method/-encoding/s/default_external.html">Encoding.default_external</a> になります。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">abcde</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>f<span class="o">|</span> <span class="nb">p</span> f<span class="p">.</span><span class="nf">external_encoding</span> <span class="p">}</span> <span class="c1"># =&gt; #&lt;Encoding:UTF-8&gt;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_FCNTL"><code>fcntl(cmd, arg = 0) -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/i/fcntl.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-fcntl">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IOに対してシステムコール fcntl を実行します。機能の詳細は <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fcntl.html">fcntl(2)</a> を参照してください。
+fcntl(2) が返した整数を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] cmd:</dt>
+<dd>
+IO に対するコマンドを、添付ライブラリ <a href="../library/fcntl.html">fcntl</a> が提供している定数で指定します。
+</dd>
+<dt class='method-param'>[PARAM] arg:</dt>
+<dd>
+cmd に対する引数を整数、文字列、booleanのいずれかで指定します。整数の時にはその値を <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fcntl.html">fcntl(2)</a> に渡します。文字列の場合には Array#pack した構造体だとみなして渡します。
+arg が nil か false の場合には 0を、true の場合には 1 を渡します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+fcntl の実行に失敗した場合に発生します。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に close されている場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">fcntl</span><span class="s2">"</span>
+
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">abcde</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># ファイル状態フラグを読み出す
+</span><span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  f<span class="p">.</span><span class="nf">fcntl</span><span class="p">(</span><span class="no">Fcntl</span><span class="o">::</span><span class="no">F_GETFL</span>, <span class="mi">0</span><span class="p">)</span> <span class="c1"># =&gt; 0
+</span>  f<span class="p">.</span><span class="nf">fcntl</span><span class="p">(</span><span class="no">Fcntl</span><span class="o">::</span><span class="no">F_SETFL</span>, <span class="no">Fcntl</span><span class="o">::</span><span class="no">O_NONBLOCK</span><span class="p">)</span> <span class="c1"># =&gt; 0
+</span>  f<span class="p">.</span><span class="nf">fcntl</span><span class="p">(</span><span class="no">Fcntl</span><span class="o">::</span><span class="no">F_GETFL</span>, <span class="mi">0</span><span class="p">)</span> <span class="c1"># =&gt; 4
+</span><span class="k">end</span>
+</code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_FDATASYNC"><code>fdatasync -&gt; 0</code><span class="permalink">[<a href="../method/-i-o/i/fdatasync.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-fdatasync">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO のすべてのバッファされているデータを直ちにディスクに書き込みます。
+</p>
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fdatasync.html">fdatasync(2)</a> をサポートしていない OS 上では代わりに
+<a href="../method/-i-o/i/fsync.html">IO#fsync</a> を呼びだします。
+</p>
+<p>
+<a href="../method/-i-o/i/fsync.html">IO#fsync</a> との違いは <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fdatasync.html">fdatasync(2)</a> を参照してください。
+</p>
+<dl>
+<dt>[EXCEPTION] NotImplementedError:</dt>
+<dd>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fdatasync.html">fdatasync(2)</a> も <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fsync.html">fsync(2)</a> もサポートされていない OS で発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">tempfile</span><span class="s2">"</span>
+
+<span class="no">Tempfile</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testtmpfile</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  f<span class="p">.</span><span class="nf">print</span> <span class="s2">"</span><span class="s2">test</span><span class="s2">"</span>
+  <span class="no">File</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span>f<span class="p">.</span><span class="nf">path</span><span class="p">)</span> <span class="c1"># =&gt; &quot;&quot;
+</span>  f<span class="p">.</span><span class="nf">fdatasync</span>
+  <span class="no">File</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span>f<span class="p">.</span><span class="nf">path</span><span class="p">)</span> <span class="c1"># =&gt; &quot;test&quot;
+</span><span class="k">end</span>
+</code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_FILENO"><code>fileno -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/i/fileno.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-fileno">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>to_i -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+ファイル記述子を表す整数を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に close されている場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="vg">$stdin</span><span class="p">.</span><span class="nf">fileno</span>    <span class="c1"># =&gt; 0
+</span><span class="vg">$stdout</span><span class="p">.</span><span class="nf">fileno</span>   <span class="c1"># =&gt; 1
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-dir/i/fileno.html">Dir#fileno</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FLUSH"><code>flush -&gt; self</code><span class="permalink">[<a href="../method/-i-o/i/flush.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-flush">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO ポートの内部バッファをフラッシュします。
+</p>
+<p>
+このメソッドを使ったとき、即座にメタデータを更新することは保証されません(特にWindowsで)。即座にメタデータも更新したいときは <a href="../method/-i-o/i/fsync.html">IO#fsync</a> を使います。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が書き込み用にオープンされていなければ発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fflush.html">fflush(3)</a> が失敗した場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">tempfile</span><span class="s2">"</span>
+
+<span class="no">Tempfile</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testtmpfile</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  f<span class="p">.</span><span class="nf">print</span> <span class="s2">"</span><span class="s2">test</span><span class="s2">"</span>
+  <span class="no">File</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span>f<span class="p">.</span><span class="nf">path</span><span class="p">)</span> <span class="c1"># =&gt; &quot;&quot;
+</span>  f<span class="p">.</span><span class="nf">flush</span>
+  <span class="no">File</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span>f<span class="p">.</span><span class="nf">path</span><span class="p">)</span> <span class="c1"># =&gt; &quot;test&quot;
+</span><span class="k">end</span>
+</code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_FSYNC"><code>fsync -&gt; 0</code><span class="permalink">[<a href="../method/-i-o/i/fsync.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-fsync">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+書き込み用の IO に対して、システムコール <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fsync.html">fsync(2)</a>
+を実行します。<a href="../method/-i-o/i/flush.html">IO#flush</a> を行ったあと、(OSレベルで)まだディスクに書き込まれていないメモリ上にあるデータをディスクに書き出します。
+</p>
+<p>
+成功すれば 0 を返します。
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/fsync.html">fsync(2)</a> がサポートされていない場合は nil を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+失敗した場合に発生します。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に close されている場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_GETBYTE"><code>getbyte -&gt; Integer | nil</code><span class="permalink">[<a href="../method/-i-o/i/getbyte.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-getbyte">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO から1バイトを読み込み整数として返します。既に EOF に達していれば nil を返します。
+</p>
+<pre>
+f = File.new(&quot;testfile&quot;)
+f.getbyte   #=&gt; 84
+f.getbyte   #=&gt; 104
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_GETC"><code>getc -&gt; String | nil</code><span class="permalink">[<a href="../method/-i-o/i/getc.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-getc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO ポートから外部エンコーディングに従い 1 文字読み込んで返します。
+EOF に到達した時には nil を返します。
+</p>
+<p>
+テキスト読み込みメソッドとして動作します。
+</p>
+<p>
+<a href="../method/-i-o/i/readchar.html">IO#readchar</a> との違いは EOF での振る舞いのみです。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が読み込み用にオープンされていなければ発生します。
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+File.write(&quot;testfile&quot;, &quot;test&quot;)
+f = File.new(&quot;testfile&quot;)
+p f.getc                 #=&gt; &quot;い&quot;
+p f.getc                 #=&gt; &quot;ろ&quot;
+p f.getc                 #=&gt; &quot;は&quot;
+f.read
+f.getc                   #=&gt; nil
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/readchar.html">IO#readchar</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_GETS"><code>gets(rs = $/, chomp: false) -&gt; String | nil</code><span class="permalink">[<a href="../method/-i-o/i/gets.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-gets">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>gets(limit, chomp: false) -&gt; String | nil</code></dt>
+<dt class="method-heading"><code>gets(rs, limit, chomp: false) -&gt; String | nil</code></dt>
+<dd class="method-description">
+<p>
+一行読み込んで、読み込みに成功した時にはその文字列を返します。
+EOF に到達した時には nil を返します。
+</p>
+<p>
+テキスト読み込みメソッドとして動作します。
+</p>
+<p>
+読み込んだ文字列を変数 <a href="../method/-kernel/v/_.html">$_</a> にセットします。
+<a href="../method/-i-o/i/readline.html">IO#readline</a> との違いは EOF での振る舞いのみです。
+</p>
+<p>
+limit で最大の読み込みバイト数を指定します。ただしファイルのエンコーディングがマルチバイトエンコーディングである場合には読み込んだ文字列がマルチバイト文字の途中で切れないように数バイト余分に読み込む場合があります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] rs:</dt>
+<dd>
+行の区切りを文字列で指定します。rs に nil を指定すると行区切りなしとみなします。空文字列 &quot;&quot; を指定すると連続する改行を行の区切りとみなします(パラグラフモード)。
+</dd>
+<dt class='method-param'>[PARAM] limit:</dt>
+<dd>
+最大の読み込みバイト数
+</dd>
+<dt class='method-param'>[PARAM] chomp:</dt>
+<dd>
+true を指定すると各行の末尾から &quot;\n&quot;, &quot;\r&quot;, または &quot;\r\n&quot; を取り除きます。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が読み込み用にオープンされていなければ発生します。
+</dd>
+</dl>
+<pre>
+f = File.new(&quot;oneline_file&quot;)
+f.gets                          #=&gt; &quot;This is line one\n&quot;
+$_                              #=&gt; &quot;This is line one\n&quot;
+f.gets                          #=&gt; nil
+$_                              #=&gt; nil
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/v/=2f.html">$/</a>, <a href="../method/-i-o/i/readline.html">IO#readline</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_INTERNAL_ENCODING"><code>internal_encoding -&gt; Encoding | nil</code><span class="permalink">[<a href="../method/-i-o/i/internal_encoding.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-internal_encoding">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO の内部エンコーディングを返します。内部エンコーディングが指定されていない場合は nil を返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">abcde</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  <span class="nb">p</span> f<span class="p">.</span><span class="nf">internal_encoding</span>  <span class="c1"># =&gt; nil
+</span>  f<span class="p">.</span><span class="nf">set_encoding</span><span class="p">(</span><span class="s2">"</span><span class="s2">ASCII-8BIT</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">EUC-JP</span><span class="s2">"</span><span class="p">)</span>
+  <span class="nb">p</span> f<span class="p">.</span><span class="nf">internal_encoding</span>  <span class="c1"># =&gt; #&lt;Encoding:EUC-JP&gt;
+</span><span class="k">end</span>
+</code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_IOCTL"><code>ioctl(cmd, arg = 0) -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/i/ioctl.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-ioctl">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO に対してシステムコール ioctl を実行し、その結果を返します。機能の詳細は <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/ioctl.html">ioctl(2)</a> を参照してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] cmd:</dt>
+<dd>
+IO に対するコマンドを整数で指定します。どのようなコマンドが使えるかはプラットフォームに依存します。
+</dd>
+<dt class='method-param'>[PARAM] arg:</dt>
+<dd>
+cmd に対する引数を指定します。整数の時にはその値を ioctl に渡します。文字列の場合には <a href="../method/-array/i/pack.html">Array#pack</a> した構造体だとみなして渡します。
+arg が nil か false の場合には 0を、true の場合には 1 を渡します。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に close されている場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_ISATTY"><code>isatty -&gt; bool</code><span class="permalink">[<a href="../method/-i-o/i/isatty.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-isatty">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>tty? -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+入出力ポートがttyに結合している時、真を返します。そうでない場合 false を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に close されている場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">File</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">isatty</span>   <span class="c1"># =&gt; false
+</span><span class="no">File</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">/dev/tty</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">isatty</span>   <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_LINENO"><code>lineno -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/i/lineno.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-lineno">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在の行番号を整数で返します。実際には <a href="../method/-i-o/i/gets.html">IO#gets</a> が呼ばれた回数です。改行以外のセパレータで gets が呼ばれた場合など、実際の行番号と異なる場合があります。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+読み込み用にオープンされていなければ発生します。
+</dd>
+</dl>
+<pre>
+f = File.new(&quot;testfile&quot;)
+f.lineno                 #=&gt; 0
+f.gets                   #=&gt; &quot;This is line one\n&quot;
+f.lineno                 #=&gt; 1
+f.gets                   #=&gt; &quot;This is line two\n&quot;
+f.lineno                 #=&gt; 2
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/v/=2e.html">$.</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LINENO--3D"><code>lineno=(number)</code><span class="permalink">[<a href="../method/-i-o/i/lineno=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-lineno-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在の行番号を number にセットします。 <a href="../method/-kernel/v/=2e.html">$.</a> は次回の読み込みの時に更新されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] number:</dt>
+<dd>
+行番号を整数で指定します。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+読み込み用にオープンされていなければ発生します。
+</dd>
+</dl>
+<pre>
+f = File.new(&quot;testfile&quot;)
+f.gets                     #=&gt; &quot;This is line one\n&quot;
+$.                         #=&gt; 1
+f.lineno = 1000
+f.lineno                   #=&gt; 1000
+$.                         #=&gt; 1
+f.gets                     #=&gt; &quot;This is line two\n&quot;
+$.                         #=&gt; 1001
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/v/=2e.html">$.</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PID"><code>pid -&gt; Integer | nil</code><span class="permalink">[<a href="../method/-i-o/i/pid.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-pid">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身が <a href="../method/-i-o/s/popen.html">IO.popen</a> で作られたIOポートなら、子プロセスのプロセス ID を返します。それ以外は nil を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に close されている場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">popen</span><span class="p">(</span><span class="s2">"</span><span class="s2">-</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>pipe<span class="o">|</span>
+  <span class="k">if</span> pipe
+    <span class="vg">$stderr</span><span class="p">.</span><span class="nf">puts</span> <span class="s2">"</span><span class="s2">In parent, child pid is </span><span class="si">#{</span><span class="n">pipe</span><span class="p">.</span><span class="nf">pid</span><span class="si">}</span><span class="s2">"</span> <span class="c1"># =&gt; In parent, child pid is 16013
+</span>  <span class="k">else</span>
+    <span class="vg">$stderr</span><span class="p">.</span><span class="nf">puts</span> <span class="s2">"</span><span class="s2">In child, pid is </span><span class="si">#{</span><span class="vg">$$</span><span class="si">}</span><span class="s2">"</span>              <span class="c1"># =&gt; In child, pid is 16013
+</span>  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_POS"><code>pos -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/i/pos.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-pos">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>tell -&gt; Integer</code></dt>
+<dd class="method-description">
+<p>
+ファイルポインタの現在の位置を整数で返します。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に close されている場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">This is line one\n</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  f<span class="p">.</span><span class="nf">pos</span>    <span class="c1"># =&gt; 0
+</span>  f<span class="p">.</span><span class="nf">gets</span>   <span class="c1"># =&gt; &quot;This is line one\n&quot;
+</span>  f<span class="p">.</span><span class="nf">pos</span>    <span class="c1"># =&gt; 17
+</span><span class="k">end</span>
+</code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_POS--3D"><code>pos=(n)</code><span class="permalink">[<a href="../method/-i-o/i/pos=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-pos-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ファイルポインタを指定位置に移動します。
+<a href="../method/-i-o/i/seek.html">IO#seek</a>(n, IO::SEEK_SET) と同じです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] n:</dt>
+<dd>
+先頭からのオフセットを整数で指定します。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に close されている場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">This is line one\nThis is line two\n</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  f<span class="p">.</span><span class="nf">pos</span>    <span class="c1"># =&gt; 0
+</span>  f<span class="p">.</span><span class="nf">pos</span> <span class="o">=</span> <span class="mi">17</span>
+  f<span class="p">.</span><span class="nf">gets</span>   <span class="c1"># =&gt; &quot;This is line two\n&quot;
+</span><span class="k">end</span>
+</code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_PREAD"><code>pread(maxlen, offset, outbuf = &quot;&quot;) -&gt; string</code><span class="permalink">[<a href="../method/-i-o/i/pread.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-pread">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+preadシステムコールを使ってファイルポインタを変更せずに、また現在のファイルポインタに依存せずにmaxlenバイト読み込みます。
+</p>
+<p>
+<a href="../method/-i-o/i/seek.html">IO#seek</a>と<a href="../method/-i-o/i/read.html">IO#read</a>の組み合わせと比べて、アトミックな操作になるという点が優れていて、複数スレッド/プロセスから同じIOオブジェクトを様々な位置から読み込むことを許します。どのユーザー空間のIO層のバッファリングもバイパスします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] maxlen:</dt>
+<dd>
+読み込むバイト数を指定します。
+</dd>
+<dt class='method-param'>[PARAM] offset:</dt>
+<dd>
+読み込み開始位置のファイルの先頭からのオフセットを指定します。
+</dd>
+<dt class='method-param'>[PARAM] outbuf:</dt>
+<dd>
+データを受け取る String を指定します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+シークまたは書き込みが失敗した場合に発生します。
+</dd>
+<dt>[EXCEPTION] EOFError:</dt>
+<dd>
+EOF に到達した時に発生します。
+</dd>
+<dt>[EXCEPTION] NotImplementedError:</dt>
+<dd>
+システムコールがサポートされていない OS で発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">File</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">This is line one\nThis is line two\n</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  <span class="nb">p</span> f<span class="p">.</span><span class="nf">read</span>           <span class="c1"># =&gt; &quot;This is line one\nThis is line two\n&quot;
+</span>  <span class="nb">p</span> f<span class="p">.</span><span class="nf">pread</span><span class="p">(</span><span class="mi">12</span>, <span class="mi">0</span><span class="p">)</span>   <span class="c1"># =&gt; &quot;This is line&quot;
+</span>  <span class="nb">p</span> f<span class="p">.</span><span class="nf">pread</span><span class="p">(</span><span class="mi">9</span>, <span class="mi">8</span><span class="p">)</span>    <span class="c1"># =&gt; &quot;line one\n&quot;
+</span><span class="k">end</span>
+</code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_PRINT"><code>print(*arg) -&gt; nil</code><span class="permalink">[<a href="../method/-i-o/i/print.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-print">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数を IO ポートに順に出力します。引数を省略した場合は、<a href="../method/-kernel/v/_.html">$_</a> を出力します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] arg:</dt>
+<dd>
+<a href="../method/-kernel/m/print.html">Kernel.#print</a> と同じです。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が書き込み用にオープンされていなければ発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+出力に失敗した場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="vg">$stdout</span><span class="p">.</span><span class="nf">print</span><span class="p">(</span><span class="s2">"</span><span class="s2">This is </span><span class="s2">"</span>, <span class="mi">100</span>, <span class="s2">"</span><span class="s2"> percent.\n</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; This is 100 percent.
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/m/print.html">Kernel.#print</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PRINTF"><code>printf(format, *arg) -&gt; nil</code><span class="permalink">[<a href="../method/-i-o/i/printf.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-printf">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+C 言語の printf と同じように、format に従い引数を文字列に変換して、self に出力します。
+</p>
+<p>
+第一引数に IO を指定できないこと、引数を省略できないことを除けば <a href="../method/-kernel/m/printf.html">Kernel.#printf</a> と同じです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] format:</dt>
+<dd>
+<a href="../method/-kernel/m/printf.html">Kernel.#printf</a> と同じです。<a href="../doc/print_format.html">sprintf フォーマット</a> を参照してください。
+</dd>
+<dt class='method-param'>[PARAM] arg:</dt>
+<dd>
+<a href="../method/-kernel/m/printf.html">Kernel.#printf</a> と同じです。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が書き込み用にオープンされていなければ発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+出力に失敗した場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/m/printf.html">Kernel.#printf</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PUTC"><code>putc(ch) -&gt; object</code><span class="permalink">[<a href="../method/-i-o/i/putc.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-putc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字 ch を self に出力します。引数の扱いは <a href="../method/-kernel/m/putc.html">Kernel.#putc</a> と同じです。詳細はこちらを参照してください。ch を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] ch:</dt>
+<dd>
+出力したい文字を、文字列か文字コード(整数)で与えます。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が書き込み用にオープンされていなければ発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+出力に失敗した場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="vg">$stdout</span><span class="p">.</span><span class="nf">putc</span> <span class="s2">"</span><span class="s2">A</span><span class="s2">"</span> <span class="c1"># =&gt; A
+</span><span class="vg">$stdout</span><span class="p">.</span><span class="nf">putc</span> <span class="mi">65</span>  <span class="c1"># =&gt; A
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/m/putc.html">Kernel.#putc</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PUTS"><code>puts(*obj) -&gt; nil</code><span class="permalink">[<a href="../method/-i-o/i/puts.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-puts">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+各 obj を self に出力し、それぞれの後に改行を出力します。引数の扱いは <a href="../method/-kernel/m/puts.html">Kernel.#puts</a> と同じです。詳細はこちらを参照してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+出力したいオブジェクトを指定します。<a href="../method/-kernel/m/puts.html">Kernel.#puts</a> と同じです。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が書き込み用にオープンされていなければ発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+出力に失敗した場合に発生します。
+</dd>
+</dl>
+<pre>
+$stdout.puts(&quot;this&quot;, &quot;is&quot;, &quot;a&quot;, &quot;test&quot;, [1, [nil, 3]])
+
+#=&gt;
+this
+is
+a
+test
+1
+
+3
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/m/puts.html">Kernel.#puts</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PWRITE"><code>pwrite(string, offset) -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/i/pwrite.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-pwrite">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+stringをoffsetの位置にpwrite()システムコールを使って書き込みます。
+</p>
+<p>
+<a href="../method/-i-o/i/seek.html">IO#seek</a>と<a href="../method/-i-o/i/write.html">IO#write</a>の組み合わせと比べて、アトミックな操作になるという点が優れていて、複数スレッド/プロセスから同じIOオブジェクトを様々な位置から読み込むことを許します。どのユーザー空間のIO層のバッファリングもバイパスします。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+書き込む文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] offset:</dt>
+<dd>
+ファイルポインタを変えずに書き込む位置を指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+書き込んだバイト数を返します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+シークまたは書き込みが失敗した場合に発生します。
+</dd>
+<dt>[EXCEPTION] NotImplementedError:</dt>
+<dd>
+システムコールがサポートされていない OS で発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  f<span class="p">.</span><span class="nf">pwrite</span><span class="p">(</span><span class="s2">"</span><span class="s2">ABCDEF</span><span class="s2">"</span>, <span class="mi">3</span><span class="p">)</span>   <span class="c1"># =&gt; 6
+</span><span class="k">end</span>
+
+<span class="no">File</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span>     <span class="c1"># =&gt; &quot;\u0000\u0000\u0000ABCDEF&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_READ"><code>read(length = nil, outbuf = &quot;&quot;) -&gt; String | nil</code><span class="permalink">[<a href="../method/-i-o/i/read.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-read">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+length バイト読み込んで、その文字列を返します。
+</p>
+<p>
+引数 length が指定された場合はバイナリ読み込みメソッド、そうでない場合はテキスト読み込みメソッドとして動作します。既に EOF に達していれば nil を返します。ただし、length に nil か 0 が指定されている場合は、空文字列 &quot;&quot; を返します。例えば、open(空ファイル) {|f| f.read } は &quot;&quot; となります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] length:</dt>
+<dd>
+読み込むサイズを整数で指定します。
+nil が指定された場合、EOF までの全てのデータを読み込んで、その文字列を返します。
+</dd>
+<dt class='method-param'>[PARAM] outbuf:</dt>
+<dd>
+出力用のバッファを文字列で指定します。IO#read は読み込んだデータをその文字列オブジェクトに上書きして返します。指定した文字列オブジェクトがあらかじめ length 長の領域であれば、余計なメモリの割当てが行われません。指定した文字列の長さが
+length と異なる場合、その文字列は一旦 length 長に拡張(あるいは縮小)されたあと、実際に読み込んだデータのサイズになります。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が読み込み用にオープンされていなければ発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+データの読み込みに失敗した場合に発生します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+length が負の場合に発生します。
+</dd>
+</dl>
+<p>
+第二引数を指定した read の呼び出しでデータが空であった場合
+(read が nil を返す場合)、outbuf は空文字列になります。
+</p>
+<pre>
+outbuf = &quot;x&quot; * 20;
+io = File.open(&quot;/dev/null&quot;)
+p io.read(10,outbuf)
+p outbuf
+=&gt; nil
+   &quot;&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_READ_NONBLOCK"><code>read_nonblock(maxlen, outbuf = nil, exception: true) -&gt; String | Symbol | nil</code><span class="permalink">[<a href="../method/-i-o/i/read_nonblock.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-read_nonblock">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO をノンブロッキングモードに設定し、その後で <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/read.html">read(2)</a> システムコールにより長さ maxlen を上限として読み込み、文字列として返します。
+EAGAIN, EINTR などは <a href="../class/-errno=3a=3a-e-x-x-x.html">Errno::EXXX</a> 例外として呼出元に報告されます。
+</p>
+<p>
+発生した例外 がErrno::EAGAIN、 Errno::EWOULDBLOCK である場合は、その例外オブジェクトに <a href="../class/-i-o=3a=3a-wait-readable.html">IO::WaitReadable</a> が <a href="../method/-object/i/extend.html">Object#extend</a>
+されます。
+</p>
+<p>
+なお、バッファが空でない場合は、read_nonblock はバッファから読み込みます。この場合、read(2) システムコールは呼ばれません。
+</p>
+<p>
+このメソッドはノンブロッキングモードにする点を除いて <a href="../method/-i-o/i/readpartial.html">IO#readpartial</a> と同じであることに注意してください。
+</p>
+<p>
+バイナリ読み込みメソッドとして動作します。
+</p>
+<p>
+既に EOF に達していれば EOFError が発生します。ただし、maxlen に 0 が指定されている場合は、空文字列 &quot;&quot; を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] maxlen:</dt>
+<dd>
+読み込む長さの上限を整数で指定します。
+</dd>
+<dt class='method-param'>[PARAM] outbuf:</dt>
+<dd>
+文字列で指定します。IO#read_nonblock は読み込んだデータを outbuf に破壊的に格納し、返り値は outbuf となります。outbuf は一旦 maxlen 長に拡張(あるいは縮小)されたあと、実際に読み込んだデータのサイズになります。read(2) システムコールが 0 を返した場合は、空文字列になります。
+</dd>
+<dt class='method-param'>[PARAM] exception:</dt>
+<dd>
+読み込み時に <a href="../class/-errno=3a=3a-e-a-g-a-i-n.html">Errno::EAGAIN</a>、
+<a href="../class/-errno=3a=3a-e-w-o-u-l-d-b-l-o-c-k.html">Errno::EWOULDBLOCK</a> が発生する代わりに
+:wait_readable を返すかどうかを指定します。また、false
+を指定した場合は既に EOF に達していれば
+<a href="../class/-e-o-f-error.html">EOFError</a> の代わりに nil を返します。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が読み込み用にオープンされていなければ発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+read(2) システムコールの結果としてエラーが起きた場合に発生します。
+</dd>
+<dt>[EXCEPTION] EOFError:</dt>
+<dd>
+read(2) システムコールが 0 を返した場合に発生します。これは、IO が既に EOF に達していることを意味します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_READBYTE"><code>readbyte -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/i/readbyte.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-readbyte">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO から1バイトを読み込み整数として返します。既に EOF に達していれば EOFError が発生します。
+</p>
+<dl>
+<dt>[EXCEPTION] EOFError:</dt>
+<dd>
+既に EOF に達している場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">123</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  <span class="k">begin</span>
+    f<span class="p">.</span><span class="nf">readbyte</span>  <span class="c1"># =&gt; 49
+</span>    f<span class="p">.</span><span class="nf">readbyte</span>  <span class="c1"># =&gt; 50
+</span>    f<span class="p">.</span><span class="nf">readbyte</span>  <span class="c1"># =&gt; 51
+</span>    f<span class="p">.</span><span class="nf">readbyte</span>  <span class="c1"># =&gt; 例外発生
+</span>  <span class="k">rescue</span> <span class="o">=&gt;</span> e
+    e<span class="p">.</span><span class="nf">class</span> <span class="c1"># =&gt; EOFError
+</span>  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_READCHAR"><code>readchar -&gt; String</code><span class="permalink">[<a href="../method/-i-o/i/readchar.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-readchar">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO ポートから 1 文字読み込んで返します。
+EOF に到達した時には EOFError が発生します。
+</p>
+<p>
+テキスト読み込みメソッドとして動作します。
+</p>
+<p>
+<a href="../method/-i-o/i/getc.html">IO#getc</a> との違いは EOF での振る舞いのみです。
+</p>
+<dl>
+<dt>[EXCEPTION] EOFError:</dt>
+<dd>
+EOF に到達した時に発生します。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が読み込み用にオープンされていなければ発生します。
+</dd>
+</dl>
+<pre>
+f = File.new(&quot;testfile&quot;)
+p f.readchar                   #=&gt; &quot;い&quot;
+p f.readchar                   #=&gt; &quot;ろ&quot;
+p f.readchar                   #=&gt; &quot;は&quot;
+f.read
+f.readchar                   #=&gt; EOFError
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/getc.html">IO#getc</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_READLINE"><code>readline(rs = $/, chomp: false) -&gt; String</code><span class="permalink">[<a href="../method/-i-o/i/readline.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-readline">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>readline(limit, chomp: false) -&gt; String</code></dt>
+<dt class="method-heading"><code>readline(rs, limit, chomp: false) -&gt; String</code></dt>
+<dd class="method-description">
+<p>
+一行読み込んで、読み込みに成功した時にはその文字列を返します。
+EOF に到達した時には EOFError が発生します。
+</p>
+<p>
+テキスト読み込みメソッドとして動作します。
+</p>
+<p>
+読み込んだ文字列を変数 <a href="../method/-kernel/v/_.html">$_</a> にセットします。<a href="../method/-i-o/i/gets.html">IO#gets</a> との違いは EOF での振る舞いのみです。
+</p>
+<p>
+limit で最大読み込みバイト数を指定します。ただしマルチバイト文字が途中で切れないように余分に読み込む場合があります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] rs:</dt>
+<dd>
+行の区切りを文字列で指定します。rs に nil を指定すると行区切りなしとみなします。空文字列 &quot;&quot; を指定すると連続する改行を行の区切りとみなします(パラグラフモード)。
+</dd>
+<dt class='method-param'>[PARAM] limit:</dt>
+<dd>
+最大の読み込みバイト数
+</dd>
+<dt class='method-param'>[PARAM] chomp:</dt>
+<dd>
+true を指定すると各行の末尾から &quot;\n&quot;, &quot;\r&quot;, または &quot;\r\n&quot; を取り除きます。
+</dd>
+<dt>[EXCEPTION] EOFError:</dt>
+<dd>
+EOF に到達した時に発生します。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が読み込み用にオープンされていなければ発生します。
+</dd>
+</dl>
+<pre>
+f = File.new(&quot;oneline_file&quot;)
+f.readline                      #=&gt; &quot;This is line one\n&quot;
+$_                              #=&gt; &quot;This is line one\n&quot;
+f.readline                      #=&gt; EOFError
+$_                              #=&gt; nil
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/v/=2f.html">$/</a>, <a href="../method/-i-o/i/gets.html">IO#gets</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_READLINES"><code>readlines(rs = $/, chomp: false) -&gt; [String]</code><span class="permalink">[<a href="../method/-i-o/i/readlines.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-readlines">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>readlines(limit, chomp: false) -&gt; [String]</code></dt>
+<dt class="method-heading"><code>readlines(rs, limit, chomp: false) -&gt; [String]</code></dt>
+<dd class="method-description">
+<p>
+データを全て読み込んで、その各行を要素としてもつ配列を返します。既に EOF に達していれば空配列 [] を返します。
+</p>
+<p>
+テキスト読み込みメソッドとして動作します。
+</p>
+<p>
+limit で最大読み込みバイト数を指定します。ただしマルチバイト文字が途中で切れないように余分に読み込む場合があります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] rs:</dt>
+<dd>
+行の区切りを文字列で指定します。rs に nil を指定すると行区切りなしとみなします。空文字列 &quot;&quot; を指定すると連続する改行を行の区切りとみなします(パラグラフモード)。
+</dd>
+<dt class='method-param'>[PARAM] limit:</dt>
+<dd>
+最大の読み込みバイト数
+</dd>
+<dt class='method-param'>[PARAM] chomp:</dt>
+<dd>
+true を指定すると各行の末尾から rs を取り除きます。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が読み込み用にオープンされていなければ発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">line1,\nline2,\nline3,\n</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>f<span class="o">|</span> <span class="nb">p</span> f<span class="p">.</span><span class="nf">readlines</span> <span class="p">}</span>      <span class="c1"># =&gt; [&quot;line1,\n&quot;, &quot;line2,\n&quot;, &quot;line3,\n&quot;]
+</span><span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>f<span class="o">|</span> <span class="nb">p</span> f<span class="p">.</span><span class="nf">readlines</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="p">}</span>   <span class="c1"># =&gt; [&quot;lin&quot;, &quot;e1,&quot;, &quot;\n&quot;, &quot;lin&quot;, &quot;e2,&quot;, &quot;\n&quot;, &quot;lin&quot;, &quot;e3,&quot;, &quot;\n&quot;]
+</span><span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>f<span class="o">|</span> <span class="nb">p</span> f<span class="p">.</span><span class="nf">readlines</span><span class="p">(</span><span class="s2">"</span><span class="s2">,</span><span class="s2">"</span><span class="p">)</span> <span class="p">}</span> <span class="c1"># =&gt; [&quot;line1,&quot;, &quot;\nline2,&quot;, &quot;\nline3,&quot;, &quot;\n&quot;]
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">例: rsを取り除く（chomp = true）</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">line1,\rline2,\r\nline3,\n</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>f<span class="o">|</span> <span class="nb">p</span> f<span class="p">.</span><span class="nf">readlines</span><span class="p">(</span><span class="ss">chomp:</span> <span class="k">true</span><span class="p">)</span> <span class="p">}</span>       <span class="c1"># =&gt; [&quot;line1,\rline2,&quot;, &quot;line3,&quot;]
+</span><span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>f<span class="o">|</span> <span class="nb">p</span> f<span class="p">.</span><span class="nf">readlines</span><span class="p">(</span><span class="s2">"</span><span class="s2">\r</span><span class="s2">"</span>, <span class="ss">chomp:</span> <span class="k">true</span><span class="p">)</span> <span class="p">}</span> <span class="c1"># =&gt; [&quot;line1,&quot;, &quot;line2,&quot;, &quot;\nline3,\n&quot;]
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/v/=2f.html">$/</a>, <a href="../method/-i-o/i/gets.html">IO#gets</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_READPARTIAL"><code>readpartial(maxlen, outbuf = &quot;&quot;) -&gt; String</code><span class="permalink">[<a href="../method/-i-o/i/readpartial.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-readpartial">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO から長さ maxlen を上限として読み込み、文字列として返します。即座に得られるデータが存在しないときにはブロックしてデータの到着を待ちます。即座に得られるデータが 1byte でも存在すればブロックしません。
+</p>
+<p>
+バイナリ読み込みメソッドとして動作します。
+</p>
+<p>
+既に EOF に達していれば EOFError が発生します。ただし、maxlen に 0 が指定されている場合は、空文字列 &quot;&quot; を返します。
+</p>
+<p>
+readpartial はブロックを最小限に抑えることによって、パイプ、ソケット、端末などのストリームに対して適切に動作するよう設計されています。
+readpartial がブロックするのは次の全ての条件が満たされたときだけです。
+</p>
+<ul>
+<li>IO オブジェクト内のバッファが空</li>
+<li>ストリームにデータが到着していない</li>
+<li>ストリームが EOF になっていない</li>
+</ul>
+<p>
+これらの条件が満たされる場合、何らかのデータが到着するか EOF になるまで readpartial はブロックします。
+</p>
+<p>
+readpartial の結果は以下のようになります。
+</p>
+<ol>
+<li>バッファが空でなければ、そのバッファのデータを読み込んで返します。</li>
+<li>ストリームにデータがあれば、ストリームからデータを読み込んで返します。</li>
+<li>ストリームが EOF になっていれば、例外 <a href="../class/-e-o-f-error.html">EOFError</a> を発生させます。</li>
+</ol>
+<p>
+例えば、パイプに対しては次のように動作します。
+</p>
+<pre>
+r, w = IO.pipe           #               buffer          pipe content
+w &lt;&lt; &quot;abc&quot;               #               &quot;&quot;              &quot;abc&quot;.
+r.readpartial(4096)      #=&gt; &quot;abc&quot;       &quot;&quot;              &quot;&quot;
+r.readpartial(4096)      # バッファにもパイプにもデータがないのでブロックする
+
+r, w = IO.pipe           #               buffer          pipe content
+w &lt;&lt; &quot;abc&quot;               #               &quot;&quot;              &quot;abc&quot;
+w.close                  #               &quot;&quot;              &quot;abc&quot; EOF
+r.readpartial(4096)      #=&gt; &quot;abc&quot;       &quot;&quot;              EOF
+r.readpartial(4096)      # 例外 EOFError 発生
+
+r, w = IO.pipe           #               buffer          pipe content
+w &lt;&lt; &quot;abc\ndef\n&quot;        #               &quot;&quot;              &quot;abc\ndef\n&quot;
+r.gets                   #=&gt; &quot;abc\n&quot;     &quot;def\n&quot;         &quot;&quot;
+w &lt;&lt; &quot;ghi\n&quot;             #               &quot;def\n&quot;         &quot;ghi\n&quot;
+r.readpartial(4096)      #=&gt; &quot;def\n&quot;     &quot;&quot;              &quot;ghi\n&quot;
+r.readpartial(4096)      #=&gt; &quot;ghi\n&quot;     &quot;&quot;              &quot;&quot;
+</pre>
+<p>
+なお、readpartial は nonblock フラグに影響されません。つまり、nonblock フラグが設定されていて sysread であれば Errno::EAGAIN になる場合でもブロックします。
+</p>
+<p>
+また、readpartial の挙動は sysread によく似ています。とくに、バッファが空の場合には同じ挙動を示します。ただし、EAGAIN および EINTR エラーは内部で発生したとしても通知されず、データが到着するまでブロックし続けます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] maxlen:</dt>
+<dd>
+読み込む長さの上限を整数で指定します。
+</dd>
+<dt class='method-param'>[PARAM] outbuf:</dt>
+<dd>
+文字列で指定します。IO#readpartial は読み込んだデータを outbuf に破壊的に格納し、返り値は outbuf となります。outbuf は一旦 maxlen 長に拡張(あるいは縮小)されたあと、実際に読み込んだデータのサイズになります。IO が既に EOF に達していれば、空文字列になります。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が読み込み用にオープンされていなければ発生します。
+</dd>
+<dt>[EXCEPTION] EOFError:</dt>
+<dd>
+IO が既に EOF に達していれば発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_REOPEN"><code>reopen(io) -&gt; self</code><span class="permalink">[<a href="../method/-i-o/i/reopen.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-reopen">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を指定された io に繋ぎ換えます。
+</p>
+<p>
+クラスも io に等しくなることに注意してください。
+<a href="../method/-i-o/i/pos.html">IO#pos</a>, <a href="../method/-i-o/i/lineno.html">IO#lineno</a> などは指定された io と等しくなります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] io:</dt>
+<dd>
+自身を繋ぎ換えたい IO オブジェクトを指定します。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+指定された io が close されている場合に発生します。
+</dd>
+</dl>
+</dd>
+<dt class="method-heading" id="I_REOPEN"><code>reopen(path) -&gt; self</code><span class="permalink">[<a href="../method/-i-o/i/reopen.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-reopen">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>reopen(path, mode) -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+path で指定されたファイルにストリームを繋ぎ換えます。
+</p>
+<p>
+第二引数を省略したとき self のモードをそのまま引き継ぎます。
+<a href="../method/-i-o/i/pos.html">IO#pos</a>, <a href="../method/-i-o/i/lineno.html">IO#lineno</a> などはリセットされます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] path:</dt>
+<dd>
+パスを表す文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] mode:</dt>
+<dd>
+パスを開く際のモードを文字列で指定します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+失敗した場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">This is line one\nThis is line two\n</span><span class="s2">"</span><span class="p">)</span>
+f1 <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">a+</span><span class="s2">"</span><span class="p">)</span>
+f2 <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span>
+f1<span class="p">.</span><span class="nf">print</span><span class="p">(</span><span class="s2">"</span><span class="s2">This is line three\n</span><span class="s2">"</span><span class="p">)</span>
+f2<span class="p">.</span><span class="nf">readlines</span>                <span class="c1"># =&gt; [&quot;This is line one\n&quot;, &quot;This is line two\n&quot;]
+</span>f1<span class="p">.</span><span class="nf">close</span>
+f2<span class="p">.</span><span class="nf">reopen</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">r</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; #&lt;File:testfile&gt;
+</span>f2<span class="p">.</span><span class="nf">readlines</span>                <span class="c1"># =&gt; [&quot;This is line one\n&quot;, &quot;This is line two\n&quot;, &quot;This is line three\n&quot;]
+</span>f2<span class="p">.</span><span class="nf">close</span>
+</code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/m/open.html">Kernel.#open</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_REWIND"><code>rewind -&gt; 0</code><span class="permalink">[<a href="../method/-i-o/i/rewind.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-rewind">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ファイルポインタを先頭に移動します。<a href="../method/-i-o/i/lineno.html">IO#lineno</a> は 0 になります。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に close されている場合に発生します。
+</dd>
+</dl>
+<pre>
+f = File.new(&quot;testfile&quot;)
+f.readline               #=&gt; &quot;This is line one\n&quot;
+f.rewind                 #=&gt; 0
+f.lineno                 #=&gt; 0
+f.readline               #=&gt; &quot;This is line one\n&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SEEK"><code>seek(offset, whence = IO::SEEK_SET) -&gt; 0</code><span class="permalink">[<a href="../method/-i-o/i/seek.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-seek">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ファイルポインタを whence の位置から offset だけ移動させます。
+offset 位置への移動が成功すれば 0 を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] offset:</dt>
+<dd>
+ファイルポインタを移動させるオフセットを整数で指定します。
+</dd>
+<dt class='method-param'>[PARAM] whence:</dt>
+<dd>
+値は以下のいずれかです。それぞれ代わりに :SET、:CUR、:END、:DATA、:HOLE を指定する事も可能です。
+</dd>
+</dl>
+<ul>
+<li>IO::SEEK_SET: ファイルの先頭から (デフォルト)</li>
+<li>IO::SEEK_CUR: 現在のファイルポインタから</li>
+<li>IO::SEEK_END: ファイルの末尾から</li>
+<li>IO::SEEK_DATA: offset 以降の次にデータがある位置へ(lseek の man ページ参照。Linux 3.1 以降のみ)</li>
+<li>IO::SEEK_HOLE: offset 以降の次にホールがある位置へ(同上)</li>
+</ul>
+<dl>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+ファイルポインタの移動に失敗した場合に発生します。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に close されていた場合に発生します。
+</dd>
+</dl>
+<pre>
+f = File.new(&quot;testfile&quot;)
+f.seek(-13, IO::SEEK_END)   #=&gt; 0
+f.readline                  #=&gt; &quot;And so on...\n&quot;
+</pre>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/sysseek.html">IO#sysseek</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SET_ENCODING"><code>set_encoding(enc_str, opt={}) -&gt; self</code><span class="permalink">[<a href="../method/-i-o/i/set_encoding.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-set_encoding">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>set_encoding(ext_enc) -&gt; self</code></dt>
+<dt class="method-heading"><code>set_encoding(ext_enc, int_enc, opt={}) -&gt; self</code></dt>
+<dd class="method-description">
+<p>
+IO のエンコーディングを設定します。
+</p>
+<p>
+引数が &quot;A:B&quot; のようにコロンで区切られた文字列の場合は、
+A を外部エンコーディング、 B を内部エンコーディングに指定します。
+</p>
+<p>
+引数が一つで、上のような形式でない場合には、それが外部エンコーディングと見なされます。
+</p>
+<p>
+引数が2つの場合はそのそれぞれを外部エンコーディング、内部エンコーディングに設定します。
+</p>
+<p>
+opt のハッシュで外部エンコーディングを内部エンコーディングに変換する際のオプションを指定します。詳しくは <a href="../method/-string/i/encode.html">String#encode</a> を参照してください。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] enc_str:</dt>
+<dd>
+エンコーディングを表す文字列を指定します。&quot;A:B&quot; のようにコロンで区切られた文字列を指定した場合 A が外部エンコーディング、B が内部エンコーディングを表します。
+</dd>
+<dt class='method-param'>[PARAM] ext_enc:</dt>
+<dd>
+外部エンコーディングを表す文字列か <a href="../class/-encoding.html">Encoding</a> オブジェクトを指定します。
+</dd>
+<dt class='method-param'>[PARAM] int_enc:</dt>
+<dd>
+内部エンコーディングを表す文字列か <a href="../class/-encoding.html">Encoding</a> オブジェクトを指定します。
+</dd>
+<dt class='method-param'>[PARAM] opt:</dt>
+<dd>
+エンコーディング変換のオプション
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+io = File.open(file)
+io.set_encoding(&quot;ASCII-8BIT&quot;, &quot;EUC-JP&quot;)
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SET_ENCODING_BY_BOM"><code>set_encoding_by_bom -&gt; Encoding | nil</code><span class="permalink">[<a href="../method/-i-o/i/set_encoding_by_bom.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-set_encoding_by_bom">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+BOM から IO のエンコーディングを設定します。
+</p>
+<p>
+自身が BOM から始まる場合、BOM を読み進めて外部エンコーディングをセットし、セットしたエンコーディングを返します。
+BOM が見つからなかった場合は nil を返します。
+</p>
+<p>
+自身がバイナリモードでないかすでにエンコーディングがセットされている場合、例外が発生します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">File</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">bom.txt</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">\u{FEFF}abc</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">bom.txt</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">rb</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>io<span class="o">|</span>
+  <span class="nb">p</span> io<span class="p">.</span><span class="nf">set_encoding_by_bom</span>    <span class="c1">#=&gt;  #&lt;Encoding:UTF-8&gt;
+</span>  str <span class="o">=</span> io<span class="p">.</span><span class="nf">read</span>
+  <span class="nb">p</span> str                       <span class="c1">#=&gt;  &quot;abc&quot;
+</span>  <span class="nb">p</span> str<span class="p">.</span><span class="nf">encoding</span>              <span class="c1">#=&gt;  #&lt;Encoding:UTF-8&gt;
+</span><span class="k">end</span>
+
+<span class="no">File</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">nobom.txt</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">abc</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">nobom.txt</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">rb</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>io<span class="o">|</span>
+  <span class="nb">p</span> io<span class="p">.</span><span class="nf">set_encoding_by_bom</span>    <span class="c1">#=&gt;  nil
+</span><span class="k">end</span>
+</code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_STAT"><code>stat -&gt; File::Stat</code><span class="permalink">[<a href="../method/-i-o/i/stat.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-stat">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ファイルのステータスを含む <a href="../class/-file=3a=3a-stat.html">File::Stat</a> オブジェクトを生成して返します。
+</p>
+<dl>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+ステータスの読み込みに失敗した場合に発生します。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に close されていた場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">IO</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">This is line one\nThis is line two\n</span><span class="s2">"</span><span class="p">)</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  s <span class="o">=</span> f<span class="p">.</span><span class="nf">stat</span>
+  <span class="s2">"</span><span class="s2">%o</span><span class="s2">"</span> <span class="o">%</span> s<span class="p">.</span><span class="nf">mode</span>   <span class="c1"># =&gt; &quot;100644&quot;
+</span>  s<span class="p">.</span><span class="nf">blksize</span>       <span class="c1"># =&gt; 4096
+</span>  s<span class="p">.</span><span class="nf">atime</span>         <span class="c1"># =&gt; 2018-03-01 23:19:59 +0900
+</span><span class="k">end</span>
+</code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-file/i/lstat.html">File#lstat</a>, <a href="../method/-file/s/stat.html">File.stat</a>, <a href="../method/-file/s/lstat.html">File.lstat</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SYNC"><code>sync -&gt; bool</code><span class="permalink">[<a href="../method/-i-o/i/sync.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-sync">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在の出力が同期モードならば true を返します。そうでない場合は false を返します。
+</p>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に close されていた場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">w</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  f<span class="p">.</span><span class="nf">sync</span>      <span class="c1"># =&gt; false
+</span>  f<span class="p">.</span><span class="nf">sync</span> <span class="o">=</span> <span class="k">true</span>
+  f<span class="p">.</span><span class="nf">sync</span>      <span class="c1"># =&gt; true
+</span><span class="k">end</span>
+</code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SYNC--3D"><code>sync=(newstate)</code><span class="permalink">[<a href="../method/-i-o/i/sync=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-sync-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身を同期モードに設定すると、出力関数の呼出毎にバッファがフラッシュされます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] newstate:</dt>
+<dd>
+自身を同期モードに設定するかを boolean で指定します。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+既に close されていた場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/sync.html">IO#sync</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SYSREAD"><code>sysread(maxlen, outbuf = &quot;&quot;) -&gt; String</code><span class="permalink">[<a href="../method/-i-o/i/sysread.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-sysread">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/read.html">read(2)</a> を用いて入力を行ない、入力されたデータを含む文字列を返します。stdio を経由しないので gets や getc や eof? などと混用すると思わぬ動作をすることがあります。
+</p>
+<p>
+バイナリ読み込みメソッドとして動作します。
+</p>
+<p>
+既に EOF に達していれば EOFError が発生します。ただし、maxlen に 0 が指定されている場合は、空文字列 &quot;&quot; を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] maxlen:</dt>
+<dd>
+入力のサイズを整数で指定します。
+</dd>
+<dt class='method-param'>[PARAM] outbuf:</dt>
+<dd>
+出力用のバッファを文字列で指定します。IO#sysread は読み込んだデータをその文字列オブジェクトに上書きして返します。指定した文字列オブジェクトがあらかじめ maxlen 長の領域であれば、余計なメモリの割当てが行われません。指定した文字列の長さが maxlen と異なる場合、その文字列は一旦 maxlen 長に拡張(あるいは縮小)されたあと、実際に読み込んだデータのサイズになります。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が読み込み用にオープンされていなければ発生します。
+</dd>
+<dt>[EXCEPTION] EOFError:</dt>
+<dd>
+IO が既に EOF に達していれば発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+データの読み込みに失敗した場合に発生します。
+</dd>
+</dl>
+<p>
+第二引数を指定した sysread の呼び出しでデータが空であった場合(sysread が例外 <a href="../class/-e-o-f-error.html">EOFError</a> を発生させる場合)、
+outbuf は空文字列になります。
+</p>
+<pre>
+outbuf = &quot;x&quot; * 20;
+io = File.open(&quot;/dev/null&quot;)
+p((io.sysread(10,outbuf) rescue nil))
+p outbuf
+=&gt; nil
+   &quot;&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SYSSEEK"><code>sysseek(offset, whence = IO::SEEK_SET) -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/i/sysseek.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-sysseek">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/lseek.html">lseek(2)</a> と同じです。<a href="../method/-i-o/i/seek.html">IO#seek</a> では、
+<a href="../method/-i-o/i/sysread.html">IO#sysread</a>, <a href="../method/-i-o/i/syswrite.html">IO#syswrite</a> と併用すると正しく動作しないので代わりにこのメソッドを使います。位置 offset への移動が成功すれば移動した位置(ファイル先頭からのオフセット)を返します。
+</p>
+<p>
+書き込み用にバッファリングされた IO に対して実行すると警告が出ます。
+</p>
+<pre>
+File.open(&quot;/dev/zero&quot;) {|f|
+  buf = f.read(3)
+  f.sysseek(0)
+}
+# =&gt; -:3:in `sysseek': sysseek for buffered IO (IOError)
+
+File.open(&quot;/dev/null&quot;, &quot;w&quot;) {|f|
+  f.print &quot;foo&quot;
+  f.sysseek(0)
+}
+# =&gt; -:3: warning: sysseek for buffered IO
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] offset:</dt>
+<dd>
+ファイルポインタを移動させるオフセットを整数で指定します。
+</dd>
+<dt class='method-param'>[PARAM] whence:</dt>
+<dd>
+値は以下のいずれかです。それぞれ代わりに :SET、:CUR、:END、:DATA、:HOLE を指定する事も可能です。
+</dd>
+</dl>
+<ul>
+<li>IO::SEEK_SET: ファイルの先頭から (デフォルト)</li>
+<li>IO::SEEK_CUR: 現在のファイルポインタから</li>
+<li>IO::SEEK_END: ファイルの末尾から</li>
+<li>IO::SEEK_DATA: offset 以降の次にデータがある位置へ(lseek の man ページ参照。Linux 3.1 以降のみ)</li>
+<li>IO::SEEK_HOLE: offset 以降の次にホールがある位置へ(同上)</li>
+</ul>
+<dl>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+読み込み用にバッファリングされた IO に対して実行すると発生します。既に close されていた場合にも発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+移動に失敗した場合に発生します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-i-o/i/seek.html">IO#seek</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SYSWRITE"><code>syswrite(string) -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/i/syswrite.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-syswrite">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/write.html">write(2)</a> を用いて string を出力します。
+string が文字列でなければ to_s による文字列化を試みます。実際に出力できたバイト数を返します。
+</p>
+<p>
+stdio を経由しないので他の出力メソッドと混用すると思わぬ動作をすることがあります。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+自身に書き込みたい文字列を指定します。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が書き込み用にオープンされていなければ発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+出力に失敗した場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">w+</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  f<span class="p">.</span><span class="nf">syswrite</span><span class="p">(</span><span class="s2">"</span><span class="s2">ABCDE</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; 5
+</span>  f<span class="p">.</span><span class="nf">syswrite</span><span class="p">(</span><span class="ss">:ABC</span><span class="p">)</span>    <span class="c1"># =&gt; 3
+</span><span class="k">end</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"</span><span class="s2">testfile</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;ABCDEABC&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_TO_IO"><code>to_io -&gt; self</code><span class="permalink">[<a href="../method/-i-o/i/to_io.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-to_io">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_UNGETBYTE"><code>ungetbyte(c) -&gt; nil</code><span class="permalink">[<a href="../method/-i-o/i/ungetbyte.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-ungetbyte">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+指定したバイト列を書き戻します。
+</p>
+<p>
+2バイト以上の書き戻しは仕様として保証しません。
+</p>
+<p>
+このメソッドはバッファを経由しない読み出し(<a href="../method/-i-o/i/sysread.html">IO#sysread</a> など)
+には影響しません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] c:</dt>
+<dd>
+バイト列(文字列)、もしくは0から255までの整数
+</dd>
+</dl>
+<p>
+例:
+</p>
+<pre>
+f = File.new(&quot;testfile&quot;)   #=&gt; #&lt;File:testfile&gt;
+b = f.getbyte              #=&gt; 0x38
+f.ungetbyte(b)             #=&gt; nil
+f.getbyte                  #=&gt; 0x38
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_UNGETC"><code>ungetc(char) -&gt; nil</code><span class="permalink">[<a href="../method/-i-o/i/ungetc.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-ungetc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+指定された char を読み戻します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] char:</dt>
+<dd>
+読み戻したい1文字かそのコードポイントを指定します。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+読み戻しに失敗した場合に発生します。また、自身が読み込み用にオープンされていない時、自身がまだ一度も read されていない時に発生します。
+</dd>
+</dl>
+<pre>
+f = File.new(&quot;testfile&quot;)   # =&gt; #&lt;File:testfile&gt;
+c = f.getc                 # =&gt; &quot;い&quot;
+f.ungetc(c)                # =&gt; nil
+f.getc                     # =&gt; &quot;い&quot;
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="I_WRITE"><code>write(*str) -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/i/write.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-write">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IOポートに対して str を出力します。str が文字列でなければ to_s による文字列化を試みます。実際に出力できたバイト数を返します。
+</p>
+<p>
+<a href="../method/-i-o/i/syswrite.html">IO#syswrite</a> を除く全ての出力メソッドは、最終的に
+&quot;write&quot; という名のメソッドを呼び出すので、このメソッドを置き換えることで出力関数の挙動を変更することができます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+自身に書き込みたい文字列を指定します。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が書き込み用にオープンされていなければ発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+出力に失敗した場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">textfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">w+</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  f<span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">This is</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; 7
+</span><span class="k">end</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"</span><span class="s2">textfile</span><span class="s2">"</span><span class="p">)</span> <span class="c1"># =&gt; &quot;This is&quot;
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">複数引数の例</span>
+<code>
+<span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s2">"</span><span class="s2">textfile</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">w+</span><span class="s2">"</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span>f<span class="o">|</span>
+  f<span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="s2">"</span><span class="s2">This is</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2"> a test\n</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># =&gt; 15
+</span><span class="k">end</span>
+<span class="no">File</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"</span><span class="s2">textfile</span><span class="s2">"</span><span class="p">)</span>              <span class="c1"># =&gt; &quot;This is a test\n&quot;
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_WRITE_NONBLOCK"><code>write_nonblock(string, exception: true) -&gt; Integer | :wait_writable</code><span class="permalink">[<a href="../method/-i-o/i/write_nonblock.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-i-write_nonblock">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+IO をノンブロッキングモードに設定し、string を <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/write.html">write(2)</a> システムコールで書き出します。
+</p>
+<p>
+write(2) が成功した場合、書き込んだ長さを返します。
+EAGAIN, EINTR などは例外 <a href="../class/-errno=3a=3a-e-x-x-x.html">Errno::EXXX</a> として呼出元に報告されます。
+</p>
+<p>
+書き込んだバイト数(つまり返り値)は <a href="../method/-string/i/bytesize.html">String#bytesize</a> の値より小さい可能性があります。
+</p>
+<p>
+発生した例外 がErrno::EAGAIN、 Errno::EWOULDBLOCK である場合は、その例外オブジェクトに <a href="../class/-i-o=3a=3a-wait-writable.html">IO::WaitWritable</a> が <a href="../method/-object/i/extend.html">Object#extend</a>
+されます。よって IO::WaitWritable を write_nonblock のリトライが必要かの判定に用いることができます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] string:</dt>
+<dd>
+自身に書き込みたい文字列を指定します。
+</dd>
+<dt class='method-param'>[PARAM] exception:</dt>
+<dd>
+false を指定すると、書き込み時に <a href="../class/-errno=3a=3a-e-a-g-a-i-n.html">Errno::EAGAIN</a>、<a href="../class/-errno=3a=3a-e-w-o-u-l-d-b-l-o-c-k.html">Errno::EWOULDBLOCK</a> が発生する代わりに :wait_writable を返します。
+</dd>
+<dt>[EXCEPTION] IOError:</dt>
+<dd>
+自身が書き込み用にオープンされていなければ発生します。
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/write.html">write(2)</a> が失敗した場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-S-E-E-K_-C-U-R"><code>SEEK_CUR -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/c/-s-e-e-k_-c-u-r.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-SEEK_CUR">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/seek.html">IO#seek</a> を参照してください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-S-E-E-K_-D-A-T-A"><code>SEEK_DATA -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/c/-s-e-e-k_-d-a-t-a.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-SEEK_DATA">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/seek.html">IO#seek</a> を参照してください。
+</p>
+<p>
+Linux 3.1 以降で利用可能です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-S-E-E-K_-E-N-D"><code>SEEK_END -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/c/-s-e-e-k_-e-n-d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-SEEK_END">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/seek.html">IO#seek</a> を参照してください。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-S-E-E-K_-H-O-L-E"><code>SEEK_HOLE -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/c/-s-e-e-k_-h-o-l-e.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-SEEK_HOLE">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/seek.html">IO#seek</a> を参照してください。
+</p>
+<p>
+Linux 3.1 以降で利用可能です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="C_-S-E-E-K_-S-E-T"><code>SEEK_SET -&gt; Integer</code><span class="permalink">[<a href="../method/-i-o/c/-s-e-e-k_-s-e-t.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.1.2/IO.html#method-c-SEEK_SET">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../method/-i-o/i/seek.html">IO#seek</a> を参照してください。
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

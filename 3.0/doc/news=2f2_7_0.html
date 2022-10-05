@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>NEWS for Ruby 2.7.0 (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="このドキュメントは前回リリース以降のバグ修正を除くユーザーに影響のある機能の変更のリストです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      
+        <li>
+          <a href="../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+        </li>
+        <li>
+          NEWS for Ruby 2.7.0
+        </li>
+      
+    </ol>
+  </nav>
+
+<h1>NEWS for Ruby 2.7.0</h1>
+</header>
+
+<main>
+
+<p>
+このドキュメントは前回リリース以降のバグ修正を除くユーザーに影響のある機能の変更のリストです。
+</p>
+<p>
+それぞれのエントリーは参照情報があるため短いです。十分な情報と共に書かれた全ての変更のリストは ChangeLog ファイルか bugs.ruby-lang.org の issue を参照してください。
+</p>
+<h1 >2.6.0 以降の変更</h1>
+<h2 >言語仕様の変更</h2>
+<h3 >パターンマッチ</h3>
+<ul>
+<li>パターンマッチが実験的機能として導入されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14912">[feature#14912]</a></li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="k">case</span> <span class="p">[</span><span class="mi">0</span>, <span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span><span class="p">]</span>
+<span class="k">in</span> <span class="p">[</span>a, <span class="p">[</span>b, <span class="o">*</span>c<span class="p">]</span><span class="p">]</span>
+  <span class="nb">p</span> a <span class="c1">#=&gt; 0
+</span>  <span class="nb">p</span> b <span class="c1">#=&gt; 1
+</span>  <span class="nb">p</span> c <span class="c1">#=&gt; [2, 3]
+</span><span class="k">end</span>
+</code></pre>
+<pre class="highlight ruby">
+<code>
+<span class="k">case</span> <span class="p">{</span><span class="ss">a:</span> <span class="mi">0</span>, <span class="ss">b:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="k">in</span> <span class="p">{</span><span class="ss">a:</span> <span class="mi">0</span>, <span class="ss">x:</span> <span class="mi">1</span><span class="p">}</span>
+  <span class="ss">:unreachable</span>
+<span class="k">in</span> <span class="p">{</span><span class="ss">a:</span> <span class="mi">0</span>, <span class="ss">b:</span> var<span class="p">}</span>
+  <span class="nb">p</span> var <span class="c1">#=&gt; 1
+</span><span class="k">end</span>
+</code></pre>
+<pre class="highlight ruby">
+<code>
+<span class="k">case</span> <span class="o">-</span><span class="mi">1</span>
+<span class="k">in</span> <span class="mi">0</span> <span class="k">then</span> <span class="ss">:unreachable</span>
+<span class="k">in</span> <span class="mi">1</span> <span class="k">then</span> <span class="ss">:unreachable</span>
+<span class="k">end</span> <span class="c1">#=&gt; NoMatchingPatternError
+</span></code></pre>
+<pre>
+json = &lt;&lt;END
+{
+  &quot;name&quot;: &quot;Alice&quot;,
+  &quot;age&quot;: 30,
+  &quot;children&quot;: [{ &quot;name&quot;: &quot;Bob&quot;, &quot;age&quot;: 2 }]
+}
+END
+
+JSON.parse(json, symbolize_names: true) in {name: &quot;Alice&quot;, children: [{name: name, age: age}]}
+
+p name #=&gt; &quot;Bob&quot;
+p age  #=&gt; 2
+
+JSON.parse(json, symbolize_names: true) in {name: &quot;Alice&quot;, children: [{name: &quot;Charlie&quot;, age: age}]}
+#=&gt; NoMatchingPatternError
+</pre>
+<ul>
+<li>詳細は <a class="external" href="https://speakerdeck.com/k_tsj/pattern-matching-new-feature-in-ruby-2-dot-7">https://speakerdeck.com/k_tsj/pattern-matching-new-feature-in-ruby-2-dot-7</a> のスライドを参照してください。</li>
+<li>スライドは少し古い内容になっていることに注意してください。</li>
+</ul>
+<ul>
+<li>パターンマッチに対する警告は「-W:no-experimental」オプションで抑制できます。</li>
+</ul>
+<h3 >3.0 に向けてのキーワード引数の仕様変更</h3>
+<ul>
+<li>キーワード引数と位置引数の自動変換は自動変換が非推奨となりました。
+この変換はRuby 3で除去される予定です。 <a class="external" href="https://bugs.ruby-lang.org/issues/14183">[feature#14183]</a></li>
+</ul>
+<ul>
+<li>メソッド呼び出しにおいて最後の引数としてハッシュオブジェクトを渡し、
+他にキーワード引数を渡さず、かつ、呼ばれたメソッドがキーワード引数を
+受け取るとき、警告が表示されます。キーワード引数として扱いたい場合は、
+明示的にdouble splat演算子（**）を足すことで警告を回避できます。
+このように書けばRuby 3でも同じ意味で動きます。</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="ss">key:</span> <span class="mi">42</span><span class="p">)</span>; <span class="k">end</span>; foo<span class="p">(</span><span class="p">{</span><span class="ss">key:</span> <span class="mi">42</span><span class="p">}</span><span class="p">)</span>   <span class="c1"># warned
+</span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="o">**</span>kw<span class="p">)</span>;    <span class="k">end</span>; foo<span class="p">(</span><span class="p">{</span><span class="ss">key:</span> <span class="mi">42</span><span class="p">}</span><span class="p">)</span>   <span class="c1"># warned
+</span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="ss">key:</span> <span class="mi">42</span><span class="p">)</span>; <span class="k">end</span>; foo<span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="ss">key:</span> <span class="mi">42</span><span class="p">}</span><span class="p">)</span> <span class="c1"># OK
+</span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="o">**</span>kw<span class="p">)</span>;    <span class="k">end</span>; foo<span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="ss">key:</span> <span class="mi">42</span><span class="p">}</span><span class="p">)</span> <span class="c1"># OK
+</span></code></pre>
+<ul>
+<li>キーワード引数を受け取るメソッドにキーワード引数を渡すが、必須引数
+が不足している場合に、キーワード引数は最後の必須引数として解釈され、
+警告が表示されます。警告を回避するには、キーワードではなく明示的に
+ハッシュとして渡してください。
+このように書けばRuby 3でも同じ意味で動きます。</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>h, <span class="o">**</span>kw<span class="p">)</span>; <span class="k">end</span>; foo<span class="p">(</span><span class="ss">key:</span> <span class="mi">42</span><span class="p">)</span>      <span class="c1"># warned
+</span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>h, <span class="ss">key:</span> <span class="mi">42</span><span class="p">)</span>; <span class="k">end</span>; foo<span class="p">(</span><span class="ss">key:</span> <span class="mi">42</span><span class="p">)</span>   <span class="c1"># warned
+</span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>h, <span class="o">**</span>kw<span class="p">)</span>; <span class="k">end</span>; foo<span class="p">(</span><span class="p">{</span><span class="ss">key:</span> <span class="mi">42</span><span class="p">}</span><span class="p">)</span>    <span class="c1"># OK
+</span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>h, <span class="ss">key:</span> <span class="mi">42</span><span class="p">)</span>; <span class="k">end</span>; foo<span class="p">(</span><span class="p">{</span><span class="ss">key:</span> <span class="mi">42</span><span class="p">}</span><span class="p">)</span> <span class="c1"># OK
+</span></code></pre>
+<ul>
+<li>メソッドがキーワード引数を受け取るがdouble splat引数は受け取らず、
+かつ、メソッド呼び出しでSymbolと非Symbolの混ざったハッシュを渡す
+（もしくはハッシュをdouble splatでキーワードとして渡す）場合、
+ハッシュは分割され、警告が表示されます。Ruby 3でもハッシュの分割を
+続けたい場合は、呼び出し側で明示的に分けるようにしてください。</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>h<span class="o">=</span><span class="p">{</span><span class="p">}</span>, <span class="ss">key:</span> <span class="mi">42</span><span class="p">)</span>; <span class="k">end</span>; foo<span class="p">(</span><span class="s2">"</span><span class="s2">key</span><span class="s2">"</span> <span class="o">=&gt;</span> <span class="mi">43</span>, <span class="ss">key:</span> <span class="mi">42</span><span class="p">)</span>   <span class="c1"># warned
+</span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>h<span class="o">=</span><span class="p">{</span><span class="p">}</span>, <span class="ss">key:</span> <span class="mi">42</span><span class="p">)</span>; <span class="k">end</span>; foo<span class="p">(</span><span class="p">{</span><span class="s2">"</span><span class="s2">key</span><span class="s2">"</span> <span class="o">=&gt;</span> <span class="mi">43</span>, <span class="ss">key:</span> <span class="mi">42</span><span class="p">}</span><span class="p">)</span> <span class="c1"># warned
+</span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>h<span class="o">=</span><span class="p">{</span><span class="p">}</span>, <span class="ss">key:</span> <span class="mi">42</span><span class="p">)</span>; <span class="k">end</span>; foo<span class="p">(</span><span class="p">{</span><span class="s2">"</span><span class="s2">key</span><span class="s2">"</span> <span class="o">=&gt;</span> <span class="mi">43</span><span class="p">}</span>, <span class="ss">key:</span> <span class="mi">42</span><span class="p">)</span> <span class="c1"># OK
+</span></code></pre>
+<ul>
+<li>メソッドがキーワード引数を受け取らず、呼び出し側でキーワード引数を
+渡した場合、ハッシュの引数としてみなされる挙動は変わらず、警告も
+表示されません。Ruby 3でもこのコードは動き続ける予定です。</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>opt<span class="o">=</span><span class="p">{</span><span class="p">}</span><span class="p">)</span>;  <span class="k">end</span>; foo<span class="p">(</span> <span class="ss">key:</span> <span class="mi">42</span> <span class="p">)</span>   <span class="c1"># OK
+</span></code></pre>
+<ul>
+<li>メソッドが任意のキーワードを受け取る場合、非Symbolがキーワード引数のキー
+として許容されるようになります。 <a class="external" href="https://bugs.ruby-lang.org/issues/14183">[feature#14183]</a></li>
+</ul>
+<ul>
+<li>2.6.0で非Symbolがキーワード引数のキーとして許容されなくなりましたが、
+再び許容されるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15658">[bug#15658]</a></li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="o">**</span>kw<span class="p">)</span>; <span class="nb">p</span> kw; <span class="k">end</span>; foo<span class="p">(</span><span class="s2">"</span><span class="s2">str</span><span class="s2">"</span> <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="c1">#=&gt; {&quot;str&quot;=&gt;1}
+</span></code></pre>
+<ul>
+<li>メソッド定義で**nilと書くことで、このメソッドがキーワードを
+受け取らないことを明示できるようになりました。このようなメソッドを
+キーワード引数付きで呼び出すとArgumentErrorになります。 <a class="external" href="https://bugs.ruby-lang.org/issues/14183">[feature#14183]</a></li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>h, <span class="o">**</span><span class="k">nil</span><span class="p">)</span>; <span class="k">end</span>; foo<span class="p">(</span><span class="ss">key:</span> <span class="mi">1</span><span class="p">)</span>       <span class="c1"># ArgumentError
+</span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>h, <span class="o">**</span><span class="k">nil</span><span class="p">)</span>; <span class="k">end</span>; foo<span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="ss">key:</span> <span class="mi">1</span><span class="p">}</span><span class="p">)</span>   <span class="c1"># ArgumentError
+</span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>h, <span class="o">**</span><span class="k">nil</span><span class="p">)</span>; <span class="k">end</span>; foo<span class="p">(</span><span class="s2">"</span><span class="s2">str</span><span class="s2">"</span> <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">)</span>   <span class="c1"># ArgumentError
+</span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>h, <span class="o">**</span><span class="k">nil</span><span class="p">)</span>; <span class="k">end</span>; foo<span class="p">(</span><span class="p">{</span><span class="ss">key:</span> <span class="mi">1</span><span class="p">}</span><span class="p">)</span>     <span class="c1"># OK
+</span><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>h, <span class="o">**</span><span class="k">nil</span><span class="p">)</span>; <span class="k">end</span>; foo<span class="p">(</span><span class="p">{</span><span class="s2">"</span><span class="s2">str</span><span class="s2">"</span> <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">}</span><span class="p">)</span> <span class="c1"># OK
+</span></code></pre>
+<ul>
+<li>キーワード引数を受け取らないメソッドに対して空のハッシュを
+double splatで渡すとき、空のハッシュが渡る挙動はなくなりました。
+ただし、必須引数が不足する場合は空のハッシュが渡され、警告が表示されます。
+ハッシュの引数として渡したい場合はdouble splatをつけないようにしてください。
+<a class="external" href="https://bugs.ruby-lang.org/issues/14183">[feature#14183]</a></li>
+</ul>
+<pre class="highlight ruby">
+<code>
+h <span class="o">=</span> <span class="p">{</span><span class="p">}</span>; <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="o">*</span>a<span class="p">)</span> a <span class="k">end</span>; foo<span class="p">(</span><span class="o">**</span>h<span class="p">)</span> <span class="c1"># []
+</span>h <span class="o">=</span> <span class="p">{</span><span class="p">}</span>; <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>a<span class="p">)</span> a <span class="k">end</span>; foo<span class="p">(</span><span class="o">**</span>h<span class="p">)</span>  <span class="c1"># {} and warning
+</span>h <span class="o">=</span> <span class="p">{</span><span class="p">}</span>; <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="o">*</span>a<span class="p">)</span> a <span class="k">end</span>; foo<span class="p">(</span>h<span class="p">)</span>   <span class="c1"># [{}]
+</span>h <span class="o">=</span> <span class="p">{</span><span class="p">}</span>; <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span>a<span class="p">)</span> a <span class="k">end</span>; foo<span class="p">(</span>h<span class="p">)</span>    <span class="c1"># {}
+</span></code></pre>
+<ul>
+<li>非推奨に関する警告を止めたい場合は、コマンドライン引数に
+「-W:no-deprecated」を指定するか、コードの中で
+「Warning[:deprecated] = false」
+としてください。</li>
+</ul>
+<h3 >番号指定パラメータ</h3>
+<ul>
+<li>番号指定パラメータ(Numbered parameters)がデフォルトのブロックの仮引数として
+導入されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/4475">[feature#4475]</a></li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">10</span><span class="p">]</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span> _1<span class="p">.</span><span class="nf">to_s</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span> <span class="p">}</span>    <span class="c1">#=&gt; [&quot;1&quot;, &quot;2&quot;, &quot;a&quot;]
+</span><span class="p">[</span><span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span>, <span class="p">[</span><span class="mi">3</span>, <span class="mi">4</span><span class="p">]</span><span class="p">]</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span> _1 <span class="o">+</span> _2 <span class="p">}</span>  <span class="c1">#=&gt; [3, 7]
+</span></code></pre>
+<ul>
+<li>「_1」などはまだローカル変数名として使えて、ローカル変数が優先されますが、
+警告が表示されます。</li>
+</ul>
+<pre>
+_1 = 0            #=&gt; warning: `_1' is reserved for numbered parameter; consider another name
+[1].each { p _1 } # prints 0 instead of 1
+</pre>
+<h3 >ブロックなしの proc/lambda が deprecated</h3>
+<ul>
+<li>ブロック付きで呼び出されたメソッドの中で、ブロックなしで<a href="../method/-proc/s/new.html">Proc.new</a>や<a href="../method/-kernel/i/proc.html">Kernel#proc</a>を
+呼び出すと警告が表示されるようになりました。</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="k">def</span> <span class="nf">foo</span>
+  <span class="nb">proc</span>
+<span class="k">end</span>
+foo <span class="p">{</span> <span class="nb">puts</span> <span class="s2">"</span><span class="s2">Hello</span><span class="s2">"</span> <span class="p">}</span> <span class="c1">#=&gt; warning: Capturing the given block using Kernel#proc is deprecated; use `&amp;block` instead
+</span></code></pre>
+<ul>
+<li>非推奨に関する警告を止めたい場合は、コマンドライン引数に
+「-W:no-deprecated」を指定するか、コードの中で
+「Warning[:deprecated] = false」
+としてください。</li>
+</ul>
+<ul>
+<li>ブロック付きで呼び出されたメソッドの中で、<a href="../method/-kernel/i/lambda.html">Kernel#lambda</a>をブロックなしで呼び出すと
+例外が発生するようになりました。</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="k">def</span> <span class="nf">bar</span>
+  <span class="nb">lambda</span>
+<span class="k">end</span>
+bar <span class="p">{</span> <span class="nb">puts</span> <span class="s2">"</span><span class="s2">Hello</span><span class="s2">"</span> <span class="p">}</span> <span class="c1">#=&gt; tried to create Proc object without a block (ArgumentError)
+</span></code></pre>
+<h3 >その他の変更</h3>
+<ul>
+<li>始端なしRangeが実験的に導入されました。
+caseや<a href="../class/-comparable=23clamp.html">Comparable#clamp</a>や定数やDSLなどで便利かもしれません。
+<a class="external" href="https://bugs.ruby-lang.org/issues/14799">[feature#14799]</a></li>
+</ul>
+<pre class="highlight ruby">
+<code>
+ary<span class="p">[</span><span class="o">..</span><span class="mi">3</span><span class="p">]</span>  <span class="c1"># identical to ary[0..3]
+</span>
+<span class="k">case</span> <span class="no">RUBY_VERSION</span>
+<span class="k">when</span> <span class="o">...</span><span class="s2">"</span><span class="s2">2.4</span><span class="s2">"</span> <span class="k">then</span> <span class="nb">puts</span> <span class="s2">"</span><span class="s2">EOL</span><span class="s2">"</span>
+<span class="c1"># ...
+</span><span class="k">end</span>
+
+age<span class="p">.</span><span class="nf">clamp</span><span class="p">(</span><span class="o">..</span><span class="mi">100</span><span class="p">)</span>
+
+where<span class="p">(</span><span class="ss">sales:</span> <span class="o">..</span><span class="mi">100</span><span class="p">)</span>
+</code></pre>
+<ul>
+<li>「$;」にnil以外の値を設定すると警告が出るようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14240">[feature#14240]</a>
+nil以外の時は<a href="../method/-string/i/split.html">String#split</a>で参照した時も警告が出ます。
+この警告は「-W:no-deprecated」オプションで止められます。</li>
+</ul>
+<ul>
+<li>「$,」にnil以外の値を設定すると警告が出るようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14240">[feature#14240]</a>
+nil以外の時は<a href="../method/-array/i/join.html">Array#join</a>で参照した時も警告が出ます。
+この警告は「-W:no-deprecated」オプションで止められます。</li>
+</ul>
+<ul>
+<li>ヒアドキュメントの識別子の引用符は同じ行で閉じる必要があります。</li>
+</ul>
+<pre>
+&lt;&lt;&quot;EOS
+&quot; # This had been warned since 2.4; Now it raises a SyntaxError
+EOS
+</pre>
+<ul>
+<li>フリップフロップが非推奨になったのが元に戻されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/5400">[feature#5400]</a></li>
+</ul>
+<ul>
+<li>以下のような場所にコメントを書けるようになりました。</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+foo
+  <span class="c1"># .bar
+</span>  <span class="p">.</span><span class="nf">baz</span> <span class="c1"># =&gt; foo.baz
+</span></code></pre>
+<ul>
+<li>リテラルの「self」をレシーバーとしたプライベートメソッド呼び出しが
+できるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/11297">[feature#11297]</a> <a class="external" href="https://bugs.ruby-lang.org/issues/16123">[feature#16123]</a></li>
+</ul>
+<ul>
+<li>多重代入でのrescue修飾子が単一の代入と同じ振る舞いになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/8279">[bug#8279]</a></li>
+</ul>
+<pre class="highlight ruby">
+<code>
+a, b <span class="o">=</span> <span class="nb">raise</span> <span class="k">rescue</span> <span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span><span class="p">]</span>
+<span class="c1"># Previously parsed as: (a, b = raise) rescue [1, 2]
+</span><span class="c1"># Now parsed as:         a, b = (raise rescue [1, 2])
+</span></code></pre>
+<ul>
+<li>特異クラス構文での yield は警告を表示するようになりました。
+これは deprecated です。 <a class="external" href="https://bugs.ruby-lang.org/issues/15575">[feature#15575]</a>
+この警告は「-W:no-deprecated」オプションで止められます。</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="k">def</span> <span class="nf">foo</span>
+  <span class="k">class</span> <span class="o">&lt;&lt;</span> <span class="no">Object</span><span class="p">.</span><span class="nf">new</span>
+    <span class="k">yield</span> <span class="c1">#=&gt; warning: `yield' in class syntax will not be supported from Ruby 3.0. [[feature:15575]]
+</span>  <span class="k">end</span>
+<span class="k">end</span>
+foo <span class="p">{</span> <span class="nb">p</span> <span class="ss">:ok</span> <span class="p">}</span>
+</code></pre>
+<ul>
+<li>引数を転送する記法「(...)」が導入されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/16253">[feature#16253]</a><ul>
+<li>foo の全ての引数(キーワード引数やブロックを含む)を bar に転送します。
+注意点として括弧は必須です。「bar ...」は終端なし Range と解釈されます。</li>
+</ul>
+</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+  bar<span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+<ul>
+<li>「$SAFE」の参照や代入は警告が表示されるようになりました。
+Ruby 3.0 で「$SAFE」は普通のグローバル変数になる予定です。 <a class="external" href="https://bugs.ruby-lang.org/issues/16131">[feature#16131]</a></li>
+</ul>
+<ul>
+<li><a href="../method/-object/i/taint.html">Object#taint</a>,<a href="../method/-object/i/untaint.html">Object#untaint</a>,<a href="../method/-object/i/trust.html">Object#trust</a>,<a href="../method/-object/i/untrust.html">Object#untrust</a>と関連する
+C の関数は何もしなくなりました。(全てのオブジェクトは untainted 扱いです。)
+verbose モードでは警告が表示されます。
+この警告は Ruby 3.0 では verbose モードでなくても表示され、Ruby 3.2 で削除される
+予定です。 <a class="external" href="https://bugs.ruby-lang.org/issues/16131">[feature#16131]</a></li>
+</ul>
+<ul>
+<li><a href="../method/-object/i/method.html">Object#method</a>と<a href="../method/-module/i/instance_method.html">Module#instance_method</a>がrefinementsを考慮するようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15373">[feature#15373]</a></li>
+</ul>
+<h2 >コマンドラインオプション</h2>
+<h3 >警告オプション</h3>
+<p>
+カテゴリ化された警告を管理するために「-W」オプションが「:」を続けられるように拡張されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/16345">[feature#16345]</a> <a class="external" href="https://bugs.ruby-lang.org/issues/16420">[feature#16420]</a>
+</p>
+<ul>
+<li>非推奨警告を止める例:</li>
+</ul>
+<pre>
+$ ruby -e '$; = &quot;&quot;'
+-e:1: warning: `$;' is deprecated
+
+$ ruby -W:no-deprecated -e '$; = //'
+</pre>
+<ul>
+<li>RUBYOPT環境変数での使用例:</li>
+</ul>
+<pre>
+$ RUBYOPT=-W:no-deprecated ruby -e '$; = //'
+</pre>
+<ul>
+<li>実験的機能の警告を止める例:</li>
+</ul>
+<pre>
+$ ruby -e '0 in a'
+-e:1: warning: Pattern matching is experimental, and the behavior may change in future versions of Ruby!
+
+$ ruby -W:no-experimental -e '0 in a'
+</pre>
+<ul>
+<li>RUBYOPTで両方止めるにはスペース区切りで指定します:</li>
+</ul>
+<pre>
+$ RUBYOPT='-W:no-deprecated -W:no-experimental' ruby -e '($; = &quot;&quot;) in a'
+</pre>
+<p>
+組み込みクラスの更新のWarningも参照してください。
+</p>
+<h2 >組み込みクラスの更新 (注目すべきもののみ)</h2>
+<ul>
+<li><a href="../class/-array.html">Array</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-array/i/intersection.html">Array#intersection</a>が追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/16155">[feature#16155]</a></li>
+<li><a href="../method/-array/i/minmax.html">Array#minmax</a>が<a href="../method/-enumerable/i/minmax.html">Enumerable#minmax</a>より高速な実装として追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15929">[bug#15929]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-comparable.html">Comparable</a><ul>
+<li>変更されたメソッド<ul>
+<li><a href="../method/-comparable/i/clamp.html">Comparable#clamp</a>がRangeを引数として受け付けるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14784">[feature#14784]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="o">-</span><span class="mi">1</span><span class="p">.</span><span class="nf">clamp</span><span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mi">2</span><span class="p">)</span> <span class="c1">#=&gt; 0
+</span> <span class="mi">1</span><span class="p">.</span><span class="nf">clamp</span><span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mi">2</span><span class="p">)</span> <span class="c1">#=&gt; 1
+</span> <span class="mi">3</span><span class="p">.</span><span class="nf">clamp</span><span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mi">2</span><span class="p">)</span> <span class="c1">#=&gt; 2
+</span><span class="c1"># With beginless and endless ranges:
+</span><span class="o">-</span><span class="mi">1</span><span class="p">.</span><span class="nf">clamp</span><span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="p">)</span>  <span class="c1">#=&gt; 0
+</span> <span class="mi">3</span><span class="p">.</span><span class="nf">clamp</span><span class="p">(</span><span class="o">..</span><span class="mi">2</span><span class="p">)</span>  <span class="c1">#=&gt; 2
+</span></code></pre>
+<ul>
+<li><a href="../class/-complex.html">Complex</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-complex/i/=3c=3d=3e.html">Complex#&lt;=&gt;</a>が追加されました。
+その結果、「0 &lt;=&gt; 0i」が<a href="../class/-no-method-error.html">NoMethodError</a>を発生しなくなりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15857">[bug#15857]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-dir.html">Dir</a><ul>
+<li>変更されたメソッド<ul>
+<li><a href="../method/-dir/s/glob.html">Dir.glob</a>と<a href="../method/-dir/s/=5b=5d.html">Dir.[]</a> がNUL文字区切りのグロブパターンを受け付けなくなりました。
+代わりにArrayを使ってください。 <a class="external" href="https://bugs.ruby-lang.org/issues/14643">[feature#14643]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-encoding.html">Encoding</a><ul>
+<li>新規エンコーディング<ul>
+<li>CESU-8が追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15931">[feature#15931]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-enumerable.html">Enumerable</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-enumerable/i/filter_map.html">Enumerable#filter_map</a>が追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15323">[feature#15323]</a></li>
+<li><a href="../method/-enumerable/i/tally.html">Enumerable#tally</a>が追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/11076">[feature#11076]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre class="highlight ruby">
+<span class="caption">Enumerable#filter_map</span>
+<code>
+<span class="p">[</span><span class="mi">1</span>, <span class="mi">2</span>, <span class="mi">3</span><span class="p">]</span><span class="p">.</span><span class="nf">filter_map</span> <span class="p">{</span><span class="o">|</span>x<span class="o">|</span> x<span class="p">.</span><span class="nf">odd?</span> <span class="o">?</span> x<span class="p">.</span><span class="nf">to_s</span> <span class="o">:</span> <span class="k">nil</span> <span class="p">}</span> <span class="c1">#=&gt; [&quot;1&quot;, &quot;3&quot;]
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">Enumerable#tally</span>
+<code>
+<span class="p">[</span><span class="s2">"</span><span class="s2">A</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">B</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">C</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">B</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">A</span><span class="s2">"</span><span class="p">]</span><span class="p">.</span><span class="nf">tally</span> <span class="c1">#=&gt; {&quot;A&quot;=&gt;2, &quot;B&quot;=&gt;2, &quot;C&quot;=&gt;1}
+</span></code></pre>
+<ul>
+<li><a href="../class/-enumerator.html">Enumerator</a><ul>
+<li>新規メソッド<ul>
+<li>任意のデータ変換から<a href="../class/-enumerator.html">Enumerator</a>を作成するための
+<a href="../method/-enumerator/s/produce.html">Enumerator.produce</a>メソッドが追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14781">[feature#14781]</a></li>
+<li>lazy enumerator から lazy ではない enumerator を生成する
+<a href="../method/-enumerator=3a=3a-lazy/i/eager.html">Enumerator::Lazy#eager</a>メソッドが追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15901">[feature#15901]</a></li>
+<li><a href="../method/-enumerator=3a=3a-yielder/i/to_proc.html">Enumerator::Yielder#to_proc</a>メソッドが追加され、Yielder オブジェクトを
+直接他のメソッドのブロック引数として渡せるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15618">[feature#15618]</a></li>
+<li><a href="../method/-enumerator=3a=3a-lazy/i/with_index.html">Enumerator::Lazy#with_index</a>メソッドが追加され、
+以前のlazyではない<a href="../method/-enumerator/i/with_index.html">Enumerator#with_index</a>のデフォルト実装から
+lazyになりました。<a class="external" href="https://bugs.ruby-lang.org/issues/7877">[bug#7877]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre class="highlight ruby">
+<span class="caption">Enumerator.produce</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">date</span><span class="s2">"</span>
+dates <span class="o">=</span> <span class="no">Enumerator</span><span class="p">.</span><span class="nf">produce</span><span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span>, <span class="o">&amp;</span><span class="ss">:succ</span><span class="p">)</span> <span class="c1">#=&gt; infinite sequence of dates
+</span>dates<span class="p">.</span><span class="nf">detect</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:tuesday?</span><span class="p">)</span> <span class="c1">#=&gt; next Tuesday
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">Enumerator::Lazy#eager</span>
+<code>
+a <span class="o">=</span> <span class="sx">%w(foo bar baz)</span>
+e <span class="o">=</span> a<span class="p">.</span><span class="nf">lazy</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span><span class="o">|</span>x<span class="o">|</span> x<span class="p">.</span><span class="nf">upcase</span> <span class="p">}</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span><span class="o">|</span>x<span class="o">|</span> x <span class="o">+</span> <span class="s2">"</span><span class="s2">!</span><span class="s2">"</span> <span class="p">}</span><span class="p">.</span><span class="nf">eager</span>
+<span class="nb">p</span> e<span class="p">.</span><span class="nf">class</span>               <span class="c1">#=&gt; Enumerator
+</span><span class="nb">p</span> e<span class="p">.</span><span class="nf">map</span> <span class="p">{</span><span class="o">|</span>x<span class="o">|</span> x <span class="o">+</span> <span class="s2">"</span><span class="s2">?</span><span class="s2">"</span> <span class="p">}</span>  <span class="c1">#=&gt; [&quot;FOO!?&quot;, &quot;BAR!?&quot;, &quot;BAZ!?&quot;]
+</span></code></pre>
+<pre class="highlight ruby">
+<span class="caption">Enumerator::Lazy#with_index</span>
+<code>
+<span class="p">(</span><span class="s2">"</span><span class="s2">a</span><span class="s2">"</span><span class="o">..</span><span class="p">)</span><span class="p">.</span><span class="nf">lazy</span><span class="p">.</span><span class="nf">with_index</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span>it, index<span class="o">|</span> <span class="nb">puts</span> <span class="s2">"</span><span class="si">#{</span><span class="n">index</span><span class="si">}</span><span class="s2">:</span><span class="si">#{</span><span class="n">it</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span><span class="p">.</span><span class="nf">take</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="p">.</span><span class="nf">force</span>
+<span class="c1"># =&gt; 1:a
+</span><span class="c1">#    2:b
+</span><span class="c1">#    3:c
+</span></code></pre>
+<ul>
+<li><a href="../class/-fiber.html">Fiber</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-fiber/i/raise.html">Fiber#raise</a>メソッドが追加され、<a href="../method/-fiber/i/resume.html">Fiber#resume</a>のように
+resumeして、さらに例外を発生させます。 <a class="external" href="https://bugs.ruby-lang.org/issues/10344">[feature#10344]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-file.html">File</a><ul>
+<li>新規メソッド<ul>
+<li>パスが絶対パスかどうかをポータブルに判定する<a href="../method/-file/s/absolute_path=3f.html">File.absolute_path?</a>メソッドが追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15868">[feature#15868]</a></li>
+</ul>
+</li>
+<li>変更されたメソッド<ul>
+<li>Windows以外のプラットフォームで<a href="../method/-file/s/extname.html">File.extname</a>が「.」で終わる文字列に対して
+「.」を返すようになりました。  <a class="external" href="https://bugs.ruby-lang.org/issues/15267">[bug#15267]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="no">File</span><span class="p">.</span><span class="nf">extname</span><span class="p">(</span><span class="s2">"</span><span class="s2">foo.</span><span class="s2">"</span><span class="p">)</span> <span class="c1">#=&gt; &quot;.&quot;
+</span></code></pre>
+<ul>
+<li><a href="../class/-frozen-error.html">FrozenError</a><ul>
+<li>新規メソッド<ul>
+<li>変更しようとしたfreezeされたオブジェクトを返す<a href="../method/-frozen-error/i/receiver.html">FrozenError#receiver</a>メソッドが
+追加されました。<a href="../class/-frozen-error.html">FrozenError</a>をRubyのコードで発生する時に設定できるように
+<a href="../method/-frozen-error/s/new.html">FrozenError.new</a>メソッドが :receiver オプションを受け付けるように
+なりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15751">[feature#15751]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-g-c.html">GC</a><ul>
+<li>新規メソッド<ul>
+<li>ヒープをコンパクションする<a href="../method/-g-c/s/compact.html">GC.compact</a>メソッドが追加されました。
+このメソッドはヒープの生きているオブジェクトをコンパクションして、
+ページ数を減らして、ヒープをCoW (copy-on-write)フレンドリーに
+しようとします。 <a class="external" href="https://bugs.ruby-lang.org/issues/15626">[feature#15626]</a></li>
+</ul>
+</li>
+<li>アルゴリズムの詳細と注意点は
+<a class="external" href="https://bugs.ruby-lang.org/issues/15626">https://bugs.ruby-lang.org/issues/15626</a>
+を参照してください。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-i-o.html">IO</a><ul>
+<li>新規メソッド<ul>
+<li>BOMをチェックして外部エンコーディングを設定する
+<a href="../method/-i-o/i/set_encoding_by_bom.html">IO#set_encoding_by_bom</a>メソッドが追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15210">[bug#15210]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-integer.html">Integer</a><ul>
+<li>変更されたメソッド<ul>
+<li><a href="../method/-integer/i/=5b=5d.html">Integer#[]</a>がRangeを受け付けるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/8842">[feature#8842]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="mi">0b01001101</span><span class="p">[</span><span class="mi">2</span>, <span class="mi">4</span><span class="p">]</span>  <span class="c1">#=&gt; 0b0011
+</span><span class="mi">0b01001100</span><span class="p">[</span><span class="mi">2</span><span class="o">..</span><span class="mi">5</span><span class="p">]</span>  <span class="c1">#=&gt; 0b0011
+</span><span class="mi">0b01001100</span><span class="p">[</span><span class="mi">2</span><span class="o">...</span><span class="mi">6</span><span class="p">]</span> <span class="c1">#=&gt; 0b0011
+</span><span class="c1">#   ^^^^
+</span></code></pre>
+<ul>
+<li><a href="../class/-method.html">Method</a><ul>
+<li>変更されたメソッド<ul>
+<li><a href="../method/-method/i/inspect.html">Method#inspect</a>で出てくる情報が増えました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14145">[feature#14145]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-module.html">Module</a><ul>
+<li>新規メソッド<ul>
+<li>定数が定義された場所を取得する<a href="../method/-module/i/const_source_location.html">Module#const_source_location</a>
+メソッドが追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/10771">[feature#10771]</a></li>
+<li>通常の引数分解でキーワード引数を渡すようにメソッドに印をつける
+<a href="../method/-module/i/ruby2_keywords.html">Module#ruby2_keywords</a>を追加しました。
+古いRubyと互換性のある方法で全ての引数を転送する時に使えます。 <a class="external" href="https://bugs.ruby-lang.org/issues/16154">[bug#16154]</a></li>
+</ul>
+</li>
+<li>変更されたメソッド<ul>
+<li><a href="../method/-module/i/const_defined=3f.html">Module#const_defined?</a>のように<a href="../method/-module/i/autoload=3f.html">Module#autoload?</a>が
+inheritオプショナル引数を受け付けるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15777">[feature#15777]</a></li>
+<li><a href="../method/-module/i/name.html">Module#name</a>が常にfreezeされた文字列を返すようになりました。
+同じModuleは常に同じStringを返します。
+この変更は実験的です。 <a class="external" href="https://bugs.ruby-lang.org/issues/16150">[feature#16150]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-nil-class.html">NilClass</a> / <a href="../class/-true-class.html">TrueClass</a> / <a href="../class/-false-class.html">FalseClass</a><ul>
+<li>変更されたメソッド<ul>
+<li><a href="../method/-nil-class/i/to_s.html">NilClass#to_s</a>, <a href="../method/-true-class/i/to_s.html">TrueClass#to_s</a>, <a href="../method/-false-class/i/to_s.html">FalseClass#to_s</a>が
+常にfreezeされたStringを返すようになりました。
+返り値のStringは常に同じインスタンスになります。
+この変更は実験的です。 <a class="external" href="https://bugs.ruby-lang.org/issues/16150">[feature#16150]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-object-space=3a=3a-weak-map.html">ObjectSpace::WeakMap</a><ul>
+<li>変更されたメソッド<ul>
+<li><a href="../method/-object-space=3a=3a-weak-map/i/=5b=5d=3d.html">ObjectSpace::WeakMap#[]=</a>がキーや値として特殊なオブジェクト(true,false,
+nil,Symbolなど)を受け付けるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/16035">[feature#16035]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-proc.html">Proc</a><ul>
+<li>新規メソッド<ul>
+<li>通常の引数分解でキーワード引数を渡すようにprocに印をつける
+<a href="../method/-proc/i/ruby2_keywords.html">Proc#ruby2_keywords</a>を追加しました。
+古いRubyと互換性のある方法で全ての引数を転送する時に使えます。 <a class="external" href="https://bugs.ruby-lang.org/issues/16404">[feature#16404]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-range.html">Range</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-range/i/minmax.html">Range#minmax</a>が<a href="../method/-enumerable/i/minmax.html">Enumerable#minmax</a>より高速な実装として追加されました。
+最大値に<a href="../method/-range/i/max.html">Range#max</a>と同じ値を返すようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15807">[bug#15807]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>変更されたメソッド<ul>
+<li><a href="../method/-range/i/=3d=3d=3d.html">Range#===</a>がString引数に対しても<a href="../method/-range/i/cover=3f.html">Range#cover?</a>を使うようになりました。
+(Ruby 2.6ではString以外の全ての型で<a href="../method/-range/i/include=3f.html">Range#include?</a>から変更されていました。)
+<a class="external" href="https://bugs.ruby-lang.org/issues/15449">[bug#15449]</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-ruby-v-m.html">RubyVM</a><ul>
+<li>削除されたメソッド<ul>
+<li>RubyVM.resolve_feature_pathが$LOAD_PATH.resolve_feature_pathに移動しました。
+<a class="external" href="https://bugs.ruby-lang.org/issues/15903">[feature#15903]</a> <a class="external" href="https://bugs.ruby-lang.org/issues/15230">[feature#15230]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-string.html">String</a><ul>
+<li>Unicode<ul>
+<li>Unicodeのバージョンと絵文字のバージョンが11.0.0から12.0.0に更新されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15321">[feature#15321]</a></li>
+<li>Unicodeのバージョンが12.1.0に更新されて
+新元号「令和」を表す合字 U+32FF SQUARE ERA NAME REIWA
+のサポートが追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15195">[feature#15195]</a></li>
+<li>Unicode絵文字のバージョンが12.1に更新されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/16272">[feature#16272]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-symbol.html">Symbol</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-symbol/i/start_with=3f.html">Symbol#start_with?</a>と<a href="../method/-symbol/i/end_with=3f.html">Symbol#end_with?</a>が追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/16348">[feature#16348]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-time.html">Time</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-time/i/ceil.html">Time#ceil</a>が追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15772">[feature#15772]</a></li>
+<li><a href="../method/-time/i/floor.html">Time#floor</a>が追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15653">[feature#15653]</a></li>
+</ul>
+</li>
+<li>変更されたメソッド<ul>
+<li><a href="../method/-time/i/inspect.html">Time#inspect</a>が<a href="../method/-time/i/to_s.html">Time#to_s</a>から分離されて、秒未満も
+含まれるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15958">[feature#15958]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-unbound-method.html">UnboundMethod</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-unbound-method/i/bind_call.html">UnboundMethod#bind_call</a>が追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15955">[feature#15955]</a></li>
+<li>「umethod.bind_call(obj, ...)」は「umethod.bind(obj).call(...)」と
+同じ意味です。
+このイディオムはいくつかのライブラリでオーバーライドされたメソッドを
+呼び出すのに使われています。
+追加されたメソッドでは、中間の<a href="../class/-method.html">Method</a>オブジェクトを確保することなく
+同じことができます。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">add_1</span><span class="p">(</span>x<span class="p">)</span>
+    x <span class="o">+</span> <span class="mi">1</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Bar</span> <span class="o">&lt;</span> <span class="no">Foo</span>
+  <span class="k">def</span> <span class="nf">add_1</span><span class="p">(</span>x<span class="p">)</span> <span class="c1"># override
+</span>    x <span class="o">+</span> <span class="mi">2</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+obj <span class="o">=</span> <span class="no">Bar</span><span class="p">.</span><span class="nf">new</span>
+<span class="nb">p</span> obj<span class="p">.</span><span class="nf">add_1</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1">#=&gt; 3
+</span><span class="nb">p</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:add_1</span><span class="p">)</span><span class="p">.</span><span class="nf">bind</span><span class="p">(</span>obj<span class="p">)</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1">#=&gt; 2
+</span><span class="nb">p</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">instance_method</span><span class="p">(</span><span class="ss">:add_1</span><span class="p">)</span><span class="p">.</span><span class="nf">bind_call</span><span class="p">(</span>obj, <span class="mi">1</span><span class="p">)</span> <span class="c1">#=&gt; 2
+</span></code></pre>
+<ul>
+<li><a href="../class/-warning.html">Warning</a><ul>
+<li>新規メソッド<ul>
+<li><a href="../method/-warning/s/=5b=5d.html">Warning.[]</a>と<a href="../method/-warning/s/=5b=5d=3d.html">Warning.[]=</a>がいくつかのカテゴリ化された
+警告を出すか止めるかを管理するために追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/16345">[feature#16345]</a> <a class="external" href="https://bugs.ruby-lang.org/issues/16420">[feature#16420]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../method/-kernel/v/-l-o-a-d_-p-a-t-h.html">$LOAD_PATH</a><ul>
+<li>新規メソッド<ul>
+<li>$LOAD_PATH.resolve_feature_pathが追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15903">[feature#15903]</a> <a class="external" href="https://bugs.ruby-lang.org/issues/15230">[feature#15230]</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 >標準添付ライブラリの更新 (注目すべきもののみ)</h2>
+<ul>
+<li><a href="../class/-bundler.html">Bundler</a><ul>
+<li>Bundler 2.1.2 に更新されました。
+<a class="external" href="https://github.com/bundler/bundler/releases/tag/v2.1.2">https://github.com/bundler/bundler/releases/tag/v2.1.2</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-c-g-i.html">CGI</a><ul>
+<li><a href="../method/-c-g-i/s/escape-h-t-m-l.html">CGI.escapeHTML</a>が少なくとも1個のエスケープされた文字があるときに2~5倍速くなりました。
+<a class="external" href="https://github.com/ruby/ruby/pull/2226">https://github.com/ruby/ruby/pull/2226</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-c-s-v.html">CSV</a><ul>
+<li>3.1.2に更新されました。
+<a class="external" href="https://github.com/ruby/csv/blob/master/NEWS.md">https://github.com/ruby/csv/blob/master/NEWS.md</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-date.html">Date</a><ul>
+<li><a href="../method/-date/s/jisx0301.html">Date.jisx0301</a>, <a href="../method/-date/i/jisx0301.html">Date#jisx0301</a>, <a href="../method/-date/s/parse.html">Date.parse</a>が新しい日本の年号を
+サポートしました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15742">[feature#15742]</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-delegator.html">Delegator</a><ul>
+<li><a href="../method/-object/i/-delegate-class.html">Object#DelegateClass</a>がブロックを受け付けるようになり、
+Class.newやStruct.newのように返り値のクラスのコンテキストで
+module_evalするようになりました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-e-r-b.html">ERB</a><ul>
+<li>ERBのインスタンスをMarshalできないようになりました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-i-r-b.html">IRB</a><ul>
+<li>Pry gem に着想を得て、<a href="../method/-binding/i/irb.html">Binding#irb</a>のソース表示、REPLの入力、
+いくつかのコアクラスオブジェクトのinspect出力に
+シンタックスハイライトが導入されました。</li>
+<li>Relineによって提供される複数行編集モードが導入されました。</li>
+<li>補完の操作でドキュメントが表示されるようになりました。</li>
+<li>オートインデントと履歴の保存と読み込みがデフォルトで有効になりました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-j-s-o-n.html">JSON</a><ul>
+<li>2.3.0に更新されました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-net=3a=3a-f-t-p.html">Net::FTP</a><ul>
+<li>利用可能な拡張機能をチェックするための<a href="../method/-net=3a=3a-f-t-p/i/features.html">Net::FTP#features</a>と
+有効/無効にするための<a href="../method/-net=3a=3a-f-t-p/i/option.html">Net::FTP#option</a>が追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15964">[feature#15964]</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-net=3a=3a-h-t-t-p.html">Net::HTTP</a><ul>
+<li><a href="../method/-net=3a=3a-h-t-t-p/i/start.html">Net::HTTP#start</a>にTCP/IP接続のアドレスを置き換えるための
+オプション引数ipaddrが追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/5180">[feature#5180]</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-net=3a=3a-i-m-a-p.html">Net::IMAP</a><ul>
+<li>Server Name Indication (SNI) のサポートが追加されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15594">[feature#15594]</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../library/open=2duri.html">open-uri</a><ul>
+<li>Kernelモジュールでopen-uriのopenメソッドを使うと警告されるようになりました。
+代わりに<a href="../method/-u-r-i/s/open.html">URI.open</a>を使ってください。 <a class="external" href="https://bugs.ruby-lang.org/issues/15893">[misc#15893]</a></li>
+<li>メディアタイプ &quot;text/*&quot; のデフォルトの charset が ISO-8859-1 から UTF-8 に
+なりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15933">[bug#15933]</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-option-parser.html">OptionParser</a><ul>
+<li>不明なオプションに対して &quot;Did you mean?&quot; が表示されるようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/16256">[feature#16256]</a></li>
+</ul>
+</li>
+</ul>
+<pre class="highlight ruby">
+<span class="caption">test.rb</span>
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">optparse</span><span class="s2">"</span>
+<span class="no">OptionParser</span><span class="p">.</span><span class="nf">new</span> <span class="k">do</span> <span class="o">|</span>opts<span class="o">|</span>
+  opts<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s2">"</span><span class="s2">-f</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">--foo</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">foo</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="p">}</span>
+  opts<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s2">"</span><span class="s2">-b</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">--bar</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">bar</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="p">}</span>
+  opts<span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="s2">"</span><span class="s2">-c</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">--baz</span><span class="s2">"</span>, <span class="s2">"</span><span class="s2">baz</span><span class="s2">"</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span>v<span class="o">|</span> <span class="p">}</span>
+<span class="k">end</span><span class="p">.</span><span class="nf">parse!</span>
+</code></pre>
+<pre>
+$ ruby test.rb --baa
+Traceback (most recent call last):
+test.rb:7:in `&lt;main&gt;': invalid option: --baa (OptionParser::InvalidOption)
+Did you mean?  baz
+               bar
+</pre>
+<ul>
+<li><a href="../class/-pathname.html">Pathname</a><ul>
+<li><a href="../method/-pathname/s/glob.html">Pathname.glob</a>がbaseキーワード引数を受け付けるために
+<a href="../method/-dir/s/glob.html">Dir.glob</a>に3引数を委譲するようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/14405">[feature#14405]</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-racc.html">Racc</a><ul>
+<li>上流のレポジトリから1.4.15がマージされ、raccコマンドが追加されました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-reline.html">Reline</a><ul>
+<li>readline標準ライブラリ互換でpure Ruby実装の新しい標準ライブラリです。
+複数行編集機能も提供しています。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-r-e-x-m-l.html">REXML</a><ul>
+<li>3.2.3に更新されました。
+<a class="external" href="https://github.com/ruby/rexml/blob/master/NEWS.md">https://github.com/ruby/rexml/blob/master/NEWS.md</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-r-s-s.html">RSS</a><ul>
+<li>RSS 0.2.8に更新されました。
+<a class="external" href="https://github.com/ruby/rss/blob/master/NEWS.md">https://github.com/ruby/rss/blob/master/NEWS.md</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-ruby-gems.html">RubyGems</a><ul>
+<li>RubyGems 3.1.2に更新されました。<ul>
+<li><a class="external" href="https://github.com/rubygems/rubygems/releases/tag/v3.1.0">https://github.com/rubygems/rubygems/releases/tag/v3.1.0</a></li>
+<li><a class="external" href="https://github.com/rubygems/rubygems/releases/tag/v3.1.1">https://github.com/rubygems/rubygems/releases/tag/v3.1.1</a></li>
+<li><a class="external" href="https://github.com/rubygems/rubygems/releases/tag/v3.1.2">https://github.com/rubygems/rubygems/releases/tag/v3.1.2</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-string-scanner.html">StringScanner</a><ul>
+<li>1.0.3に更新されました。
+<a class="external" href="https://github.com/ruby/strscan/blob/master/NEWS.md">https://github.com/ruby/strscan/blob/master/NEWS.md</a></li>
+</ul>
+</li>
+</ul>
+<h2 >互換性 (機能追加とバグ修正を除く)</h2>
+<ul>
+<li>以下のライブラリはもう bundled gem には含まれません。これらの機能を使う場合は対応する gem をインストールしてください。<ul>
+<li>CMath (cmath gem)</li>
+<li>Scanf (scanf gem)</li>
+<li>Shell (shell gem)</li>
+<li>Synchronizer (sync gem)</li>
+<li>ThreadsWait (thwait gem)</li>
+<li>E2MM (e2mmap gem)</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-proc.html">Proc</a><ul>
+<li><a href="../method/-proc/i/to_s.html">Proc#to_s</a>の形式が変更されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/16101">[feature#16101]</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-range.html">Range</a><ul>
+<li><a href="../method/-range/i/minmax.html">Range#minmax</a>が最大値を決めるためにRangeをイテレートしていました。
+今は<a href="../method/-range/i/max.html">Range#max</a>と同じアルゴリズムを使います。稀なケース(例えば
+FloatやStringのRange)では違う結果になるかもしれません。 <a class="external" href="https://bugs.ruby-lang.org/issues/15807">[bug#15807]</a></li>
+</ul>
+</li>
+</ul>
+<h2 >標準添付ライブラリの互換性 (機能追加とバグ修正を除く)</h2>
+<ul>
+<li>以下のライブラリが新たにdefault gemsになりました。<ul>
+<li>以下のdefault gemがrubygems.orgで公開されました。<ul>
+<li>benchmark</li>
+<li>cgi</li>
+<li>delegate</li>
+<li>getoptlong</li>
+<li>net-pop</li>
+<li>net-smtp</li>
+<li>open3</li>
+<li>pstore</li>
+<li>readline</li>
+<li>readline-ext</li>
+<li>singleton</li>
+</ul>
+</li>
+<li>以下のdefault gemはruby-coreでの変更のみで、まだrubygems.orgでは公開されていません。<ul>
+<li>monitor</li>
+<li>observer</li>
+<li>timeout</li>
+<li>tracer</li>
+<li>uri</li>
+<li>yaml</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>did_you_mean gemはbundled gemからdefault gemになりました。</li>
+</ul>
+<ul>
+<li><a href="../library/pathname.html">pathname</a><ul>
+<li><a href="../method/-kernel/i/-pathname.html">Kernel#Pathname</a>を<a href="../class/-pathname.html">Pathname</a>を引数として呼んだとき、
+新しい<a href="../class/-pathname.html">Pathname</a>を生成するのではなく、引数をそのまま返すようになりました。
+この変更で他の<a href="../class/-kernel.html">Kernel</a>のメソッドに近づきます。しかし返り値を変更して
+引数を変更しないことを期待するコードが壊れるかもしれません。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>profile.rb, Profiler__<ul>
+<li>標準添付ライブラリから削除されました。
+Ruby 2.0.0からメンテナンスされていませんでした。</li>
+</ul>
+</li>
+</ul>
+<h2 >C API の更新</h2>
+<ul>
+<li>渡された最後の引数をキーワード引数として扱うかどうかを設定するための
+多数の「*_kw」関数が追加されました。
+キーワード引数分離の警告を避けて、Ruby 3での正しい振る舞いを確実にするため、
+これらの関数に切り替える必要があるかもしれません。</li>
+</ul>
+<ul>
+<li>rb_scan_argsの書式文字列の「:」はキーワード引数として扱われるようになりました。
+キーワード引数の代わりに位置引数のハッシュとして渡されるとdeprecated警告が
+出ます。</li>
+</ul>
+<ul>
+<li>ANYARGSを使ったC API宣言はANYARGSを使わないように変更されました。
+See <a class="external" href="https://github.com/ruby/ruby/pull/2404">https://github.com/ruby/ruby/pull/2404</a></li>
+</ul>
+<h2 >実装の改善</h2>
+<ul>
+<li><a href="../class/-fiber.html">Fiber</a><ul>
+<li>以前のスタックキャッシュはファイバープールキャッシュに置き換えまれました。
+ファイバープールは単一のメモリ領域に多数のスタックを確保します。
+スタックアロケーションはO(log N)になり、ファイバー生成の償却計算量はO(1)です。
+マイクロベンチマークでは約10倍のパフォーマンス改善が計測されました。
+<a class="external" href="https://github.com/ruby/ruby/pull/2224">https://github.com/ruby/ruby/pull/2224</a></li>
+<li>以下のように「--with-coroutine=」で別のコルーチン実装を選べるようになりました。</li>
+</ul>
+</li>
+</ul>
+<pre>
+$ ./configure --with-coroutine=ucontext
+$ ./configure --with-coroutine=copy
+</pre>
+<ul>
+<li><a href="../class/-file.html">File</a><ul>
+<li><a href="../method/-file/s/realpath.html">File.realpath</a>は多くのプラットフォームでrealpath(3)を使います。
+これは大幅にパフォーマンスを改善します。 <a class="external" href="https://bugs.ruby-lang.org/issues/15797">[feature#15797]</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-hash.html">Hash</a><ul>
+<li>小さいHashオブジェクトのデータ構造が変わりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15602">[feature#15602]</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-monitor.html">Monitor</a><ul>
+<li>MonitorクラスがC拡張になりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/16255">[feature#16255]</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-thread.html">Thread</a><ul>
+<li>VMスタックのメモリ確保はネイティブスレッドのスタックと同時になり、
+スレッドアロケーションのパフォーマンスが改善され、アロケーション関連の
+失敗が減少します。
+マイクロベンチマークでは約10倍のパフォーマンス改善が計測されました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>JIT<ul>
+<li>最適化の仮定が無効になった時に、JITされたコードは最適化が少ないコードに
+再コンパイルされます。</li>
+<li>メソッドをpureだとみなした時にメソッドのインライン化が実行されます。
+この最適化はまだ実験的で、多くのメソッドはまだpureだとみなされていません。</li>
+<li>「--jit-max-cache」のデフォルト値が1,000から100になりました。</li>
+<li>「--jit-min-calls」のデフォルト値が5から10,000になりました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-ruby-v-m.html">RubyVM</a><ul>
+<li>1.9から存在するコールサイトごとのメソッドキャッシュが改善されました。
+キャッシュヒット率が89%から94%に上昇しました。
+詳細は<a class="external" href="https://github.com/ruby/ruby/pull/2583">https://github.com/ruby/ruby/pull/2583</a>を
+参照してください。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><a href="../class/-ruby-v-m=3a=3a-instruction-sequence.html">RubyVM::InstructionSequence</a><ul>
+<li><a href="../method/-ruby-v-m=3a=3a-instruction-sequence/i/to_binary.html">RubyVM::InstructionSequence#to_binary</a>メソッドは
+コンパイルされたバイナリを生成します。
+そのバイナリサイズが削減されました。 <a class="external" href="https://bugs.ruby-lang.org/issues/16163">[feature#16163]</a></li>
+</ul>
+</li>
+</ul>
+<h2 >その他の変更</h2>
+<ul>
+<li>IA64アーキテクチャーサポートが削除されました。
+テスト用のハードウェアを見つけることが難しく、ネイティブファイバーコードを
+実装することが難しく、インタープリターに些細ではない複雑さをもたらして
+いました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15894">[feature#15894]</a></li>
+</ul>
+<ul>
+<li>コンパイラーにC99対応を要求するようになりました。 <a class="external" href="https://bugs.ruby-lang.org/issues/15347">[misc#15347]</a><ul>
+<li>使用している機能の詳細は
+<a class="external" href="https://bugs.ruby-lang.org/projects/ruby-master/wiki/C99">https://bugs.ruby-lang.org/projects/ruby-master/wiki/C99</a>
+を参照してください。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>Rubyの上流リポジトリはSubversionからGitに変わりました。<ul>
+<li><a class="external" href="https://git.ruby-lang.org/ruby.git">https://git.ruby-lang.org/ruby.git</a></li>
+<li>RUBY_REVISIONのクラスはIntegerからStringに変わりました。</li>
+<li>RUBY_DESCRIPTIONはSubversionのリビジョンの代わりにGitのリビジョンが
+入るようになりました。</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>「__builtin_」構文を使ったRubyによる組み込みメソッドを
+サポートしました。 <a class="external" href="https://bugs.ruby-lang.org/issues/16254">[feature#16254]</a></li>
+</ul>
+<ul>
+<li>いくつかのメソッドは(trace_point.rbのように)「*.rb」で定義されています。
+例えば、キーワード引数を受け取るメソッドの定義が簡単になります。</li>
+</ul>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

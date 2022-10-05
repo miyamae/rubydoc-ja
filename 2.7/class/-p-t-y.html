@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>module PTY (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="擬似端末(Pseudo tTY)を扱うモジュールです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/pty.html">ptyライブラリ</a>
+      </li>
+      <li>
+        PTYモジュール
+      </li>
+    </ol>
+  </nav>
+
+<h1>module PTY</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+      <li>
+        PTY
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+擬似端末(Pseudo tTY)を扱うモジュールです。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_CHECK">check</a></li>
+
+<li><a href="#S_OPEN">open</a></li>
+
+</ul>
+</dd>
+
+<dt>モジュール関数</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#M_GETPTY">getpty</a></li>
+
+<li><a href="#M_GETPTY">spawn</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_CHECK"><code>check(pid, raise = false) -&gt; Process::Status | nil</code><span class="permalink">[<a href="../method/-p-t-y/s/check.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/PTY.html#method-c-check">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+pid で指定された子プロセスの状態をチェックし、変化があれば変化したステータスを返します。実行中、あるいは変化なしであれば nil を返します。
+</p>
+<p>
+状態が変化した後、その状態を取得することは一回しかできない（くりかえし check を呼んだら nil が返ってくる）ので注意してください。
+</p>
+<p>
+状態が変化して、終了したか停止した場合、第二引数が偽であれば、対応する <a href="../class/-process=3a=3a-status.html">Process::Status</a> オブジェクトを返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] pid:</dt>
+<dd>
+チェックしたい子プロセスの PID を指定します。
+</dd>
+<dt class='method-param'>[PARAM] raise:</dt>
+<dd>
+真を指定すると、子プロセスが終了または停止していた場合、例外 <a href="../class/-p-t-y=3a=3a-child-exited.html">PTY::ChildExited</a> が発生します。デフォルトは偽です。
+(なお、バグにより、1.9.2 pXXX より古い ruby では、終了または停止していなくても、ただちに例外が発生します)
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="S_OPEN"><code>open -&gt; [IO, File]</code><span class="permalink">[<a href="../method/-p-t-y/s/open.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/PTY.html#method-c-open">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>open {|master_io, slave_file| ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+仮想 tty を確保し、マスター側に対応する <a href="../class/-i-o.html">IO</a> オブジェクトとスレーブ側に対応する <a href="../class/-file.html">File</a> オブジェクトの配列を返します。
+</p>
+<p>
+ブロック付きで呼び出された場合は、これらの要素はブロックパラメータとして渡され、ブロックから返された結果を返します。また、このマスター IO とスレーブ File は、ブロックを抜けるときにクローズ済みでなければクローズされます。
+</p>
+</dd>
+
+
+</dl>
+
+<h2>モジュール関数</h2>
+<dl>
+
+<dt class="method-heading" id="M_GETPTY"><code>getpty(command) -&gt; [IO, IO, Integer]</code><span class="permalink">[<a href="../method/-p-t-y/m/getpty.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/PTY.html#method-c-getpty">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>getpty(command) {|read, write, pid| ... } -&gt; nil</code></dt>
+<dt class="method-heading"><code>spawn(command) -&gt; [IO, IO, Integer]</code></dt>
+<dt class="method-heading"><code>spawn(command) {|read, write, pid| ... } -&gt; nil</code></dt>
+<dd class="method-description">
+<p>
+擬似 tty を確保し、指定されたコマンドをその擬似 tty の向こうで実行し、配列を返します。
+</p>
+<p>
+プラットフォームに依存しますが、対応していれば、作られたプロセスはセッションリーダーになり、その制御端末は作成された擬似 tty に設定されます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] command:</dt>
+<dd>
+擬似 tty 上で実行するコマンド
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+返値は3つの要素からなる配列です。最初の要素は擬似 tty から読み出すための IO オブジェクト、2番目の要素は書きこむための IO オブジェクト、
+3番目の要素は子プロセスのプロセス ID です。このメソッドがブロック付き呼ばれた場合、これらの要素はブロックパラメータとして渡され、メソッド自体は nil を返します。
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/m/spawn.html">Kernel.#spawn</a>, <a href="../method/-kernel/m/system.html">Kernel.#system</a>, <a href="../method/-i-o/s/popen.html">IO.popen</a>, <a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/signal.html">signal(2)</a>
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

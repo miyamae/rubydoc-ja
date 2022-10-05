@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>module MonitorMixin (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="スレッドの同期機構としてのモニター機能を提供するモジュールです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/monitor.html">monitorライブラリ</a>
+      </li>
+      <li>
+        MonitorMixinモジュール
+      </li>
+    </ol>
+  </nav>
+
+<h1>module MonitorMixin</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+      <li>
+        MonitorMixin
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+スレッドの同期機構としてのモニター機能を提供するモジュールです。
+</p>
+<p>
+クラスに <a href="../method/-module/i/include.html">Module#include</a> したり、オブジェクトに
+<a href="../method/-object/i/extend.html">Object#extend</a> したりすることでそのクラス/オブジェクトにモニタ機能を追加します。
+</p>
+<h2 >例</h2>
+<pre class="highlight ruby">
+<span class="caption">消費者、生産者問題の例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'monitor'</span>
+
+buf <span class="o">=</span> <span class="p">[</span><span class="p">]</span>
+buf<span class="p">.</span><span class="nf">extend</span><span class="p">(</span><span class="no">MonitorMixin</span><span class="p">)</span> <span class="c1"># 配列にモニタ機能を追加
+</span>empty_cond <span class="o">=</span> buf<span class="p">.</span><span class="nf">new_cond</span> <span class="c1"># 配列が空であるかないかを通知する条件変数
+</span>
+<span class="c1"># consumer
+</span><span class="no">Thread</span><span class="p">.</span><span class="nf">start</span> <span class="k">do</span>
+  <span class="nb">loop</span> <span class="k">do</span>
+    buf<span class="p">.</span><span class="nf">synchronize</span> <span class="k">do</span> <span class="c1"># ロックする
+</span>      empty_cond<span class="p">.</span><span class="nf">wait_while</span> <span class="p">{</span> buf<span class="p">.</span><span class="nf">empty?</span> <span class="p">}</span> <span class="c1"># 配列が空である間はロックを開放して待つ
+</span>      <span class="nb">print</span> buf<span class="p">.</span><span class="nf">shift</span> <span class="c1"># 配列が空でなくなった後ロックを取得してこの行を実行
+</span>    <span class="k">end</span> <span class="c1"># ロックを開放
+</span>  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># producer
+</span><span class="k">while</span> line <span class="o">=</span> <span class="no">ARGF</span><span class="p">.</span><span class="nf">gets</span>
+  buf<span class="p">.</span><span class="nf">synchronize</span> <span class="k">do</span> <span class="c1"># ロックする
+</span>    buf<span class="p">.</span><span class="nf">push</span><span class="p">(</span>line<span class="p">)</span> <span class="c1"># 配列を変更(追加)
+</span>    empty_cond<span class="p">.</span><span class="nf">signal</span> <span class="c1"># 配列に要素が追加されたことを条件変数を通して通知
+</span>  <span class="k">end</span> <span class="c1"># ここでロックを開放
+</span><span class="k">end</span>
+</code></pre>
+<h2 >初期化</h2>
+<p>
+MonitorMixin は初期化される必要があります。上の例のように <a href="../method/-object/i/extend.html">Object#extend</a> を使って利用する場合は自動的に初期化されます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">extend する例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'monitor'</span>
+buf <span class="o">=</span> <span class="p">[</span><span class="p">]</span>
+buf<span class="p">.</span><span class="nf">extend</span><span class="p">(</span><span class="no">MonitorMixin</span><span class="p">)</span>
+</code></pre>
+<p>
+しかし、MonitorMixin をクラス定義の際に <a href="../method/-module/i/include.html">Module#include</a> を使って利用する場合は、initialize メソッドで super() か super を呼んで、初期化する必要があります。スーパークラスの initialize に引数を渡したい場合は super を、そうでない場合は super() を呼んで下さい。詳しくは、<a href="../doc/spec=2fcall.html#super">メソッド呼び出し(super・ブロック付き・yield)/super</a> を参照して下さい。例えば、以下の MyObject のスーパークラスは Object であり、その initialize は引数を受け付けないので
+super ではなく super() を呼ぶ必要があります。
+</p>
+<pre class="highlight ruby">
+<span class="caption">include する例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'monitor'</span>
+
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">MyObject</span>
+  include <span class="no">MonitorMixin</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span>val<span class="p">)</span>
+    <span class="k">super</span><span class="p">(</span><span class="p">)</span>
+    <span class="vi">@value</span> <span class="o">=</span> val
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">to_s</span>
+    synchronize <span class="p">{</span>
+      <span class="vi">@value</span><span class="p">.</span><span class="nf">to_s</span>
+    <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+以下も参考になります。
+</p>
+<ul>
+<li><a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-dev/9384">[ruby-dev:9384]</a></li>
+<li><a class="external" href="http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-dev/9386">[ruby-dev:9386]</a></li>
+</ul>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_MON_ENTER">mon_enter</a></li>
+
+<li><a href="#I_MON_EXIT">mon_exit</a></li>
+
+<li><a href="#I_MON_LOCKED--3F">mon_locked?</a></li>
+
+<li><a href="#I_MON_OWNED--3F">mon_owned?</a></li>
+
+<li><a href="#I_MON_SYNCHRONIZE">mon_synchronize</a></li>
+
+<li><a href="#I_MON_TRY_ENTER">mon_try_enter</a></li>
+
+<li><a href="#I_NEW_COND">new_cond</a></li>
+
+<li><a href="#I_MON_SYNCHRONIZE">synchronize</a></li>
+
+<li><a href="#I_MON_TRY_ENTER">try_mon_enter</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_MON_ENTER"><code>mon_enter -&gt; ()</code><span class="permalink">[<a href="../method/-monitor-mixin/i/mon_enter.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/MonitorMixin.html#method-i-mon_enter">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+モニターをロックします。
+</p>
+<p>
+一度に一つのスレッドだけがモニターをロックできます。既にモニターがロックされている場合は、ロックが開放されるまでそのスレッドは待ちます。
+</p>
+<p>
+<a href="../method/-thread=3a=3a-mutex/i/lock.html">Thread::Mutex#lock</a> に相当します。
+Mutex#lock と違うのは現在のモニターの所有者が現在実行されているスレッドである場合、何度でもロックできる点です。ロックした回数だけ mon_exit を呼ばなければモニターは解放されません。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">require</span> <span class="s1">'monitor'</span>
+buf <span class="o">=</span> <span class="p">[</span><span class="p">]</span>
+buf<span class="p">.</span><span class="nf">extend</span><span class="p">(</span><span class="no">MonitorMixin</span><span class="p">)</span>
+buf<span class="p">.</span><span class="nf">mon_enter</span>
+buf<span class="p">.</span><span class="nf">mon_enter</span>
+</code></pre>
+<p>
+Mutex#lock ではデッドロックが起きます。
+</p>
+<pre class="highlight ruby">
+<span class="caption">Mutex でデッドロックする例</span>
+<code>
+m <span class="o">=</span> <span class="no">Mutex</span><span class="p">.</span><span class="nf">new</span>
+m<span class="p">.</span><span class="nf">lock</span>
+m<span class="p">.</span><span class="nf">lock</span> <span class="c1"># =&gt; deadlock; recursive locking (ThreadError)
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_MON_EXIT"><code>mon_exit -&gt; ()</code><span class="permalink">[<a href="../method/-monitor-mixin/i/mon_exit.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/MonitorMixin.html#method-i-mon_exit">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+モニターのロックを解放します。
+</p>
+<p>
+mon_enter でロックした回数だけ mon_exit を呼ばなければモニターは解放されません。
+</p>
+<p>
+モニターが解放されればモニターのロック待ちになっていたスレッドが一つ実行を再開します。
+</p>
+<dl>
+<dt>[EXCEPTION] ThreadError:</dt>
+<dd>
+ロックを持っていないスレッドが呼びだした場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_MON_LOCKED--3F"><code>mon_locked? -&gt; bool</code><span class="permalink">[<a href="../method/-monitor-mixin/i/mon_locked=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/MonitorMixin.html#method-i-mon_locked-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+モニターがロックされているときに true を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_MON_OWNED--3F"><code>mon_owned? -&gt; bool</code><span class="permalink">[<a href="../method/-monitor-mixin/i/mon_owned=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/MonitorMixin.html#method-i-mon_owned-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+カレントスレッドがモニターをロックしているときに true を返します。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_MON_SYNCHRONIZE"><code>mon_synchronize { ... } -&gt; object</code><span class="permalink">[<a href="../method/-monitor-mixin/i/mon_synchronize.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/MonitorMixin.html#method-i-mon_synchronize">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>synchronize { ... } -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+モニターをロックし、ブロックを実行します。実行後に必ずモニターのロックを解放します。
+</p>
+<p>
+ブロックの評価値を返り値として返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-monitor-mixin/i/mon_enter.html">MonitorMixin#mon_enter</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_MON_TRY_ENTER"><code>mon_try_enter -&gt; bool</code><span class="permalink">[<a href="../method/-monitor-mixin/i/mon_try_enter.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/MonitorMixin.html#method-i-mon_try_enter">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>try_mon_enter -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+モニターのロックを取得しようと試みます。ロックに成功した(ロックが開放状態だった、もしくはロックを取得していたスレッドが自分自身であった)場合には真を返します。
+</p>
+<p>
+ロックができなかった場合は偽を返し、実行を継続します。この場合にはスレッドはブロックしません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_NEW_COND"><code>new_cond -&gt; MonitorMixin::ConditionVariable</code><span class="permalink">[<a href="../method/-monitor-mixin/i/new_cond.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/MonitorMixin.html#method-i-new_cond">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+モニターに関連付けられた、新しい <a href="../class/-monitor-mixin=3a=3a-condition-variable.html">MonitorMixin::ConditionVariable</a> を生成して返します。
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

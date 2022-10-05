@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Random#rand (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="一様な擬似乱数を発生させます。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-random.html">Randomクラス</a>
+      </li>
+      <li>
+        rand 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Random#rand</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_RAND"><code>rand -&gt; Float</code><span class="permalink">[<a href="../../../method/-random/i/rand.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Random.html#method-i-rand">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>rand(max) -&gt; Integer | Float</code></dt>
+<dt class="method-heading"><code>rand(range) -&gt; Integer | Float</code></dt>
+<dd class="method-description">
+<p>
+一様な擬似乱数を発生させます。
+</p>
+<p>
+最初の形式では 0.0 以上 1.0 未満の実数を返します。
+</p>
+<p>
+二番目の形式では 0 以上 max 未満の数を返します。
+max が正の整数なら整数を、正の実数なら実数を返します。
+0 や負の数を指定することは出来ません。
+</p>
+<p>
+三番目の形式では range で指定された範囲の値を返します。
+range の始端と終端が共に整数の場合は整数を、少なくとも片方が実数の場合は実数を返します。
+rangeが終端を含まない(つまり ... で生成した場合)には終端の値は乱数の範囲から除かれます。
+range.end - range.begin が整数を返す場合は range.begin + self.rand((range.end - range.begin) + e)
+の値を返します(e は終端を含む場合は1、含まない場合は0です)。
+range.end - range.begin が実数を返す場合も同様です。このため range が <a href="../../../class/-time.html">Time</a> の場合などにもうまく動作します。
+</p>
+<p>
+引数が実数でも範囲でもない場合は <a href="../../../method/-object/i/to_int.html">Object#to_int</a> で変換した値が指定されたものとして扱います。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] max:</dt>
+<dd>
+乱数値の上限を正の整数または実数で指定します。
+max 自体は乱数値の範囲に含まれません。
+</dd>
+<dt class='method-param'>[PARAM] range:</dt>
+<dd>
+発生させる乱数値の範囲を <a href="../../../class/-range.html">Range</a> オブジェクトで指定します。
+range.end - range.begin は数値である必要があり、
+range.begin + 数値 が適切な値を返す必要があります。
+</dd>
+<dt>[EXCEPTION] Errno::EDOM:</dt>
+<dd>
+rand(1..Float::INFINITY) などのように範囲に問題があるときに発生します。
+</dd>
+<dt>[EXCEPTION] ArgumentError:</dt>
+<dd>
+引数の数が0または1では無い時、引数に負の数値を与えた時や (1..0) のような値が存在しない範囲を渡した時などに発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="c1"># Kernel.#rand とほぼ同様の使い勝手
+</span>prng <span class="o">=</span> <span class="no">Random</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">1234</span><span class="p">)</span>
+prng<span class="p">.</span><span class="nf">rand</span>            <span class="c1"># =&gt; 0.1915194503788923
+</span><span class="nb">srand</span><span class="p">(</span><span class="mi">1234</span><span class="p">)</span>
+<span class="nb">rand</span>                 <span class="c1"># =&gt; 0.1915194503788923
+</span>
+<span class="c1"># max に実数も指定出来る
+</span>prng<span class="p">.</span><span class="nf">rand</span><span class="p">(</span><span class="mf">6.5</span><span class="p">)</span>       <span class="c1"># =&gt; 4.043707011758907
+</span><span class="c1"># (rand(6) と同等)
+</span><span class="nb">rand</span><span class="p">(</span><span class="mf">6.5</span><span class="p">)</span>            <span class="c1"># =&gt; 5
+</span>
+<span class="c1"># 引数には Range も指定できる
+</span><span class="c1"># 0 から 10までの整数が得られる
+</span>prng<span class="p">.</span><span class="nf">rand</span><span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mi">10</span><span class="p">)</span> <span class="c1"># =&gt; 4
+</span><span class="c1"># 0 から 9までの整数が得られる
+</span>prng<span class="p">.</span><span class="nf">rand</span><span class="p">(</span><span class="mi">0</span><span class="o">...</span><span class="mi">10</span><span class="p">)</span> <span class="c1"># =&gt; 8
+</span><span class="c1"># 0 から 4.2までの実数が得られる (4.2 が得られる可能性もある)
+</span>prng<span class="p">.</span><span class="nf">rand</span><span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mf">4.2</span><span class="p">)</span> <span class="c1"># =&gt; 3.2397116600246867
+</span><span class="c1"># 0 から 4.2までの実数が得られる (4.2 は除く)
+</span>prng<span class="p">.</span><span class="nf">rand</span><span class="p">(</span><span class="mi">0</span><span class="o">...</span><span class="mf">4.2</span><span class="p">)</span> <span class="c1"># =&gt; 3.6148130397862865
+</span><span class="c1"># 2012年のすべての(秒単位)時刻から一つ選ばれる
+</span>prng<span class="p">.</span><span class="nf">rand</span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2012</span>, <span class="mi">1</span>, <span class="mi">1</span><span class="p">)</span> <span class="o">...</span> <span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2013</span>,<span class="mi">1</span>,<span class="mi">1</span><span class="p">)</span><span class="p">)</span> <span class="c1"># =&gt; 2012-02-25 03:11:42 +0900
+</span><span class="nb">require</span> <span class="s1">'date'</span>
+prng<span class="p">.</span><span class="nf">rand</span><span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2012</span>, <span class="mi">1</span>, <span class="mi">1</span><span class="p">)</span> <span class="o">...</span> <span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2013</span>,<span class="mi">1</span>,<span class="mi">1</span><span class="p">)</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;Date: 2012-01-31 ((2455958j,0s,0n),+0s,2299161j)&gt;
+</span><span class="c1"># Kernel.#rand とほぼ同様の使い勝手
+</span>prng <span class="o">=</span> <span class="no">Random</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">1234</span><span class="p">)</span>
+prng<span class="p">.</span><span class="nf">rand</span>            <span class="c1"># =&gt; 0.1915194503788923
+</span><span class="nb">srand</span><span class="p">(</span><span class="mi">1234</span><span class="p">)</span>
+<span class="nb">rand</span>                 <span class="c1"># =&gt; 0.1915194503788923
+</span>
+<span class="c1"># max に実数も指定出来る
+</span>prng<span class="p">.</span><span class="nf">rand</span><span class="p">(</span><span class="mf">6.5</span><span class="p">)</span>       <span class="c1"># =&gt; 4.043707011758907
+</span><span class="c1"># (rand(6) と同等)
+</span><span class="nb">rand</span><span class="p">(</span><span class="mf">6.5</span><span class="p">)</span>            <span class="c1"># =&gt; 5
+</span>
+<span class="c1"># 引数には Range も指定できる
+</span><span class="c1"># 0 から 10までの整数が得られる
+</span>prng<span class="p">.</span><span class="nf">rand</span><span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mi">10</span><span class="p">)</span> <span class="c1"># =&gt; 4
+</span><span class="c1"># 0 から 9までの整数が得られる
+</span>prng<span class="p">.</span><span class="nf">rand</span><span class="p">(</span><span class="mi">0</span><span class="o">...</span><span class="mi">10</span><span class="p">)</span> <span class="c1"># =&gt; 8
+</span><span class="c1"># 0 から 4.2までの実数が得られる (4.2 が得られる可能性もある)
+</span>prng<span class="p">.</span><span class="nf">rand</span><span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mf">4.2</span><span class="p">)</span> <span class="c1"># =&gt; 3.2397116600246867
+</span><span class="c1"># 0 から 4.2までの実数が得られる (4.2 は除く)
+</span>prng<span class="p">.</span><span class="nf">rand</span><span class="p">(</span><span class="mi">0</span><span class="o">...</span><span class="mf">4.2</span><span class="p">)</span> <span class="c1"># =&gt; 3.6148130397862865
+</span><span class="c1"># 2012年のすべての時刻から一つ選ばれる
+</span><span class="c1"># Time#- は秒数を float で返すため。
+</span>prng<span class="p">.</span><span class="nf">rand</span><span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2012</span>, <span class="mi">1</span>, <span class="mi">1</span><span class="p">)</span> <span class="o">...</span> <span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2013</span>,<span class="mi">1</span>,<span class="mi">1</span><span class="p">)</span><span class="p">)</span> <span class="c1"># =&gt; 2012-02-25 03:11:42 +0900
+</span><span class="c1"># DateTime ではうまくいかない。というのは DateTime#- は
+</span><span class="c1"># Rational を返すため。
+</span><span class="c1"># Date#- も Rational を返すが通常は整数を表す Rational オブジェクトを返すためうまくいくように見える
+</span>
+<span class="c1"># 上と同じ種で再初期化
+</span>prng <span class="o">=</span> <span class="no">Random</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">1234</span><span class="p">)</span>
+<span class="nb">srand</span><span class="p">(</span><span class="mi">1234</span><span class="p">)</span>
+<span class="c1"># Kernel.#rand は Array#sample などの影響を受けて値がずれることがある
+</span><span class="p">[</span><span class="mi">0</span>, <span class="mi">1</span><span class="p">]</span><span class="p">.</span><span class="nf">sample</span>
+prng<span class="p">.</span><span class="nf">rand</span>            <span class="c1">#=&gt; 0.1915194503788923
+</span><span class="nb">rand</span>                 <span class="c1">#=&gt; 0.6221087710398319
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../../../method/-kernel/m/rand.html">Kernel.#rand</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

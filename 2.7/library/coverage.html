@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>library coverage (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="カバレッジを測定するためのライブラリです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        coverageライブラリ
+      </li>
+    </ol>
+  </nav>
+
+<h1>library coverage</h1>
+</header>
+
+<main>
+
+
+
+<h2>要約</h2>
+<p>
+カバレッジを測定するためのライブラリです。
+</p>
+<h2 >基本的な使い方</h2>
+<p>
+以下のようにして測定を行います。
+</p>
+<ol>
+<li>require &quot;coverage&quot; で、ライブラリを読み込む。</li>
+<li>Coverage.start を実行し、測定を開始する。</li>
+<li>require や load で測定対象のファイルを実行する。</li>
+<li>Coverage.result や Coverage.peek_result で結果を確認する。</li>
+</ol>
+<p>
+Coverage.result は、ファイル名をキーとし、カバレッジ測定結果を値とするハッシュを返します。
+</p>
+<h3 >簡単な例</h3>
+<p>
+まず測定対象のソースを用意します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">foo.rb</span>
+<code>
+s <span class="o">=</span> <span class="mi">0</span>
+<span class="mi">10</span><span class="p">.</span><span class="nf">times</span> <span class="k">do</span> <span class="o">|</span>x<span class="o">|</span>
+  s <span class="o">+=</span> x
+<span class="k">end</span>
+
+<span class="k">if</span> s <span class="o">==</span> <span class="mi">45</span>
+  <span class="nb">p</span> <span class="ss">:ok</span>
+<span class="k">else</span>
+  <span class="nb">p</span> <span class="ss">:ng</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+以下のようにして測定を行います。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">coverage</span><span class="s2">"</span>
+<span class="no">Coverage</span><span class="p">.</span><span class="nf">start</span>
+<span class="nb">load</span> <span class="s2">"</span><span class="s2">foo.rb</span><span class="s2">"</span>
+<span class="nb">p</span> <span class="no">Coverage</span><span class="p">.</span><span class="nf">result</span>  <span class="c1"># =&gt; {&quot;foo.rb&quot;=&gt;[1, 1, 10, nil, nil, 1, 1, nil, 0, nil]}
+</span></code></pre>
+<p>
+この Coverage.result[&quot;foo.rb&quot;] から得られる配列は各行の実行回数になっています。
+</p>
+<h2 >カバレッジモードの指定</h2>
+<p>
+Ruby 2.5 以降では、Coverage.start の引数で、計測対象の種類を変更するモード機能があります。
+</p>
+<h3 >linesカバレッジモード</h3>
+<p>
+linesカバレッジモードでは、各行の実行された回数を計測します。得られる結果の情報は、引数でモードを明示的にしない場合と同じです。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">coverage</span><span class="s2">"</span>
+<span class="no">Coverage</span><span class="p">.</span><span class="nf">start</span><span class="p">(</span><span class="ss">lines:</span> <span class="k">true</span><span class="p">)</span>
+<span class="nb">load</span> <span class="s2">"</span><span class="s2">foo.rb</span><span class="s2">"</span>
+<span class="nb">p</span> <span class="no">Coverage</span><span class="p">.</span><span class="nf">result</span>  <span class="c1"># =&gt; {&quot;foo.rb&quot;=&gt;{:lines=&gt;[1, 1, 10, nil, nil, 1, 1, nil, 0, nil]}}
+</span></code></pre>
+<p>
+キーの :lines が指す値は、各行が実行された回数を示す配列です。この配列の順序は重要です。たとえば、この配列の最初の要素は、カバレッジ計測中にファイルの 1 行目が実行された回数を示しています(この例では 1 回)。
+</p>
+<p>
+なお、空行、コメント、end のような行はカバレッジの計測対象外で、nil となっています。
+</p>
+<h3 >oneshot_linesカバレッジモード</h3>
+<p>
+oneshot_linesカバレッジモードでは、カバレッジの計測中に実行された行を記録します。実行回数は計測せず、実行されたこと行番号を記録します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">coverage</span><span class="s2">"</span>
+<span class="no">Coverage</span><span class="p">.</span><span class="nf">start</span><span class="p">(</span><span class="ss">oneshot_lines:</span> <span class="k">true</span><span class="p">)</span>
+<span class="nb">load</span> <span class="s2">"</span><span class="s2">foo.rb</span><span class="s2">"</span>
+<span class="nb">p</span> <span class="no">Coverage</span><span class="p">.</span><span class="nf">result</span>  <span class="c1"># =&gt; {&quot;foo.rb&quot;=&gt;{:oneshot_lines=&gt;[1, 2, 3, 6, 7]}}
+</span></code></pre>
+<p>
+oneshot_linesキーの指す値は、実行された行番号を列挙した配列です。
+</p>
+<h3 >branchesカバレッジモード</h3>
+<p>
+branchesカバレッジモードでは、各条件分岐のそれぞれの分岐(branch)の実行された回数を計測します。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">coverage</span><span class="s2">"</span>
+<span class="no">Coverage</span><span class="p">.</span><span class="nf">start</span><span class="p">(</span><span class="ss">branches:</span> <span class="k">true</span><span class="p">)</span>
+<span class="nb">load</span> <span class="s2">"</span><span class="s2">foo.rb</span><span class="s2">"</span>
+pp <span class="no">Coverage</span><span class="p">.</span><span class="nf">result</span>
+<span class="c1"># {&quot;foo.rb&quot;=&gt;
+</span><span class="c1">#   {:branches=&gt;
+</span><span class="c1">#     {[:if, 0, 6, 0, 10, 3]=&gt;
+</span><span class="c1">#       {[:then, 1, 7, 2, 7, 7]=&gt;1, [:else, 2, 9, 2, 9, 7]=&gt;0}}}}
+</span></code></pre>
+<p>
+キーの :branches が指すハッシュの各キーは条件分岐(の識別情報)であり、その条件分岐のキーが指すハッシュはその条件分岐の分岐(の識別情報)とその分岐の実行回数です。
+</p>
+<p>
+分岐の識別情報であるキーを構成する要素は、左から右に向かって以下の通りです。
+</p>
+<pre>
+1. 枝や条件分岐の種類を示すラベル
+2. ID(固有の識別子)
+3. ファイル内での開始行
+4. ファイル内での開始列
+5. ファイル内での終了行
+6. ファイル内での終了列
+</pre>
+<h3 >methodsカバレッジモード</h3>
+<p>
+methodsカバレッジモードでは、各メソッドの実行回数を計測します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">foo_method.rb</span>
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Greeter</span>
+  <span class="k">def</span> <span class="nf">greet</span>
+    <span class="s2">"</span><span class="s2">welcome!</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">hello</span>
+  <span class="s2">"</span><span class="s2">Hi</span><span class="s2">"</span>
+<span class="k">end</span>
+
+hello<span class="p">(</span><span class="p">)</span>
+<span class="no">Greeter</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">greet</span><span class="p">(</span><span class="p">)</span>
+</code></pre>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">coverage</span><span class="s2">"</span>
+<span class="no">Coverage</span><span class="p">.</span><span class="nf">start</span><span class="p">(</span><span class="ss">methods:</span> <span class="k">true</span><span class="p">)</span>
+<span class="nb">load</span> <span class="s2">"</span><span class="s2">foo_method.rb</span><span class="s2">"</span>
+pp <span class="no">Coverage</span><span class="p">.</span><span class="nf">result</span>
+<span class="c1"># {&quot;foo_method.rb&quot;=&gt;
+</span><span class="c1">#   {:methods=&gt;
+</span><span class="c1">#     {[Object, :hello, 7, 0, 9, 3]=&gt;1, [Greeter, :greet, 2, 2, 4, 5]=&gt;1}}}
+</span></code></pre>
+<p>
+キーの :methods が指すハッシュの各キーはメソッド(の識別情報)を表し、値はメソッドの実行回数です。
+</p>
+<p>
+メソッドの識別情報であるキーを構成する要素は、左から右に向かって以下の通りです。
+</p>
+<pre>
+1. クラス名
+2. メソッド名
+3. ファイル内でのメソッドの開始行
+4. ファイル内でのメソッドの開始列
+5. ファイル内でのメソッドの終了行
+6. ファイル内でのメソッドの終了列
+</pre>
+<h3 >全指定の all</h3>
+<p>
+このモードでは、全てのカレッジモードを同時に実行することができます。
+</p>
+<p>
+ただし、oneshot_linesカバレッジモードは実行されません。これは、linesカバレッジモードにより各行の実行回数が計測され、行が実行されたかどうかわかるためです。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">require</span> <span class="s2">"</span><span class="s2">coverage</span><span class="s2">"</span>
+<span class="no">Coverage</span><span class="p">.</span><span class="nf">start</span><span class="p">(</span><span class="ss">:all</span><span class="p">)</span>
+<span class="nb">load</span> <span class="s2">"</span><span class="s2">foo.rb</span><span class="s2">"</span>
+pp <span class="no">Coverage</span><span class="p">.</span><span class="nf">result</span>
+<span class="c1"># {&quot;foo.rb&quot;=&gt;
+</span><span class="c1">#   {:lines=&gt;[1, 1, 10, nil, nil, 1, 1, nil, 0, nil],
+</span><span class="c1">#    :branches=&gt;
+</span><span class="c1">#     {[:if, 0, 6, 0, 10, 3]=&gt;
+</span><span class="c1">#       {[:then, 1, 7, 2, 7, 7]=&gt;1, [:else, 2, 9, 2, 9, 7]=&gt;0}},
+</span><span class="c1">#    :methods=&gt;{}}}
+</span></code></pre>
+
+
+<h2>クラス</h2>
+<table class="entries libraries">
+
+<tr>
+<td class="signature" style="text-indent: 0.0em;">
+<span style="display:none"></span>
+<a href="../class/-coverage.html">Coverage</a>
+</td>
+<td class="description"><p>
+カバレッジを測定する機能を提供するクラスです。
+</p>
+</td>
+</tr>
+
+</table>
+
+
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

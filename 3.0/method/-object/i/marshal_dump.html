@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Object#marshal_dump (Ruby 3.0.4 リファレンスマニュアル)</title>
+<meta name="description" content="[[m:Marshal.#dump]] を制御するメソッドです。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 3.0.4 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-object.html">Objectクラス</a>
+      </li>
+      <li>
+        marshal_dump 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Object#marshal_dump</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_MARSHAL_DUMP"><code>marshal_dump -&gt; object</code><span class="permalink">[<a href="../../../method/-object/i/marshal_dump.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/3.0.4/Object.html#method-i-marshal_dump">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+<a href="../../../method/-marshal/m/dump.html">Marshal.#dump</a> を制御するメソッドです。
+</p>
+<p>
+Marshal.dump(some) において、出力するオブジェクト some がメソッド marshal_dump を持つ場合には、その返り値がダンプされたものが Marshal.dump(some) の返り値となります。
+</p>
+<p>
+marshal_dump/marshal_load の仕組みは Ruby 1.8.0 から導入されました。これから書くプログラムでは _dump/_load ではなく
+marshal_dump/marshal_load を使うべきです。
+</p>
+<dl>
+<dt>[RETURN]</dt>
+<dd>
+任意のオブジェクトで marshal_load の引数に利用できます。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<code>
+<span class="k">class</span> <span class="nn"></span><span class="o"></span><span class="nc">Foo</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span>arg<span class="p">)</span>
+    <span class="vi">@foo</span> <span class="o">=</span> arg
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">marshal_dump</span>
+    <span class="vi">@foo</span>
+  <span class="k">end</span>
+  <span class="k">def</span> <span class="nf">marshal_load</span><span class="p">(</span>obj<span class="p">)</span>
+    <span class="nb">p</span> obj
+    <span class="vi">@foo</span> <span class="o">=</span> obj
+  <span class="k">end</span>
+<span class="k">end</span>
+foo <span class="o">=</span> <span class="no">Foo</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="p">[</span><span class="s1">'foo'</span>, <span class="s1">'bar'</span><span class="p">]</span><span class="p">)</span>
+<span class="nb">p</span> foo                      <span class="c1">#=&gt; #&lt;Foo:0xbaf3b0 @foo=[&quot;foo&quot;, &quot;bar&quot;]&gt;
+</span>dms <span class="o">=</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span>foo<span class="p">)</span>
+<span class="nb">p</span> dms                      <span class="c1">#=&gt; &quot;\004\bU:\bFoo[\a\&quot;\bfoo\&quot;\bbar&quot;
+</span>result <span class="o">=</span> <span class="no">Marshal</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span>dms<span class="p">)</span> <span class="c1">#=&gt; [&quot;foo&quot;, &quot;bar&quot;] # marshal_load の引数
+</span><span class="nb">p</span> result                   <span class="c1">#=&gt; #&lt;Foo:0xbaf2ac @foo=[&quot;foo&quot;, &quot;bar&quot;]&gt;
+</span></code></pre>
+<p>
+インスタンス変数の情報は普通マーシャルデータに含まれるので、上例のように marshal_dump を定義する必要はありません
+(ただし marshal_dump を定義するとインスタンス変数の情報はダンプされなくなるので、marshal_dump/marshal_load で扱う必要があります)。
+marshal_dump/marshal_load はより高度な制御を行いたい場合や拡張ライブラリで定義したクラスのインスタンスがインスタンス変数以外に情報を保持する場合に利用します。
+</p>
+<p>
+特に、marshal_dump/marshal_load を定義したオブジェクトは特異メソッドが定義されていてもマーシャルできるようになります
+(特異メソッドの情報が自動的に dump されるようになるわけではなく、
+marshal_dump/marshal_load によりそれを実現する余地があるということです)。
+</p>
+<p>
+[SEE_ALSO] <a href="../../../method/-object/i/marshal_load.html">Object#marshal_load</a>, <a href="../../../class/-marshal.html">Marshal</a>
+</p>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

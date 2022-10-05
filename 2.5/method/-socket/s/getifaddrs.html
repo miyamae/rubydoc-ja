@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Socket.getifaddrs (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="インターフェイスのアドレスを [[c:Socket::Ifaddr]] の配列で返します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/socket.html">socketライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-socket.html">Socketクラス</a>
+      </li>
+      <li>
+        getifaddrs 
+      </li>
+    </ol>
+  </nav>
+
+<h1>singleton method Socket.getifaddrs</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="S_GETIFADDRS"><code>getifaddrs -&gt; [Socket::Ifaddr]</code><span class="permalink">[<a href="../../../method/-socket/s/getifaddrs.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Socket.html#method-c-getifaddrs">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+インターフェイスのアドレスを <a href="../../../class/-socket=3a=3a-ifaddr.html">Socket::Ifaddr</a> の配列で返します。
+</p>
+<p>
+本メソッドはマルチキャスト通信が可能なインターフェイスを見つけるために使う事ができます。
+</p>
+<pre>
+require 'socket'
+
+pp Socket.getifaddrs.reject {|ifaddr|
+  !ifaddr.addr.ip? || (ifaddr.flags &amp; Socket::IFF_MULTICAST == 0)
+}.map {|ifaddr| [ifaddr.name, ifaddr.ifindex, ifaddr.addr] }
+#=&gt; [[&quot;eth0&quot;, 2, #&lt;Addrinfo: 221.186.184.67&gt;],
+#    [&quot;eth0&quot;, 2, #&lt;Addrinfo: fe80::216:3eff:fe95:88bb%eth0&gt;]]
+</pre>
+<p>
+例(GNU/Linux):
+</p>
+<pre>
+require 'socket'
+
+pp Socket.getifaddrs
+#=&gt; [#&lt;Socket::Ifaddr lo UP,LOOPBACK,RUNNING,0x10000 PACKET[protocol=0 lo hatype=772 HOST hwaddr=00:00:00:00:00:00]&gt;,
+#    #&lt;Socket::Ifaddr eth0 UP,BROADCAST,RUNNING,MULTICAST,0x10000 PACKET[protocol=0 eth0 hatype=1 HOST hwaddr=00:16:3e:95:88:bb] broadcast=PACKET[protocol=0 eth0 hatype=1 HOST hwaddr=ff:ff:ff:ff:ff:ff]&gt;,
+#    #&lt;Socket::Ifaddr sit0 NOARP PACKET[protocol=0 sit0 hatype=776 HOST hwaddr=00:00:00:00]&gt;,
+#    #&lt;Socket::Ifaddr lo UP,LOOPBACK,RUNNING,0x10000 127.0.0.1 netmask=255.0.0.0&gt;,
+#    #&lt;Socket::Ifaddr eth0 UP,BROADCAST,RUNNING,MULTICAST,0x10000 221.186.184.67 netmask=255.255.255.240 broadcast=221.186.184.79&gt;,
+#    #&lt;Socket::Ifaddr lo UP,LOOPBACK,RUNNING,0x10000 ::1 netmask=ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff&gt;,
+#    #&lt;Socket::Ifaddr eth0 UP,BROADCAST,RUNNING,MULTICAST,0x10000 fe80::216:3eff:fe95:88bb%eth0 netmask=ffff:ffff:ffff:ffff::&gt;]
+</pre>
+<p>
+例(FreeBSD):
+</p>
+<pre>
+require 'socket'
+
+pp Socket.getifaddrs
+#=&gt; [#&lt;Socket::Ifaddr usbus0 UP,0x10000 LINK[usbus0]&gt;,
+#    #&lt;Socket::Ifaddr re0 UP,BROADCAST,RUNNING,MULTICAST,0x800 LINK[re0 3a:d0:40:9a:fe:e8]&gt;,
+#    #&lt;Socket::Ifaddr re0 UP,BROADCAST,RUNNING,MULTICAST,0x800 10.250.10.18 netmask=255.255.255.? (7 bytes for 16 bytes sockaddr_in) broadcast=10.250.10.255&gt;,
+#    #&lt;Socket::Ifaddr re0 UP,BROADCAST,RUNNING,MULTICAST,0x800 fe80:2::38d0:40ff:fe9a:fee8 netmask=ffff:ffff:ffff:ffff::&gt;,
+#    #&lt;Socket::Ifaddr re0 UP,BROADCAST,RUNNING,MULTICAST,0x800 2001:2e8:408:10::12 netmask=UNSPEC&gt;,
+#    #&lt;Socket::Ifaddr plip0 POINTOPOINT,MULTICAST,0x800 LINK[plip0]&gt;,
+#    #&lt;Socket::Ifaddr lo0 UP,LOOPBACK,RUNNING,MULTICAST LINK[lo0]&gt;,
+#    #&lt;Socket::Ifaddr lo0 UP,LOOPBACK,RUNNING,MULTICAST ::1 netmask=ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff&gt;,
+#    #&lt;Socket::Ifaddr lo0 UP,LOOPBACK,RUNNING,MULTICAST fe80:4::1 netmask=ffff:ffff:ffff:ffff::&gt;,
+#    #&lt;Socket::Ifaddr lo0 UP,LOOPBACK,RUNNING,MULTICAST 127.0.0.1 netmask=255.?.?.? (5 bytes for 16 bytes sockaddr_in)&gt;]
+</pre>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

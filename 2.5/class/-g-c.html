@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>module GC (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="GC は Ruby インタプリタの「ゴミ集め(Garbage Collection)」を制御
+するモジュールです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        GCモジュール
+      </li>
+    </ol>
+  </nav>
+
+<h1>module GC</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+      <li>
+        GC
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+GC は Ruby インタプリタの「ゴミ集め(Garbage Collection)」を制御するモジュールです。
+</p>
+<h2 >GCのチューニングについて</h2>
+<p>
+Ruby 2.1ではRGenGCと呼ばれる新たなGCメカニズムが導入されました。それにともない、以下の環境変数が導入され、これらを設定することでGCの動作をチューニングすることができます。これらの環境変数の効果はRubyの起動時のみ有効です(つまりrubyを動かしている途中で変更することはできません)。
+</p>
+<h3 id='tuning_gc'>チューニングのための環境変数</h3>
+<ul>
+<li>RUBY_GC_HEAP_INIT_SLOTS (default: 10000) - 最初に確保されるスロット数。</li>
+<li>RUBY_GC_HEAP_FREE_SLOTS (default: 4096) - GC後、必ずこの数の空きスロット数が確保される。
+つまりGC後に空きスロットが足りなければ新たなページを確保し、空きスロット数を増やす。</li>
+<li>RUBY_GC_HEAP_GROWTH_FACTOR (default: 1.8) - Rubyではスロットを増やすための
+メモリ確保をするたびに確保するサイズをこの係数で大きくする。
+つまり全スロット数は指数的に増大する。これは動かしているRubyプログラムが
+必要とするスロット数に速やかに到達するための仕組みである。</li>
+<li>RUBY_GC_HEAP_GROWTH_MAX_SLOTS (default: 0) -
+RUBY_GC_HEAP_GROWTH_FACTORで説明したようにRubyではスロットのためのメモリ確保のサイズを
+指数的に大きくしていくが、その上限を決める値。0は上限なしを意味する。
+この値を指定すると、スロット数が特定の値を越えると指数的ではなく線形的に
+スロット数が増大する。</li>
+<li>RUBY_GC_HEAP_FREE_SLOTS_MIN_RATIO (2.4以降、default: 0.20) -
+GC後の空きスロット割合の下限。
+つまり空きスロット数の全スロット数に対する割合がこの値より小さいときは新たな
+ページを確保する。</li>
+<li>RUBY_GC_HEAP_FREE_SLOTS_GOAL_RATIO (2.4以降、
+default: 0.40) - GC後の空きスロットの割合の目標。
+RUBY_GC_HEAP_FREE_SLOTS_MIN_RATIOの閾値にひっかかって新たなスロットを確保するときは
+この割合が目標となる。
+この値が 0.0 の場合は、RUBY_GC_HEAP_GROWTH_FACTORを直接使う。</li>
+<li>RUBY_GC_HEAP_FREE_SLOTS_MAX_RATIO (2.4以降、default: 0.65) -
+GC後の空きスロットの割合の上限。
+空きスロット数の全スロット数に対する割合がこの値より大きい場合は
+積極的にページを解放する。</li>
+</ul>
+<ul>
+<li>RUBY_GC_HEAP_OLDOBJECT_LIMIT_FACTOR (2.0) - RubyのフルGCを呼びだすための oldobject
+数の上限を決めるための係数。
+RubyのフルGCは oldobject の個数が閾値 old_objects_limit
+を越えるごとに実行される。old_objects_limit はフルGCの直後に変更される。
+その値はフルGC直後のの oldobject の個数 (
+old_objects) の RUBY_GC_HEAP_OLDOBJECT_LIMIT_FACTOR 倍となる。
+つまり、フルGC直後から oldobject の個数が RUBY_GC_HEAP_OLDOBJECT_LIMIT_FACTOR 倍に
+なったタイミングでフルGCが実行される。
+この値を調整することでフルGCの頻度を調整できる。</li>
+</ul>
+<ul>
+<li>RUBY_GC_MALLOC_LIMIT (default: 16*1024*1024 = 16MB) - malloc によるマイナーGC発動の
+閾値の初期値</li>
+<li>RUBY_GC_MALLOC_LIMIT_MAX (default: 32*1024*1024 = 32MB) - malloc によるマイナーGC発動の
+閾値の最大値</li>
+<li>RUBY_GC_MALLOC_LIMIT_GROWTH_FACTOR (default: 1.4) - malloc によるマイナーGC発動の
+閾値の増加率</li>
+</ul>
+<ul>
+<li>RUBY_GC_OLDMALLOC_LIMIT (default: 16*1024*1024 = 16MB) - oldobject による malloc
+によるフルGC発動の閾値の初期値</li>
+<li>RUBY_GC_OLDMALLOC_LIMIT_MAX (default: 128*1024*1024 = 128MB) oldobject による malloc
+によるフルGC発動の閾値の最大値</li>
+<li>RUBY_GC_OLDMALLOC_LIMIT_GROWTH_FACTOR (default: 1.2) - oldobject による malloc
+によるフルGC発動の閾値の増加率</li>
+</ul>
+<p>
+以下の2つの環境変数はobsoleteであり、新しいものを使うことが望ましい
+</p>
+<ul>
+<li>RUBY_FREE_MIN       -&gt; RUBY_GC_HEAP_FREE_SLOTS</li>
+<li>RUBY_HEAP_MIN_SLOTS -&gt; RUBY_GC_HEAP_INIT_SLOTS</li>
+</ul>
+<h3 >RUBY_GC_HEAP_GROWTH_FACTOR と RUBY_GC_HEAP_FREE_SLOTS_GOAL_RATIO に関する補足説明</h3>
+<p>
+RUBY_GC_HEAP_GROWTH_FACTOR と RUBY_GC_HEAP_FREE_SLOTS_GOAL_RATIO はともに
+GC後に空きスロットが少ないときにどれだけの量のメモリを新たに確保するかを決めるパラメータである。この2つのパラメータの優先順位は以下の通りである。
+</p>
+<ul>
+<li>RUBY_GC_HEAP_FREE_SLOTS_GOAL_RATIO が 0.0 のときはこの値は無視され、
+RUBY_GC_HEAP_GROWTH_FACTOR のみが利用される。つまり
+スロットが不足状態の場合にはスロット数は単純に指数的に増加する。</li>
+<li>RUBY_GC_HEAP_FREE_SLOTS_GOAL_RATIO が 0.0 でない場合には、
+RUBY_GC_HEAP_GROWTH_FACTOR で決まるスロット数と
+RUBY_GC_HEAP_FREE_SLOTS_GOAL_RATIO で決まるスロット数の大きいほうが採用される。</li>
+</ul>
+<p>
+当然、RUBY_GC_HEAP_GROWTH_MAX_SLOTS はこれらより優先度が高いことに注意。
+</p>
+<h3 >malloc閾値についての説明</h3>
+<p>
+Rubyが利用するメモリはスロット以外にもある。例えば長い文字列は malloc によってCのヒープ上に確保される。GCはこのようなヒープ上のメモリを解放するためにも実行される。そこで、rubyでは malloc によるメモリ消費量を保持し、この消費量がある閾値を越えるとGCが起動される。また、GCが起動されるごとにこの消費量カウンタが0にリセットされる。
+</p>
+<p>
+このカウンタは2種類あり、一方は malloc_increase_bytes、もう一方は
+oldmalloc_increase_bytes と呼ばれる。この2つの性質は以下のようになっている。
+</p>
+<ul>
+<li>malloc_increase_bytes について<ul>
+<li>malloc_increase_bytes はRuby内でのmalloc, realloc, freeの呼びだし
+(ruby_xmalloc, ruby_xrealloc, ruby_xfreeなど)によるメモリ利用量の増減を
+計測する</li>
+<li>malloc_increase_bytes はマイナーGCで0にリセットされる</li>
+<li>malloc_increase_bytes が malloc_increase_bytes_limits を越えるとマイナーGCが起動される</li>
+<li>malloc_increase_bytes_limits は処理系の起動時に RUBY_GC_MALLOC_LIMIT で初期化される</li>
+<li>malloc_increase_bytes_limits を越えたことが原因でGCが起動された場合は
+malloc_increase_bytes_limits が RUBY_GC_MALLOC_LIMIT_GROWTH_FACTOR 倍される
+(ただし、 RUBY_GC_MALLOC_LIMIT_MAX を越えることはできない)</li>
+</ul>
+</li>
+<li>oldmalloc_increase_bytes について<ul>
+<li>oldmalloc_increase_bytes はRuby内でのmalloc, realloc, freeの呼びだし
+(ruby_xmalloc, ruby_xrealloc, ruby_xfreeなど)によるメモリ利用量の増減を
+計測する(これは malloc_increase_bytes と同じ)</li>
+<li>oldmalloc_increase_bytes はフルGCで0にリセットされる</li>
+<li>oldmalloc_increase_bytes が
+oldmalloc_increase_bytes_limits を越えるとフルGCが起動される</li>
+<li>oldmalloc_increase_bytes_limits は処理系の起動時に
+RUBY_GC_OLDMALLOC_LIMIT で初期化される</li>
+<li>oldmalloc_increase_bytes_limits を越えたことが原因でGCが起動された場合は
+oldmalloc_increase_bytes_limits が RUBY_GC_OLDMALLOC_LIMIT_GROWTH_FACTOR 倍される
+(ただし、 RUBY_GC_OLDMALLOC_LIMIT_MAX を越えることはできない)</li>
+</ul>
+</li>
+</ul>
+<h3 >実行中のパラメータ</h3>
+<p>
+プログラム実行中には、GCに関する統計情報/閾値情報を <a href="../method/-g-c/s/stat.html">GC.stat</a> で見ることができるが、この文章で説明した以下の情報はこれで調べることができる。
+</p>
+<ul>
+<li>malloc_increase_bytes</li>
+<li>malloc_increase_bytes_limits</li>
+<li>oldmalloc_increase_bytes</li>
+<li>oldmalloc_increase_bytes_limits</li>
+<li>old_objects_limit</li>
+</ul>
+<h3 >チューニングについて</h3>
+<ul>
+<li>原理的にはメモリ使用量と実行速度のトレードオフがある。
+実行速度を上げるためにはGCの回数を減らせばよいが、そうすると
+メモリ使用量は増える傾向になる。</li>
+<li>チューニングのためにはまず計測することが重要。<a href="../method/-g-c/s/stat.html">GC.stat</a>、<a href="../class/-g-c=3a=3a-profiler.html">GC::Profiler</a>などを
+利用してGCを計測する<ul>
+<li>GCが性能上のボトルネックではないことも多い。そういう部分も含め計測する。</li>
+<li>newrelicのような高度なツールを使うことも考慮する</li>
+</ul>
+</li>
+<li><a class="external" href="http://tmm1.net/ruby21-rgengc/">http://tmm1.net/ruby21-rgengc/</a> には
+RUBY_GC_HEAP_INIT_SLOTS や RUBY_GC_HEAP_FREE_SLOTS
+のチューニングに関する簡単な指針が書いてあって参考になる</li>
+<li>結局の所トライ&amp;エラーで調整する必要がある。</li>
+</ul>
+<h3 >この設定を理解するための用語集</h3>
+<ul>
+<li>スロット - Ruby のオブジェクトを1つ保持するためのメモリ領域。
+実際にはこの領域からのポインタがCのヒープ領域に確保したメモリを所持していることが多く、
+メモリ上の実占有領域はスロット外にもあることがしばしばある。
+RubyのGCのチューニングには重要な概念。</li>
+<li>RGenGC - Ruby2.1で採用された世代別GC。マイナーGCとフルGCの2段階のGCをすることで
+効率的なGCを実現する。</li>
+<li>マイナーGC - 新しいオブジェクト(前回のGCの後に生成されたオブジェクト)
+のみを対象としたGC。GCすべきオブジェクトの数が少ないので高速。
+また、多くのオブジェクトは経験的に生成されてすぐ不要になるので
+マイナーGCは効率的に動作する可能性が高い。
+マイナーGCでGCされなかったオブジェクトはoldobjectと呼ぶ。</li>
+<li>フルGC (メジャーGC) - すべてのオブジェクトを対象としたGC。マイナーGCより遅いため、
+フルGCの回数を減らすことはGC性能に重要な問題である。</li>
+<li>ページ - スロットのメモリ確保は効率性のため、
+「すべて別々に確保する」「大きなメモリの塊で一気に確保する」
+のどちらでもなく、ページと呼ばれる単位で数百個という単位で確保される。
+x86_64上でのlinuxでは16kバイトがページのサイズと決められている。
+スロット用のメモリの確保および解放はこの単位で行われる。
+この「ページ」はOSのメモリ管理用語であるページとは異なる概念であることに注意。</li>
+</ul>
+<h3 >参考資料</h3>
+<ul>
+<li><a class="external" href="http://www.atdot.net/~ko1/activities/2014_rubyconf_ph_pub.pdf">http://www.atdot.net/~ko1/activities/2014_rubyconf_ph_pub.pdf</a></li>
+<li><a class="external" href="http://tmm1.net/ruby21-rgengc/">http://tmm1.net/ruby21-rgengc/</a></li>
+</ul>
+<p>
+@see <a href="../class/-object-space.html">ObjectSpace</a>
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>特異メソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#S_COUNT">count</a></li>
+
+<li><a href="#S_DISABLE">disable</a></li>
+
+<li><a href="#S_ENABLE">enable</a></li>
+
+<li><a href="#S_LATEST_GC_INFO">latest_gc_info</a></li>
+
+<li><a href="#S_START">start</a></li>
+
+<li><a href="#S_STAT">stat</a></li>
+
+<li><a href="#S_STRESS">stress</a></li>
+
+<li><a href="#S_STRESS--3D">stress=</a></li>
+
+</ul>
+</dd>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_GARBAGE_COLLECT">garbage_collect</a></li>
+
+</ul>
+</dd>
+
+<dt>定数</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#C_-I-N-T-E-R-N-A-L_-C-O-N-S-T-A-N-T-S">INTERNAL_CONSTANTS</a></li>
+
+<li><a href="#C_-O-P-T-S">OPTS</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>特異メソッド</h2>
+<dl>
+
+<dt class="method-heading" id="S_COUNT"><code>count -&gt; Integer</code><span class="permalink">[<a href="../method/-g-c/s/count.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/GC.html#method-c-count">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+プロセス開始からガーベージコレクトを実行した回数を <a href="../class/-integer.html">Integer</a> で返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">GC</span><span class="p">.</span><span class="nf">count</span> <span class="c1"># =&gt; 3
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_DISABLE"><code>disable -&gt; bool</code><span class="permalink">[<a href="../method/-g-c/s/disable.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/GC.html#method-c-disable">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ガーベージコレクトを禁止します。
+</p>
+<p>
+前回の禁止状態を返します(禁止されていたなら true, GC が有効であったなら、
+false)。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">GC</span><span class="p">.</span><span class="nf">disable</span>   <span class="c1"># =&gt; false
+</span><span class="no">GC</span><span class="p">.</span><span class="nf">disable</span>   <span class="c1"># =&gt; true
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-g-c/s/enable.html">GC.enable</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_ENABLE"><code>enable -&gt; bool</code><span class="permalink">[<a href="../method/-g-c/s/enable.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/GC.html#method-c-enable">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ガーベージコレクトを許可します。
+</p>
+<p>
+前回の禁止状態を返します(禁止されていたなら true, GC が有効であったなら、
+false)。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-g-c/s/disable.html">GC.disable</a>
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">GC</span><span class="p">.</span><span class="nf">disable</span>   <span class="c1"># =&gt; false
+</span><span class="no">GC</span><span class="p">.</span><span class="nf">enable</span>    <span class="c1"># =&gt; true
+</span><span class="no">GC</span><span class="p">.</span><span class="nf">enable</span>    <span class="c1"># =&gt; false
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_LATEST_GC_INFO"><code>latest_gc_info(result_hash = {}) -&gt; Hash</code><span class="permalink">[<a href="../method/-g-c/s/latest_gc_info.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/GC.html#method-c-latest_gc_info">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>latest_gc_info(key) -&gt; object</code></dt>
+<dd class="method-description">
+<p>
+最新のGCの情報を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] result_hash:</dt>
+<dd>
+戻り値のためのハッシュを指定します。省略した場合は新しくハッシュを作成します。result_hash の内容は上書きされます。
+</dd>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+得られる情報から特定の情報を取得したい場合にキーを
+<a href="../class/-symbol.html">Symbol</a> で指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+latest <span class="o">=</span> <span class="no">GC</span><span class="p">.</span><span class="nf">latest_gc_info</span>
+latest <span class="c1"># =&gt; {:major_by=&gt;nil, :gc_by=&gt;:newobj, :have_finalizer=&gt;false, :immediate_sweep=&gt;false, :state=&gt;:sweeping}
+</span>
+stat <span class="o">=</span> <span class="no">GC</span><span class="p">.</span><span class="nf">stat</span>
+merged <span class="o">=</span> <span class="no">GC</span><span class="p">.</span><span class="nf">latest_gc_info</span><span class="p">(</span>stat<span class="p">)</span>
+merged <span class="o">==</span> latest<span class="p">.</span><span class="nf">merge</span><span class="p">(</span>stat<span class="p">)</span> <span class="c1"># =&gt; true
+</span>
+<span class="no">GC</span><span class="p">.</span><span class="nf">latest_gc_info</span><span class="p">(</span><span class="ss">:gc_by</span><span class="p">)</span>    <span class="c1"># =&gt; :newobj
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_START"><code>start(full_mark: true, immediate_sweep: true) -&gt; nil</code><span class="permalink">[<a href="../method/-g-c/s/start.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/GC.html#method-c-start">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ガーベージコレクトを開始します。
+</p>
+<p>
+<a href="../method/-g-c/i/garbage_collect.html">GC#garbage_collect</a> や <a href="../method/-object-space/m/garbage_collect.html">ObjectSpace.#garbage_collect</a> と同じ働きをします。
+<a href="../method/-g-c/s/disable.html">GC.disable</a> により GC が禁止されている場合でもガベージコレクトを開始します。
+</p>
+<p>
+nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] full_mark:</dt>
+<dd>
+マイナー GC を動作させる場合は false を、そうでない場合は true を指定します。
+</dd>
+<dt class='method-param'>[PARAM] immediate_sweep:</dt>
+<dd>
+sweep を遅らせる(Lazy Sweep を行う)場合は false
+を、そうでない場合は true を指定します。
+</dd>
+</dl>
+<p>
+注意: これらのキーワード引数は Ruby の実装やバージョンによって異なります。将来のバージョンとの互換性も保証されません。また、Ruby の実装がサポートしていない場合はキーワード引数を指定しても無視される可能性があります。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">GC</span><span class="p">.</span><span class="nf">count</span>  <span class="c1"># =&gt; 3
+</span><span class="no">GC</span><span class="p">.</span><span class="nf">start</span>  <span class="c1"># =&gt; nil
+</span><span class="no">GC</span><span class="p">.</span><span class="nf">count</span>  <span class="c1"># =&gt; 4
+</span></code></pre>
+</dd>
+
+
+<dt class="method-heading" id="S_STAT"><code>stat(result_hash = {}) -&gt; {Symbol =&gt; Integer}</code><span class="permalink">[<a href="../method/-g-c/s/stat.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/GC.html#method-c-stat">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>stat(key) -&gt; Numeric</code></dt>
+<dd class="method-description">
+<p>
+GC 内部の統計情報を <a href="../class/-hash.html">Hash</a> で返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] result_hash:</dt>
+<dd>
+戻り値のためのハッシュを指定します。省略した場合は新しくハッシュを作成します。result_hash の内容は上書きされます。
+</dd>
+<dt class='method-param'>[PARAM] key:</dt>
+<dd>
+得られる統計情報から特定の情報を取得したい場合にキーを
+<a href="../class/-symbol.html">Symbol</a> で指定します。
+</dd>
+<dt>[RETURN]</dt>
+<dd>
+GC 内部の統計情報を<a href="../class/-hash.html">Hash</a> で返します。引数 key を指定した場合は数値を返します。
+</dd>
+</dl>
+<pre>
+GC.stat
+# =&gt;
+ {
+   :count=&gt;0,
+   :heap_allocated_pages=&gt;24,
+   :heap_sorted_length=&gt;24,
+   :heap_allocatable_pages=&gt;0,
+   :heap_available_slots=&gt;9783,
+   :heap_live_slots=&gt;7713,
+   :heap_free_slots=&gt;2070,
+   :heap_final_slots=&gt;0,
+   :heap_marked_slots=&gt;0,
+   :heap_swept_slots=&gt;0,
+   :heap_eden_pages=&gt;24,
+   :heap_tomb_pages=&gt;0,
+   :total_allocated_pages=&gt;24,
+   :total_freed_pages=&gt;0,
+   :total_allocated_objects=&gt;7796,
+   :total_freed_objects=&gt;83,
+   :malloc_increase_bytes=&gt;2389312,
+   :malloc_increase_bytes_limit=&gt;16777216,
+   :minor_gc_count=&gt;0,
+   :major_gc_count=&gt;0,
+   :remembered_wb_unprotected_objects=&gt;0,
+   :remembered_wb_unprotected_objects_limit=&gt;0,
+   :old_objects=&gt;0,
+   :old_objects_limit=&gt;0,
+   :oldmalloc_increase_bytes=&gt;2389760,
+   :oldmalloc_increase_bytes_limit=&gt;16777216
+ }
+</pre>
+<p>
+戻り値のハッシュは処理系に依存します。これは将来変更になるかもしれません。
+</p>
+<p>
+本メソッドは C Ruby 以外では動作しません。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_STRESS"><code>stress -&gt; bool</code><span class="permalink">[<a href="../method/-g-c/s/stress.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/GC.html#method-c-stress">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+GCがストレスモードかどうかを返します。
+</p>
+<p>
+真が設定されている場合は GC を行えるすべての機会に GC を行います。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-g-c/s/stress=3d.html">GC.stress=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="S_STRESS--3D"><code>stress=(value)</code><span class="permalink">[<a href="../method/-g-c/s/stress=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/GC.html#method-c-stress-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+GCのストレスモードを引数 value に設定します。引数 value が真に設定されている間は、GC を行えるすべての機会に GC を行います。
+</p>
+<p>
+この機能はデバッグ用途に提供されています。ストレスモードを有効にするとプログラムのパフォーマンスが低下します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] value:</dt>
+<dd>
+任意のオブジェクト。整数以外の値を指定した場合は真偽値として解釈されます。整数を指定する場合は以下のフラグをOR演算した値を指定します。
+</dd>
+</dl>
+<dl>
+<dt>0x01</dt>
+<dd>
+<p>
+マイナー GC を動作させる場合に指定します。
+</p>
+</dd>
+<dt>0x02</dt>
+<dd>
+<p>
+sweep を遅らせる(Lazy Sweep を行う)に指定します。
+</p>
+</dd>
+<dt>0x04</dt>
+<dd>
+<p>
+malloc/calloc/realloc の後でメジャーGCを動作させる場合に指定します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="no">GC</span><span class="p">.</span><span class="nf">stress</span> <span class="c1"># =&gt; false
+</span><span class="no">GC</span><span class="p">.</span><span class="nf">stress</span> <span class="o">=</span> <span class="k">true</span>
+<span class="no">GC</span><span class="p">.</span><span class="nf">stress</span> <span class="c1"># =&gt; true
+</span></code></pre>
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-g-c/s/stress.html">GC.stress</a>
+</p>
+</dd>
+
+
+</dl>
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_GARBAGE_COLLECT"><code>garbage_collect(full_mark: true, immediate_sweep: true) -&gt; nil</code><span class="permalink">[<a href="../method/-g-c/i/garbage_collect.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/GC.html#method-i-garbage_collect">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ガーベージコレクトを開始します。
+</p>
+<p>
+<a href="../method/-g-c/s/start.html">GC.start</a> や <a href="../method/-object-space/m/garbage_collect.html">ObjectSpace.#garbage_collect</a> と同じ働きをします。
+<a href="../method/-g-c/s/disable.html">GC.disable</a> により GC が禁止されている場合でもガベージコレクトを開始します。
+</p>
+<p>
+nil を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] full_mark:</dt>
+<dd>
+マイナー GC を動作させる場合は false を、そうでない場合は true を指定します。
+</dd>
+<dt class='method-param'>[PARAM] immediate_sweep:</dt>
+<dd>
+sweep を遅らせる(Lazy Sweep を行う)場合は false
+を、そうでない場合は true を指定します。
+</dd>
+</dl>
+<p>
+注意: これらのキーワード引数は Ruby の実装やバージョンによって異なります。将来のバージョンとの互換性も保証されません。また、Ruby の実装がサポートしていない場合はキーワード引数を指定しても無視される可能性があります。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+include <span class="no">GC</span>
+<span class="no">GC</span><span class="p">.</span><span class="nf">count</span>  <span class="c1"># =&gt; 3
+</span>garbage_collect
+<span class="no">GC</span><span class="p">.</span><span class="nf">count</span>  <span class="c1"># =&gt; 4
+</span></code></pre>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-I-N-T-E-R-N-A-L_-C-O-N-S-T-A-N-T-S"><code>INTERNAL_CONSTANTS -&gt; {Symbol =&gt; Integer}</code><span class="permalink">[<a href="../method/-g-c/c/-i-n-t-e-r-n-a-l_-c-o-n-s-t-a-n-t-s.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/GC.html#method-c-INTERNAL_CONSTANTS">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+GC用内部定数の値を保持するハッシュテーブルです。
+</p>
+<pre>
+GC::INTERNAL_CONSTANTS
+# =&gt; {:RVALUE_SIZE=&gt;40, :HEAP_PAGE_OBJ_LIMIT=&gt;408, :HEAP_PAGE_BITMAP_SIZE=&gt;56, :HEAP_PAGE_BITMAP_PLANES=&gt;4}
+</pre>
+</dd>
+
+
+<dt class="method-heading" id="C_-O-P-T-S"><code>OPTS -&gt; [String]</code><span class="permalink">[<a href="../method/-g-c/c/-o-p-t-s.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/GC.html#method-c-OPTS">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+コンパイル時に指定したGCのオプションです。
+</p>
+<p>
+可能性があるオプション文字列は以下の通りです。
+</p>
+<ul>
+<li>&quot;GC_DEBUG&quot;</li>
+<li>&quot;USE_RGENGC&quot;</li>
+<li>&quot;RGENGC_DEBUG&quot;</li>
+<li>&quot;RGENGC_CHECK_MODE&quot;</li>
+<li>&quot;RGENGC_PROFILE&quot;</li>
+<li>&quot;RGENGC_ESTIMATE_OLDMALLOC&quot;</li>
+<li>&quot;GC_PROFILE_MORE_DETAIL&quot;</li>
+<li>&quot;GC_ENABLE_LAZY_SWEEP&quot;</li>
+<li>&quot;CALC_EXACT_MALLOC_SIZE&quot;</li>
+<li>&quot;MALLOC_ALLOCATED_SIZE&quot;</li>
+<li>&quot;MALLOC_ALLOCATED_SIZE_CHECK&quot;</li>
+<li>&quot;GC_PROFILE_DETAIL_MEMORY&quot;</li>
+</ul>
+<p>
+例:
+</p>
+<pre>
+GC::OPTS # =&gt; [&quot;USE_RGENGC&quot;, &quot;RGENGC_ESTIMATE_OLDMALLOC&quot;, &quot;GC_ENABLE_LAZY_SWEEP&quot;]
+# この場合、GCデバッグ機能やプロファイル機能は無効化されている
+</pre>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

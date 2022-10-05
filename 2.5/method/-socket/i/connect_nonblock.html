@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../../style.css">
+<link rel="stylesheet" href="../../../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../../../rurema.png">
+
+<title>Socket#connect_nonblock (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="ソケットをノンブロッキングモードに設定した後、
+[[man:connect(2)]] を呼び出します。">
+<script src="../../../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../../../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../../../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../../../library/socket.html">socketライブラリ</a>
+      </li>
+      <li>
+        <a href="../../../class/-socket.html">Socketクラス</a>
+      </li>
+      <li>
+        connect_nonblock 
+      </li>
+    </ol>
+  </nav>
+
+<h1>instance method Socket#connect_nonblock</h1>
+</header>
+
+<main>
+<dl class="methodlist">
+
+<dt class="method-heading" id="I_CONNECT_NONBLOCK"><code>connect_nonblock(server_sockaddr) -&gt; 0</code><span class="permalink">[<a href="../../../method/-socket/i/connect_nonblock.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/Socket.html#method-i-connect_nonblock">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ソケットをノンブロッキングモードに設定した後、
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/connect.html">connect(2)</a> を呼び出します。
+</p>
+<p>
+引数、返り値は <a href="../../../method/-socket/i/connect.html">Socket#connect</a> と同じです。
+</p>
+<p>
+connect が EINPROGRESS エラーを報告した場合、その例外(Errno::EINPROGRESS)
+には <a href="../../../class/-i-o=3a=3a-wait-writable.html">IO::WaitWritable</a> が <a href="../../../method/-object/i/extend.html">Object#extend</a> されます。これを connect_nonblock をリトライするために使うことができます。
+</p>
+<pre>
+# Pull down Google's web page
+require 'socket'
+include Socket::Constants
+socket = Socket.new(AF_INET, SOCK_STREAM, 0)
+sockaddr = Socket.sockaddr_in(80, 'www.google.com')
+begin # emulate blocking connect
+  socket.connect_nonblock(sockaddr)
+rescue IO::WaitWritable
+  IO.select(nil, [socket]) # wait 3-way handshake completion
+  begin
+    socket.connect_nonblock(sockaddr) # check connection failure
+  rescue Errno::EISCONN
+  end
+end
+socket.write(&quot;GET / HTTP/1.0\r\n\r\n&quot;)
+results = socket.read
+</pre>
+<dl>
+<dt class='method-param'>[PARAM] server_sockaddr:</dt>
+<dd>
+接続先アドレス
+</dd>
+<dt>[EXCEPTION] Errno::EXXX:</dt>
+<dd>
+<a class="external" href="http://www.opengroup.org/onlinepubs/009695399/functions/connect.html">connect(2)</a> がエラーを報告した場合に発生します。詳しくは
+man を参照してください。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>module OpenSSL::Buffering (Ruby 2.5.9 リファレンスマニュアル)</title>
+<meta name="description" content="[[c:OpenSSL::SSL::SSLSocket]] にバッファリング付きIO機能を提供する
+モジュールです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.5.9 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/openssl.html">opensslライブラリ</a>
+      </li>
+      <li>
+        OpenSSL::Bufferingモジュール
+      </li>
+    </ol>
+  </nav>
+
+<h1>module OpenSSL::Buffering</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+      <li>
+        OpenSSL::Buffering
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+<a href="../class/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-socket.html">OpenSSL::SSL::SSLSocket</a> にバッファリング付きIO機能を提供するモジュールです。
+</p>
+<p>
+<a href="../class/-i-o.html">IO</a> クラスと同様のメソッドを提供しています。
+</p>
+<p>
+内部的には sysread, syswrite, sysread_nonblock, syswrite_nonblock,
+sysclose といった <a href="../class/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-socket.html">OpenSSL::SSL::SSLSocket</a> が提供するメソッドを利用し、 <a href="../class/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-socket.html">OpenSSL::SSL::SSLSocket</a> がラップしているソケットをバッファ経由でデータを暗号化してやりとりを行います。
+</p>
+<h2 >IO との違い</h2>
+<p>
+このクラスは IO クラスと同様のメソッドを提供していますが、以下の点で異なります。これらは今後のバージョンで変更(改善)
+される可能性があります。
+</p>
+<ul>
+<li>gets や readlines など行読み込みメソッドの引数(行区切り文字列の指定)
+の意味が異なります。例えば &quot;&quot; で連続改行を区切りとみなすモードはなく
+nil を渡すとエラーとなります</li>
+<li>read_nonblock が書き込み不可能で例外を発生させたり、
+write_nonblock が読み込み不可能で例外を発生させたりします。
+これは暗号化通信でのデータの送信には双方向のメッセージの
+やりとりが必要な場合があるためです。</li>
+<li>1.9 では encoding 関連を設定しません</li>
+<li>1.9 で each_byte が String をブロックに渡します</li>
+</ul>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_--3C--3C">&lt;&lt;</a></li>
+
+<li><a href="#I_CLOSE">close</a></li>
+
+<li><a href="#I_EACH">each</a></li>
+
+<li><a href="#I_EACH_BYTE">each_byte</a></li>
+
+<li><a href="#I_EACH">each_line</a></li>
+
+<li><a href="#I_EOF">eof</a></li>
+
+<li><a href="#I_EOF">eof?</a></li>
+
+<li><a href="#I_FLUSH">flush</a></li>
+
+<li><a href="#I_GETC">getc</a></li>
+
+<li><a href="#I_GETS">gets</a></li>
+
+<li><a href="#I_PRINT">print</a></li>
+
+<li><a href="#I_PRINTF">printf</a></li>
+
+<li><a href="#I_PUTS">puts</a></li>
+
+<li><a href="#I_READ">read</a></li>
+
+<li><a href="#I_READ_NONBLOCK">read_nonblock</a></li>
+
+<li><a href="#I_READCHAR">readchar</a></li>
+
+<li><a href="#I_READLINE">readline</a></li>
+
+<li><a href="#I_READLINES">readlines</a></li>
+
+<li><a href="#I_READPARTIAL">readpartial</a></li>
+
+<li><a href="#I_SYNC">sync</a></li>
+
+<li><a href="#I_SYNC--3D">sync=</a></li>
+
+<li><a href="#I_UNGETC">ungetc</a></li>
+
+<li><a href="#I_WRITE">write</a></li>
+
+<li><a href="#I_WRITE_NONBLOCK">write_nonblock</a></li>
+
+</ul>
+</dd>
+
+<dt>定数</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#C_-B-L-O-C-K_-S-I-Z-E">BLOCK_SIZE</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_--3C--3C"><code>self &lt;&lt; s -&gt; self</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/=3c=3c.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-3C-3C">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列 s を書き込みます。
+</p>
+<p>
+<a href="../method/-i-o/i/=3c=3c.html">IO#&lt;&lt;</a> と同様です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] s:</dt>
+<dd>
+出力する文字列
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_CLOSE"><code>close -&gt; nil</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/close.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-close">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+接続を閉じます。
+</p>
+<p>
+<a href="../method/-open-s-s-l=3a=3a-buffering/i/flush.html">OpenSSL::Buffering#flush</a> を呼んでから閉じます。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH"><code>each(eol=$/) {|line| ... } -&gt; ()</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/each.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-each">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>each_line(eol=$/) {|line| ... } -&gt; ()</code></dt>
+<dd class="method-description">
+<p>
+現在の読み込み位置から1行ずつ文字列として読み込み、それを引数としてブロックを呼び出します。
+</p>
+<p>
+<a href="../method/-i-o/i/each.html">IO#each</a> と同様ですが、区切り文字列に
+&quot;&quot; を渡した場合や、nil を渡したときの意味が異なり、これらの場合は正しく動作しません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] eol:</dt>
+<dd>
+行区切り文字列/正規表現
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_EACH_BYTE"><code>each_byte {|ch| ... } -&gt; ()</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/each_byte.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-each_byte">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+現在の読み込み位置から 1 バイトずつ読み込み、それを文字列としてブロックの引数として呼び出します。
+</p>
+<p>
+<a href="../method/-i-o/i/each_byte.html">IO#each_byte</a> と同様です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_EOF"><code>eof? -&gt; bool</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/eof.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-eof">rdoc</a>]</span></dt>
+<dt class="method-heading"><code>eof -&gt; bool</code></dt>
+<dd class="method-description">
+<p>
+相手からの通信が終端に達したら true を返します。
+</p>
+<p>
+<a href="../method/-i-o/i/eof=3f.html">IO#eof?</a> と同様です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_FLUSH"><code>flush -&gt; ()</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/flush.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-flush">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+内部バッファに残っているデータをすべて出力し、バッファをフラッシュします。
+</p>
+<p>
+<a href="../method/-i-o/i/flush.html">IO#flush</a> と同様です。
+</p>
+<p>
+バッファがすべて出力されるまでブロックします。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_GETC"><code>getc -&gt; String | nil</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/getc.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-getc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+バッファから1文字読み込み、それ返します。
+</p>
+<p>
+読み込みが終端に到達した場合は nil を返します。
+</p>
+<p>
+<a href="../method/-i-o/i/getc.html">IO#getc</a> と同様です。
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_GETS"><code>gets(eol=$/, limit=nil) -&gt; String | nil</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/gets.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-gets">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+通信路から一行読み込んで、それを返します。
+</p>
+<p>
+行区切りは eol で指定した文字列/正規表現になります。
+</p>
+<p>
+最大 limit バイトの文字列を返します。1 行がそれより長い場合はそこで切られます。limit が nil の場合は
+eol に到達するまで読み込みます。
+</p>
+<p>
+読み込みが終端に到達した場合は nil を返します。
+</p>
+<p>
+<a href="../method/-i-o/i/gets.html">IO#gets</a> と同様ですが、区切り文字列に
+&quot;&quot; を渡した場合や、nil を渡したときの意味が異なり、これらの場合は正しく動作しません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] eol:</dt>
+<dd>
+行区切り文字列/正規表現
+</dd>
+<dt class='method-param'>[PARAM] limit:</dt>
+<dd>
+最大の読み込みバイト数
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_PRINT"><code>print(*args) -&gt; nil</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/print.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-print">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+args を順に出力します。
+</p>
+<p>
+args の各要素を to_s で文字列に変換して出力します。
+<a href="../method/-i-o/i/print.html">IO#print</a> とほぼ同様ですが、引数を省略した場合に $_ を出力する機能はありません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] args:</dt>
+<dd>
+出力するオブジェクト
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_PRINTF"><code>printf(format, *args) -&gt; nil</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/printf.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-printf">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+format に従い引数 args を文字列に変換して出力します。
+</p>
+<p>
+<a href="../method/-i-o/i/printf.html">IO#printf</a> と同様です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] format:</dt>
+<dd>
+出力フォーマット文字列
+</dd>
+<dt class='method-param'>[PARAM] arg:</dt>
+<dd>
+出力するオブジェクト
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/m/printf.html">Kernel.#printf</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_PUTS"><code>puts(*objs) -&gt; nil</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/puts.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-puts">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+各オブジェクトを出力し、それぞれの後に改行を出力します。
+</p>
+<p>
+<a href="../method/-i-o/i/puts.html">IO#puts</a> と同様です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] objs:</dt>
+<dd>
+出力したいオブジェクト
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_READ"><code>read(length=nil, buf=nil) -&gt; String | nil</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/read.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-read">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列を通信路から読み込み、返します。
+</p>
+<p>
+読み込みが終端に到達している場合は nil を返します。
+</p>
+<p>
+length で読み込むバイト数を指定します。
+length に 0 を渡した場合は空文字列を返します。
+length に nil を渡した場合(省略した場合)は最後までのデータを読み込みます。
+</p>
+<p>
+bufに文字列を渡した場合はその領域が出力用のバッファとして利用されます。
+</p>
+<p>
+<a href="../method/-i-o/i/read.html">IO#read</a> と同様です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] length:</dt>
+<dd>
+読み込むバイト数
+</dd>
+<dt class='method-param'>[PARAM] buf:</dt>
+<dd>
+読み込みバッファ
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_READ_NONBLOCK"><code>read_nonblock(maxlen, buf) -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/read_nonblock.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-read_nonblock">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+通信路から maxlen  バイトを上限としてデータを読み込み、文字列として返します。
+</p>
+<p>
+即座に得られるデータが 1byte でも存在すればブロックしません。内部バッファが空でない場合はバッファのデータを返します。即座に得られるデータが存在しないときには例外が発生します。例外が発生した場合、内部のソケットが利用可能になってから再びこのメソッドを呼んでください。
+</p>
+<p>
+基本的には <a href="../method/-i-o/i/read_nonblock.html">IO#read_nonblock</a> と同様です。しかし以下のような違いもあります。
+</p>
+<p>
+このメソッドはソケットが書き込み不可能(<a href="../class/-i-o=3a=3a-wait-writable.html">IO::WaitWritable</a>)という理由で例外を発生させる可能性があります。暗号プロトコルの関係上データの読み込みになんらかのデータの送受信が必要になる場合があるからです。
+</p>
+<p>
+内部のソケットが読み込み/書き込み可能である場合でも、このメソッドが文字列を得られず、例外が発生する場合があります。というのは、暗号プロトコルによっては(とくにブロック暗号では)
+通信データをある程度の大きさのブロック単位で暗号化/復号化するためです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] maxlen:</dt>
+<dd>
+読み込む長さの上限(整数)
+</dd>
+<dt class='method-param'>[PARAM] buf:</dt>
+<dd>
+読み込みバッファ
+</dd>
+<dt>[EXCEPTION] EOFError:</dt>
+<dd>
+読み込みが既に終端に到達している場合に発生します
+</dd>
+<dt>[EXCEPTION] OpenSSL::SSL::SSLError:</dt>
+<dd>
+ソケットが読み込み/書き込み可能状態になるのを待つ必要がある場合に発生します。読み込み可能状態を待つ必要がある場合には <a href="../class/-i-o=3a=3a-wait-readable.html">IO::WaitReadable</a> を、書き込み可能状態を待つ必要がある場合には <a href="../class/-i-o=3a=3a-wait-writable.html">IO::WaitWritable</a> を、それぞれ extend した例外オブジェクトが生成されます。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_READCHAR"><code>readchar -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/readchar.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-readchar">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+バッファから1文字読み込み、それ返します。
+</p>
+<p>
+読み込みが終端に到達している場合は例外 EOFError を返します。
+</p>
+<p>
+<a href="../method/-i-o/i/readchar.html">IO#readchar</a> と同様です。
+</p>
+<dl>
+<dt>[EXCEPTION] EOFError:</dt>
+<dd>
+読み込みが終端に到達した場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_READLINE"><code>readline(eol=$/) -&gt; String</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/readline.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-readline">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+通信路から一行読み込んで、それを返します。
+</p>
+<p>
+行区切りは eol で指定した文字列/正規表現になります。
+</p>
+<p>
+読み込みが終端に到達した場合は例外 EOFError を発生します。
+</p>
+<p>
+<a href="../method/-i-o/i/readline.html">IO#readline</a> と同様ですが、区切り文字列に
+&quot;&quot; を渡した場合や、nil を渡したときの意味が異なり、これらの場合は正しく動作しません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] eol:</dt>
+<dd>
+行区切り文字列/正規表現
+</dd>
+<dt>[EXCEPTION] EOFError:</dt>
+<dd>
+読み込みが終端に到達した場合に発生します。
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_READLINES"><code>readlines(eol=$/) -&gt; [String]</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/readlines.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-readlines">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+データを通信路から末端まで全て読み込んで、各行を要素として持つ配列を返します。
+</p>
+<p>
+行区切りは eol で指定した文字列/正規表現になります。
+</p>
+<p>
+<a href="../method/-i-o/i/readlines.html">IO#readlines</a> と同様ですが、区切り文字列に
+&quot;&quot; を渡した場合や、nil を渡したときの意味が異なり、これらの場合は正しく動作しません。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] eol:</dt>
+<dd>
+行区切り文字列/正規表現
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_READPARTIAL"><code>readpartial(maxlen, buf=nil) -&gt; String | nil</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/readpartial.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-readpartial">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+通信路から長さ maxlen  バイトを上限としてデータを読み込み、文字列として返します。即座に得られるデータが存在しないときにはブロックしてデータの到着を待ちます。即座に得られるデータが 1byte でも存在すればブロックしません。
+</p>
+<p>
+<a href="../method/-i-o/i/readpartial.html">IO#readpartial</a> と同様です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] maxlen:</dt>
+<dd>
+読み込む長さの上限(整数)
+</dd>
+<dt class='method-param'>[PARAM] buf:</dt>
+<dd>
+読み込みバッファ
+</dd>
+<dt>[EXCEPTION] EOFError:</dt>
+<dd>
+読み込みが既に終端に到達している場合に発生します
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_SYNC"><code>sync -&gt; bool</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/sync.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-sync">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+出力が同期モードなら true を返します。
+</p>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-buffering/i/sync=3d.html">OpenSSL::Buffering#sync=</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_SYNC--3D"><code>sync=(sync)</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/sync=3d.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-sync-3D">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+出力の同期モードを設定します。
+</p>
+<p>
+true に設定すると同期モードになり、
+<a href="../method/-open-s-s-l=3a=3a-buffering/i/write_nonblock.html">OpenSSL::Buffering#write_nonblock</a> と
+<a href="../method/-open-s-s-l=3a=3a-s-s-l=3a=3a-s-s-l-socket/i/syswrite.html">OpenSSL::SSL::SSLSocket#syswrite</a> を除くすべての書き込み
+(<a href="../method/-open-s-s-l=3a=3a-buffering/i/write.html">OpenSSL::Buffering#write</a>, <a href="../method/-open-s-s-l=3a=3a-buffering/i/print.html">OpenSSL::Buffering#print</a> など)
+はバッファリングされずに出力されます。
+</p>
+<p>
+false に設定すると書き込みはバッファリングされます。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] sync:</dt>
+<dd>
+設定するモード(真偽値)
+</dd>
+</dl>
+<p>
+[SEE_ALSO] <a href="../method/-open-s-s-l=3a=3a-buffering/i/sync.html">OpenSSL::Buffering#sync</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_UNGETC"><code>ungetc(char) -&gt; ()</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/ungetc.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-ungetc">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+指定した文字 char をバッファに読み戻します。
+</p>
+<p>
+char には String か Integer を渡します。
+</p>
+<p>
+<a href="../method/-i-o/i/ungetc.html">IO#ungetc</a> と同様です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] char:</dt>
+<dd>
+読み戻す文字
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_WRITE"><code>write(str) -&gt; Integer</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/write.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-write">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+str を出力します。
+</p>
+<p>
+書き込んだデータの長さを返します。
+</p>
+<p>
+<a href="../method/-i-o/i/write.html">IO#write</a> と同様です。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] str:</dt>
+<dd>
+出力する文字列
+</dd>
+</dl>
+</dd>
+
+
+<dt class="method-heading" id="I_WRITE_NONBLOCK"><code>write_nonblock(s) -&gt; Integer</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/i/write_nonblock.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-i-write_nonblock">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+文字列 s をノンブロッキングモードで書き込みます。
+</p>
+<p>
+成功した場合、書き込んだバイト数を返します。
+</p>
+<p>
+1 バイトも書くことができず、ソケットの状態が変化するのを待つ必要がある場合は例外を発生させます。例外が発生した場合、内部のソケットが利用可能になってから再びこのメソッドを呼んでください。
+</p>
+<p>
+ただし内部バッファに書き込んでいないデータが残っている場合は、まずバッファの内容をすべて出力してします。この時点でブロックする可能性があります。
+</p>
+<p>
+基本的には <a href="../method/-i-o/i/write_nonblock.html">IO#write_nonblock</a> と同様です。しかし以下のような違いもあります。
+</p>
+<p>
+このメソッドはソケットが読み込み不可能(<a href="../class/-i-o=3a=3a-wait-readable.html">IO::WaitReadable</a>)
+という理由で例外を発生させる可能性があります。暗号プロトコルの関係上データの書き込みになんらかのデータの送受信が必要になる場合があるからです。
+</p>
+<p>
+内部のソケットが読み込み/書き込み可能である場合でも、このメソッドで文字列を書き込めず、例外が発生する場合があります。というのは、暗号プロトコルによっては(とくにブロック暗号では)
+通信データをある程度の大きさのブロック単位で暗号化/復号化するためです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] s:</dt>
+<dd>
+出力する文字列
+</dd>
+<dt>[EXCEPTION] OpenSSL::SSL::SSLError:</dt>
+<dd>
+ソケットが読み込み/書き込み可能状態になるのを待つ必要がある場合に発生します。読み込み可能状態を待つ必要がある場合には <a href="../class/-i-o=3a=3a-wait-readable.html">IO::WaitReadable</a> を、書き込み可能状態を待つ必要がある場合には <a href="../class/-i-o=3a=3a-wait-writable.html">IO::WaitWritable</a> を、それぞれ extend した例外オブジェクトが生成されます。
+</dd>
+</dl>
+</dd>
+
+
+</dl>
+
+<h2>定数</h2>
+<dl>
+
+<dt class="method-heading" id="C_-B-L-O-C-K_-S-I-Z-E"><code>BLOCK_SIZE -&gt; Integer</code><span class="permalink">[<a href="../method/-open-s-s-l=3a=3a-buffering/c/-b-l-o-c-k_-s-i-z-e.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.5.9/OpenSSL/Buffering.html#method-c-BLOCK_SIZE">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+内部のバッファのサイズを返します。
+</p>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>

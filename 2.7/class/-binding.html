@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../syntax-highlight.css">
+<link rel="icon" type="image/png" href="../rurema.png">
+
+<title>class Binding (Ruby 2.7.6 リファレンスマニュアル)</title>
+<meta name="description" content="ローカル変数のテーブルと self、モジュールのネストなどの情報を保
+持するオブジェクトのクラスです。">
+<script src="../script.js"></script>
+</head>
+<body>
+
+
+<header>
+  <nav>
+    <ol class="inline-breadcrumb-list">
+      <li>
+        <a href="../doc/index.html">Ruby 2.7.6 リファレンスマニュアル</a>
+      </li>
+      <li>
+        <a href="../library/index.html">ライブラリ一覧</a>
+      </li>
+      <li>
+        <a href="../library/_builtin.html">組み込みライブラリ</a>
+      </li>
+      <li>
+        Bindingクラス
+      </li>
+    </ol>
+  </nav>
+
+<h1>class Binding</h1>
+</header>
+
+<main>
+
+
+
+  <nav>
+    クラス・モジュールの継承リスト:
+    <ol class="inline-ancestors-list">
+      
+        <li>
+          <a href="../class/-basic-object.html">BasicObject</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-kernel.html">Kernel</a>
+        </li>
+        
+      
+        <li>
+          <a href="../class/-object.html">Object</a>
+        </li>
+        
+      
+      <li>
+        Binding
+      </li>
+    </ol>
+  </nav>
+
+
+
+
+
+
+
+
+
+
+
+<h2>要約</h2>
+<p>
+ローカル変数のテーブルと self、モジュールのネストなどの情報を保持するオブジェクトのクラスです。
+</p>
+<p>
+組み込み関数 <a href="../method/-kernel/m/binding.html">Kernel.#binding</a> によってのみ生成され、<a href="../method/-kernel/m/eval.html">Kernel.#eval</a> の第 2 引数に使用します。またトップレベルの Binding オブジェクトとして組み込み定数
+<a href="../method/-object/c/-t-o-p-l-e-v-e-l_-b-i-n-d-i-n-g.html">Object::TOPLEVEL_BINDING</a> が用意されています。
+</p>
+
+
+
+<h2>目次</h2>
+<dl>
+
+<dt>インスタンスメソッド</dt>
+<dd>
+<ul class="class-toc">
+
+<li><a href="#I_EVAL">eval</a></li>
+
+<li><a href="#I_IRB">irb</a></li>
+
+<li><a href="#I_LOCAL_VARIABLE_DEFINED--3F">local_variable_defined?</a></li>
+
+<li><a href="#I_LOCAL_VARIABLE_GET">local_variable_get</a></li>
+
+<li><a href="#I_LOCAL_VARIABLE_SET">local_variable_set</a></li>
+
+<li><a href="#I_LOCAL_VARIABLES">local_variables</a></li>
+
+<li><a href="#I_RECEIVER">receiver</a></li>
+
+<li><a href="#I_SOURCE_LOCATION">source_location</a></li>
+
+</ul>
+</dd>
+
+</dl>
+
+
+
+
+</dl>
+
+
+<h2>インスタンスメソッド</h2>
+<dl>
+
+<dt class="method-heading" id="I_EVAL"><code>eval(expr, fname = __FILE__, lineno = 1) -&gt; object</code><span class="permalink">[<a href="../method/-binding/i/eval.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Binding.html#method-i-eval">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+自身をコンテキストとし文字列 expr を
+Ruby プログラムとして評価しその結果を返します。組み込み関数 <a href="../method/-kernel/m/eval.html">Kernel.#eval</a> を使って
+eval(expr, self, fname, lineno) とするのと同じです。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] expr:</dt>
+<dd>
+評価したい式を文字列で与えます。
+</dd>
+<dt class='method-param'>[PARAM] fname:</dt>
+<dd>
+ファイル名を文字列で与えます。式 expr が fname というファイル名にあるかのように実行されます。
+</dd>
+<dt class='method-param'>[PARAM] lineno:</dt>
+<dd>
+行番号を整数で与えます。式 expr の先頭行の行番号が lineno であるかのように実行されます。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">get_binding</span><span class="p">(</span>str<span class="p">)</span>
+  <span class="nb">binding</span>
+<span class="k">end</span>
+str <span class="o">=</span> <span class="s2">"</span><span class="s2">hello</span><span class="s2">"</span>
+<span class="nb">p</span> <span class="nb">eval</span><span class="p">(</span><span class="s2">"</span><span class="s2">str + ' Fred'</span><span class="s2">"</span><span class="p">)</span>                      <span class="c1">#=&gt; &quot;hello Fred&quot;
+</span><span class="nb">p</span> get_binding<span class="p">(</span><span class="s2">"</span><span class="s2">bye</span><span class="s2">"</span><span class="p">)</span><span class="p">.</span><span class="nf">eval</span><span class="p">(</span><span class="s2">"</span><span class="s2">str + ' Fred'</span><span class="s2">"</span><span class="p">)</span>   <span class="c1">#=&gt; &quot;bye Fred&quot;
+</span></code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-kernel/m/eval.html">Kernel.#eval</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_IRB"><code>irb -&gt; object</code><span class="permalink">[<a href="../method/-binding/i/irb.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Binding.html#method-i-irb">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+REPLのセッションを開始します。
+</p>
+<p>
+2.5.0 からは require 'irb' せずに直接 binding.irb を呼び出しても使えるようになりました。
+</p>
+<p>
+[SEE_ALSO] <a href="../library/irb.html">irb</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LOCAL_VARIABLE_DEFINED--3F"><code>local_variable_defined?(symbol) -&gt; bool</code><span class="permalink">[<a href="../method/-binding/i/local_variable_defined=3f.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Binding.html#method-i-local_variable_defined-3F">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数 symbol で指定した名前のローカル変数が定義されている場合に true を、そうでない場合に false を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] symbol:</dt>
+<dd>
+ローカル変数名を <a href="../class/-symbol.html">Symbol</a> オブジェクトで指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">foo</span>
+  a <span class="o">=</span> <span class="mi">1</span>
+  <span class="nb">binding</span><span class="p">.</span><span class="nf">local_variable_defined?</span><span class="p">(</span><span class="ss">:a</span><span class="p">)</span> <span class="c1"># =&gt; true
+</span>  <span class="nb">binding</span><span class="p">.</span><span class="nf">local_variable_defined?</span><span class="p">(</span><span class="ss">:b</span><span class="p">)</span> <span class="c1"># =&gt; false
+</span><span class="k">end</span>
+</code></pre>
+<p>
+このメソッドは以下のコードの短縮形です。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">binding</span><span class="p">.</span><span class="nf">eval</span><span class="p">(</span><span class="s2">"</span><span class="s2">defined?(</span><span class="si">#{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">) == 'local-variable'</span><span class="s2">"</span><span class="p">)</span>
+</code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-binding/i/local_variable_get.html">Binding#local_variable_get</a>, <a href="../method/-binding/i/local_variable_set.html">Binding#local_variable_set</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LOCAL_VARIABLE_GET"><code>local_variable_get(symbol) -&gt; object</code><span class="permalink">[<a href="../method/-binding/i/local_variable_get.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Binding.html#method-i-local_variable_get">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数 symbol で指定した名前のローカル変数に設定された値を返します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] symbol:</dt>
+<dd>
+ローカル変数名を <a href="../class/-symbol.html">Symbol</a> オブジェクトで指定します。
+</dd>
+<dt>[EXCEPTION] NameError:</dt>
+<dd>
+引数 symbol で指定したローカル変数が未定義の場合に発生します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">foo</span>
+  a <span class="o">=</span> <span class="mi">1</span>
+  <span class="nb">binding</span><span class="p">.</span><span class="nf">local_variable_get</span><span class="p">(</span><span class="ss">:a</span><span class="p">)</span> <span class="c1"># =&gt; 1
+</span>  <span class="nb">binding</span><span class="p">.</span><span class="nf">local_variable_get</span><span class="p">(</span><span class="ss">:b</span><span class="p">)</span> <span class="c1"># =&gt; NameError
+</span><span class="k">end</span>
+</code></pre>
+<p>
+このメソッドは以下のコードの短縮形です。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">binding</span><span class="p">.</span><span class="nf">eval</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="n">symbol</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-binding/i/local_variable_set.html">Binding#local_variable_set</a>, <a href="../method/-binding/i/local_variable_defined=3f.html">Binding#local_variable_defined?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LOCAL_VARIABLE_SET"><code>local_variable_set(symbol, obj)</code><span class="permalink">[<a href="../method/-binding/i/local_variable_set.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Binding.html#method-i-local_variable_set">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+引数 symbol で指定した名前のローカル変数に引数 obj を設定します。
+</p>
+<dl>
+<dt class='method-param'>[PARAM] symbol:</dt>
+<dd>
+ローカル変数名を <a href="../class/-symbol.html">Symbol</a> オブジェクトで指定します。
+</dd>
+<dt class='method-param'>[PARAM] obj:</dt>
+<dd>
+引数 symbol で指定したローカル変数に設定するオブジェクトを指定します。
+</dd>
+</dl>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">foo</span>
+  a <span class="o">=</span> <span class="mi">1</span>
+  bind <span class="o">=</span> <span class="nb">binding</span>
+  bind<span class="p">.</span><span class="nf">local_variable_set</span><span class="p">(</span><span class="ss">:a</span>, <span class="mi">2</span><span class="p">)</span> <span class="c1"># set existing local variable `a'
+</span>  bind<span class="p">.</span><span class="nf">local_variable_set</span><span class="p">(</span><span class="ss">:b</span>, <span class="mi">3</span><span class="p">)</span> <span class="c1"># create new local variable `b'
+</span>                                 <span class="c1"># `b' exists only in binding
+</span>  <span class="nb">p</span> bind<span class="p">.</span><span class="nf">local_variable_get</span><span class="p">(</span><span class="ss">:a</span><span class="p">)</span>  <span class="c1"># =&gt; 2
+</span>  <span class="nb">p</span> bind<span class="p">.</span><span class="nf">local_variable_get</span><span class="p">(</span><span class="ss">:b</span><span class="p">)</span>  <span class="c1"># =&gt; 3
+</span>  <span class="nb">p</span> a                            <span class="c1"># =&gt; 2
+</span>  <span class="nb">p</span> b                            <span class="c1"># =&gt; NameError
+</span><span class="k">end</span>
+</code></pre>
+<p>
+このメソッドは以下のコード(ただし、obj が Ruby のコードで出力される場合)と同様の動作をします。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">binding</span><span class="p">.</span><span class="nf">eval</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="n">symbol</span><span class="si">}</span><span class="s2"> = </span><span class="si">#{</span><span class="n">obj</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</code></pre>
+<p>
+[SEE_ALSO] <a href="../method/-binding/i/local_variable_get.html">Binding#local_variable_get</a>, <a href="../method/-binding/i/local_variable_defined=3f.html">Binding#local_variable_defined?</a>
+</p>
+</dd>
+
+
+<dt class="method-heading" id="I_LOCAL_VARIABLES"><code>local_variables -&gt; [Symbol]</code><span class="permalink">[<a href="../method/-binding/i/local_variables.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Binding.html#method-i-local_variables">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+ローカル変数の一覧を <a href="../class/-symbol.html">Symbol</a> の配列で返します。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="k">def</span> <span class="nf">foo</span>
+  a <span class="o">=</span> <span class="mi">1</span>
+  <span class="mi">2</span><span class="p">.</span><span class="nf">times</span> <span class="k">do</span> <span class="o">|</span>n<span class="o">|</span>
+    <span class="nb">binding</span><span class="p">.</span><span class="nf">local_variables</span> <span class="c1">#=&gt; [:a, :n]
+</span>  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<p>
+このメソッドは以下のコードと同様の動作をします。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">binding</span><span class="p">.</span><span class="nf">eval</span><span class="p">(</span><span class="s2">"</span><span class="s2">local_variables</span><span class="s2">"</span><span class="p">)</span>
+</code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_RECEIVER"><code>receiver -&gt; object</code><span class="permalink">[<a href="../method/-binding/i/receiver.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Binding.html#method-i-receiver">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+保持するコンテキスト内での self を返します。
+</p>
+<p>
+このメソッドは以下のコードと同様の動作をします。
+</p>
+<pre class="highlight ruby">
+<code>
+<span class="nb">binding</span><span class="p">.</span><span class="nf">eval</span><span class="p">(</span><span class="s2">"</span><span class="s2">self</span><span class="s2">"</span><span class="p">)</span>
+</code></pre>
+</dd>
+
+
+<dt class="method-heading" id="I_SOURCE_LOCATION"><code>source_location -&gt; [String, Integer]</code><span class="permalink">[<a href="../method/-binding/i/source_location.html">permalink</a>][<a href="https://docs.ruby-lang.org/en/2.7.6/Binding.html#method-i-source_location">rdoc</a>]</span></dt>
+<dd class="method-description">
+<p>
+self の Ruby のソースファイル名と行番号を返します。
+</p>
+<p>
+<a href="../doc/spec=2fvariables.html#pseudo">変数と定数/擬似変数</a> の __FILE__ と __LINE__ も参照してください。
+</p>
+<pre class="highlight ruby">
+<span class="caption">例</span>
+<code>
+<span class="nb">p</span> <span class="nb">binding</span><span class="p">.</span><span class="nf">source_location</span> <span class="c1"># =&gt; [&quot;test.rb&quot;, 1]
+</span></code></pre>
+</dd>
+
+
+</dl>
+
+</main>
+
+<footer id="footer">
+  <a rel="license" href="https://creativecommons.org/licenses/by/3.0/">
+    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/88x31.png" />
+  </a>
+
+  <a href="https://github.com/rurema/doctree/issues/new" id="feedback-link">フィードバックを送る</a>
+  
+  <script>if (window.URLSearchParams) { document.getElementById("feedback-link").search = new URLSearchParams({'body': document.location}); }</script>
+</footer>
+</body>
+</html>
